@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
-import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
+import 'package:wing/features/local_setup/providers/local_hermes_setup_provider.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -55,23 +55,16 @@ void main() {
           activeChannel: channel,
         );
         var managementAttempts = 0;
-        final enrollment = HermesEnrollmentController(
-          endpointStore: store,
-          inspectEnrollment: ({required origin, required code}) async {
-            managementAttempts++;
-            throw StateError('Management forbidden in direct qualification');
-          },
-          exchangeEnrollment: ({required origin, required code}) async {
-            managementAttempts++;
-            throw StateError('Management forbidden in direct qualification');
-          },
-        );
+
         final container = ProviderContainer(
           overrides: [
             hermesChannelProvider.overrideWith((_) => channel),
             hermesEndpointStoreProvider.overrideWithValue(store),
             hermesGatewayDirectoryProvider.overrideWith((_) => directory),
-            hermesEnrollmentControllerProvider.overrideWith((_) => enrollment),
+            localWingLinkHostProvider.overrideWith((_) {
+              managementAttempts++;
+              throw StateError('Management forbidden in direct qualification');
+            }),
             hermesVoiceCaptureServiceProvider.overrideWithValue(null),
             hermesTextToSpeechServiceProvider.overrideWithValue(null),
           ],

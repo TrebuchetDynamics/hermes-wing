@@ -12,10 +12,8 @@ import 'package:integration_test/integration_test.dart';
 
 import '../test/app/desktop_host_command_listener_test.dart' as suite_0;
 import '../test/app/wing_app_connect_intent_test.dart' as suite_1;
-import '../test/features/enrollment/hermes_enrollment_flow_test.dart'
+import '../test/features/enrollment/legacy_handoff_rejection_test.dart'
     as suite_2;
-import '../test/features/enrollment/hermes_enrollment_payload_test.dart'
-    as suite_3;
 import '../test/features/gateway/gateway_screen_test.dart' as suite_4;
 import '../test/features/hermes_chat/composer/attachments/hermes_attachment_content_test.dart'
     as suite_5;
@@ -150,8 +148,6 @@ import '../test/shared/widgets/wing_empty_state_test.dart' as suite_83;
 import '../test/shared/widgets/wing_skeleton_test.dart' as suite_84;
 
 import '../test/app/hermes_connect_intent_stream_test.dart' as suite_85;
-import '../test/features/enrollment/hermes_enrollment_journey_test.dart'
-    as suite_86;
 import '../test/features/profiles/profile_catalog_test.dart' as suite_87;
 
 void main({bool includeHostChecks = true}) {
@@ -182,12 +178,8 @@ void main({bool includeHostChecks = true}) {
   );
   group('test/app/wing_app_connect_intent_test.dart', suite_1.main);
   group(
-    'test/features/enrollment/hermes_enrollment_flow_test.dart',
+    'test/features/enrollment/legacy_handoff_rejection_test.dart',
     suite_2.main,
-  );
-  group(
-    'test/features/enrollment/hermes_enrollment_payload_test.dart',
-    suite_3.main,
   );
   group('test/features/gateway/gateway_screen_test.dart', suite_4.main);
   group(
@@ -436,9 +428,5 @@ void main({bool includeHostChecks = true}) {
   group('test/shared/widgets/wing_empty_state_test.dart', suite_83.main);
   group('test/shared/widgets/wing_skeleton_test.dart', suite_84.main);
   group('test/app/hermes_connect_intent_stream_test.dart', suite_85.main);
-  group(
-    'test/features/enrollment/hermes_enrollment_journey_test.dart',
-    suite_86.main,
-  );
   group('test/features/profiles/profile_catalog_test.dart', suite_87.main);
 }

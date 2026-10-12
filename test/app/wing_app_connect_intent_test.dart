@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:wing/app/wing_app.dart';
-import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 
 import '../features/hermes_chat/support/fake_hermes_channel.dart';
@@ -43,16 +42,6 @@ void main() {
           overrides: [
             hermesChannelProvider.overrideWithValue(hermes),
             hermesEndpointStoreProvider.overrideWithValue(store),
-            hermesEnrollmentControllerProvider.overrideWith((ref) {
-              final controller = HermesEnrollmentController(
-                endpointStore: store,
-                inspectEnrollment: ({required origin, required code}) async =>
-                    throw StateError('Fixture inspection rejected'),
-                exchangeEnrollment: ({required origin, required code}) async =>
-                    throw StateError('No exchange allowed'),
-              );
-              return controller;
-            }),
           ],
           child: const WingApp(),
         ),

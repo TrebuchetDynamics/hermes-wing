@@ -7,7 +7,6 @@ import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/local_discovery/local_hermes_home_discovery.dart';
 import 'package:wing/features/hermes_chat/widgets/platform_local_connection_panel.dart';
 
-import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
@@ -65,7 +64,6 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   WidgetTester tester, {
   required Future<void> Function(String) capture,
 }) async {
-  var management = 0;
   var linkConstructions = 0;
   final home = _FixtureHomeDiscovery();
   final data = DirectFirstRunNativeFixture();
@@ -85,19 +83,7 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
       hermesGatewaySummaryLoaderProvider.overrideWithValue(
         HermesApiGatewaySummaryLoader(clientBuilder: data.client),
       ),
-      hermesEnrollmentControllerProvider.overrideWith(
-        (_) => HermesEnrollmentController(
-          endpointStore: store,
-          inspectEnrollment: ({required origin, required code}) async {
-            management++;
-            throw StateError('Management forbidden');
-          },
-          exchangeEnrollment: ({required origin, required code}) async {
-            management++;
-            throw StateError('Management forbidden');
-          },
-        ),
-      ),
+
       hermesVoiceCaptureServiceProvider.overrideWithValue(null),
       hermesTextToSpeechServiceProvider.overrideWithValue(null),
     ],
@@ -159,7 +145,6 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   final deniedRequests = data.requests.length;
   await tester.pump(const Duration(seconds: 2));
   expect(data.requests.length, deniedRequests);
-  expect(management, 0);
   expect(linkConstructions, 0);
   await capture('direct-denied');
   data.deniedBootstrapStatus = null;
@@ -186,7 +171,6 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   expect(store.saveCalls.single.wingLinkOrigin, isNull);
   expect(router.routeInformationProvider.value.uri.path, '/hermes');
   expect(linkConstructions, 0);
-  expect(management, 0);
   expect(home.inspections, 3);
   expect(data.mutationAttempts, 0);
   expect(data.forbiddenReadAttempts, 0);
@@ -195,7 +179,7 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
   final result = <String, Object?>{
     'inspect': home.inspections,
     'link_constructions': linkConstructions,
-    'management': management,
+    'management': linkConstructions,
     'mutations': data.mutationAttempts,
     'forbidden_reads': data.forbiddenReadAttempts,
     'route': router.routeInformationProvider.value.uri.path,

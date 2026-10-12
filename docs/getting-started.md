@@ -35,8 +35,12 @@ In the current development worktree:
 3. Select the configured profile/session and supported model, then send one
    deliberate message. A reply, not saved credentials alone, confirms generation.
 
-The development chooser keeps **Optional setup and pairing** separate from direct
-connection. The [first-run receipt](quality/direct-first-run.md) records passing
+The chooser keeps local setup separate from direct connection. Deprecated pairing
+routes and incoming handoffs discard input and offer direct reconnection guidance;
+they do not parse, inspect or exchange pairing codes. The dormant enrollment
+controller, payload parser and setup/readiness widgets have been removed. Saved
+Agent records and their separate legacy management fields are unchanged.
+The [first-run receipt](quality/direct-first-run.md) records passing
 widget and compiled Chromium checks on Linux, including explicit authentication
 retry without management requests. This pass inspects that evidence; it does not
 rerun those checks. The [native first-run receipt](quality/direct-first-run-native.md)
@@ -66,8 +70,8 @@ server administrator. Then retry explicitly or cancel. A denial does not identif
 the server's sign-in method. The [explanation receipt](quality/remote-auth-explanation.md)
 records widget and Linux GTK fixture checks, not live authentication or Android qualification.
 
-Legacy pairing controls remain in development code pending removal. Do not use
-them as a prerequisite or substitute for a missing Agent capability.
+Legacy service, API and platform packaging code remains pending separate removal.
+It is not a prerequisite or substitute for a missing Agent capability.
 
 ## Repair a saved direct connection
 

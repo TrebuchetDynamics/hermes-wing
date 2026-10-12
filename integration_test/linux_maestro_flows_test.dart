@@ -178,40 +178,26 @@ void main() {
     );
 
     testWidgets(
-      'Maestro pairing invalid expired used and recovery width=$width',
+      'Maestro legacy pairing rejection and direct recovery width=$width',
       (tester) async {
         await launch(tester, width);
-        await control(tester, 'Invalid pairing input');
-        await control(tester, 'Prepare fixture paste');
+
         await tester.scrollUntilVisible(
           find.text('Pairing fixture'),
           250,
           scrollable: find.byType(Scrollable).first,
         );
         await tapText(tester, 'Pairing fixture');
-        await tapText(tester, 'I have a QR code or pairing link');
-        await tapText(tester, 'Paste pairing link');
-        expect(find.text('Pairing link couldn’t be opened'), findsOneWidget);
-        await control(tester, 'Expired pairing input');
-        await control(tester, 'Prepare fixture paste');
-        await tapText(tester, 'Paste pairing link');
-        expect(find.text('This pairing link expired'), findsOneWidget);
-        await tapText(tester, 'Fixture controls');
-        expect(find.text('Enrollment exchanges: 0'), findsOneWidget);
-        await tapText(tester, 'Close controls');
-        await control(tester, 'Used pairing input');
-        await control(tester, 'Prepare fixture paste');
-        await tapText(tester, 'Paste another link');
-        await tapText(tester, 'Connect 1 profile');
-        expect(find.text('Pairing couldn’t be completed'), findsOneWidget);
-        await control(tester, 'Valid pairing input');
-        await control(tester, 'Prepare fixture paste');
-        await tapText(tester, 'Paste another link');
-        await tapText(tester, 'Connect 1 profile');
-        expect(find.text('1 profile paired'), findsOneWidget);
-        await tapText(tester, 'Fixture controls');
-        expect(find.text('Enrollment exchanges: 2'), findsOneWidget);
-        await tapText(tester, 'Close controls');
+        expect(
+          find.text('Pairing links are no longer supported'),
+          findsOneWidget,
+        );
+        expect(find.text('Paste pairing link'), findsNothing);
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-enrollment-manual-connect')),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('hermes-welcome')), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
       },

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wing/core/hermes/client/hermes_api_client.dart';
+
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
@@ -89,9 +89,7 @@ Future<void> main() async {
         hermesGatewayDirectoryProvider.overrideWith((ref) => fixture.directory),
         hermesEndpointStoreProvider.overrideWithValue(fixture.store),
         hermesConnectIntentSourceProvider.overrideWithValue(fixture.intents),
-        hermesEnrollmentControllerProvider.overrideWith(
-          (ref) => fixture.enrollment(),
-        ),
+
         routerProvider.overrideWithValue(fixture.router),
       ],
       child: fixture.buildApp(),
@@ -148,7 +146,7 @@ class FeatureFixture {
   bool revoked = false;
   bool grantRevoked = false;
   int directoryPages = 0;
-  int exchanges = 0;
+
   bool diagnosticsClipboardSafe = false;
   bool? microphonePermissionGranted;
 
@@ -194,7 +192,7 @@ class FeatureFixture {
           '/settings/diagnostics': const DiagnosticsSettingsScreen(),
           '/tasks': const SchedulesScreen(),
           '/hermes': const HermesChatScreen(),
-          '/enroll': const HermesEnrollmentScreen(),
+          '/enroll': const HermesEnrollmentScreen(legacyHandoff: true),
           '/setup/local': const TermuxHermesSetupScreen(),
         }.entries)
           GoRoute(
@@ -219,28 +217,6 @@ class FeatureFixture {
       ],
     );
   }
-
-  HermesEnrollmentController enrollment() => HermesEnrollmentController(
-    endpointStore: store,
-    inspectEnrollment: ({required origin, required code}) async =>
-        HermesEnrollmentPreview(
-          label: 'Fixture enrollment',
-          origin: origin.toString(),
-          scopes: const ['chat:write'],
-          expiresAt: intents.mode == 'expired'
-              ? DateTime.utc(2000)
-              : DateTime.now().add(const Duration(minutes: 5)),
-        ),
-    exchangeEnrollment: ({required origin, required code}) async {
-      exchanges++;
-      if (intents.mode == 'used') throw StateError('fixture code already used');
-      return HermesIssuedOperatorToken(
-        token: _randomFixtureValue(),
-        label: 'Fixture enrollment',
-        credentialId: 'hoc_fixture',
-      );
-    },
-  );
 
   WingLinkClient trustClient() => WingLinkClient(
     origin: Uri.parse('https://management.example'),
@@ -373,7 +349,7 @@ class FeatureFixture {
                   'Approval decisions: ${channel.respondToApprovalCalls.length}',
                 ),
                 Text('Directory pages: $directoryPages'),
-                Text('Enrollment exchanges: $exchanges'),
+
                 Text('Management revoked: $revoked'),
                 Text('Diagnostics clipboard safe: $diagnosticsClipboardSafe'),
                 Text(

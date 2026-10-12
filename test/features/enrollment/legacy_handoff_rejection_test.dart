@@ -77,10 +77,6 @@ void main() {
             forbiddenConstructions++;
             throw StateError('Link forbidden');
           }),
-          hermesEnrollmentControllerProvider.overrideWith((_) {
-            forbiddenConstructions++;
-            throw StateError('Enrollment forbidden');
-          }),
         ],
       );
       addTearDown(container.dispose);
@@ -203,7 +199,6 @@ void main() {
           activeChannel: channel,
         );
 
-        var management = 0;
         var clipboard = 0;
         tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
           SystemChannels.platform,
@@ -229,10 +224,6 @@ void main() {
             localWingLinkHostProvider.overrideWith((_) {
               linkConstructions++;
               throw StateError('Link forbidden');
-            }),
-            hermesEnrollmentControllerProvider.overrideWith((_) {
-              management++;
-              throw StateError('Enrollment forbidden');
             }),
           ],
         );
@@ -338,7 +329,7 @@ void main() {
           isTrue,
         );
         expect(linkConstructions, 0);
-        expect(management, 0);
+
         expect(clipboard, 0);
         expect(source.scans, 0);
         expect(source.imports, 0);

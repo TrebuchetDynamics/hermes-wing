@@ -9,7 +9,6 @@ import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/shared/hermes_api_http.dart';
 
-import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
@@ -41,7 +40,6 @@ void main() {
           addTearDown(tester.view.resetDevicePixelRatio);
           final requests = <String>[];
           var reject = true;
-          var managementRequests = 0;
           final store = FakeHermesEndpointStore();
           HermesApiClient client(config) => HermesApiClient(
             config: config,
@@ -83,36 +81,16 @@ void main() {
             loader: HermesApiGatewaySummaryLoader(clientBuilder: client),
             activeChannel: channel,
           );
-          final enrollment = HermesEnrollmentController(
-            endpointStore: store,
-            inspectEnrollment: ({required origin, required code}) async {
-              managementRequests++;
-              throw StateError('management unavailable');
-            },
-            exchangeEnrollment: ({required origin, required code}) async {
-              managementRequests++;
-              throw StateError('No exchange allowed');
-            },
-          );
           final container = ProviderContainer(
             overrides: [
               hermesChannelProvider.overrideWith((_) => channel),
               hermesEndpointStoreProvider.overrideWithValue(store),
               hermesGatewayDirectoryProvider.overrideWith((_) => directory),
-              hermesEnrollmentControllerProvider.overrideWith(
-                (_) => enrollment,
-              ),
               hermesVoiceCaptureServiceProvider.overrideWithValue(null),
               hermesTextToSpeechServiceProvider.overrideWithValue(null),
             ],
           );
           addTearDown(container.dispose);
-          // This deterministic controller is reused across independent route visits.
-          final enrollmentLease = container.listen(
-            hermesEnrollmentControllerProvider,
-            (_, _) {},
-          );
-          addTearDown(enrollmentLease.close);
           final router = container.read(routerProvider);
           addTearDown(router.dispose);
           await tester.pumpWidget(
@@ -158,7 +136,6 @@ void main() {
           );
           expect(key('hermes-primary-connection-modes'), findsOneWidget);
           expect(requests, isEmpty);
-          expect(managementRequests, 0);
           for (final mode in ['local', 'ssh', 'remote']) {
             await activate(tester, 'hermes-connection-mode-$mode');
             expect(
@@ -197,7 +174,6 @@ void main() {
           expect(requests, contains('GET /v1/capabilities'));
           expect(requests, contains('GET /api/sessions'));
           expect(requests.every((r) => r.startsWith('GET ')), isTrue);
-          expect(managementRequests, 0);
 
           router.go('/enroll');
           await tester.pumpAndSettle();
@@ -215,7 +191,6 @@ void main() {
           await activate(tester, 'hermes-enrollment-manual-connect');
           await activate(tester, 'hermes-enrollment-direct-connect');
           expect(key('hermes-primary-connection-modes'), findsOneWidget);
-          expect(managementRequests, 0);
           expect(store.saveCalls, hasLength(1));
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox.shrink());

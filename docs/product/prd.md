@@ -215,6 +215,12 @@ no upload, editing, deletion, execution or recursive folder download.
 
 ## Connection-path requirements
 
+Status: Accepted
+
+Scope: existing owner-confirmed CONN-1 through CONN-6 requirements below. This
+metadata does not qualify runtime behavior or authorize remote installation,
+personal service changes or live inference.
+
 The latest owner decision deprecates Wing Link entirely, superseding the earlier
 optional-management target. Existing code and pairing state remain until removal.
 New setup/connection must use Agent directly or bounded native operations. The

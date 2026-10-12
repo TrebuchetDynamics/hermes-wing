@@ -4554,6 +4554,11 @@
         },
         {
           "kind": "inspection",
+          "ref": "README.md#connect-your-assistant [review-driven API prerequisite and honest preview; official API guide/source corroboration; independent documentary approval; stranger/live workflow still unverified]",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
           "ref": "README.md#quickstart [value-first audit and editorial review; hosted and daa5b6bf cached-toolchain Chromium preview; no fresh-machine or authenticated generation qualification; stale Termux docs test retained in TODO]",
           "result": "pass"
         },

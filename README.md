@@ -3,7 +3,9 @@
 Chat with your Hermes assistant, follow its tool activity, and approve or stop its
 work—from your phone, browser, or desktop.
 
-For Hermes users who want a visual app and are comfortable trying an early alpha.
+Wing brings the Hermes Desktop experience toward Android, web, and desktop with
+Flutter-native clients. Desktop parity is a goal, not a guarantee. For Hermes users
+comfortable trying an early alpha—not a hosted assistant service.
 Wing connects to your own **Hermes Agent**; it does not include a hosted assistant,
 provider account, or model credits.
 
@@ -12,7 +14,7 @@ provider account, or model credits.
 > authenticated Agent and configured provider. Native clients require a source build;
 > public signed distribution and automatic updates remain unqualified.
 
-**[Try the web interface](https://trebuchetdynamics.github.io/hermes-wing/app/)** ·
+**[Preview the connection screen](https://trebuchetdynamics.github.io/hermes-wing/app/)** ·
 **[Set up your first chat](docs/getting-started.md)**
 
 <p align="center">
@@ -25,8 +27,9 @@ provider account, or model credits.
 *Actual app screens with sample conversations and simulated responses—not live-provider test evidence.*
 
 <a id="what-can-i-do-with-it"></a>
+<a id="features"></a>
 
-## Features
+## Implemented features
 
 - **Chat and follow work.** Read streaming replies and see tool activity.
 - **Approve or stop actions.** Review permission requests when Agent sends them,
@@ -35,6 +38,10 @@ provider account, or model credits.
   conversations without treating another profile as the same assistant.
 - **Connect directly.** Use a reachable Agent endpoint; native SSH provides a
   separate connection option. Browser SSH is unsupported.
+
+These controls have scoped fixture coverage; the complete authenticated
+Chat → tool activity → approval/Stop → restoration journey is not yet qualified
+together. See [workflow evidence and limits](docs/quality/live-desktop-daily-workflow.md).
 
 <a id="new-to-hermes-start-here"></a>
 
@@ -53,7 +60,9 @@ permissions; a visual client does not make those actions harmless.
 
 ## Quickstart
 
-### Preview without an Agent
+<a id="preview-without-an-agent"></a>
+
+### Preview the connection screen
 
 1. [Open the web alpha](https://trebuchetdynamics.github.io/hermes-wing/app/).
 2. You should see **Welcome to Hermes Wing**. Choose **Connect to Remote Hermes**
@@ -66,11 +75,16 @@ interface, not a working assistant. The hosted preview can lag repository `main`
 
 Before connecting, you need:
 
-- A running, reachable Hermes Agent with a configured provider/model and its
-  approved Agent access credential. Use [official Agent setup](https://hermes-agent.nousresearch.com/docs/).
-- A trusted connection. Browser remote access requires trusted HTTPS and permitted
-  CORS. A VPN is optional, not authentication. Never disable transport checks or
-  expose Agent publicly just to make setup easier.
+- **An enabled, authenticated Hermes Agent HTTP API—not just a working CLI.**
+  Follow the [Agent API Server guide](https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server):
+  enable the listener, configure a strong Agent API credential, and check reachability
+  from Wing. Local defaults use `127.0.0.1:8642`; loopback means the machine running
+  Agent, not your phone. Wing checks advertised capabilities before enabling features.
+- **A trusted route.** For native phone access, SSH forwarding can keep the Agent
+  listener on its host loopback; verify SSH host trust and supply the separate Agent
+  credential. Direct remote access needs an administrator-approved secure endpoint.
+  Browsers additionally need trusted HTTPS and an explicit allowed Wing CORS origin.
+  Do not open a public port, disable trust checks, or treat a VPN as authentication.
 - Provider access you are willing to use. **Providers may charge and process your
   conversation data.** Running Agent yourself does not make every AI request local.
 
@@ -124,8 +138,8 @@ for native Local/SSH setup, saved-connection repair, and authentication limits.
 
 ## Build from source
 
-For the browser client, install **Git and Flutter 3.44.2** and have a browser
-available. Run:
+**Web is the recommended source-built alpha evaluation path**, not proof of native
+Android readiness. Install **Git and Flutter 3.44.2** and have a browser available. Run:
 
 ```bash
 git clone https://github.com/TrebuchetDynamics/hermes-wing.git
@@ -150,6 +164,12 @@ Contributors also use Node.js 22 for browser E2E tooling; see
 <a id="if-you-get-stuck"></a>
 
 ## Help and documentation
+
+**Credentials and trust:** native credentials use platform secure storage; support
+varies by platform. Removing a saved connection is not server-side token revocation.
+If a device or token is compromised, rotate/revoke access through Agent-owned
+controls. See the [threat model](docs/security/threat-model.md) and
+[security policy](SECURITY.md); no independent security audit is claimed.
 
 - **Can't connect or get a reply?** Start with [troubleshooting](docs/getting-started.md#need-help).
 - **Configuration:** use [Agent documentation](https://hermes-agent.nousresearch.com/docs/)

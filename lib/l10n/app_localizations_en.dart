@@ -2363,7 +2363,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollLinuxHelp =>
-      'Review local setup on this Linux computer. Installation and readiness require separate checks.';
+      'Inspect Hermes-home directory metadata and connect directly to Agent. Prepare and start Agent separately; discovery does not prove readiness.';
 
   @override
   String enrollStepProgress(int step, int total) {
@@ -4500,133 +4500,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get schedulesLoading => 'Loading schedules';
 
   @override
-  String get localSetupTitle => 'Set up Hermes on this Linux computer';
-
-  @override
-  String get localSetupBody =>
-      'Install or reuse Hermes Agent on this computer, then pair Hermes Wing to it.';
-
-  @override
-  String get localSetupDetecting => 'Checking this computer for Hermes Agent…';
-
-  @override
-  String get localSetupMissingTitle => 'Hermes Agent is not installed';
-
-  @override
-  String get localSetupMissingBody =>
-      'Install the verified Hermes Agent release for your user account, secure the local API, and start the gateway.';
-
-  @override
-  String get localSetupReadyTitle => 'Hermes Agent is ready';
-
-  @override
-  String get localSetupReadyBody =>
-      'Adopt this existing installation without replacing its profiles, providers, or configuration.';
-
-  @override
-  String get localSetupUnhealthyTitle => 'Hermes Agent needs repair';
-
-  @override
-  String get localSetupUnhealthyBody =>
-      'Hermes was found but did not pass its version check. Setup can reinstall the verified runtime without intentionally replacing Hermes-owned configuration.';
-
-  @override
-  String get localSetupAction => 'Set up Hermes on this computer';
-
-  @override
-  String get localSetupInstallAction => 'Install Hermes Agent here';
-
-  @override
-  String get localSetupAdoptAction => 'Adopt this installation';
-
-  @override
-  String get localSetupRepairAction => 'Repair Hermes Agent';
-
-  @override
-  String get localSetupInstalling => 'Preparing setup…';
-
-  @override
-  String get localSetupStageDownload =>
-      'Downloading the verified Hermes installer';
-
-  @override
-  String get localSetupStageInstall => 'Installing Hermes Agent';
-
-  @override
-  String get localSetupStageVerify => 'Checking the installed Hermes Agent';
-
-  @override
-  String get localSetupStagePreflight => 'Checking the local gateway';
-
-  @override
-  String get localSetupStageAuthentication => 'Securing gateway access';
-
-  @override
-  String get localSetupStageEndpoint => 'Configuring the local gateway';
-
-  @override
-  String get localSetupStageGateway => 'Starting the Hermes gateway';
-
-  @override
-  String get localSetupStageHealth => 'Waiting for the gateway to respond';
-
-  @override
-  String get localSetupProgressHint =>
-      'Installation can take several minutes. You can stop setup below; changes already made are kept.';
-
-  @override
-  String get localSetupStopAction => 'Stop setup';
-
-  @override
-  String get localSetupStopping => 'Stopping setup…';
-
-  @override
-  String get localSetupStoppedTitle => 'Setup stopped';
-
-  @override
-  String get localSetupStoppedBody =>
-      'Changes already made were kept. Check the installation before trying again.';
-
-  @override
-  String get localSetupPortInUse =>
-      'The local Hermes API port is already in use by a service that Wing could not verify as this gateway. Close the conflicting application, then check again. You can also return to connection options to pair an existing gateway.';
-
-  @override
-  String get localSetupTimedOut =>
-      'Setup took too long and was stopped. Check the installation before trying again; some changes may already have been applied.';
-
-  @override
-  String get localSetupConnectionOptions => 'Connection options';
-
-  @override
-  String get localSetupCompleteTitle => 'Hermes gateway is ready';
-
-  @override
-  String get localSetupCompleteBody =>
-      'Local installation and gateway startup are verified. Continue to pairing before managing Hermes capabilities.';
-
-  @override
-  String get localSetupContinueAction => 'Continue to pairing';
-
-  @override
-  String get localSetupRetryAction => 'Check again';
-
-  @override
-  String get localSetupFailedTitle => 'Setup needs attention';
-
-  @override
-  String get localSetupFailedBody =>
-      'Setup did not finish. Some changes may already have been applied. Check again to inspect the installation, or return to connection options.';
-
-  @override
-  String get localSetupConsentTitle => 'Allow local Hermes setup?';
-
-  @override
-  String get localSetupConsentBody =>
-      'Wing Link will run a verified Hermes installer when needed, create or update user-level service files, secure local API access, and start the Hermes gateway. It will not configure profiles or providers.';
-
-  @override
-  String get localSetupConsentAction => 'Run setup';
+  String get localSetupAction => 'Use this computer (Local)';
 
   @override
   String get termuxCopyFailedMessage =>

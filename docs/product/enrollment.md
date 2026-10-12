@@ -2,7 +2,7 @@
 
 `/enroll` lives outside the authenticated shell. A user can arrive without an
 Agent endpoint, through an explicit handoff, or while adding another host.
-`/enroll?step=pair` opens the pairing step after local setup. The query contains
+`/enroll?step=pair` opens the retained explicit legacy pairing step, not a Local setup return. The query contains
 only navigation state, never a handoff, credential, host address, or pairing code.
 
 ## Desktop connection-path alignment
@@ -41,27 +41,29 @@ exchange management credentials. Existing saved records and selected
 host/profile/session ownership remain unchanged; restoration never replays sends.
 
 The default chooser does not construct or invoke a Wing Link management client.
-The retained Local setup guide is not retired by this slice. Explicit
-`/enroll?step=pair`, Android intent/share ingress, Local setup completion and the
-Android Local form's QR action remain legacy access paths. Their removal requires
+Linux and Termux Local setup now reuse the direct Agent form, without installation
+or pairing completion. Explicit
+`/enroll?step=pair` and Android intent/share ingress remain legacy access paths. Their removal requires
 separate work; this is not whole-product Wing Link removal.
 
-### This phone
+### Local preparation and authentication
 
-The Termux guide has three steps: prepare Termux, run the verified setup command,
-and return to Wing to pair. It keeps the existing release/source-pinned bootstrap
-metadata validation, explicit clipboard action, and failure-closed copy control.
+Termux uses the manual preparation guide and direct Agent authentication delivered
+by the preceding retirement slice. Wing cannot inspect another Android app's files
+and does not request Termux command access.
 
-An existing healthy Agent is reused through that same bootstrap. Wing cannot
-inspect another Android app's files and does not request Termux command access.
-“Termux is showing the pairing link” acknowledges what the user sees; it does not
-claim that Wing has verified an installation. The last step offers pairing and a
-way back to the setup command if the service stopped or the handoff expired.
+Linux `/setup/local` now composes the same existing Local form. It checks default
+Hermes-home directory metadata and offers deliberate alternative folder selection.
+The selection is ephemeral: no Agent files are read, no Project is selected, and
+the runtime is not bound to the discovered home. Prepare/start Agent separately,
+then enter its API token in the masked form. Discovery is not installation,
+authentication or model readiness. No installer, service starter, management
+request or pairing return is constructed, including after Agent denial.
 
-Native Linux retains actual `wing-link inspect --json` detection and locally
-approved `setup --json`, now with progress from the existing bounded operation.
-Its completion action enters pairing directly. No new installer protocol or
-remote execution surface was introduced.
+AppBar Back and platform cancellation return to the pushed caller; standalone
+Back returns to welcome. Neither changes saved endpoints, credentials or active
+profile/session ownership. An explicit direct-auth retry remains in the existing
+connection owner and never replays an Agent mutation.
 
 The computer setup widget and its localization remain legacy source, but the
 default enrollment screen neither imports nor constructs it. No stored data

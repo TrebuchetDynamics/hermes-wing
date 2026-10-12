@@ -42,7 +42,7 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 | `/profiles`    | Profiles              | Profile inventory and lifecycle, Agent-backed provider/model autocomplete through Wing Link during setup, plus approved child-folder browsing through device-bound opaque handles (`/agents` redirects for compatibility). Project creation remains unavailable until Hermes Agent advertises a suitable machine-readable operation; Project-aware Chat is separately gated. | partial     |
 | `/soul`        | More              | Standalone profile persona editor, available only when the selected Agent advertises exact scoped SOUL read/write operations.                                                                                                                                                                  | partial     |
 | `/enroll`      | (deep link)       | Desktop-guided welcome with Get Started and SSH/Remote actions before optional phone/computer setup and QR/link pairing outside the shell; pairing retains transaction recovery, endpoint-bound readiness checks and manual Agent fallback. Bounded Linux widget/Chromium and GTK fixture first-run checks pass; main delivery, Android and live authentication remain open.                                                                                                                                                                                                                                               | implemented |
-| `/setup/local` | enrollment        | Linux retains its legacy service flow pending retirement. Android/Termux reuses the Local manual Agent guide and direct authenticated form; no bootstrap, pairing return or automatic readiness claim. Physical Android installation and live authentication remain unqualified. | partial |
+| `/setup/local` | enrollment        | Linux reuses Local metadata-only Hermes-home discovery, deliberate folder selection and direct Agent authentication. Android/Termux reuses the Local manual Agent guide and direct authenticated form. Neither installs/starts a service, returns to pairing or claims automatic readiness. Native installation and live authentication remain unqualified. | partial |
 | `/providers`   | More              | Capability-gated provider inventory, write-only API-key management, credential validation, runtime-model inventory, and model assignment through advertised Agent operations. OAuth providers are labeled as host sign-in rather than opening an API-key form; remote OAuth and multi-credential flows remain contract-gated.                                                            | partial     |
 | `/tools`       | More              | Gateway-scoped searchable installed-skill metadata and resolved toolsets with exact-scoped refresh; mutation, MCP administration, and discovery remain contract-gated.                                                                                                                             | partial     |
 | `/memory`      | More              | Memory entries, profile, capacity, and providers.                                                                                                                                                                                                                                                  | planned     |
@@ -216,11 +216,14 @@ controls. After interruption, **Resume hands-free** requires an explicit tap and
 waits for teardown; **Continue in text** dismisses the notice. See the
 [profile and voice UI regression report](../quality/profile-voice-ui-2026-09-08.md).
 
-Linux setup shows the reported stage and offers **Stop setup** while running.
-An unverified occupied gateway port stops setup before credential/endpoint
-configuration or gateway restart. **Check again** performs inspection only; it
-does not retry installation automatically. See the
-[Linux setup regression report](../quality/linux-setup-port-conflict-2026-09-08.md).
+Linux Local setup now opens the existing direct Agent form. Hermes-home discovery
+checks directory metadata only; the native folder chooser does not save the path,
+read Agent files, select a Project or bind the running Agent to that home.
+Prepare and start Agent outside Wing, then authenticate explicitly. Back/cancel
+does not modify saved connections; denial stays in the direct flow with no service
+or pairing fallback. The earlier
+[Linux setup regression report](../quality/linux-setup-port-conflict-2026-09-08.md)
+describes the retired service consumer, not current setup behavior.
 
 Oversized single-line plain paragraphs use a lazily rendered, grapheme-safe
 reader. Selection operates on mounted chunks; use its **Copy as text** action

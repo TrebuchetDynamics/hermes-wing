@@ -235,6 +235,21 @@ void main() {
       );
       expect(hostCalls, isEmpty);
       expect(_key('hermes-primary-connection-modes'), findsOneWidget);
+      unawaited(router.push<void>(AppRoutes.localSetup));
+      await tester.pumpAndSettle();
+      expect(_key('platform-local-home-status'), findsOneWidget);
+      expect(hostCalls, isEmpty);
+      expect(channel.state, same(owner));
+      expect(requests, before);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TextField>(_key('hermes-base-url-field'))
+            .controller!
+            .text,
+        'https://other.example.invalid',
+      );
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.text('Canonical owner history'), findsOneWidget);

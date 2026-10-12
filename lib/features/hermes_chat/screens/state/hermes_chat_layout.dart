@@ -544,18 +544,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             const SizedBox(height: 16),
                             FilledButton.tonalIcon(
                               key: const ValueKey('hermes-open-local-setup'),
-                              onPressed: () async {
-                                final pair = await context.push<bool>(
-                                  AppRoutes.localSetup,
-                                );
-                                if (context.mounted && pair == true) {
-                                  unawaited(
-                                    context.push(
-                                      '${AppRoutes.enroll}?step=pair',
-                                    ),
-                                  );
-                                }
-                              },
+                              onPressed: () =>
+                                  context.push<void>(AppRoutes.localSetup),
                               icon: const Icon(Icons.computer_outlined),
                               label: Text(strings.localSetupAction),
                             ),

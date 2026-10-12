@@ -21,7 +21,9 @@ void main() {
             tester,
             capture: (_) async {},
           );
-          expect(receipt['inspect'], 12);
+          expect(receipt['inspect'], 3);
+          expect(receipt['link_constructions'], 0);
+          expect(receipt['management'], 0);
         },
         variant: TargetPlatformVariant.only(TargetPlatform.linux),
       );

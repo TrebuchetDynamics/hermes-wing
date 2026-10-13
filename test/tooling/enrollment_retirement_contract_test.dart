@@ -3,6 +3,37 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'product and fixtures cannot restore dormant gateway enrollment seams',
+    () {
+      for (final root in ['lib', 'test', 'integration_test']) {
+        final sources = Directory(root)
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((file) => file.path.endsWith('.dart'))
+            .where(
+              (file) => !file.path.endsWith(
+                'enrollment_retirement_contract_test.dart',
+              ),
+            );
+        for (final file in sources) {
+          final source = file.readAsStringSync();
+          for (final forbidden in [
+            'clearWingLinkEnrollment',
+            'PendingWingLinkCredentialRecovery',
+            'pendingCredentialRecovery',
+          ]) {
+            expect(
+              source.contains(forbidden),
+              isFalse,
+              reason: '${file.path}: $forbidden',
+            );
+          }
+        }
+      }
+    },
+  );
+
   test('product and fixtures cannot restore the retired directory browser', () {
     final sources = [
       ...Directory('lib')

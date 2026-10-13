@@ -182,7 +182,6 @@ void main() {
       wingLinkHostFingerprint: _testFingerprint,
       wingLinkDeviceId: 'fixture-device',
     );
-    var recoveries = 0;
     final store = FakeHermesEndpointStore(profiles: const [config]);
     final directory = HermesGatewayDirectory(
       store: store,
@@ -191,17 +190,11 @@ void main() {
         'alpha': gatewaySummary(['default']),
       }),
       activeChannel: channel,
-      pendingCredentialRecovery: (_) async {
-        recoveries++;
-        return false;
-      },
     );
     await directory.refresh();
-    expect(recoveries, 0);
     await directory.activateGateway('alpha');
     await tester.pumpWidget(_testApp(channel, directory: directory));
     await tester.pumpAndSettle();
-    expect(recoveries, 0);
     expect(find.byKey(const ValueKey('gateway-trust-card')), findsNothing);
     expect(find.text('Revoke this device'), findsNothing);
     expect(find.textContaining('wing-link approvals'), findsNothing);
@@ -231,7 +224,6 @@ void main() {
     expect(channel.connectCalls.last.baseUrl, config.baseUrl);
     expect(channel.connectCalls.last.apiKey, config.apiKey);
     expect(directory.activeContactId?.gatewayId, 'alpha');
-    expect(recoveries, 0);
     final retained = (await store.loadProfiles()).single;
     expect(retained.baseUrl, config.baseUrl);
     expect(retained.apiKey, config.apiKey);

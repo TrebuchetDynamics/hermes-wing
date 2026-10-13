@@ -62,9 +62,6 @@ abstract interface class GatewaySummaryLoader {
   Future<GatewaySummary> load(HermesEndpointConfig config);
 }
 
-typedef PendingWingLinkCredentialRecovery =
-    Future<bool> Function(HermesEndpointConfig config);
-
 class HermesApiGatewaySummaryLoader implements GatewaySummaryLoader {
   const HermesApiGatewaySummaryLoader({this.clientBuilder});
 
@@ -128,8 +125,6 @@ class HermesGatewayDirectory extends ChangeNotifier
     required HermesChannel activeChannel,
     DateTime Function()? now,
     GatewayPeriodicTimerFactory? periodicTimer,
-    // Dormant test seam: saved-directory reads never recover Link credentials.
-    PendingWingLinkCredentialRecovery? pendingCredentialRecovery,
     this.maxConcurrent = 3,
   }) : assert(maxConcurrent > 0),
        _store = store,
@@ -790,35 +785,6 @@ class HermesGatewayDirectory extends ChangeNotifier
     notifyListeners();
     await _refreshGateway(replacement, _refreshGeneration);
     await _saveContacts();
-  }
-
-  Future<void> clearWingLinkEnrollment(String gatewayId) async {
-    final config = _configsById[gatewayId];
-    if (config == null) throw StateError('Gateway is no longer saved.');
-    bool sameEnrollment(HermesEndpointConfig candidate) =>
-        candidate.id == gatewayId ||
-        (config.wingLinkDeviceId?.isNotEmpty == true &&
-            candidate.wingLinkDeviceId == config.wingLinkDeviceId &&
-            candidate.wingLinkOrigin == config.wingLinkOrigin &&
-            candidate.wingLinkHostFingerprint ==
-                config.wingLinkHostFingerprint);
-    final configs = [
-      for (final entry in _configsById.entries)
-        if (sameEnrollment(entry.value))
-          HermesEndpointConfig(
-            id: entry.value.id,
-            label: entry.value.label,
-            baseUrl: entry.value.baseUrl,
-            apiKey: entry.value.apiKey,
-          )
-        else
-          entry.value,
-    ];
-    await _store.saveAll(configs);
-    for (final replacement in configs) {
-      _configsById[replacement.id!] = replacement;
-    }
-    notifyListeners();
   }
 
   Future<void> reconnectGateway(String gatewayId) async {

@@ -235,7 +235,6 @@ void main() {
   test(
     'refresh never recovers a stored pending Wing Link credential',
     () async {
-      var acknowledged = false;
       const origin = 'http://127.0.0.1:8654';
       final config = HermesEndpointConfig(
         id: 'pending',
@@ -258,19 +257,15 @@ void main() {
           'pending': gatewaySummary(['default']),
         }),
         activeChannel: channel,
-        pendingCredentialRecovery: (candidate) async {
-          expect(candidate.wingLinkToken, 'wlc-token');
-          expect(candidate.wingLinkPendingCredentialId, 'cred_pending');
-          acknowledged = true;
-          return true;
-        },
       );
       addTearDown(directory.dispose);
 
       await directory.refresh();
 
-      expect(acknowledged, isFalse);
       expect(store.saveCalls, isEmpty);
+      expect(store.saveAllCalls, isEmpty);
+      expect(store.deleteProfileCalls, isEmpty);
+      expect(store.clearCalls, 0);
       expect((await store.loadProfiles()).single, same(config));
       expect(directory.configForGateway('pending'), same(config));
     },
@@ -302,7 +297,6 @@ void main() {
         ),
       ];
       final store = FakeHermesEndpointStore(profiles: configs);
-      var recoveryCalls = 0;
       final channel = FakeHermesChannel.disconnected();
       addTearDown(channel.dispose);
       const selected = GatewayContactId(gatewayId: 'sidon', profileId: 'sidon');
@@ -312,7 +306,6 @@ void main() {
           sessionId: 'sess_1',
         );
       final timers = <_FakeTimer>[];
-      final blockedRecovery = Completer<bool>();
       final loader = FakeGatewaySummaryLoader({
         'sidon': gatewaySummary(['sidon']),
         'link': gatewaySummary(['link']),
@@ -326,10 +319,6 @@ void main() {
           final timer = _FakeTimer(callback);
           timers.add(timer);
           return timer;
-        },
-        pendingCredentialRecovery: (_) {
-          recoveryCalls++;
-          return blockedRecovery.future;
         },
       );
       addTearDown(directory.dispose);
@@ -348,14 +337,14 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       await directory.reconnectGateway('link');
 
-      expect(recoveryCalls, 0);
-      expect(blockedRecovery.isCompleted, isFalse);
       expect(await store.loadProfiles(), orderedEquals(configs));
       for (final config in configs) {
         expect(directory.configForGateway(config.id!), same(config));
       }
       expect(store.saveCalls, isEmpty);
       expect(store.saveAllCalls, isEmpty);
+      expect(store.deleteProfileCalls, isEmpty);
+      expect(store.clearCalls, 0);
       expect(directory.hosts, hasLength(1));
       expect(
         directory.contacts.map((c) => c.id),
@@ -1162,7 +1151,7 @@ void main() {
   });
 
   test(
-    'revoking a host device clears shared management enrollment only',
+    'saved host reads retain shared enrollment and direct Agent ownership',
     () async {
       final channel = FakeHermesChannel.disconnected();
       final configs = [
@@ -1177,8 +1166,10 @@ void main() {
             wingLinkHostFingerprint: 'fixture-pin',
           ),
       ];
-      final directory = directoryFor(
-        configs: configs,
+      final store = FakeHermesEndpointStore(profiles: configs);
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: FakeGatewayContactCache(),
         loader: FakeGatewaySummaryLoader({
           for (final config in configs) config.id!: gatewaySummary(['default']),
         }),
@@ -1188,17 +1179,21 @@ void main() {
       addTearDown(channel.dispose);
       await directory.refresh();
       await directory.activateGateway('coder');
-      await directory.clearWingLinkEnrollment('default');
-      for (final id in ['default', 'coder']) {
-        expect(directory.configForGateway(id)!.wingLinkToken, isNull);
-        expect(directory.configForGateway(id)!.apiKey, 'agent-fixture');
+      directory.selectManagementGateway('default');
+      await directory.reconnectGateway('default');
+      await directory.refresh();
+      for (final config in configs) {
+        expect(directory.configForGateway(config.id!), same(config));
       }
-      expect(
-        directory.configForGateway('other')!.wingLinkToken,
-        'link-fixture',
-      );
+      expect(await store.loadProfiles(), orderedEquals(configs));
+      expect(store.saveCalls, isEmpty);
+      expect(store.saveAllCalls, isEmpty);
+      expect(store.deleteProfileCalls, isEmpty);
+      expect(store.clearCalls, 0);
       expect(directory.activeContactId?.gatewayId, 'coder');
       expect(channel.disconnectCalls, 0);
+      expect(channel.connectCalls.single.baseUrl, configs[1].baseUrl);
+      expect(channel.connectCalls.single.apiKey, configs[1].apiKey);
     },
   );
 

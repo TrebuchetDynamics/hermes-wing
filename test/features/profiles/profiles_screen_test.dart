@@ -406,39 +406,36 @@ void main() {
           ),
         );
         addTearDown(channel.dispose);
-        final legacyRecoveries = <String?>[];
+        final store = FakeHermesEndpointStore(
+          profiles: const [
+            HermesEndpointConfig(
+              id: 'agent',
+              baseUrl: 'https://agent.example',
+              apiKey: 'fixture-agent',
+              wingLinkOrigin: 'https://link.example',
+              wingLinkToken: 'fixture-legacy',
+              wingLinkPendingCredentialId: 'fixture-pending',
+            ),
+            HermesEndpointConfig(
+              id: 'other-agent',
+              baseUrl: 'https://other-agent.example',
+              wingLinkOrigin: 'https://other-link.example',
+              wingLinkToken: 'fixture-other-legacy',
+              wingLinkPendingCredentialId: 'fixture-other-pending',
+            ),
+          ],
+        );
+        final savedConfigs = await store.loadProfiles();
         final directory = HermesGatewayDirectory(
-          store: FakeHermesEndpointStore(
-            profiles: const [
-              HermesEndpointConfig(
-                id: 'agent',
-                baseUrl: 'https://agent.example',
-                apiKey: 'fixture-agent',
-                wingLinkOrigin: 'https://link.example',
-                wingLinkToken: 'fixture-legacy',
-                wingLinkPendingCredentialId: 'fixture-pending',
-              ),
-              HermesEndpointConfig(
-                id: 'other-agent',
-                baseUrl: 'https://other-agent.example',
-                wingLinkOrigin: 'https://other-link.example',
-                wingLinkToken: 'fixture-other-legacy',
-                wingLinkPendingCredentialId: 'fixture-other-pending',
-              ),
-            ],
-          ),
+          store: store,
           cache: FakeGatewayContactCache(),
           loader: FakeGatewaySummaryLoader({
             'agent': gatewaySummary(['default', 'coder']),
           }),
           activeChannel: channel,
-          pendingCredentialRecovery: (config) async {
-            legacyRecoveries.add(config.id);
-            return false;
-          },
         );
         await directory.refresh();
-        expect(legacyRecoveries, isEmpty);
+        expect(await store.loadProfiles(), orderedEquals(savedConfigs));
         await directory.activateGateway('agent');
         expect(
           channel.state.isConnected,
@@ -447,7 +444,6 @@ void main() {
               '${channel.state.errorMessage}; ${requests.map((r) => r.uri.path).toList()}',
         );
         await channel.selectProfile('default');
-        legacyRecoveries.clear();
 
         final router = GoRouter(
           initialLocation: AppRoutes.agents,
@@ -497,11 +493,7 @@ void main() {
         await tester.tap(find.text('Cancel').last);
         await tester.pumpAndSettle();
         expect(requests.where((r) => r.method != 'GET'), isEmpty);
-        expect(
-          legacyRecoveries,
-          isEmpty,
-          reason: 'Cancel must not recover Link',
-        );
+        expect(await store.loadProfiles(), orderedEquals(savedConfigs));
         await tester.tap(find.text('New Profile'));
         await tester.pumpAndSettle();
         await tester.enterText(
@@ -511,11 +503,7 @@ void main() {
         await tester.tap(find.widgetWithText(FilledButton, 'Create'));
         await tester.pumpAndSettle();
         expect(find.byType(ProfileEditorSheet), findsNothing);
-        expect(
-          legacyRecoveries,
-          isEmpty,
-          reason: 'Create must not recover Link',
-        );
+        expect(await store.loadProfiles(), orderedEquals(savedConfigs));
         expect(find.text('Writer'), findsOneWidget);
         Finder writerCard() => find.ancestor(
           of: find.text(profiles['writer']!['name']! as String),
@@ -534,7 +522,7 @@ void main() {
         );
         await tester.tap(find.widgetWithText(FilledButton, 'Save'));
         await tester.pumpAndSettle();
-        expect(legacyRecoveries, isEmpty, reason: 'Edit must not recover Link');
+        expect(await store.loadProfiles(), orderedEquals(savedConfigs));
         expect(find.text('Renamed'), findsOneWidget);
         final chat = find.descendant(
           of: writerCard(),
@@ -598,11 +586,7 @@ void main() {
             isEmpty,
           );
         }
-        expect(
-          legacyRecoveries,
-          isEmpty,
-          reason: 'Model selection must not recover Link',
-        );
+        expect(await store.loadProfiles(), orderedEquals(savedConfigs));
         router.pop();
         await tester.pumpAndSettle();
         final remove = find.descendant(
@@ -621,11 +605,7 @@ void main() {
         await tester.tap(find.widgetWithText(FilledButton, 'Delete profile'));
         await tester.pumpAndSettle();
         expect(find.byType(ProfileEditorSheet), findsNothing);
-        expect(
-          legacyRecoveries,
-          isEmpty,
-          reason: 'Delete must not recover Link',
-        );
+        expect(await store.loadProfiles(), orderedEquals(savedConfigs));
         expect(channel.state.profiles.any((p) => p.id == 'writer'), isFalse);
         final writes = requests
             .where(
@@ -661,7 +641,14 @@ void main() {
           isTrue,
         );
 
-        expect(legacyRecoveries, isEmpty);
+        expect(await store.loadProfiles(), orderedEquals(savedConfigs));
+        for (final config in savedConfigs) {
+          expect(directory.configForGateway(config.id!), same(config));
+        }
+        expect(store.saveCalls, isEmpty);
+        expect(store.saveAllCalls, isEmpty);
+        expect(store.deleteProfileCalls, isEmpty);
+        expect(store.clearCalls, 0);
         expect(
           directory.configForGateway('agent')!.wingLinkToken,
           'fixture-legacy',

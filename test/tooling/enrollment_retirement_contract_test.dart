@@ -3,6 +3,76 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('obsolete Android pairing-success harness cannot return', () {
+    expect(
+      File('.maestro/android-pairing-same-device.yaml').existsSync(),
+      isFalse,
+    );
+  });
+
+  test(
+    'Android production fixture uses direct enrollment and retains recovery',
+    () {
+      final source = File(
+        'scripts/maestro/android_fixture_regression.yaml',
+      ).readAsStringSync();
+      for (final forbidden in [
+        'Add your first Hermes profile',
+        'Add gateway or profile',
+        'QR code',
+        'pairing link',
+        'Connect one profile manually',
+        'This device',
+
+        'PAIRING_',
+        'wing-link',
+      ]) {
+        expect(source, isNot(contains(forbidden)), reason: forbidden);
+      }
+      var previous = -1;
+      for (final step in [
+        "visible: 'Welcome to Hermes Wing'",
+        "- tapOn: 'Connect to Remote Hermes'",
+        "- assertVisible: 'VPN / NetBird / Tailscale'",
+        '- back',
+        "- assertVisible: 'Welcome to Hermes Wing'",
+        "- tapOn: 'Connect to Remote Hermes'",
+        "- tapOn: 'VPN / NetBird / Tailscale'",
+        "text: '(?s).*Hermes Agent URL.*'",
+        r"- inputText: '${WING_QA_FIXTURE_ORIGIN}'",
+        "- inputText: 'Android fixture'",
+        "text: 'Add Hermes'",
+        "visible: '(?s).*Endpoint contact.*'",
+        "- tapOn: '(?s).*Android fixture.*'",
+        "visible: '(?s).*Message Hermes.*'",
+        "- inputText: 'ANDROID NATIVE FIRST'",
+        "- tapOn: 'Approve once'",
+        "visible: '(?s).*Hermes echo: ANDROID NATIVE FIRST.*'",
+        "- inputText: 'ANDROID NATIVE SECOND'",
+        "- tapOn: 'Approve once'",
+        "visible: '(?s).*Hermes echo: ANDROID NATIVE SECOND.*'",
+        '- stopApp',
+        '- launchApp',
+        "visible: '(?s).*Hermes echo: ANDROID NATIVE SECOND.*'",
+        '- setOrientation: LANDSCAPE_LEFT',
+        "- assertVisible: '(?s).*Hermes echo: ANDROID NATIVE SECOND.*'",
+        '- setOrientation: PORTRAIT',
+        "- inputText: 'ANDROID NATIVE STOP'",
+        "visible: 'Approve once'",
+        "- tapOn: 'Stop'",
+        "notVisible: 'Stop'",
+        "- inputText: 'ANDROID NATIVE RECOVERED'",
+        "- tapOn: 'Approve once'",
+        "visible: '(?s).*Hermes echo: ANDROID NATIVE RECOVERED.*'",
+        "- assertNotVisible: '(?s).*HttpException.*'",
+      ]) {
+        final next = source.indexOf(step, previous + 1);
+        expect(next, greaterThan(previous), reason: step);
+        previous = next;
+      }
+    },
+  );
+
   test('all-feature Maestro fixture cannot restore management or pairing', () {
     final source = File(
       'integration_test/hermes_features_maestro_main.dart',

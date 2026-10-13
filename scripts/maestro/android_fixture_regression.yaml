@@ -1,7 +1,9 @@
 # Production Android UI and native IME over USB to the deterministic HTTP/SSE
 # fixture. Start serve_web.mjs with HERMES_E2E_PORT=18768 and adb reverse that
 # port. Install lib/main.dart with WING_ISOLATED_DEVICE_TEST=1 first.
-# This qualifies device interaction and transport, not a live Agent/provider.
+# Device execution is required to qualify interaction and transport; source
+# checks and APK compilation do not qualify a device or live Agent/provider.
+# WING_QA_FIXTURE_ORIGIN must be the non-secret loopback USB-reversed fixture URL.
 appId: com.trebuchetdynamics.hermes.wing.qa
 name: Android native fixture regression
 ---
@@ -10,16 +12,20 @@ name: Android native fixture regression
     stopApp: true
 - setOrientation: PORTRAIT
 - extendedWaitUntil:
-    visible: '(?s).*Add your first Hermes profile.*'
+    visible: 'Welcome to Hermes Wing'
     timeout: 30000
-- tapOn: 'Add gateway or profile'
-- tapOn: '(?s).*I have a QR code or pairing link.*'
-- tapOn: '(?s).*Connect one profile manually.*'
-- assertVisible: 'This device'
+- tapOn: 'Connect to Remote Hermes'
+- assertVisible: 'VPN / NetBird / Tailscale'
 - back
-- assertVisible: 'Connect to Hermes'
-- tapOn: '(?s).*Connect one profile manually.*'
-- tapOn: 'This device'
+- assertVisible: 'Welcome to Hermes Wing'
+- tapOn: 'Connect to Remote Hermes'
+# The Remote private-network transport accepts the USB-reversed loopback fixture;
+# Android Local has a fixed on-phone endpoint, not this fixture's port.
+- tapOn: 'VPN / NetBird / Tailscale'
+- scrollUntilVisible:
+    element:
+      text: '(?s).*Hermes Agent URL.*'
+    direction: DOWN
 - longPressOn: '(?s).*Hermes Agent URL.*'
 - runFlow:
     when:

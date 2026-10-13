@@ -112,7 +112,7 @@ needs its own exact capability, ownership and qualification evidence.
 
 ## Now / Next
 
-## P4 — Extended experiences and physical qualification
+### P4 — Extended experiences and physical qualification
 
 - [ ] **DOC-SLASH-CATALOG-CONTRACT** — Goal: SLASH-CATALOG. Section: Now. Compare the current curated commands with an authoritative catalog.
   Payoff: advance the named accepted outcome without duplicating existing repairs.

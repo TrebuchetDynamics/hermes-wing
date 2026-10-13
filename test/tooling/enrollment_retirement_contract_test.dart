@@ -3,6 +3,42 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('Linux transport journey stays Agent-only with SSE coverage', () {
+    final source = File(
+      'integration_test/linux_transport_boundary_test.dart',
+    ).readAsStringSync();
+    for (final forbidden in [
+      'core/wing_link/',
+      'WingLink',
+      'wingLink',
+      'Wing Link',
+      'link_transport',
+    ]) {
+      expect(source, isNot(contains(forbidden)), reason: forbidden);
+    }
+    for (final retained in [
+      "import '../test/core/hermes/client/platform/hermes_api_transport_io_test.dart'",
+      'as agent_transport;',
+      "import '../test/core/hermes/sse/hermes_sse_event_decoder_test.dart' as sse;",
+      'IntegrationTestWidgetsFlutterBinding.ensureInitialized();',
+      "group('native Agent transport', agent_transport.main);",
+      "group('native SSE framing', sse.main);",
+    ]) {
+      expect(source, contains(retained), reason: retained);
+    }
+    final runner = File('scripts/run_linux_e2e.sh').readAsStringSync();
+    expect(
+      runner,
+      contains(
+        'for target in linux_fixture_e2e_test.dart linux_http_e2e_test.dart linux_transport_boundary_test.dart; do',
+      ),
+    );
+    expect(
+      runner,
+      contains(r'flutter test -d linux "integration_test/$target"'),
+    );
+  });
+
   test('Android live regression cannot restore management profile cleanup', () {
     expect(
       File('scripts/maestro/gateway_profiles_qa.yaml').existsSync(),

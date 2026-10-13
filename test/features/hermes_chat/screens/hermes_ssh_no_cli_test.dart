@@ -75,6 +75,9 @@ void main() {
       find.textContaining('Start a fixed, trusted SSH tunnel outside Wing'),
       findsNothing,
     );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-connection-mode-remote')),
+    );
     await tester.tap(
       find.byKey(const ValueKey('hermes-connection-mode-remote')),
     );

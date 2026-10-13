@@ -64,7 +64,9 @@ void main() {
           expect(explanation, findsOneWidget);
           final copy = tester.widget<SelectableText>(explanation).data!;
           expect(copy, contains('Hermes Agent endpoint'));
-          expect(copy, contains('Wing Link'));
+          expect(copy, contains('Agent access token'));
+          expect(copy, contains('host-management token'));
+          expect(copy, isNot(contains('Wing Link')));
           expect(copy, contains('provider API key'));
           expect(copy, contains('Browser OAuth sign-in is not supported'));
           expect(copy, contains('OAuth-only server cannot currently connect'));

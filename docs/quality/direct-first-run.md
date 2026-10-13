@@ -2,6 +2,92 @@
 
 > Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
 
+## Integrated Agent-only consumer regression closure — t_2f66df41
+
+This section supersedes the partial combined-suite evidence below, not its
+historical receipts. `CONNECTION-LINK-REMOVAL` and `CONNECTION-PATHS` remain open;
+service/packaging retirement and live qualification are outside this slice.
+
+Original pre-edit admission returned `worker_start_admitted` using the card's
+`pass_workspace.py` command, manifest `pass-51360244646a857d-dd90ebf6d75a4ac39311d5f5c31acc07.json`
+and SHA256 `a5aadd03abdee089f040049df2fe570da0dccf8b0e34b1ad3082c0c2ad7262ca`.
+Clean detached base: `5df931b33e5c4aaf8c098cc20e698a846f5b7255`.
+Original tool history establishes ordering; a later replay is not admission.
+
+### Smallest repair and acceptance evidence
+
+The full named union initially returned **1509 passes, two failures**. First,
+[Android SSH/Remote entry](../../test/features/hermes_chat/screens/hermes_ssh_no_cli_test.dart)
+tapped an off-screen Remote chip after scrolling through Local/SSH setup, then
+failed the URL-field assertion at old line 83. The test now brings the existing
+control into view before tapping, matching its other mode transitions. Second,
+[Remote auth explanation](../../test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart)
+still required the retired name at old line 67. It now asserts Agent access-token
+and host-management-token distinction and rejects the retired name. Provider-key,
+OAuth limitation, explicit retry, no-connect and semantics checks remain intact.
+Focused GREEN: **six passes**. No production defect was demonstrated; production,
+localization, callers, fixtures, configuration, exports and dependencies are
+unchanged. This is test repair and fresh qualification, not new connection support.
+
+- Fresh entry/auth retry: [six public Chromium cases](../../playwright/tests/regression/direct-first-run.spec.mjs)
+  pass at 390/1280px, with redacted denial, explicit retry, canonical session history,
+  no automatic retry and no Agent mutations or management requests. Browser SSH
+  is explicitly unavailable and deliberately switches to Remote; Local is manual
+  loopback entry, not native discovery.
+- Saved-owner/auth recovery: [eleven production matrix cases](../../playwright/tests/regression/connection-production-matrix.spec.mjs)
+  pass, including failed persistence, replacement-owner fencing, delayed discovery,
+  saved endpoint keyboard edit/test and 2x zoom. Aggregation verifies ten real
+  journey boundary receipts and five management-denial negative controls; no retries.
+- Legacy handoff rejection, cancel/back, exact credential/profile/session ownership,
+  raw-store preservation, no replay, TLS fail-closed guidance, redaction and
+  accessibility retain their regressions in the complete **1511-pass** Flutter union.
+  Platform overrides in widget tests are not physical Android execution.
+
+### Executed checks and reproducibility
+
+Linux host: Flutter 3.44.2 / Dart 3.12.2, Node 26.7.0 (not documented Node 22),
+npm 11.19.0, system Chromium 152.0.7977.75. `timeout 5m npm ci` restored the locked
+three packages, reporting zero vulnerabilities; lockfiles did not change.
+
+```bash
+dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_ssh_no_cli_test.dart test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart
+timeout 5m flutter analyze
+timeout 15m flutter test --concurrency=1 test/features/enrollment test/features/local_setup test/features/hermes_chat/screens test/features/hermes_chat/gateways test/core/hermes/setup test/tooling/hermes_domain_authority_contract_test.dart test/tooling/enrollment_retirement_contract_test.dart test/tooling/link_localization_retirement_contract_test.dart
+timeout 10m flutter build web --release -t lib/main_e2e.dart
+WING_APP_URL=http://127.0.0.1:18995/ CHROME_EXECUTABLE=/usr/bin/chromium timeout 20m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs --retries=0
+timeout 10m flutter build web --release -t lib/main_connection_production_matrix_e2e.dart
+WING_APP_URL=http://127.0.0.1:18995/ CHROME_EXECUTABLE=/usr/bin/chromium timeout 20m npx playwright test --config=playwright/connection_production_matrix.config.mjs
+node playwright/support/connection_production_matrix_fixture.mjs playwright/.matrix-results/results.json
+git diff --check
+```
+
+The direct target requires an owned `PORT=18995 HERMES_E2E_PORT=18996 node serve_web.mjs`
+fixture with a successful health check and cleanup. Matrix configuration starts
+its own fixture and requires its existing production `WingApp` entrypoint, not
+`main_e2e.dart`. Heavy checks run sequentially. Analyzer reported no issues;
+both JS release builds passed, retaining upstream `flutter_tts` Wasm dry-run and
+Cupertino-font warnings. This does not qualify Wasm. First browser subprocess
+durations: 43.24s direct, 108.35s matrix; the successful union reported 6m52s.
+One earlier post-edit union invocation was interrupted by the terminal transport's
+420s limit, not an assertion failure or pass; a tracked finite-timeout rerun passed.
+
+Private logs, exact argv/exits/durations, lockfile hashes, browser receipts and
+source manifest are retained in workspace `.dart_tool/t_2f66df41/`. The 678-file
+test/build input manifest SHA256 is
+`5d4375b3cd07a3354b1a22ca378f9535c7de97f67ac2c422afe649e261110e20`.
+The mandatory finish gate repeats the listed checks and scoped local-link
+validation before committing exactly these two tests and this receipt. Its exact
+commit/ref and final receipt belong to the native review handoff; this document
+is not a build input. Total review time and monetary cost are unknown.
+
+Implemented: two attributable stale test regressions repaired. Qualified: the
+named Linux-hosted deterministic Flutter and Chromium journeys. Delivered:
+local candidate only, pending independent native review and coordinator integration;
+no merge, push or publication by this worker. Native SSH, physical Android/Termux,
+native Local discovery, live authenticated Agent/provider, full release and
+service/packaging retirement remain **NOT_CHECKED**. The coordinator owns the
+existing retirement/qualification next slice; neither parent nor milestone closes.
+
 ## Agent-only TLS recovery regression — t_b967a50b
 
 This bounded continuation closes the stale TLS test dependency recorded below,

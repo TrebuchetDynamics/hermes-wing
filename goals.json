@@ -4569,6 +4569,11 @@
         },
         {
           "kind": "inspection",
+          "ref": "TODO.md [closeout plan for original t_587682e1; local bce4ec5f verified, review309 active; not completion]",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
           "ref": "docs/adr/product.md#complete-removal-including-legacy [owner-directed full retirement plan; inventory 159; independent planning review approved; no runtime qualification]",
           "result": "pass"
         },

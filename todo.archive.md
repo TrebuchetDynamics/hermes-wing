@@ -4986,3 +4986,21 @@ Source section: Now / Next
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
 <!-- end verified slash catalog receipt -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-OFFICE-REFERENCE** — Goal: OFFICE. Section: Done. Compare one Office contact/session activation interaction.
+  Completion: [source-bound comparison](docs/quality/office-contact-session-reference.md), commit `72df6b664689733bb78dd612bfe8d83848be8c12`; independent native review approved; 60 focused fake-channel tests passed. OFFICE remains partial; actual-Chat keyboard/focus/recovery and native/live qualification are not established.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [OFFICE](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing 2D Office and Desktop read-only source; exclude 3D/account dependencies and new host operations.
+  Acceptance: Name reference action, current deviation, exact owner/capability/focus oracle and one bounded implementation slice preserving 2D accessibility.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+<!-- end verified Office reference receipt -->

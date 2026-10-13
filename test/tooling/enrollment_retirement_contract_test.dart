@@ -52,6 +52,34 @@ String _wingLinkTokenKey(String id) => '\$tokenSlot\$id';
     expect(_managementConsumers(root), isEmpty);
   });
 
+  test('retained management subtree exclusion is separator-independent', () {
+    for (final separator in ['/', r'\']) {
+      final root = ['workspace', 'lib'].join(separator);
+      String path(String relative) =>
+          '$root$separator${relative.replaceAll('/', separator)}';
+      for (final rootPath in [root, root.replaceAll(r'\', '/')]) {
+        expect(
+          _isRetainedManagementSource(
+            rootPath,
+            path('core/wing_link/client.dart'),
+          ),
+          isTrue,
+        );
+      }
+      for (final relative in [
+        'core/wing_link_extra/client.dart',
+        'features/core/wing_link/client.dart',
+        'core/hermes/setup/secure_hermes_endpoint_store.dart',
+      ]) {
+        expect(
+          _isRetainedManagementSource(root, path(relative)),
+          isFalse,
+          reason: path(relative),
+        );
+      }
+    }
+  });
+
   test('Linux transport journey stays Agent-only with SSE coverage', () {
     final source = File(
       'integration_test/linux_transport_boundary_test.dart',
@@ -799,7 +827,7 @@ List<String> _managementConsumers(Directory root) => root
     .listSync(recursive: true)
     .whereType<File>()
     .where((file) => file.path.endsWith('.dart'))
-    .where((file) => !file.path.startsWith('${root.path}/core/wing_link/'))
+    .where((file) => !_isRetainedManagementSource(root.path, file.path))
     .where((file) {
       final source = file.readAsStringSync();
       return RegExp(
@@ -809,6 +837,10 @@ List<String> _managementConsumers(Directory root) => root
     })
     .map((file) => file.path)
     .toList();
+
+bool _isRetainedManagementSource(String root, String file) => file
+    .replaceAll(r'\', '/')
+    .startsWith('${root.replaceAll(r'\', '/')}/core/wing_link/');
 
 List<String> _obsoleteLocalHost(Directory root) => root
     .listSync(recursive: true)

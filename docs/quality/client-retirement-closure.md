@@ -37,10 +37,33 @@ scanned identically to every other consumer; it has no file-level exemption.
 
 Synthetic sentinels demonstrate rejection of 12 directive/construction/type/builder
 snippets, acceptance of inert raw-record storage, exclusion of the retained
-implementation and rejection of a lookalike feature subtree. These fixtures never
+implementation and rejection of a lookalike feature subtree. Path sentinels cover
+POSIX, Windows and mixed root/file separators, with exact retained-subtree
+exclusion and non-retained/lookalike/storage rejection. These fixtures never
 edit production files or access personal Agent/provider state. This is a
 conservative textual anti-restoration guard, not a Dart semantic security audit;
 renamed or deliberately obfuscated dependencies require source review.
+
+## Review rework
+
+Round-one review of `6f8809e4f8b522cb51709d73491972aa7e112792` found that
+the slash-only exclusion incorrectly scanned retained implementation on Windows.
+The preserved reviewer probe reproduced this on Linux (exit 1); it is path-shape
+simulation, not Windows runtime qualification. The exclusion now normalizes both
+root and file separators before the same exact subtree comparison. Storage is
+still scanned; no runtime or production change was needed.
+
+Before rework, the task ref still named that reviewed commit and both owned files
+matched its blobs. Original admission was read back from session
+`20261013_061445_e3f59e`, messages 14926–14927; it was not rerun against edits.
+The new separator regression and focused setup suite passed all 70 tests.
+Rework found workspace npm dependencies absent and the canonical installation at
+Playwright 1.61.1 rather than locked 1.62.1. That installation was not reused;
+`timeout 5m npm ci --offline --ignore-scripts` restored the exact workspace lock
+from existing cache (three packages, zero audit vulnerabilities). The installed
+Chromium executable remained available; no network or system install was needed.
+The mandatory frozen finish gate repeats the full named acceptance; its exact
+commit, command results and browser replay counts belong to the native handoff.
 
 ## Executed acceptance
 
@@ -56,7 +79,7 @@ identical to the admitted base after compilation and browser execution.
 | --- | --- |
 | `dart format --output=none --set-exit-if-changed test/tooling/enrollment_retirement_contract_test.dart` | Pass |
 | `timeout 5m flutter analyze --no-pub` | Pass, no issues |
-| `timeout 15m flutter test --no-pub --concurrency=1 test/tooling/enrollment_retirement_contract_test.dart test/core/hermes/setup` | Pass, 69 tests |
+| `timeout 15m flutter test --no-pub --concurrency=1 test/tooling/enrollment_retirement_contract_test.dart test/core/hermes/setup` | Pass, 70 tests after review rework (69 originally) |
 | `timeout 15m flutter build web --release -t lib/main_e2e.dart` | Pass, JavaScript release build |
 | `PORT=18867 HERMES_E2E_PORT=18868 WING_APP_URL=http://127.0.0.1:18867/ timeout 25m npm run web:e2e` | Pass, 47 browser tests; one live-provider test skipped |
 | `git diff --check` and changed local document links | Required again by the scoped finish gate; exact result in native handoff |

@@ -39,10 +39,8 @@ trap cleanup EXIT
 
 expected=(
   android-release-evidence.json
-  android-termux-bootstrap.json
   linux-release-evidence.json
   web-release-evidence.json
-  wing-link-release-evidence.json
   hermes-wing-android.aab
   hermes-wing-android.aab.sha256
   hermes-wing-android.apk
@@ -51,13 +49,6 @@ expected=(
   hermes-wing-linux-x64.tar.gz.sha256
   hermes-wing-web.tar.gz
   hermes-wing-web.tar.gz.sha256
-  wing-link-android-arm64
-  wing-link-checksums.sha256
-  wing-link-darwin-amd64
-  wing-link-darwin-arm64
-  wing-link-linux-amd64
-  wing-link-linux-arm64
-  wing-link-windows-amd64.exe
 )
 mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
 mapfile -t actual < <(find "$dist" -mindepth 1 -maxdepth 1 -type f -printf '%f\n' | sort)
@@ -75,7 +66,7 @@ for name in "${expected[@]}"; do
 done
 
 # Evidence is checked before any archive extraction or artifact execution.
-for target in android linux web wing-link; do
+for target in android linux web; do
   TAG="$tag" node "$repo_root/scripts/release_evidence.mjs" verify "$target" "$dist"
 done
 
@@ -112,15 +103,7 @@ verify_checksum_manifest "$dist/hermes-wing-linux-x64.tar.gz.sha256" \
   hermes-wing-linux-x64.tar.gz
 verify_checksum_manifest "$dist/hermes-wing-web.tar.gz.sha256" \
   hermes-wing-web.tar.gz
-verify_checksum_manifest "$dist/wing-link-checksums.sha256" \
-  wing-link-android-arm64 \
-  wing-link-darwin-amd64 \
-  wing-link-darwin-arm64 \
-  wing-link-linux-amd64 \
-  wing-link-linux-arm64 \
-  wing-link-windows-amd64.exe
-
-for command in curl file jarsigner keytool python3 qemu-aarch64-static sha256sum tar timeout unzip xvfb-run; do
+for command in curl file jarsigner keytool python3 sha256sum tar timeout unzip xvfb-run; do
   command -v "$command" >/dev/null || { echo "missing command: $command" >&2; exit 1; }
 done
 
@@ -136,97 +119,22 @@ fi
   sha256sum -c hermes-wing-android.aab.sha256
   sha256sum -c hermes-wing-linux-x64.tar.gz.sha256
   sha256sum -c hermes-wing-web.tar.gz.sha256
-  sha256sum -c wing-link-checksums.sha256
 )
 
 unzip -tq "$dist/hermes-wing-android.apk" >/dev/null
 unzip -tq "$dist/hermes-wing-android.aab" >/dev/null
-python3 - "$dist" "$repo_root" "$tag" "$source_revision" <<'PY'
-import hashlib
-import json
+python3 - "$dist" <<'PY'
 import re
 import sys
 import zipfile
 from pathlib import Path
 
-
-dist = Path(sys.argv[1])
-repo = Path(sys.argv[2])
-tag = sys.argv[3]
-source_revision = sys.argv[4]
-asset_path = "assets/flutter_assets/assets/config/termux_bootstrap.json"
-aab_suffix = "/assets/flutter_assets/assets/config/termux_bootstrap.json"
-
-
-def read_unique(archive: Path, predicate) -> bytes:
+for archive in (Path(sys.argv[1]) / name for name in
+                ("hermes-wing-android.apk", "hermes-wing-android.aab")):
     with zipfile.ZipFile(archive) as bundle:
-        matches = [name for name in bundle.namelist() if predicate(name)]
-        if len(matches) != 1:
-            raise SystemExit(
-                f"{archive.name} must contain exactly one Termux bootstrap metadata asset"
-            )
-        return bundle.read(matches[0])
-
-
-apk_metadata = read_unique(
-    dist / "hermes-wing-android.apk", lambda name: name == asset_path
-)
-aab_metadata = read_unique(
-    dist / "hermes-wing-android.aab",
-    lambda name: name == asset_path or name.endswith(aab_suffix),
-)
-if apk_metadata != aab_metadata:
-    raise SystemExit("APK and AAB Termux bootstrap metadata differ")
-def unique_object(pairs):
-    result = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError(f"duplicate metadata key: {key}")
-        result[key] = value
-    return result
-
-
-try:
-    metadata = json.loads(apk_metadata, object_pairs_hook=unique_object)
-except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
-    raise SystemExit("invalid packaged Termux bootstrap metadata") from error
-expected_keys = {
-    "available",
-    "tag",
-    "installer_commit",
-    "installer_sha256",
-    "asset_sha256",
-    "asset_size",
-}
-if set(metadata) != expected_keys or metadata.get("available") is not True:
-    raise SystemExit("packaged Termux bootstrap metadata is unavailable or malformed")
-if metadata.get("tag") != tag or metadata.get("installer_commit") != source_revision:
-    raise SystemExit("packaged Termux bootstrap tag or source revision mismatch")
-for key in ("installer_sha256", "asset_sha256"):
-    if not isinstance(metadata.get(key), str) or not re.fullmatch(
-        r"[0-9a-f]{64}", metadata[key]
-    ):
-        raise SystemExit(f"invalid packaged {key}")
-asset_size = metadata.get("asset_size")
-if not isinstance(asset_size, int) or isinstance(asset_size, bool) or not 1 <= asset_size <= 50 * 1024 * 1024:
-    raise SystemExit("invalid packaged Wing Link asset size")
-wing_link = dist / "wing-link-android-arm64"
-actual_asset = wing_link.read_bytes()
-if len(actual_asset) != asset_size or hashlib.sha256(actual_asset).hexdigest() != metadata["asset_sha256"]:
-    raise SystemExit("packaged Wing Link metadata does not match the released asset")
-installer = repo / "install-wing-link.sh"
-installer_bytes = installer.read_bytes()
-if not 1 <= len(installer_bytes) <= 1024 * 1024:
-    raise SystemExit("installer source exceeds the 1 MiB command limit")
-if hashlib.sha256(installer_bytes).hexdigest() != metadata["installer_sha256"]:
-    raise SystemExit("packaged installer digest does not match the source revision")
-manifest_matches = []
-for line in (dist / "wing-link-checksums.sha256").read_text().splitlines():
-    match = re.fullmatch(r"([0-9a-fA-F]{64}) [ *]([^/\\]+)", line)
-    if match and match.group(2) == wing_link.name:
-        manifest_matches.append(match.group(1).lower())
-if manifest_matches != [metadata["asset_sha256"]]:
-    raise SystemExit("packaged Wing Link digest does not match the release manifest")
+        if any(re.search(r"wing[-_]link|termux_bootstrap\.json", name, re.I)
+               for name in bundle.namelist()):
+            raise SystemExit("retired management payload in Android archive")
 PY
 apk_report=$($apksigner verify --verbose --print-certs "$dist/hermes-wing-android.apk")
 mapfile -t apk_certs < <(printf '%s\n' "$apk_report" | awk -F': ' '/Signer #[0-9]+ certificate SHA-256 digest:/{print $2}')
@@ -259,6 +167,7 @@ fi
 
 python3 - "$dist" "$temp_dir" <<'PY'
 import posixpath
+import re
 import sys
 import tarfile
 from pathlib import Path, PurePosixPath
@@ -279,6 +188,8 @@ def safe_extract(archive: Path, destination: Path) -> None:
             raise SystemExit(f"archive expands beyond the size limit: {archive.name}")
         seen_paths = set()
         for member in members:
+            if re.search(r"wing[-_]link|termux_bootstrap\.json", member.name, re.I):
+                raise SystemExit("retired management payload in release archive")
             path = PurePosixPath(member.name)
             canonical_path = str(path)
             if canonical_path in seen_paths:
@@ -303,21 +214,12 @@ linux.mkdir()
 web.mkdir()
 safe_extract(dist / "hermes-wing-linux-x64.tar.gz", linux)
 safe_extract(dist / "hermes-wing-web.tar.gz", web)
-for required in (linux / "bundle/wing", linux / "bundle/wing-link", web / "index.html", web / "main.dart.js", web / "flutter_bootstrap.js"):
+for required in (linux / "bundle/wing", web / "index.html", web / "main.dart.js", web / "flutter_bootstrap.js"):
     if not required.is_file() or required.is_symlink():
         raise SystemExit(f"release archive is missing a regular file at {required.relative_to(out)}")
 PY
 
-file "$dist/wing-link-linux-amd64" | grep -Eq 'ELF 64-bit.*x86-64'
-file "$dist/wing-link-linux-arm64" | grep -Eq 'ELF 64-bit.*(ARM aarch64|aarch64)'
-file "$dist/wing-link-darwin-amd64" | grep -Eq 'Mach-O 64-bit.*x86_64'
-file "$dist/wing-link-darwin-arm64" | grep -Eq 'Mach-O 64-bit.*arm64'
-file "$dist/wing-link-windows-amd64.exe" | grep -Eq 'PE32\+.*x86-64'
-file "$dist/wing-link-android-arm64" | grep -Eq 'ELF 64-bit.*(ARM aarch64|aarch64)'
-
-chmod +x "$dist/wing-link-linux-amd64" "$dist/wing-link-linux-arm64" "$temp_dir/linux/bundle/wing"
-[[ "$(timeout 10 "$dist/wing-link-linux-amd64" version)" == "$version" ]]
-[[ "$(timeout 10 qemu-aarch64-static "$dist/wing-link-linux-arm64" version)" == "$version" ]]
+chmod +x "$temp_dir/linux/bundle/wing"
 
 linux_log="$temp_dir/linux-smoke.log"
 xvfb-run -a bash -c '
@@ -380,9 +282,6 @@ receipt = {
         "archive_path_safety",
         "linux_bundle_launch",
         "web_browser_launch",
-        "wing_link_linux_amd64_version",
-        "wing_link_linux_arm64_version",
-        "foreign_binary_formats",
     ],
     "artifacts": artifacts,
 }

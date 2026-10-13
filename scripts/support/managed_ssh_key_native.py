@@ -35,7 +35,7 @@ def sha(path):
 
 def inputs(source):
     names = ('lib', 'assets', 'test', 'integration_test', 'linux', 'android',
-             'wing_link', 'third_party', 'vendor', 'scripts/support',
+             'third_party', 'vendor', 'scripts/support',
              'pubspec.yaml', 'pubspec.lock', 'analysis_options.yaml', 'l10n.yaml')
     result = {}
     excluded = {'build', '.gradle', '.dart_tool', 'ephemeral', '__pycache__',

@@ -11,77 +11,6 @@ void main() {
     expect(_managementConsumers(Directory('integration_test')), isEmpty);
   });
 
-  test('native fixture guard retains only the standalone service check', () {
-    final parent = Directory.systemTemp.createTempSync('native-consumers-');
-    addTearDown(() => parent.deleteSync(recursive: true));
-    final root = Directory('${parent.path}/integration_test')..createSync();
-    File(
-      '${root.path}/linux_live_directory_service_test.dart',
-    ).writeAsStringSync('WingLinkClient()');
-    for (final relative in [
-      'linux_live_directory_service_test_extra.dart',
-      'support/linux_live_directory_service_test.dart',
-      'core/wing_link/client.dart',
-      'android_secure_storage_regression_test.dart',
-      'linux_secure_storage_integration_test.dart',
-    ]) {
-      final file = File('${root.path}/$relative')..createSync(recursive: true);
-      const retention = "const row = {'wingLinkToken': 'retained'};";
-      file.writeAsStringSync(retention);
-      expect(_managementConsumers(root), isEmpty);
-      for (final source in [
-        "import 'package:wing/core/wing_link/wing_link_client.dart';",
-        "export '../lib/core/wing_link/wing_link_client.dart';",
-        'final client = WingLinkClient();',
-        'final client = wingLinkClientBuilder();',
-      ]) {
-        file.writeAsStringSync('$retention\n$source');
-        expect(_managementConsumers(root), [
-          file.path,
-        ], reason: '$relative: $source');
-      }
-      file.deleteSync();
-    }
-  });
-
-  test('standalone service exception is exact across path separators', () {
-    for (final separator in ['/', r'\']) {
-      final root = ['workspace', 'integration_test'].join(separator);
-      String path(String relative) =>
-          '$root$separator${relative.replaceAll('/', separator)}';
-      for (final rootPath in [
-        root,
-        root.replaceAll(r'\', '/'),
-        'integration_test',
-      ]) {
-        final file = rootPath == 'integration_test'
-            ? 'integration_test${separator}linux_live_directory_service_test.dart'
-            : path('linux_live_directory_service_test.dart');
-        expect(_isRetainedManagementSource(rootPath, file), isTrue);
-      }
-      for (final relative in [
-        'linux_live_directory_service_test_extra.dart',
-        'support/linux_live_directory_service_test.dart',
-        'core/wing_link/client.dart',
-        'android_secure_storage_regression_test.dart',
-        'linux_secure_storage_integration_test.dart',
-      ]) {
-        expect(
-          _isRetainedManagementSource(root, path(relative)),
-          isFalse,
-          reason: relative,
-        );
-      }
-      expect(
-        _isRetainedManagementSource(
-          '${root}_extra',
-          '${root}_extra${separator}linux_live_directory_service_test.dart',
-        ),
-        isFalse,
-      );
-    }
-  });
-
   test('management guard rejects directives and runtime client references', () {
     final root = Directory.systemTemp.createTempSync('management-consumers-');
     addTearDown(() => root.deleteSync(recursive: true));
@@ -99,7 +28,8 @@ String _wingLinkTokenKey(String id) => '\$tokenSlot\$id';
     final retainedClient = File('${root.path}/core/wing_link/client.dart')
       ..createSync(recursive: true)
       ..writeAsStringSync('WingLinkClient()');
-    expect(_managementConsumers(root), isEmpty);
+    expect(_managementConsumers(root), [retainedClient.path]);
+    retainedClient.deleteSync();
     for (final source in [
       "import 'wing_link_client.dart';",
       "export 'wing_link_transport.dart';",
@@ -121,38 +51,10 @@ String _wingLinkTokenKey(String id) => '\$tokenSlot\$id';
     // A similarly named feature directory is not the retained implementation.
     final consumer = File('${root.path}/features/core/wing_link/caller.dart')
       ..createSync(recursive: true)
-      ..writeAsStringSync(retainedClient.readAsStringSync());
+      ..writeAsStringSync('WingLinkClient()');
     expect(_managementConsumers(root), [consumer.path]);
     consumer.deleteSync();
     expect(_managementConsumers(root), isEmpty);
-  });
-
-  test('retained management subtree exclusion is separator-independent', () {
-    for (final separator in ['/', r'\']) {
-      final root = ['workspace', 'lib'].join(separator);
-      String path(String relative) =>
-          '$root$separator${relative.replaceAll('/', separator)}';
-      for (final rootPath in [root, root.replaceAll(r'\', '/')]) {
-        expect(
-          _isRetainedManagementSource(
-            rootPath,
-            path('core/wing_link/client.dart'),
-          ),
-          isTrue,
-        );
-      }
-      for (final relative in [
-        'core/wing_link_extra/client.dart',
-        'features/core/wing_link/client.dart',
-        'core/hermes/setup/secure_hermes_endpoint_store.dart',
-      ]) {
-        expect(
-          _isRetainedManagementSource(root, path(relative)),
-          isFalse,
-          reason: path(relative),
-        );
-      }
-    }
   });
 
   test('Linux transport journey stays Agent-only with SSE coverage', () {
@@ -539,47 +441,17 @@ exit 0
     },
   );
 
-  test('retained directory service safety remains separate and intact', () {
-    final source = File(
-      'integration_test/linux_live_directory_service_test.dart',
-    ).readAsStringSync();
-    final runner = File(
-      'scripts/run_linux_live_directory_service_e2e.sh',
-    ).readAsStringSync();
-    expect(source, isNot(contains('core/hermes/')));
-    expect(runner, isNot(contains('WING_LIVE_PROFILE_MANIFEST')));
-    for (final retained in [
-      'requireLinuxLiveDirectoryRoot',
-      'requireLinuxTestRoot',
-      'WingLinkClient',
-      "['directories', 'grant', root]",
-      "['directories', 'revoke', id]",
-      'addTearDown',
-      'lessThanOrEqualTo(32)',
-      'limit: 1',
-      'hasLength(1)',
-      'page.nextOffset, isNull',
-      "isNot(contains('private-file.txt'))",
-      'for (final handle in [granted.handle, child.handle])',
-      'WingLinkHttpException',
-      '410',
-      'row.handle == granted.handle',
-    ]) {
-      expect(source, contains(retained), reason: retained);
-    }
-    for (final retained in [
-      'WING_LIVE_LINK_MANIFEST',
-      'WING_LIVE_LINK_BINARY',
-      'WING_LINK_STATE',
-      'cleanup_coverage',
-      'trap cleanup_coverage EXIT',
-      '.wing-linux-test-owner',
-      'linux-picker-sample.txt',
-      'WING_LIVE_DIRECTORY_ROOT',
-      'linux_live_directory_service_test.dart',
-    ]) {
-      expect(runner, contains(retained), reason: retained);
-    }
+  test('standalone directory service and runner are removed', () {
+    expect(
+      File(
+        'integration_test/linux_live_directory_service_test.dart',
+      ).existsSync(),
+      isFalse,
+    );
+    expect(
+      File('scripts/run_linux_live_directory_service_e2e.sh').existsSync(),
+      isFalse,
+    );
   });
 
   test('retained Linux visual tour cannot restore Link prerequisites', () {
@@ -902,7 +774,6 @@ List<String> _managementConsumers(Directory root) => root
     .listSync(recursive: true)
     .whereType<File>()
     .where((file) => file.path.endsWith('.dart'))
-    .where((file) => !_isRetainedManagementSource(root.path, file.path))
     .where((file) {
       final source = file.readAsStringSync();
       return RegExp(
@@ -912,15 +783,6 @@ List<String> _managementConsumers(Directory root) => root
     })
     .map((file) => file.path)
     .toList();
-
-bool _isRetainedManagementSource(String root, String file) {
-  final rootPath = root.replaceAll(r'\', '/');
-  final filePath = file.replaceAll(r'\', '/');
-  // Keep standalone service safety coverage until the service itself is retired.
-  return rootPath.split('/').last == 'integration_test'
-      ? filePath == '$rootPath/linux_live_directory_service_test.dart'
-      : filePath.startsWith('$rootPath/core/wing_link/');
-}
 
 List<String> _obsoleteLocalHost(Directory root) => root
     .listSync(recursive: true)

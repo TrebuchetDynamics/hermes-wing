@@ -201,7 +201,6 @@ def run(source):
             env.pop('WING_DIRECT_ROOT')
             env['WING_STORAGE_ROOT'] = str(root)
             env['WING_STORAGE_RUNTIME_HELPER'] = str(evidence / 'executed-runtime-helper.py')
-            result['go_dependencies'] = prerequisite.retry_helpers().go_dependencies(app, root, evidence, env, snapshot)
             result['environment'] = {'uname': list(os.uname()),
                 'sdk': subprocess.check_output([str(sdk / 'bin/flutter'), '--version'], env=env, timeout=30).decode(),
                 'tools': {name: snapshot.digest(pathlib.Path('/usr/bin') / name)
@@ -268,7 +267,6 @@ def run(source):
             if actual != snapshot.candidate_hashes(identity):
                 raise ValueError('Executed source changed')
             result['executed_input_hashes'] = actual
-            prerequisite.retry_helpers().verify_go_dependencies(root, evidence, snapshot)
             if len(list(evidence.glob('storage-*.png'))) != 12:
                 raise ValueError('Incomplete blank-field captures')
             executable = app / 'build/linux/x64/debug/bundle/wing'

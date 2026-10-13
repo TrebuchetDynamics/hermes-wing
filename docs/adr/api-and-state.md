@@ -4,15 +4,9 @@ Status: current decision
 
 ## Decision
 
-The retained implementation uses two typed planes. Wing Link is deprecated under
-the [product decision](product.md#wing-link-deprecation), not removed yet. New
-product flows must not require its compatibility APIs or model catalog. Keep the
-following legacy contracts enforced until retirement:
-
-
-- Hermes Agent APIs for authoritative domain and run state; and
-- Wing Link for authenticated host management and reviewed compatibility
-  operations missing from the Agent API, plus the typed setup catalog read below.
+Wing uses direct authenticated Hermes Agent APIs for domain and run state.
+The removed Wing Link catalog and compatibility adapters are not fallback APIs.
+Missing exact Agent capabilities leave their operations unavailable.
 
 Capability discovery determines which operations Wing offers. A broad version or
 `admin` flag is insufficient: mutations require the exact operation,
@@ -53,76 +47,16 @@ Report reload/restart requirements separately from persistence success.
 
 ## Provider model setup catalog
 
-Provider/model autocomplete in profile setup reads Hermes Agent's full advertised
-inventory through Wing Link's typed `GET /v1/profiles/{id}/model-options` API.
-This is an explicit setup-management exception to direct Agent administration;
-it does not move chat, sessions, runs, tools, or approvals through Wing Link.
-
-Agent remains the catalog authority. Wing Link requires its own `profiles:read`
-grant, verifies the requested profile still exists, and checks Agent's exact
-`model_options` capability before reading `/p/{id}/api/model/options` with the
-host's separate profile credential. The locally configured Agent origin is fixed;
-remote callers cannot select an upstream URL, path, command, or configuration key.
-Only provider slugs/names and model IDs are returned. No domain cache, credentials,
-provider URLs, restart, credential creation, or provider mutation is involved.
-
-Unconfigured providers remain visible for setup. Catalog visibility does not
-authorize a provider write: existing secret, profile setup, and capability gates
-remain in force. Chat's model picker retains its configured-provider policy.
-If the catalog is unavailable, setup reports the error and offers retry or manual
-entry; it never substitutes a Wing-maintained list of providers or models.
+Provider/model autocomplete reads only the selected Agent's advertised catalog,
+with the exact capability and authorization checks. No management service, cached
+shadow catalog or provider write authority is inferred from inventory visibility.
 
 ## Existing-profile provider compatibility direction
 
-Status: superseded by [Wing Link deprecation](product.md#wing-link-deprecation).
-The provider-first direction was accepted on 2026-09-07 but was not implemented
-or advertised. The following compatibility design is retained as history, not
-permission to expand Wing Link. The required Agent-owned mutation contract below
-remains the acceptance bar for direct or separately reviewed native operations.
-
-Extend Wing Link's reviewed compatibility operations to existing-profile provider
-management only where a supported Hermes CLI or Agent API contract has been
-verified. Hermes Agent remains authoritative. Direct writes to Agent-owned files
-or databases, Persona and schedule adapters, arbitrary config keys, and generic
-command execution are outside this accepted slice.
-
-The implementation must satisfy these conditions before an operation is exposed:
-
-- Advertise each verified Wing Link operation independently. A setup catalog read
-  or new-profile setup capability does not grant existing-profile write access.
-  Wing must select the correct management adapter without advertising synthetic
-  Agent capabilities or routing Agent chat traffic through Wing Link.
-- Bind authorization, local sensitive-write approval and idempotency to the exact
-  device, profile identity, operation, resource revision and payload digest. Keep
-  request bodies and credentials out of journals and audit records.
-- Use fixed executable/argument shapes and bounded inputs, output and duration.
-  Credentials remain write-only and use stdin, never argv or environment values.
-  Verify add, replace, remove and validation semantics separately; command names
-  alone do not prove the intended credential-store behavior.
-- Keep saving, remote credential validation/inference, and gateway reload/restart
-  as separate explicit actions with separate outcomes. Saving must not silently
-  incur an inference request or restart a gateway.
-- Verify concurrency against Agent/CLI edits as well as other Wing Link calls.
-  A Wing Link mutex alone is not authoritative concurrency protection. Establish
-  the supported transaction or conflict-checking mechanism before offering a
-  combined provider/model mutation; report uncertain or partial outcomes honestly
-  and reconcile authoritative state without automatic mutation replay.
-
-Do not reuse the current new-profile transaction unchanged. Its
-[setup implementation](../../wing_link/internal/app/serve.go) writes provider and
-model settings sequentially, then performs an inference readiness probe; its
-caller can roll back by deleting the newly created profile. Deleting an existing
-profile is not a valid rollback. The existing
-[setup tests](../../wing_link/internal/app/serve_test.go) prove only the current
-new-profile contract, not safe existing-profile replacement.
-
-Before implementation, trace each candidate through the installed Agent
-source and nearest upstream tests, then add adapter-boundary tests for stale
-revisions, external edits, revoked grants, approval replay, command failure and
-secret redaction. Only verified operations may proceed to isolated live Linux UI
-qualification. Record the supported Agent release window and removal trigger when
-the equivalent authoritative Agent API becomes available. Until these checks are
-met, the existing unavailable-state UI remains correct.
+Status: retired; no compatibility adapter is permitted. The mutation criteria below
+remain the acceptance bar for authoritative unmodified Agent APIs. Historical
+new-profile implementation and its rollback-by-deletion behavior do not establish
+safe mutation of existing profiles.
 
 ### Required Agent-owned mutation contract
 
@@ -172,7 +106,7 @@ implementation; these are requirements, not invented callable routes or flags.
 Agent must check revision and identity inside the same authoritative transaction
 that commits the mutation. Relevant CLI, API and runtime credential/config writers
 must participate in that concurrency mechanism. Deleting/recreating a profile or
-credential invalidates prior requests. A Wing Link mutex, a preflight read or a
+credential invalidates prior requests. A client mutex, a preflight read or a
 post-write readback is not a substitute. Combined credential and model saves are
 not part of the initial contract; the UI must report their separate outcomes.
 
@@ -180,8 +114,7 @@ Idempotency must survive a crash between commit and response: the same authorize
 request returns its original secret-free receipt, while changed-payload replay
 fails. Durable deduplication metadata must not contain request bodies or raw
 secrets; any secret-dependent binding must resist offline guessing. Agent owns
-commit reconciliation, and Wing Link retains only bounded operation metadata,
-not a second provider store. Unknown outcomes require status reconciliation, not
+commit reconciliation, and Wing retains no second provider store. Unknown outcomes require status reconciliation, not
 automatic execution with a new key. Revoked callers cannot obtain receipts or
 execute retries. Expired deduplication records must not permit an old request to
 execute again silently.
@@ -208,7 +141,7 @@ Linux UI journeys using isolated Agent state; fixtures alone are insufficient.
 
 The proposed upstream implementation checkpoint is withdrawn. Further work is
 limited to Wing changes over verified, unmodified Agent contracts; retained
-Wing Link code may be secured or retired, not expanded.
+management code is removed, not replaced.
 Until a supported authoritative contract meets these criteria, keep the affected
 existing-profile provider operations unavailable. Never modify Hermes Agent or
 implement a direct-file fallback to enable them.

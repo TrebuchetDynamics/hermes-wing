@@ -48,7 +48,7 @@ closure includes the retained client, HTTP/transport implementations and device/
 directory models. Product fixtures reach Agent APIs and shared fixture/test
 support instead. This bounded source trace is not packaged runtime evidence.
 
-The [standalone service test](../../integration_test/linux_live_directory_service_test.dart)
+The [standalone service test](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/integration_test/linux_live_directory_service_test.dart)
 still checks grant/list, folder-only results, revocation and HTTP 410 for old
 handles. It was inspected, not executed. The
 [Android](../../integration_test/android_secure_storage_regression_test.dart) and
@@ -128,3 +128,8 @@ Next slice: the coordinator reconciles cumulative regression evidence and
 outstanding native/device qualification before service/package deletion. Keep
 standalone service safety and inert user records intact until their separately
 admitted retirement work; do not close the parent milestone from this receipt.
+
+Retirement link maintenance: removed-source links now point at the last tracked
+pre-retirement baseline `918e7c318bab1d91f348570e2309598d729ecb9c`. These are
+source lookup pointers, not replacements for the original dirty-source manifests
+or fresh qualification of the historical results above.

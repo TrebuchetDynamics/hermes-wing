@@ -40,4 +40,3 @@ flutter:
   uses-material-design: true
   assets:
     - assets/branding/hermes-emblem.png
-    - assets/config/termux_bootstrap.json

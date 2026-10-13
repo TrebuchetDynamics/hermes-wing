@@ -22,7 +22,7 @@ OWNED = ('scripts/run_linux_desktop_live_workflow.sh',
          'test/tooling/desktop_live_workflow_test.py',
          'test/tooling/desktop_live_workflow_budget_test.dart',
          'integration_test/linux_desktop_live_workflow_test.dart')
-INPUT_ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux', 'wing_link')
+INPUT_ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux')
 INPUT_FILES = ('pubspec.yaml', 'pubspec.lock', 'analysis_options.yaml', 'l10n.yaml')
 PREDECESSOR = '8bdae36cd40bccbf5b7fd6056d395606f01f58db'
 OPERATIONS = {
@@ -298,9 +298,7 @@ def native_readiness(source, authorization):
                    XDG_DATA_HOME=str(root / 'data'), XDG_CACHE_HOME=str(root / 'cache'),
                    XDG_RUNTIME_DIR=str(root / 'runtime'), GDK_BACKEND='x11',
                    LIBGL_ALWAYS_SOFTWARE='1', CMAKE_BUILD_PARALLEL_LEVEL='2',
-                   TMPDIR=str(root / 'cache'), GOCACHE=str(root / 'cache/go-build'),
-                   GOMAXPROCS='2', GOFLAGS='-p=2', GOPROXY='off', GOSUMDB='off', GOTOOLCHAIN='local',
-                   GOMODCACHE=os.environ.get('GOMODCACHE', str(pathlib.Path.home() / 'go/pkg/mod')),
+                   TMPDIR=str(root / 'cache'),
                    PUB_CACHE=os.environ.get('PUB_CACHE', str(pathlib.Path.home() / '.pub-cache')),
                    WING_LIVE_AUTH=json.dumps(authorization), WING_LIVE_ROOT=str(root))
         command = ['timeout', '--signal=TERM', '--kill-after=10s', '300s', 'xvfb-run',

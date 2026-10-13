@@ -81,9 +81,9 @@ Notification and active artifact candidates remain proposals, not implementation
 claims. The study records source provenance and incompatible reference patterns.
 
 Wing Link is deprecated by the [product decision](adr/product.md#wing-link-deprecation).
-The component map below describes retained code, not a requirement to keep two
-backends. Remove management-dependent product paths before retiring service and
-installer packaging. Missing Agent capabilities must be explained, not emulated.
+The service/client, installers and delivery dependencies are removed. Missing
+Agent capabilities must be explained, not emulated; historical receipts below
+refer only to their original snapshots.
 Linux Hermes-home discovery and Android same-phone setup are the planned Local
 replacement. Discovery is not authenticated runtime readiness. Preserve profile,
 session and credential ownership during migration.
@@ -136,24 +136,14 @@ local-running-Agent guidance and optional setup remain recorded Desktop differen
   `HermesApiClient` and platform transports implement Agent requests.
   [`HermesSseEventDecoder`](../lib/core/hermes/sse/hermes_sse_event_decoder.dart)
   decodes streamed events. This is the direct Agent data plane.
-- [`WingLinkClient`](../lib/core/wing_link/wing_link_client.dart) is the separate
-  host-management client. The Go service under `wing_link/` owns management
-  protocol handling, local approval, operation journals, directory grants and
-  release activation. It does not own Agent sessions, runs or chat history.
-  The [Wing Link design](product/wing-link.md) owns its detailed behavior.
-  The [OpenAPI snapshot](api/wing-link.openapi.yaml) documents management and
-  separately identified ephemeral pairing-broker routes. It is manually
-  maintained from Go handlers, not generated or schema-first authority.
-  Its declared parser and security limits require source review when routes change.
-  Wing no longer bundles or manages OmniRoute: installer, discovery, release
-  component and special profile-setup paths are removed, with no user-data
-  migration. Generic Agent-owned catalog entries remain unfiltered.
+- Wing owns no management HTTP service or compatibility catalog. Agent traffic is
+  direct and independently authenticated; missing operations remain unavailable.
 
 Hermes Agent remains authoritative for domain state. Profile and session IDs
 are resource identities, not display names or inventory positions. A Hermes
 Project is Agent-owned; directory grants do not create a Wing-owned workspace.
 See [API and state](adr/api-and-state.md) for exact operation/grant gating,
-concurrency rules and the bounded setup-catalog exception.
+concurrency rules and direct Agent catalog authority.
 
 ## Existing-profile credential contract gap
 
@@ -228,9 +218,8 @@ and [pinned source comparison](quality/graphify-wing-recomparison.md) for the
 attempt-scoped Linux file picker and Android document-picker acceptance.
 Neither terminal OpenSSH nor widget tests qualify those native application paths.
 
-1. Select an explicit endpoint and authenticate to Hermes Agent. Pairing and
-   optional host management use a separate Wing Link connection and credential.
-   Failure or absence of that management connection must not gate Agent access.
+1. Select an explicit endpoint and authenticate directly to Hermes Agent.
+   No management connection, credential or fallback is offered.
 2. Discover capabilities and load supported resources. Unsupported, empty and
    failed optional reads are distinct states in `HermesChannelState`.
 3. Select the profile, session and supported provider/model operation. Resource
@@ -510,8 +499,8 @@ The [owner correction](adr/product.md#decision) makes direct Agent use independe
 of Wing Link. First-run enrollment must reach the existing Agent channel and
 secure endpoint storage without visiting pairing. SSH forwards to Agent, not a
 management proxy. Missing Agent operations remain explicitly unavailable.
-Retained optional pairing still verifies its own management identity and grants;
-do not remove those checks or reuse management credentials for Agent requests.
+Legacy handoffs are discarded without parsing, display or exchange;
+never reuse historical management credentials for Agent requests.
 
 Current Chat and Add Hermes composition groups Local, SSH and Remote as three
 primary paths, with VPN inside Remote. Local and Remote share the existing
@@ -541,8 +530,8 @@ Android and main delivery remain open; the [test plan](test-plan.md#connection-p
 keeps those checks separate.
 
 The grouping reuses existing Riverpod/channel contracts and enrollment. Optional
-local management setup uses `LocalWingLinkHost` inspect/setup where supported.
-Installation, pairing, secure persistence and live Agent readiness remain separate
+Local setup uses metadata-only discovery and direct authentication.
+Secure persistence and live Agent readiness remain separate
 results. The [saved-host owner-safety receipt](quality/saved-connection-owner-safety.md)
 qualifies Chat's rename/remove controls, not the full connection workflow.
 Both dialogs capture channel/directory ownership and form intent before consent.
@@ -599,7 +588,7 @@ The current development worktree also implements **Edit saved Agent connection**
 in Add Hermes. The [editor receipt](quality/saved-endpoint-edit.md) records bounded
 widget/Chromium qualification. Its independent draft never prefills credentials.
 An unchanged canonical Agent URL may retain its saved credential. A changed URL
-never reuses that credential and drops the Wing Link association; supply its
+never reuses that credential; supply its
 credential separately if authentication requires one.
 Explicit Save updates the original saved ID, rejects another saved URL and reports
 local persistence separately from authentication. Storage failure retains the draft
@@ -654,8 +643,7 @@ separate operations. Remote services must not be reported stopped merely because
 the local forward closed.
 
 Agent requests remain direct authenticated data-plane traffic over the chosen
-transport. Wing Link remains independent host management, with its own credential,
-TLS/pinning requirements and grants. Forwarding grants no remote configuration,
+transport. No independent host-management connection is constructed. Forwarding grants no remote configuration,
 installation or lifecycle authority. Browser clients retain direct endpoint or
 externally managed tunnel access, not a pretend local SSH implementation.
 
@@ -723,7 +711,6 @@ Follow [security and privacy](adr/security-and-privacy.md) and the
 
 Prefer advertised Agent operations. Reviewed compatibility adapters use fixed,
 bounded operations and must not patch Agent or expose arbitrary CLI execution.
-Wing Link supports its current and immediately previous protocol generation.
 See [runtime and delivery](adr/runtime-and-delivery.md) for activation, local
 health checks, verification and rollback requirements. A documented update path
 is not release or rollback qualification.

@@ -23,23 +23,20 @@ async function fixture(t) {
   const root = join(base, 'source');
   const dist = join(base, 'public');
   await mkdir(dist);
-  for (const name of [...inputs, 'assets/config/termux_bootstrap.json']) {
+  for (const name of inputs) {
     await mkdir(dirname(join(root, name)), { recursive: true });
     await writeFile(join(root, name), `synthetic input ${name}`);
   }
-  await writeFile(join(dist, 'android-termux-bootstrap.json'), await readFile(join(root, 'assets/config/termux_bootstrap.json')));
   const payloads = Object.values(artifactsByTarget).flat();
   for (const name of payloads) await writeFile(join(dist, name), `synthetic artifact ${name}`);
   for (const target of Object.keys(artifactsByTarget)) {
     const manifest = await createManifest(root, dist, target, identity,
-      target === 'wing-link' ? { node: 'v22.0.0', go: 'go1.26.0' } : { node: 'v22.0.0', flutter: '3.44.2' },
+      { node: 'v22.0.0', flutter: '3.44.2' },
       target === 'android' ? certificate : null);
     await writeFile(join(dist, `${target}-release-evidence.json`), JSON.stringify(manifest));
   }
   for (const [name, target, binary, result, evidence_kind, scenario] of [
     ['android-artifact-smoke.txt', 'android', 'hermes-wing-android.apk', 'verified-installed-launched', 'emulator', 'apk-install-launch'],
-    ['wing-link-macos-smoke.txt', 'wing-link', 'wing-link-darwin-arm64', 'verified-ran-version', 'native', 'binary-version'],
-    ['wing-link-windows-smoke.txt', 'wing-link', 'wing-link-windows-amd64.exe', 'verified-ran-version', 'native', 'binary-version'],
   ]) {
     const { tag, source_revision, run_id, run_attempt, build_number } = identity;
     const receipt = { tag, source_revision, run_id, run_attempt, build_number, binary,
@@ -48,15 +45,13 @@ async function fixture(t) {
       result, evidence_kind, scenario, timestamp_utc: '2026-09-04T12:00:00Z' };
     await writeFile(join(dist, name), Object.entries(receipt).map(([k, v]) => `${k}=${v}`).join('\n') + '\n');
   }
-  const auxiliary = ['android-termux-bootstrap.json', 'wing-link-checksums.sha256',
-    ...Object.keys(artifactsByTarget).map(target => `${target}-release-evidence.json`),
+  const auxiliary = [...Object.keys(artifactsByTarget).map(target => `${target}-release-evidence.json`),
     ...payloads.filter(name => name.startsWith('hermes-wing')).map(name => `${name}.sha256`)];
   for (const name of auxiliary.filter(name => name.endsWith('.sha256'))) await writeFile(join(dist, name), 'synthetic checksum declaration\n');
   const host = { schema_version: 1, tag: identity.tag, source_revision: identity.source_revision,
     verified_at: '2026-09-04T12:00:00Z', android_certificate_sha256: certificate,
     checks: ['exact_allowlist', 'sha256_sidecars', 'android_apk_signature', 'android_aab_signature',
-      'archive_path_safety', 'linux_bundle_launch', 'web_browser_launch', 'wing_link_linux_amd64_version',
-      'wing_link_linux_arm64_version', 'foreign_binary_formats'], artifacts: [] };
+      'archive_path_safety', 'linux_bundle_launch', 'web_browser_launch'], artifacts: [] };
   for (const name of [...payloads, ...auxiliary]) {
     const { size, sha256 } = await digest(join(dist, name));
     host.artifacts.push({ name, bytes: size, sha256 });
@@ -103,9 +98,6 @@ async function run(f, values = f.values, extra = [], expectedCode = 1) {
 test('explicit complete expectations match; environment and cwd cannot infer identity', async t => {
   const f = await fixture(t);
   await run(f, f.values, [], 0);
-  // Source bootstrap is not a verifier input: the generated public copy is authoritative here.
-  await rm(join(f.root, 'assets'), { recursive: true });
-  await run(f, f.values, [], 0);
 });
 for (const key of ['source-root', 'candidate-dir', 'source-revision', 'tag', 'version', 'build-number', 'run-id', 'run-attempt', 'repository', 'android-certificate-sha256']) {
   test(`omitted argument fails closed: ${key}`, async t => {
@@ -143,7 +135,7 @@ test('unknown, duplicate, positional, oversized and empty arguments fail', async
   delete values.unknown;
   await run(f, values, ['--tag', identity.tag]);
 });
-for (const name of [...inputs, 'android-termux-bootstrap.json', ...Object.values(artifactsByTarget).flat(), 'wing-link-checksums.sha256']) {
+for (const name of [...inputs, ...Object.values(artifactsByTarget).flat()]) {
   test(`same-size byte mutation fails: ${name}`, async t => {
     const f = await fixture(t);
     const path = join(inputs.includes(name) ? f.root : f.dist, name);
@@ -152,8 +144,7 @@ for (const name of [...inputs, 'android-termux-bootstrap.json', ...Object.values
     await run(f);
   });
 }
-for (const name of ['release-qualification-index.json', 'android-artifact-smoke.txt', 'wing-link-macos-smoke.txt',
-  'wing-link-windows-smoke.txt', 'release-verification-receipt.json']) {
+for (const name of ['release-qualification-index.json', 'android-artifact-smoke.txt', 'release-verification-receipt.json']) {
   test(`missing required evidence fails: ${name}`, async t => {
     const f = await fixture(t);
     await rm(join(f.dist, name));
@@ -223,8 +214,8 @@ test('symlink files, parent directories and declared roots fail', async t => {
   await symlink(f.root, join(f.base, 'source-alias'));
   await run(f, { ...f.values, 'source-root': join(f.base, 'source-alias') });
   await mkdir(join(f.base, 'locks'));
-  for (const name of ['go.mod', 'go.sum']) await writeFile(join(f.base, 'locks', name), await readFile(join(f.root, 'wing_link', name)));
-  await rm(join(f.root, 'wing_link'), { recursive: true });
-  await symlink(join(f.base, 'locks'), join(f.root, 'wing_link'));
+  await writeFile(join(f.base, 'locks', 'package-lock.json'), await readFile(join(f.root, 'package-lock.json')));
+  await rm(join(f.root, 'package-lock.json'));
+  await symlink(join(f.base, 'locks', 'package-lock.json'), join(f.root, 'package-lock.json'));
   await run(f);
 });

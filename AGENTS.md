@@ -2,8 +2,8 @@
 
 Hermes Wing is an independent cross-platform Flutter client for Hermes Agent
 and is developed with local upstream reference checkout of Hermes Agent and its official
-Desktop app under `apps/desktop/`. Hermes Agent owns agent/domain state; Wing Link is the
-authenticated host management plane. Preserve that boundary in every design,
+Desktop app under `apps/desktop/`. Hermes Agent owns all agent/domain state; Wing connects directly without a
+second management service. Preserve that boundary in every design,
 implementation, test, and user-facing claim.
 
 ## Start here
@@ -66,12 +66,9 @@ Use these names consistently:
 - **Hermes Agent**: the authoritative runtime for profiles, Hermes Projects,
   providers, models, configuration, memory, skills, sessions, runs, tools,
   schedules, approvals, and gateway state.
-- **Wing Link**: the authenticated remote management plane for host setup,
-  pairing, lifecycle, health, diagnostics, directory grants, and reviewed typed
-  compatibility operations. It is not a proxy, shell bridge, or second backend.
 - **Hermes Agent data plane**: direct authenticated Agent API traffic for chat,
   sessions, runs, tools, approvals, and advertised administration. It does not
-  transit Wing Link.
+  transit a management proxy.
 - **Hermes Project**: an Agent-owned per-profile workspace. Use it for repository
   or subfolder assignment; never create a Wing-owned profile `workdir`.
 - **Directory grant**: a locally approved host root exposed through opaque
@@ -83,13 +80,9 @@ Use these names consistently:
 - **Detached run**: Agent-owned work that continues while Wing is suspended and
   is reconciled when Wing returns.
 
-A paired host has two independent connections and credentials:
-
-1. Wing → Hermes Agent for the data plane.
-2. Wing → Wing Link for host management.
-
-Never merge these credentials, route Agent traffic through Wing Link, or create
-shadow copies of Agent-owned domain state.
+Saved Agent credentials and exact endpoint/profile/session identities must survive
+upgrades. Legacy raw records and secure slots are inert and preserved; missing
+Agent credentials require direct reauthentication. Legacy handoffs are discarded.
 
 ## Non-negotiable architecture rules
 
@@ -107,81 +100,29 @@ shadow copies of Agent-owned domain state.
 - Unsupported operations must be hidden or clearly explained. Never simulate
   support with unreliable local state.
 
-### Wing Link
+### Local integration and Projects
 
-Every compatibility operation must have:
-
-- a fixed executable and argument shape;
-- no shell and no caller-selected executable, command, config key, URL, or host
-  path;
-- typed and bounded input, output, duration, and errors;
-- exact authorization and stable resource identity;
-- no shadow domain state; and
-- a removal trigger for when Hermes Agent exposes the authoritative API.
-
-The current profile compatibility adapter is limited to profile
-list/create/rename/delete and transactional **new-profile** setup: description,
-allowlisted provider, bounded model string, stdin-only provider credential, and
-bounded readiness probing. During fixed pairing bootstrap it may also resolve
-listed profile credentials through `hermes --profile <id> config env-path`,
-enable profile multiplexing, and restart the active gateway before verifying
-`/p/<id>` connections. These narrow operations do not authorize existing-profile
-provider/config mutation, general configuration, sessions, messages, tools,
-schedules, or arbitrary CLI.
-
-Provider/model setup has one explicit read exception:
-`GET /v1/profiles/{id}/model-options` on Wing Link reads the installed Agent's
-advertised `/p/{id}/api/model/options` catalog. Require an acknowledged device's
-`profiles:read` grant, current profile identity, and the exact Agent capability.
-Resolve an existing profile credential through fixed `config env-path` arguments;
-never create a key during a read. Return only bounded provider names/slugs and
-model IDs, including unconfigured providers. No caller-selected upstream URLs,
-redirects, credential forwarding to clients, shadow catalog, or extra mutation
-rights are permitted. Chat, sessions, runs, tools, and approvals remain direct.
-See [the setup catalog decision](docs/adr/api-and-state.md#provider-model-setup-catalog).
-
-Wing Link supports only the current and immediately previous protocol generation.
-Lifecycle and update work must preserve transactional activation, local health
-checks, digest/signature verification, and rollback behavior.
-
-### Directories and Projects
-
-- Directory navigation starts at locally approved, revocable roots.
-- Remote clients use opaque handles; they never submit or receive arbitrary
-  absolute host paths.
-- Revalidate canonical containment and grant status on every lookup; prevent
-  symlink escape.
-- Return bounded child-folder listings only—never file names, file metadata, or
-  file contents.
-- Translate an approved handle into a path only inside a fixed Project operation.
-  Hermes Agent remains the Project authority.
+Local discovery is metadata-only and its chooser is ephemeral, not an Agent
+Project selector. Android uses explicit manual Agent preparation in the separate
+Termux sandbox. Native SSH is an authenticated forward, not lifecycle authority.
+Missing Project assignment, directory browsing, host lifecycle and peer management
+stay unavailable until exact authoritative Agent contracts are verified. No shell
+bridge, caller-selected executable/config key/path or shadow backend is allowed.
 
 ## Security and privacy
 
 Treat credentials, pairing codes, transcripts, recognized speech, private
 endpoints, host paths, and provider keys as sensitive.
 
-- Provider secrets are write-only. They may use an advertised secret-safe Agent
-  API or the reviewed transactional new-profile path that sends credential bytes
-  through stdin. Existing-profile compatibility secret mutation remains blocked.
-- Never place secrets in argv, URLs, QR payloads, clipboards, shared text,
-  ordinary preferences, responses, logs, diagnostics, screenshots, fixtures, or
-  audit request bodies.
-- Store credentials only in platform secure storage. Hermes Agent and Wing Link
-  credentials remain separate.
-- Pairing handoffs carry only a random single-use code, never a bearer token. The
-  code expires after five minutes, must not be persisted or analyzed, and any
-  handoff page must send `Cache-Control: no-store`.
-- Explicit paste is a user action, not background clipboard monitoring; discard
-  raw handoff text immediately after parsing.
-- HTTP is loopback-only. Wing Link may bind loopback plus at most one local
-  private-LAN, NetBird, or Tailscale interface; every non-loopback listener
-  requires TLS 1.3 and authenticated device credentials. Native clients pin the reviewed TLS
-  key's SHA-256 SPKI fingerprint; a changed or missing pin fails closed and
-  requires explicit re-pairing. Network location is never authorization.
-- Remote devices may inspect and revoke only themselves. Permission expansion,
-  peer administration, host identity rotation, sensitive writes, destructive
-  actions, and install/update approval remain local trust decisions.
+- Provider secrets are write-only and require an exact advertised secret-safe Agent
+  API. Never put them in argv, URLs, clipboard, responses, logs or ordinary preferences.
+- Store credentials only in platform secure storage. Do not read or delete inert
+  legacy management slots or raw records as part of retirement.
+- Legacy intent/share input is discarded without parsing, display or persistence.
+  No pairing, scanner, bootstrap or management fallback is offered.
+- HTTPS validates origins/certificates; native SSH verifies the host fingerprint.
+  Non-local Agent HTTP requires explicit consent on an authenticated encrypted VPN
+  or isolated trusted LAN. Network location is never authorization.
 - Bind retries and approvals to device, route, idempotency key, resource identity,
   and payload digest. A changed replay must fail.
 - Diagnostics and audit events must be bounded, allowlisted, and path/content
@@ -216,12 +157,9 @@ rollback behavior to reduce implementation effort.
 
 - `lib/core/hermes/`: Agent models, policies, API transport, channel state, SSE,
   reconciliation, and secure endpoint setup.
-- `lib/core/wing_link/`: Flutter-side Wing Link models and client boundary.
 - `lib/features/`: product vertical slices and screens.
 - `lib/router/`, `lib/app/`, `lib/shared/`, `lib/theme/`, `lib/l10n/`: shell,
   navigation, shared UI/policies, theming, and localization.
-- `wing_link/`: Go host-management service and CLI. Keep it outside Agent domain
-  ownership.
 - `hermes-agent/`: permanent, read-only upstream Agent reference clone; not part
   of the Wing product, build, validation, or commit scope.
 - `hermes-agent/apps/desktop/`: official Desktop product and UX reference inside the read-only Agent checkout.
@@ -236,12 +174,12 @@ rollback behavior to reduce implementation effort.
   proposing another.
 - `docs/runbooks/`, `docs/security/`, `docs/product/`: operational evidence,
   security contracts, and route status.
-- `scripts/`, `.github/workflows/`, `install-wing-link.sh`: validation, smoke,
+- `scripts/`, `.github/workflows/`, application installers: validation, smoke,
   release, and installation paths.
 - `third_party/` and `vendor/`: imported code; avoid broad formatting or edits
   outside an explicit dependency task.
 
-Toolchain: Flutter 3.44.2, Node.js 22, and Go 1.26 for Wing Link changes. Initial
+Toolchain: Flutter 3.44.2, Node.js 22. Initial
 setup is `flutter pub get` and `npm ci`.
 
 ## Worktree and change discipline
@@ -282,7 +220,6 @@ the affected boundary.
 
 - Dart/Flutter: format changed Dart files, run `flutter analyze`, and run the
   nearest `flutter test` target.
-- Wing Link: run `gofmt` on changed Go files and `(cd wing_link && go test ./...)`.
 - Localization: run `flutter gen-l10n`, then analyze and test the affected UI.
 - Browser behavior: build the deterministic E2E target before Playwright.
 - Security, protocol, installer, release, or cross-plane changes: run the focused
@@ -297,7 +234,6 @@ focused local task; use the relevant checks above for those):
 dart format --output=none --set-exit-if-changed lib test integration_test
 flutter analyze
 flutter test --concurrency=1
-(cd wing_link && go test ./...)
 flutter build web --release -t lib/main_e2e.dart
 npm run web:e2e
 npm audit
@@ -320,7 +256,7 @@ platform qualification.
 
 Before reporting completion:
 
-- confirm the change respects Agent/Wing Link authority and capability gating;
+- confirm the change respects Agent authority and capability gating;
 - review the diff for secrets, private data, host paths, shadow state, and
   unrelated edits;
 - add or update the smallest regression test for non-trivial behavior;

@@ -174,7 +174,7 @@ remains incomplete.
 - Retained Local setup still uses legacy contracts; the default enrollment
   chooser no longer promotes computer setup or QR pairing. See [enrollment](enrollment.md).
 - Remote and VPN modes connect to an explicitly supplied Agent endpoint.
-  Pairing separately establishes Wing Link management authority. Remote browser
+  No separate management authority or pairing mode is offered. Remote browser
   OAuth is not established by Desktop's OAuth implementation.
 - The current development SSH form creates native Dart forwarding, explicitly
   reviews the host key and adopts the direct Agent channel. It does not require
@@ -215,7 +215,7 @@ Linux-hosted deterministic fixtures. Review, integration and native/live
 qualification remain separate; this does not retire enrollment or other consumers.
 Do not store an ephemeral forwarded origin as the durable remote-host identity
 without defining how restart and port replacement preserve ownership. Keep Agent
-and Wing Link credentials, connections and lifecycle authority separate.
+credentials origin-bound; forwarding does not grant lifecycle authority.
 
 Remote bootstrap, installation and service changes are separate host-management
 operations. This first connection slice does not silently provision credentials,

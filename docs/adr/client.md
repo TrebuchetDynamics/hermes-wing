@@ -48,11 +48,9 @@ or copy Desktop privileged IPC. Existing
 [security boundaries](../security/threat-model.md) remain binding. Missing operations
 stay unavailable until their individual reviewed contract/evidence gates pass.
 
-Wing Link remains the current host-management plane, not the product organizing
-principle. Prioritize direct Agent connection and Desktop fidelity over new
-Wing-specific management features; retained dependencies are deprecated under the
-[product decision](product.md#wing-link-deprecation). Their actual removal and
-replacement qualification remain implementation work.
+Wing uses direct Agent connections. The host-management client/service and
+compatibility catalog are removed; missing Agent operations remain unavailable.
+No replacement backend, shell bridge or cached management authority is permitted.
 
 Use platform-native features where practical. Voice may use exact advertised
 Agent audio routes with platform processing as fallback; availability and

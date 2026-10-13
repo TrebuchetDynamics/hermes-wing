@@ -1,5 +1,10 @@
 # Wing Link CLI guide
 
+Status: archived historical reference; the client, service, installers and release artifacts are removed.
+Do not execute these former procedures. Use [direct Agent connection](../getting-started.md#direct-agent-connection).
+Personal installed services and records are not changed by source retirement.
+
+
 > **Retained legacy procedure—not current-user setup.** Wing Link is deprecated
 > and is not required for direct Agent connections. These commands document
 > existing legacy behavior pending retirement. Use

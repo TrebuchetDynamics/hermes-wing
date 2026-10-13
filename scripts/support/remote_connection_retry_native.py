@@ -37,7 +37,7 @@ def helpers():
     snapshot.OWNED = ()
     snapshot.OVERLAYS = ()
     snapshot.ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux',
-                      'wing_link', 'scripts', 'playwright/support')
+                      'scripts', 'playwright/support')
     return first, snapshot
 
 
@@ -122,68 +122,6 @@ def dependencies(app, sdk, evidence, snapshot):
             'plugins_sha256': snapshot.digest(plugin_path)}
 
 
-def go_dependencies(app, root, evidence, env, snapshot):
-    """Freeze the bundle's module closure before any native build uses it."""
-    shared = pathlib.Path(env['GOMODCACHE']).resolve()
-    owned = root / 'go-modules'
-    owned.mkdir()
-    raw = subprocess.check_output(['go', 'mod', 'download', '-json'],
-                                  cwd=app / 'wing_link', env=env, timeout=60).decode()
-    decoder = json.JSONDecoder()
-    rows = []
-    while raw.strip():
-        row, end = decoder.raw_decode(raw.lstrip())
-        raw = raw.lstrip()[end:]
-        if 'Error' in row or not row.get('Dir'):
-            raise ValueError('Go dependency unavailable offline')
-        rows.append(row)
-    for row in rows:
-        directory = pathlib.Path(row['Dir']).resolve()
-        metadata = pathlib.Path(row['GoMod']).resolve().parent
-        if not directory.is_relative_to(shared) or not metadata.is_relative_to(shared):
-            raise ValueError('Go dependency outside shared module cache')
-        shutil.copytree(directory, owned / directory.relative_to(shared), symlinks=False)
-        # Go's shared cache has read-only directories; owned copies must teardown.
-        for path in [owned / directory.relative_to(shared),
-                     *(owned / directory.relative_to(shared)).rglob('*')]:
-            if path.is_dir():
-                path.chmod(0o700)
-        target = owned / metadata.relative_to(shared)
-        if not target.exists():
-            # Retain graph metadata too: older .mod files can be needed by MVS.
-            shutil.copytree(metadata, target, symlinks=False,
-                            ignore=shutil.ignore_patterns('*.lock', '*.tmp'))
-    env['GOMODCACHE'] = str(owned)
-    env['GOFLAGS'] = '-p=2 -mod=readonly'
-    manifest = {str(p.relative_to(owned)): snapshot.digest(p)
-                for p in sorted(owned.rglob('*')) if p.is_file()}
-    archive = evidence / 'executed-go-modules.tar.gz'
-    with tarfile.open(archive, 'x:gz') as bundle:
-        for name in manifest:
-            bundle.add(owned / name, arcname=name, recursive=False)
-    archive.chmod(0o400)
-    manifest_path = evidence / 'go-dependencies.json'
-    manifest_path.write_text(json.dumps(manifest, indent=2))
-    # This must resolve exclusively from the copied cache, with networking off.
-    subprocess.check_output(['go', 'list', '-deps', '.'], cwd=app / 'wing_link',
-                            env=env, timeout=60)
-    return {'modules': [{k: row[k] for k in ('Path', 'Version', 'Sum', 'GoModSum')}
-                        for row in rows],
-            'files': len(manifest), 'archive_sha256': snapshot.digest(archive),
-            'manifest_sha256': snapshot.digest(manifest_path),
-            'toolchain': subprocess.check_output(['go', 'version'], env=env, timeout=30).decode().strip(),
-            'isolated_module_cache': True, 'offline_readonly_build': True}
-
-
-def verify_go_dependencies(root, evidence, snapshot):
-    manifest = json.loads((evidence / 'go-dependencies.json').read_text())
-    actual = {str(p.relative_to(root / 'go-modules')): snapshot.digest(p)
-              for p in sorted((root / 'go-modules').rglob('*'))
-              if p.is_file() and not p.name.endswith('.lock')}
-    if actual != manifest:
-        raise ValueError('Executed Go dependencies changed')
-
-
 def run(source):
     source = pathlib.Path(source).resolve()
     first, snapshot = helpers()
@@ -210,7 +148,6 @@ def run(source):
             env = first.isolated_environment(root)
             env.pop('WING_DIRECT_ROOT')
             env['WING_RETRY_ROOT'] = str(root)
-            result['go_dependencies'] = go_dependencies(app, root, evidence, env, snapshot)
             prepared_hashes = {name: snapshot.digest(app / name)
                                for name in snapshot.candidate_hashes(identity)}
             if prepared_hashes != snapshot.candidate_hashes(identity):
@@ -306,7 +243,6 @@ def run(source):
             result['executed_input_hashes'] = hashes
             if hashes != snapshot.candidate_hashes(identity):
                 raise ValueError('Executed source changed')
-            verify_go_dependencies(root, evidence, snapshot)
             result['status'] = 'NATIVE_REMOTE_CONNECTION_RETRY_PASS'
         result['isolated_state_deleted_after_teardown'] = True
     finally:

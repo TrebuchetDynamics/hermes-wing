@@ -159,7 +159,7 @@ to `build/receipts/<kind>-release-qualification.json`, which was not inspected.
 No physical/acoustic or server-audio receipt is claimed here.
 
 The [Linux lifecycle receipt contract](linux-service-receipts.md) and
-[recorder source](../../scripts/record_linux_service_qualification.mjs), lines
+[recorder source](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/scripts/record_linux_service_qualification.mjs), lines
 8–95, cover Linux amd64 `install`, `start`, `restart`, `health`,
 `failed-activation-rollback`, `uninstall`, then a sequence index. Candidate and
 distinct previously verified release sets are required. The recorder reads only
@@ -175,7 +175,7 @@ smoke receipts; [workflow tests](../../test/tooling/release_workflow_contract_te
 trace ordering, unsafe archives, tag recovery and platform jobs, but also invoke
 the forbidden shell verifier in a negative case. They are not safe to run as a
 whole under this card. [Android recorder tests](../../test/tooling/record_release_qualification_test.mjs)
-and [Linux recorder tests](../../test/tooling/linux_service_qualification_test.mjs)
+and [Linux recorder tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/test/tooling/linux_service_qualification_test.mjs)
 use synthetic artifacts/observations, not live qualification.
 
 ## Integrated M1–M5 and recovery gaps
@@ -252,3 +252,8 @@ ledger; this card's explicit scope forbids selecting or enqueuing another task.
 Its handoff is the candidate-admission comparison above, with all runtime gates
 retained. This known bookkeeping gap is not a failed offline inventory check and
 must not be cured by falsely marking M6 met.
+
+Retirement link maintenance: removed-source links now point at the last tracked
+pre-retirement baseline `918e7c318bab1d91f348570e2309598d729ecb9c`. These are
+source lookup pointers, not replacements for the original dirty-source manifests
+or fresh qualification of the historical results above.

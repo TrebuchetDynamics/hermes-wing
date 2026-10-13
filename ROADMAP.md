@@ -13,9 +13,8 @@ Platform-native implementation may differ;
 record every product deviation and capability gap explicitly. Desktop parity
 takes precedence over new Wing-specific management features. Existing milestone
 evidence, blockers and acceptance requirements remain unchanged; this priority
-does not close cards or qualify a platform. Agent owns domain state; Wing Link
-remains in the current host-management implementation but is deprecated. Remove
-its product dependencies, then retire its packaging without deleting paired state
+does not close cards or qualify a platform. Agent owns domain state; the former management client/service and packaging are removed, without deleting
+raw legacy records
 or pretending unsupported Agent operations exist. Linux Local discovery and
 Android guided same-phone setup replace management-first onboarding.
 [Product boundaries](docs/adr/product.md) and [routes](docs/product/routes.md) define
@@ -345,21 +344,21 @@ M6 integrates accepted applicable outcomes and names deferrals. No cards created
 ### M3 — Trusted onboarding into a useful profile and workspace
 
 - **Profiles, directories, and Projects:** approved directory handles expose
-  child folders only. Project-aware Chat remains gated on an exact authoritative
+  directory operations only when individually advertised. Project-aware Chat remains gated on an exact authoritative
   Agent contract, with mutation hidden until an exact route and grant are available.
   File listing, preview, reading, or editing through Wing Link is not authorized;
   Agent-owned artifact retrieval is a separate, individually gated operation.
-- **Outcome:** pair, choose/create a profile, configure supported provider/model
+- **Outcome:** connect directly, choose/create a profile, configure supported provider/model
   setup, and enter authoritative Project/persona context without hidden host writes.
 - **Status / next slice:** setup exists; Project creation/chat and existing-profile
   compatibility writes remain gated. Qualify enrollment→new-profile→explicit Chat
   through [Profiles](lib/features/profiles/screens/profiles_screen.dart) and
-  [Wing Link setup](docs/product/wing-link.md), not a second provider screen.
+  [direct Agent setup](docs/getting-started.md), not a second provider screen.
 - **Dependencies:** separate credentials, approved roots; Project operations/chat
   and SOUL read/write require individual authority. Existing-profile provider
   add/replace/remove/assignment needs [transaction criteria](docs/adr/api-and-state.md#required-agent-owned-mutation-contract),
   not new-profile rollback. Catalog read does not grant writes.
-- **Exit evidence:** profile/provider/directory/SOUL widget and Go boundary tests;
+- **Exit evidence:** profile/provider/SOUL widgets and Agent boundary tests;
   Chromium setup and named Android secure-input/pairing journeys; isolated actual
   setup receipt. For supported Project/provider writes prove conflict, identity
   recreation, revocation and unknown-outcome reconciliation; distinguish saved,
@@ -387,7 +386,7 @@ M6 integrates accepted applicable outcomes and names deferrals. No cards created
 - **Dependencies:** individual exact operations/grants/current resources for
   discovery catalog/install/remove, MCP config/toolset changes, memory entry/profile/
   capacity/provider reads and writes, job CRUD/pause/run/delivery, board/task reads
-  and mutations, Agent messaging-platform admin and Wing Link host lifecycle.
+  and mutations, Agent messaging-platform admin and exact Agent host lifecycle.
   Host trust expansion/peer administration remains local; no second dispatcher.
 - **Exit evidence:** per-operation decode/auth/conflict/revocation tests, inventory
   widgets (including [schedule refresh](test/features/schedules/schedules_screen_test.dart)),
@@ -491,7 +490,7 @@ memory/jobs/Kanban/host/platform admin/artifacts pass independently.
 
 Hard boundaries: exact operation/grant/resource gates, explicit identity/concurrency;
 server wins, no offline mutation replay. No Agent edits/arbitrary CLI/config/path/
-shadow state/Wing Link data-plane proxy. Separate credentials, fail-closed native pins,
+shadow state/Wing Link data-plane proxy. Origin-bound credentials, fail-closed native SSH fingerprints,
 browser HTTPS trust and local approvals remain; see [API/state](docs/adr/api-and-state.md),
 [security](docs/adr/security-and-privacy.md), [runtime](docs/adr/runtime-and-delivery.md).
 
@@ -508,7 +507,6 @@ Integrated M6 gate is exactly [CONTRIBUTING required checks](CONTRIBUTING.md#req
 dart format --output=none --set-exit-if-changed lib test integration_test
 flutter analyze
 flutter test --concurrency=1
-(cd wing_link && go test ./...)
 flutter build web --release -t lib/main_e2e.dart
 npm run web:e2e
 npm audit

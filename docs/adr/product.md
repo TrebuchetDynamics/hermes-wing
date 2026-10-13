@@ -84,9 +84,8 @@ Project or conversation working-directory selection. Android Local should guide
 same-phone setup and direct connection, using the mobile reference for interaction
 research rather than importing its runtime modifications.
 
-Existing management code, routes, installers and stored credentials remain in the
-worktree until explicit retirement work completes. Their security and authority
-rules still apply during migration. Do not erase paired records, restart personal
+The management client/service, installers and release dependencies are removed.
+Raw legacy records and secure slots remain inert and preserved. Do not erase paired records, restart personal
 runtimes or weaken checks to hide this dependency. Missing advertised Agent APIs
 leave an operation unavailable with an explanation; do not replace Wing Link with
 an unrestricted shell or shadow domain backend. See the removal tasks in
@@ -108,7 +107,8 @@ Decision: remove rather than keep an optional legacy mode or rename the service.
 Hermes Agent remains authoritative. Missing Agent capabilities stay unavailable;
 no replacement shell bridge or shadow backend is permitted.
 
-The existing queue owns the complete plan:
+The existing queue owns acceptance and delivery of this plan; implementation
+retirement does not itself close native/live qualification or publication:
 
 1. **CONNECTION-LINK-REMOVAL — finish consumer removal.** Preserve the current
    enrollment worker and its frozen contract. Then retire explicit QR/handoff routes,

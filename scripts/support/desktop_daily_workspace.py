@@ -14,7 +14,7 @@ def prepare(source, destination, sdk):
     destination.mkdir()
     app = destination / 'app'
     app.mkdir()
-    for name in ('lib', 'test', 'integration_test', 'assets', 'linux', 'wing_link', 'scripts/support', 'playwright/support'):
+    for name in ('lib', 'test', 'integration_test', 'assets', 'linux', 'scripts/support', 'playwright/support'):
         shutil.copytree(source / name, app / name, ignore=shutil.ignore_patterns('ephemeral', '__pycache__'))
     for name in ('pubspec.yaml', 'pubspec.lock', 'analysis_options.yaml', 'l10n.yaml',
                  '.flutter-plugins-dependencies', 'serve_web.mjs',

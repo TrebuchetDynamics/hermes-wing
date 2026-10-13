@@ -42,62 +42,6 @@ class RemoteRetryNativeTests(unittest.TestCase):
         self.assertEqual(value['inputs'][module.OWNED[0]]['owner'], module.CARD)
         self.assertEqual(value['inputs']['lib/a.dart']['owner'], 'preexisting-worktree')
 
-    def test_go_closure_is_copied_archived_and_fenced_from_shared_cache(self):
-        _, snapshot = module.helpers()
-        with tempfile.TemporaryDirectory() as tmp:
-            base = pathlib.Path(tmp)
-            shared, root, evidence = base / 'shared', base / 'owned', base / 'evidence'
-            root.mkdir()
-            evidence.mkdir()
-            directory = shared / 'example.org/module@v1.0.0'
-            directory.mkdir(parents=True)
-            (directory / 'source.go').write_text('package example')
-            directory.chmod(0o500)
-            metadata = shared / 'cache/download/example.org/module/@v'
-            metadata.mkdir(parents=True)
-            (metadata / 'v1.0.0.mod').write_text('module example.org/module')
-            (metadata / 'v0.9.0.mod').write_text('module example.org/module')
-            (metadata / 'v1.0.0.lock').touch()
-            row = dict(Path='example.org/module', Version='v1.0.0',
-                       Dir=str(directory), GoMod=str(metadata / 'v1.0.0.mod'),
-                       Sum='synthetic', GoModSum='synthetic')
-            env = dict(GOMODCACHE=str(shared), GOPROXY='off', GOSUMDB='off')
-            def output(command, **kwargs):
-                if command[1] == 'mod':
-                    self.assertEqual(command, ['go', 'mod', 'download', '-json'])
-                    return json.dumps(row).encode()
-                self.assertEqual(kwargs['env']['GOMODCACHE'], str(root / 'go-modules'))
-                return b'go version synthetic' if command[1] == 'version' else b'example.org/module'
-            with mock.patch.object(module.subprocess, 'check_output', side_effect=output):
-                value = module.go_dependencies(ROOT, root, evidence, env, snapshot)
-            self.assertTrue(value['isolated_module_cache'])
-            self.assertEqual(env['GOFLAGS'], '-p=2 -mod=readonly')
-            self.assertEqual((root / 'go-modules/example.org/module@v1.0.0').stat().st_mode & 0o777, 0o700)
-            manifest = json.loads((evidence / 'go-dependencies.json').read_text())
-            self.assertEqual(len(manifest), 3)
-            with tarfile.open(evidence / 'executed-go-modules.tar.gz') as archive:
-                self.assertEqual(set(archive.getnames()), set(manifest))
-                for name, checksum in manifest.items():
-                    member = archive.extractfile(name)
-                    assert member is not None
-                    self.assertEqual(module.hashlib.sha256(member.read()).hexdigest(), checksum)
-            directory.chmod(0o700)
-            (directory / 'source.go').write_text('shared mutation')
-            module.verify_go_dependencies(root, evidence, snapshot)
-            (root / 'go-modules/example.org/module@v1.0.0/source.go').write_text('owned mutation')
-            with self.assertRaises(ValueError):
-                module.verify_go_dependencies(root, evidence, snapshot)
-
-    def test_go_closure_rejects_missing_or_external_module_source(self):
-        _, snapshot = module.helpers()
-        for row in ({'Error': 'offline missing'},
-                    {'Dir': '/outside', 'GoMod': '/outside/module.mod'}):
-            with tempfile.TemporaryDirectory() as tmp:
-                root = pathlib.Path(tmp)
-                with mock.patch.object(module.subprocess, 'check_output', return_value=json.dumps(row).encode()):
-                    with self.assertRaises(ValueError):
-                        module.go_dependencies(ROOT, root, root, {'GOMODCACHE': str(root / 'shared')}, snapshot)
-
     def test_receipt_requires_every_recovery_and_zero_forbidden_operations(self):
         value = dict(native_pid=1, width=390.0, text_scale=2.0, profile='synthetic-qa',
             session='synthetic-history', mutation_attempts=0, forbidden_read_attempts=0,

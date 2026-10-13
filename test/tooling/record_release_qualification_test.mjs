@@ -20,10 +20,9 @@ const observations = {
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'wing-qualification-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  for (const name of [...inputs, ...artifactsByTarget.android, 'assets/config/termux_bootstrap.json']) {
+  for (const name of [...inputs, ...artifactsByTarget.android]) {
     await mkdir(dirname(join(root, name)), { recursive: true }); await writeFile(join(root, name), `synthetic ${name}`);
   }
-  await writeFile(join(root, 'android-termux-bootstrap.json'), await readFile(join(root, 'assets/config/termux_bootstrap.json')));
   const manifest = await createManifest(root, root, 'android', identity, { node: 'v22.0.0', flutter: '3.44.2' }, 'c'.repeat(64));
   await writeFile(join(root, 'android-release-evidence.json'), JSON.stringify(manifest));
   const installed = { ...manifest.artifacts[0], sdk: '34', isEmulator: false, microphoneGranted: true,

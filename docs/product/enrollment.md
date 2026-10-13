@@ -28,8 +28,8 @@ Reconnect through the direct Agent controls; saved records are not migrated or d
 Missing Agent APIs must leave affected features unavailable with an explanation.
 No new backend, shadow state or broader compatibility adapter is authorized.
 
-Pairing transfers approved host authority. Connecting through SSH is not pairing
-and must not implicitly install Wing Link, create credentials or restart Agent.
+Connecting through SSH must not create credentials, install a management service
+or restart Agent.
 Keep the manual single-profile Agent connection available. See the
 [Desktop comparison](desktop-connection-paths.md) for source evidence and limits.
 
@@ -44,7 +44,8 @@ The default chooser does not construct or invoke a Wing Link management client.
 Linux and Termux Local setup now reuse the direct Agent form, without installation
 or pairing completion. Explicit `/enroll?step=pair` and Android intent/share ingress now show generic
 reconnection guidance, with no controller construction or Link operations.
-This is one consumer retirement, not whole-product Wing Link removal.
+The client, service, bootstrap installers and delivery dependencies are removed.
+Historical records remain inert; personal installed services are untouched.
 
 ### Local preparation and authentication
 
@@ -65,10 +66,6 @@ Back returns to welcome. Neither changes saved endpoints, credentials or active
 profile/session ownership. An explicit direct-auth retry remains in the existing
 connection owner and never replays an Agent mutation.
 
-The computer setup widget and its localization remain legacy source, but the
-default enrollment screen neither imports nor constructs it. No stored data
-migration or deletion accompanies this presentation change.
-
 ### Deprecated handoff rejection
 
 Cold and warm Android intent/share payloads are consumed and discarded. The UI
@@ -85,28 +82,12 @@ returns to welcome. Direct options replace only the enrollment page. No saved
 credentials, records, active Agent endpoint/profile/session or sends are changed
 by rejection. No handoff is replayed on a later enrollment visit.
 
-The dormant parser/controller and readiness widget retain their security tests;
-this slice does not delete Link services, native scanner packaging or secure
-storage APIs. They are not constructed by production enrollment. Agent health
-and capability checks remain in the existing direct connection owner, and model
-configuration is not proof of successful inference.
-
-## Why the first redesign was insufficient
-
-It grouped controls and added computer instructions, but users still had to
-assemble the journey themselves. It retained an undifferentiated transfer-method
-list, a long Termux instruction page, generic failures, and a success message
-that conflated pairing with readiness. The current flow replaces those gaps with
-explicit choices, staged setup, transaction progress, actionable recovery, and
-separate readiness evidence.
-
 ## Qualification limits
 
-- Computer host setup describes Linux/systemd-user. Native Windows/macOS host
-  installation remains unqualified.
+- Wing does not install or manage a host runtime.
 - Termux background execution is best-effort; Android can suspend or kill it.
-- Browser pairing requires normally trusted HTTPS. Self-signed Wing Link hosts
-  require the native client's reviewed pinning flow.
+- Browser Agent connections require normally trusted HTTPS; native SSH verifies
+  the host fingerprint.
 - Existing-profile provider configuration remains a Hermes host action. No
   compatibility configuration API or shadow model state was added.
 - Wing does not bundle or manage optional model gateways. Configure provider

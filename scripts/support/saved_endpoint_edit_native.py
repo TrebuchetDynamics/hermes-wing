@@ -37,7 +37,7 @@ def helpers():
     snapshot.OWNED = ()
     snapshot.OVERLAYS = ()
     snapshot.ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux',
-                      'wing_link', 'scripts', 'playwright/support')
+                      'scripts', 'playwright/support')
     return first, snapshot
 
 
@@ -115,7 +115,6 @@ def run(source):
             env = first.isolated_environment(root)
             env.pop('WING_DIRECT_ROOT')
             env['WING_SAVED_EDIT_ROOT'] = str(root)
-            result['go_dependencies'] = retry_helpers().go_dependencies(app, root, evidence, env, snapshot)
             prepared_hashes = {name: snapshot.digest(app / name)
                                for name in snapshot.candidate_hashes(identity)}
             if prepared_hashes != snapshot.candidate_hashes(identity):
@@ -212,7 +211,6 @@ def run(source):
             result['executed_input_hashes'] = hashes
             if hashes != snapshot.candidate_hashes(identity):
                 raise ValueError('Executed source changed')
-            retry_helpers().verify_go_dependencies(root, evidence, snapshot)
             result['status'] = 'NATIVE_SAVED_ENDPOINT_EDIT_PASS'
         result['isolated_state_deleted_after_teardown'] = True
     finally:

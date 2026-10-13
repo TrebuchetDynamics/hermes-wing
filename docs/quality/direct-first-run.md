@@ -2,6 +2,70 @@
 
 > Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
 
+## Agent-only TLS recovery regression — t_b967a50b
+
+This bounded continuation closes the stale TLS test dependency recorded below,
+not `CONNECTION-LINK-REMOVAL`, `CONNECTION-LINK-RETIREMENT` or `CONNECTION-PATHS`.
+Only the [auth-recovery test](../../test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart)
+and this receipt changed. Production, localization, transport, fakes, dependencies,
+user stores and ledger remain unchanged.
+
+### Admission and source
+
+The original pre-edit tool history records successful `worker_start_admitted`:
+
+```text
+python3 /home/xel/git/gormes/hermes-toolset/skills/autowork/scripts/pass_workspace.py --manifest /home/xel/.hermes/profiles/wing/autowork/pass-8403344eddc919b8-6944d399f8c34e37ac2c3e6b5696f91a.json --manifest-sha256 ac06ce35f8adf12c95b578c0ed8bf2017bd8ed007443dab5ddcb1bf300f585a0 --workspace /home/xel/.hermes/cache/scratch/autowork-passes/8403344eddc919b8-6944d399f8c34e37ac2c3e6b5696f91a
+```
+
+Clean detached base: `59a099c35115ce1e8d65f8456449c5dfeeaa620b`, the integrated
+browser repair. Changed test SHA256:
+`a4d70fd4f5ae0337fa92fb2130377b27b3da65f9653627411639a67541178d91`.
+The finish gate's exact two-file commit/ref and check receipt belong to the native
+card handoff; this receipt is not a build input.
+
+### Acceptance and executed checks
+
+The unmodified target reproduced RED: ten passes and one failure at old line 220,
+expecting **Re-pair explicitly**. The corrected typed TLS case asserts the complete
+current certificate/trusted-host guidance, including trusted-administrator
+verification before reconnecting. It rejects **Re-pair**, retains opaque-error
+redaction and asserts zero automatic connect calls after settling. Existing
+auth recovery, explicit reconnect, equivalent-endpoint credential preservation,
+duplicate-tap fencing, approval visibility and accessibility assertions remain
+intact. No transport validation or fail-closed policy was changed.
+
+Inspected source: [typed error presentation](../../lib/features/hermes_chat/screens/widgets/hermes_chat_error.dart),
+[English copy](../../lib/l10n/app_en.arb) and
+[transport failure mapping](../../lib/core/hermes/channel/api_channel/hermes_api_channel_connection.dart).
+The scope reaches only the existing test and receipt: no caller, fixture, config,
+export, dependency or generated localization changes are needed.
+
+```bash
+dart format test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart
+timeout 10m flutter test --concurrency=1 --reporter expanded test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart
+timeout 10m flutter test --concurrency=1 --reporter expanded test/features/enrollment test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/tooling/hermes_domain_authority_contract_test.dart test/tooling/enrollment_retirement_contract_test.dart test/tooling/link_localization_retirement_contract_test.dart
+timeout 5m flutter analyze
+git diff --check
+```
+
+Linux-hosted deterministic Flutter results: focused GREEN, 11 passes (2s reported
+test time); named union, 65 passes (41s); analyzer, no issues (6.3s); format,
+zero changes; whitespace check passed. Scoped local Markdown link validation is
+included in the finish gate, which repeats the required passing commands before
+committing exactly these two files. No unexpected failures or retry fixes occurred
+after the initial RED. Total execution/review time and monetary cost are unknown.
+
+Implemented: current Agent-only TLS trust guidance is regression-covered without
+legacy pairing promotion. Qualified: the named deterministic Flutter targets on
+Linux only; platform overrides are not physical Android qualification. Delivered:
+local candidate only, pending independent native review and coordinator integration.
+The unchanged Chromium receipts below are preserved historical evidence, not fresh
+browser execution. Native SSH, Android/Termux, native Local discovery, live
+authentication/provider generation, packaging and the full release gate remain
+**NOT_CHECKED**. The next slice remains coordinator-owned retirement/qualification;
+this worker does not close the parent ledger or publish the candidate.
+
 ## Current public browser regression closure — t_ff373dd7
 
 This section supersedes the historical entry/optional-pairing claims below.

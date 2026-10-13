@@ -217,8 +217,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Secure connection to Hermes failed.'), findsOneWidget);
-    expect(find.textContaining('Re-pair explicitly'), findsOneWidget);
+    expect(
+      find.text(
+        'Check the HTTPS certificate or trusted host identity. '
+        'If the identity changed, verify it through a trusted administrator '
+        'before reconnecting.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Re-pair'), findsNothing);
     expect(find.textContaining('opaque secure'), findsNothing);
+    expect(channel.connectCalls, isEmpty);
   });
 
   testWidgets('auth failures ask for a new key without deleting VPN profile', (

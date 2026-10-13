@@ -4564,6 +4564,11 @@
         },
         {
           "kind": "inspection",
+          "ref": "ROADMAP.md#flutter-port-execution-roadmap [official Desktop pin158fd638; outcome phases and existing task mapping; independently reviewed plan; no runtime/parity certification]",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
           "ref": "docs/adr/product.md#complete-removal-including-legacy [owner-directed full retirement plan; inventory 159; independent planning review approved; no runtime qualification]",
           "result": "pass"
         },

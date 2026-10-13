@@ -21,6 +21,155 @@ Android guided same-phone setup replace management-first onboarding.
 [Product boundaries](docs/adr/product.md) and [routes](docs/product/routes.md) define
 delivery order, not deadlines; deferred capabilities are not completed parity.
 
+## Flutter port execution roadmap
+
+Status: Accepted
+
+Scope: organize the existing owner-approved official Desktop port into outcome
+milestones. This planning request does not start workers, alter schedules, enable
+inference or authorize releases. `TODO.md` remains the work queue; `goals.json`
+remains its execution index. Preserve current CONNECTION-PATHS focus and active
+ownership. The stages below guide scope, not new hard dependencies or deadlines.
+
+Planning baseline: Wing `a3b24c9e`; read-only official Agent/Desktop checkout
+`158fd638da1629c8e62caf9ade1515d162def8ab`. This pin is not a remote-latest claim.
+Desktop `src/app/` contains chat, agents/profiles, artifacts, cron, gateway,
+messaging, learning, hooks/webhooks, shell, settings and command-center surfaces;
+`src/store/` and `components/pane-shell/` show scoped sessions, projects, previews,
+plugins, native notifications and pane lifecycle. These are source inventory leads,
+not executed feature verification. The older feature matrix has withdrawn reference
+citations: do not turn its row counts or old Wing-specific pairing rows into a
+completion percentage. Update operation-level mapping alongside each real port slice.
+
+### 1. Finish the connection foundation
+
+- Finish all Link consumers and packaging, including saved-endpoint APIs, fixtures,
+  service/installer/release hooks. Preserve raw user records and direct Agent access.
+- Make existing Hermes CLI → enabled authenticated API → Wing → first reply a
+  reproducible onboarding path. Native Android choices remain SSH, Remote, Termux;
+  desktop/wide web keep the matched Desktop entry. Do not confuse guidance with installation.
+- Qualify the actual production transport needed by each Desktop outcome. Reuse
+  `HermesChannel`, Riverpod and current API clients; REST/SSE and `hermes serve`
+  JSON-RPC/WS are distinct contracts, not interchangeable tokens or fake backends.
+- Owners: CONNECTION-LINK-REMOVAL, CONNECTION-LINK-RETIREMENT,
+  CONNECTION-OFFICIAL-DESKTOP-PORT, CONNECTION-SAVED-WORKFLOWS,
+  CONNECTION-SETUP-AUTH-MATRIX; WING-TASK-405 → 406 → 407 for the existing
+  production serve connection/send/recovery sequence.
+- Exit: supported Local/SSH/Remote paths retain exact connection/profile/session
+  ownership, expose real errors/retry/cancel, and use no Link fallback. Missing safe
+  authentication/operation contracts remain named gaps; no credential-in-URL workaround.
+
+### 2. Deliver the daily-use workflow, then away-and-return status
+
+- Complete explicit profile/model/session → streamed reply → tool activity →
+  correctly correlated approval/deny → authoritative Stop → relaunch into the exact
+  session with canonical history and zero duplicate sends. Test denied, cancelled,
+  disconnected and replaced-owner paths, not only the happy path.
+- Reuse implemented session search/fork/rename/delete and approval retirement;
+  do not reimplement completed slices. Qualify the combined live journey separately.
+- Preserve the accepted next order: reliable mobile away-and-return/job status,
+  then a supported notification contract. Notifications must not steal focus or
+  silently add background service/push infrastructure.
+- Owners: PARITY-LIVE-WORKFLOW, VERIFY-LIVE-WORKFLOW-RECOVERY,
+  M1-MOBILE-AWAY-STATUS, M1-NOTIFICATION-CONTRACT, M2-DEVICE-QUALIFICATION.
+- Exit: same-source Linux/Chromium and Android outcomes are independently attributed;
+  fixture, Waydroid, physical-device and live-provider evidence are not interchangeable.
+  Missing approved QA authentication/provider-call limits hold only the live cell.
+
+### 3. Match the Desktop shell and Chat interaction
+
+- Match navigation grouping, profile footer, recents/session modal, tabs/panes,
+  composer/queue/draft behavior, transcript/code/reasoning rendering, slash commands,
+  shortcuts and settings overlays. Keep Chat/active work alive across navigation.
+- Use Desktop durable/runtime/lineage identities correctly. Closing a tab is not
+  automatically Stop; switching profiles must not lose background work or leak state.
+- Owners: WING-TASK-408, VERIFY-PROFILE-FOOTER-NATIVE,
+  VERIFY-CHAT-TRANSCRIPT-NATIVE, VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART,
+  DOC-PARITY-TAB-CONTRACT, DOC-PARITY-TAB-RECONNECT-CONTRACT,
+  DOC-SLASH-CATALOG-CONTRACT, DOC-SHELL-PERSISTENCE-EVIDENCE.
+- Exit: reference-traced public controls and compact/wide, keyboard/large-text,
+  reconnect/relaunch regressions pass. Platform adaptations are explicit deviations.
+
+### 4. Port assistant configuration and workspace ownership
+
+- Finish profile lifecycle/persona, exact provider/model routing, secret-safe provider
+  credentials, Agent-owned Projects and workspace assignment. Add only operations
+  supported by the authoritative runtime; report conflicts and stale revisions.
+- Keep Projects distinct from Hermes-home discovery. Remote folders require approved
+  opaque handles/containment, not arbitrary saved host paths. Never create shadow
+  profiles, Projects, provider catalogs or a global profile/project-use side effect.
+- Owners: DOC-M3-PROJECT-CONTRACT, DOC-M3-PROJECT-ASSIGNMENT-CONTRACT,
+  DOC-M3-PROVIDER-CONTRACT, DOC-M3-PROVIDER-REMOVAL-CONTRACT,
+  DOC-PERSONA-EVIDENCE, DOC-PERSONA-CONFLICT-EVIDENCE.
+- Exit: create/select/edit/conflict/delete and corresponding Chat context are proven
+  where supported; missing mutation authority is not counted as completed parity.
+
+### 5. Port remaining Agent administration and work surfaces
+
+- Cover skills/Discover, toolsets/MCP, memory, schedules, gateway/messaging settings,
+  Agent-owned boards/Bot workflows, hooks/webhooks and supported plugin operations.
+  Start with one usable read-and-action slice per real contract, not empty screens.
+- Port attachment/artifact viewing/export and accepted file/terminal outcomes through
+  bounded native or advertised Agent operations. Isolate guest previews and require
+  explicit user gestures for external access. Never substitute an unrestricted shell.
+- Reconcile source-discovered groups into the existing feature matrix and owners:
+  DOC-M4-DISCOVERY-SELECTION-CONTRACT, DOC-M4-MCP-CONTRACT,
+  DOC-M4-MEMORY-CONTRACT, DOC-M4-SCHEDULE-CONTRACT, DOC-M4-KANBAN-CONTRACT,
+  DOC-M4-PLATFORM-CONTRACT, DOC-ARTIFACT-CONTRACT, FILES-TERMINAL-BROWSE,
+  FILES-TERMINAL-DOWNLOAD, DOC-ACCOUNT-CONTRACT, DOC-OFFICE-REFERENCE.
+- Exit: each advertised action has capability/grant/owner/error/concurrency checks
+  and a matching user journey. Source-only discoveries are not acceptance evidence;
+  unsupported operations stay gaps rather than a renamed second backend.
+
+### 6. Qualify platform experience and recovery
+
+- Qualify native window/menu/shortcut/clipboard/storage behavior, Android lifecycle,
+  voice permissions/cancellation, accessible equivalents, diagnosis and backup/import.
+  Keep 3D/Office enhancements and account/voice contracts behind reliable text work.
+- Owners: PARITY-NATIVE-LINUX, PARITY-MAESTRO-ANDROID-DEVICE,
+  DOC-NATIVE-DESIGN-REVIEW, DOC-M5-LARGE-TEXT-EVIDENCE,
+  DOC-VOICE-QUALIFICATION, DOC-DIAGNOSTICS-CONTRACT,
+  DOC-DIAGNOSTICS-BACKUP-CONTRACT, DOC-OFFICE-ACCESSIBLE-EQUIVALENT.
+- Exit: named targets have real runtime receipts, reduced-motion/keyboard/non-spatial
+  paths and failure recovery. Windows/macOS/iOS qualification remains separate work;
+  compilation and Chromium are not proof for those native targets.
+
+### 7. Deliver and distribute a qualified port
+
+- Run the affected integrated gates on a frozen candidate; review, commit, integrate
+  and verify `origin/main`. Scope migrations to coherent user outcomes and reuse
+  still-matching checks instead of repeating the whole audit on every occurrence.
+- Separately qualify signed artifacts, install/update/rollback/uninstall and public
+  distribution. Source publication is authorized by the standing owner direction;
+  deployment, store submission and release publication require their own authority.
+- Owners: MT-RERUN-TRAIN, MT-VERIFY-BROWSER-GATES,
+  DOC-M6-CHECKER-NODE22, DOC-M6-INTEGRATED-RECEIPT-GAP,
+  DOC-DESKTOP-DELIVERY-EVIDENCE, DOC-DESKTOP-UNINSTALL-EVIDENCE,
+  DOC-API-DEVICE-SELF-CONFORMANCE, SECURITY-RETAINED-RELEASE-AUDIT.
+- Exit: every claimed Desktop operation maps to official source and passing target
+  evidence or an explicitly accepted platform deviation. No unresolved supported
+  local feature is hidden and counted as complete. Full port completion is not
+  inferred from a screen tour, backlog count, fixture suite or number of commits.
+
+### Execution rule and progress signal
+
+Now: preserve the active saved-endpoint retirement worker; finish connection
+cleanup rather than another README pass. Next: packaging/consumer closure and
+reproducible API onboarding, then the first complete daily-use journey. Continue
+independent UI/operation work when a live-only gate is unavailable. Existing task
+ordering, leases and dependencies remain in `TODO.md`/`goals.json`; this roadmap
+creates no duplicate worker, queue or scheduler.
+
+Measure unfinished owning goals, not a parity percentage. At the inspected baseline,
+32 of the roadmap's owning goals are not `met`; the number is execution-index
+readiness, not independently requalified Desktop feature coverage. Target: zero
+unfulfilled accepted outcomes **plus** the operation/platform evidence above.
+Verify the numeric queue signal with `python3 -c 'import json; d=json.load(open("goals.json")); print(sum(g["status"] != "met" for g in d["goals"] if g["id"] not in {"INTEGRATION","GLOBAL-LOADED-SESSIONS"}))'`.
+Guard: `goals.py validate`, consumer-bound task checks, source/operation evidence,
+focused regression/analyzer/build checks, then integrated and named-target gates.
+Iterations: one bounded vertical implementation slice per checkpoint, within existing
+execution authority; no time estimate or new implementation is implied by this plan.
+
 ## Baseline and evidence boundaries
 
 Snapshot 2026-10-01: source/board inspected; dirty work is not a commit/release/platform qualification.

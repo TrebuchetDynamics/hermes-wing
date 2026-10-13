@@ -12,6 +12,16 @@ These connections are not implementation, qualification or dispatch evidence.
 
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](README.md). Existing leases and daily-workflow acceptance remain unchanged.
 
+## Forward execution owner
+
+The current [Flutter port execution roadmap](../../ROADMAP.md#flutter-port-execution-roadmap)
+organizes the existing accepted port, with root TODO/goals as the only queue. The
+older pause/main-only/local-only passages below retain their original historical
+context; they do not revoke the later owner-authorized isolated offline worker path
+or standing reviewed, checked `origin/main` delivery. Preserve Agent read-only,
+active writers, security, live-inference and release boundaries. This document does
+not assert live scheduler state, restart a job or qualify a historical admission gate.
+
 ## Owner decisions
 
 Accepted in the Telegram interview, 2026-10-03:

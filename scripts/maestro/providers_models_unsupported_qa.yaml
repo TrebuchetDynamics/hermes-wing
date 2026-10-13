@@ -1,6 +1,6 @@
 # Static validation: maestro check-syntax scripts/maestro/providers_models_unsupported_qa.yaml
 # Physical-device receipt for a saved gateway that does not advertise provider
-# or model administration. Proves Wing Link provider creation remains available
+# or model administration. Checks absent mutation controls
 # while advertised runtime models stay read-only. Pass the saved label
 # with `-e WING_QA_GATEWAY_LABEL="<saved gateway label>"`.
 appId: com.trebuchetdynamics.hermes.wing

@@ -3,6 +3,128 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('Android live regression cannot restore management profile cleanup', () {
+    expect(
+      File('scripts/maestro/gateway_profiles_qa.yaml').existsSync(),
+      isFalse,
+    );
+    final source = File(
+      'scripts/run_android_maestro_regression.sh',
+    ).readAsStringSync();
+    for (final forbidden in [
+      'gateway_profiles_qa.yaml',
+      'WING_QA_PROFILE_FIXTURE',
+      'wing-link',
+      'hermes profile',
+      'cleanup_status',
+    ]) {
+      expect(source, isNot(contains(forbidden)), reason: forbidden);
+    }
+    for (final match in RegExp(
+      r'^\s+(\S+\.yaml)$',
+      multiLine: true,
+    ).allMatches(source)) {
+      final path = match.group(1)!;
+      final flow = File(path).readAsStringSync();
+      for (final forbidden in [
+        'Wing Link',
+        'wing-link',
+        'WING_QA_PROFILE_FIXTURE',
+      ]) {
+        expect(flow, isNot(contains(forbidden)), reason: path);
+      }
+    }
+    final providers = File(
+      'scripts/maestro/providers_models_unsupported_qa.yaml',
+    ).readAsStringSync();
+    for (final retained in [
+      'Providers unavailable',
+      'Read-only access',
+      'Primary runtime model',
+      r'- assertNotVisible: "^Create$"',
+      r'- assertNotVisible: "^Manage credential$"',
+      r'- assertNotVisible: "^Choose model$"',
+    ]) {
+      expect(providers, contains(retained), reason: retained);
+    }
+  });
+
+  test(
+    'Android live runner preserves identity, order and suite status offline',
+    () async {
+      final root = Directory.systemTemp.createTempSync('android-runner-');
+      addTearDown(() => root.deleteSync(recursive: true));
+      Directory('${root.path}/scripts').createSync();
+      final runner = File(
+        'scripts/run_android_maestro_regression.sh',
+      ).copySync('${root.path}/scripts/runner.sh');
+      final args = File('${root.path}/args');
+      final cleanup = File('${root.path}/cleanup');
+      final maestro = File('${root.path}/fake-maestro')
+        ..writeAsStringSync(r'''#!/bin/bash
+printf '%s\n' "$@" > "$QA_ARGS"
+exit "$QA_STATUS"
+''');
+      // Sentinels prevent a restored cleanup path from reaching a personal runtime.
+      for (final name in ['wing-link', 'hermes']) {
+        File('${root.path}/$name').writeAsStringSync(r'''#!/bin/bash
+printf '%s\n' "$0 $*" >> "$QA_CLEANUP"
+exit 0
+''');
+      }
+      final permissions = await Process.run('chmod', [
+        '+x',
+        maestro.path,
+        '${root.path}/wing-link',
+        '${root.path}/hermes',
+      ]);
+      expect(permissions.exitCode, 0);
+      for (final status in [0, 17]) {
+        for (final device in ['', 'offline-device']) {
+          final result = await Process.run(
+            'bash',
+            [runner.path],
+            environment: {
+              'PATH': '${root.path}:/usr/bin:/bin',
+              'MAESTRO_BIN': maestro.path,
+              'WING_QA_GATEWAY_LABEL': 'Offline gateway',
+              'WING_QA_PROFILE_LABEL': 'offline-profile',
+              'WING_QA_DEVICE': device,
+              'WING_QA_PROFILE_FIXTURE': 'maestroqa123',
+              'QA_ARGS': args.path,
+              'QA_CLEANUP': cleanup.path,
+              'QA_STATUS': '$status',
+            },
+            includeParentEnvironment: false,
+          );
+          expect(result.exitCode, status, reason: '${result.stderr}');
+          expect(cleanup.existsSync(), isFalse);
+          expect(args.readAsLinesSync(), [
+            if (device.isNotEmpty) ...['--device', device],
+            'test',
+            '-e',
+            'WING_QA_GATEWAY_LABEL=Offline gateway',
+            '-e',
+            'WING_QA_PROFILE_LABEL=offline-profile',
+            '.maestro/real-gateway-regression.yaml',
+            'scripts/maestro/session_branch_qa.yaml',
+            'scripts/maestro/session_bulk_selection_qa.yaml',
+            'scripts/maestro/session_metadata_qa.yaml',
+            'scripts/maestro/tools_inventory_qa.yaml',
+            'scripts/maestro/gateway_status_qa.yaml',
+            'scripts/maestro/gateway_connection_settings_qa.yaml',
+            'scripts/maestro/providers_models_unsupported_qa.yaml',
+            'scripts/maestro/schedules_unsupported_qa.yaml',
+            'scripts/maestro/office_workspace_qa.yaml',
+            'scripts/maestro/chat_concurrent_sessions_qa.yaml',
+            'scripts/maestro/chat_process_recovery_qa.yaml',
+            'scripts/maestro/chat_ux_qa.yaml',
+          ]);
+        }
+      }
+    },
+  );
+
   test('obsolete Android pairing-success harness cannot return', () {
     expect(
       File('.maestro/android-pairing-same-device.yaml').existsSync(),

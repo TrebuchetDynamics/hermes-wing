@@ -5055,3 +5055,19 @@ Source section: Now / Next
   Acceptance: Name a fixed typed restore operation and validation/rollback limits, or its absence. No backup, restore, private-file reads or secret exports.
   Dependencies: DOC-DIAGNOSTICS-CONTRACT is complete and archived; this predecessor is satisfied.
   Ownership: original isolated worker completed; independent review approved; coordinator closed the trace.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-DESKTOP-UNINSTALL-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Next. Map one Linux uninstall and retained-state evidence gap.
+  Completion: independent native review approved exact commit `8f1eab8c0b0b65990f61277ec958a3909a878763`; integrated by coordinator. [Evidence map](docs/quality/linux-desktop-uninstall-evidence.md) identifies the missing client-only removal procedure and bounded mocked retention proof. Native uninstall remains NOT_CHECKED; parent DESKTOP-DELIVERY stays partial.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify named-target uninstall proof and documented data-retention limits, or the missing procedure. No installs, service changes or deletion.
+  Dependencies: DOC-DESKTOP-DELIVERY-EVIDENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.

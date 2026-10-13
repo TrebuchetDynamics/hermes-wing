@@ -315,6 +315,11 @@
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/slash-catalog-contract.md",
+          "result": "pass"
         }
       ],
       "id": "SLASH-CATALOG",
@@ -6704,14 +6709,6 @@
     },
     {
       "depends_on": [],
-      "goal": "SLASH-CATALOG",
-      "id": "DOC-SLASH-CATALOG-CONTRACT",
-      "section": "Now",
-      "status": "open",
-      "title": "Compare the current curated commands with an authoritative catalog"
-    },
-    {
-      "depends_on": [],
       "goal": "M1",
       "id": "PARITY-LIVE-WORKFLOW",
       "section": "Now",
@@ -7952,6 +7949,14 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify remaining exact session search and resume acceptance; fork/rename/delete receipts are bounded deterministic evidence"
+    },
+    {
+      "depends_on": [],
+      "goal": "SLASH-CATALOG",
+      "id": "DOC-SLASH-CATALOG-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Compare the current curated commands with an authoritative catalog"
     },
     {
       "depends_on": [],

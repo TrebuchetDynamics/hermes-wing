@@ -4965,3 +4965,24 @@ Source section: Now / Next
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
 <!-- end verified Linux delivery receipt -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-SLASH-CATALOG-CONTRACT** — Goal: SLASH-CATALOG. Section: Now. Compare the current curated commands with an authoritative catalog.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [SLASH-CATALOG](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing composer commands and read-only catalog/contracts; no shell dispatch or speculative command routes.
+  Acceptance: Identify one supported missing completion/action, its exact authorization and regression oracle, or an unavailable catalog.
+  Completion: [source-bound comparison](docs/quality/slash-catalog-contract.md),
+  commit `85614aa322181de43b3a8d0ad4d0f6ea1cc4ef0c`, independently approved.
+  The authoritative RPC catalog is unavailable on Wing's consumed HTTP transport;
+  48 composer and 34 authorization tests passed. SLASH-CATALOG remains partial.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+<!-- end verified slash catalog receipt -->

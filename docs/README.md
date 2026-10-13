@@ -7,19 +7,13 @@ Existing Wing test results do not establish parity with this corrected reference
 
 Hermes Wing is an independent cross-platform Flutter client for Hermes Agent,
 adapted for mobile, web, and desktop. Hermes Agent remains authoritative for
-agent state. Wing Link is deprecated and remains in legacy code until removal.
-It is not a prerequisite for Agent use, a chat proxy or a second backend.
-Wing Link setup, pairing and service runbooks describe retained legacy operations,
-not the new-user direction. See the [deprecation decision](adr/product.md#wing-link-deprecation).
+agent state. The former management service, client, installers and delivery
+artifacts are removed. Existing personal services and raw legacy records are
+untouched; archived procedures are not current-user setup.
 
 Use the [official Hermes Agent documentation](https://hermes-agent.nousresearch.com/docs/)
 for current Agent installation, CLI, provider, profile, and gateway behavior.
 The Wing documents below describe only this client's integration and evidence.
-
-Current integration handoff: [Profiles Agent-only removal](quality/profiles-agent-only-follow-through.md).
-The Profiles-only correction passed independent review on its isolated widget
-candidate. It is not canonical-source or main delivery; the existing owner carries
-combined-source dependency repair and remaining retirement work.
 
 ## Document ownership
 
@@ -32,7 +26,7 @@ or treat a source map as release evidence.
 | Product requirements | [PRD](product/prd.md) | Accepted intent and leading acceptance outcome. |
 | Architectural decisions | [Living ADRs](adr/README.md) | Five current decisions; preserve their history. |
 | Technical design | [Spec](spec.md) | Current implementation and planned integration boundaries. |
-| Owned HTTP API | `docs/api/wing-link.openapi.yaml` | Retained legacy, manual code-first snapshot for retirement checks; Go handlers remain authoritative. Not current-user setup. Wing consumes, but does not own, Agent HTTP contracts. |
+| HTTP contracts | Advertised Hermes Agent capabilities | Wing consumes Agent APIs; it owns no management HTTP API. Historical snapshots are not current authority. |
 | Verification | [Test plan](test-plan.md) | Risk scenarios and qualification limits, not a passing receipt. |
 | Operations | [Getting started](getting-started.md), [qualification](runbooks/desktop-feature-qualification.md), [release](runbooks/release-alpha.md) and focused runbooks below | Direct Agent use and bounded qualification; retained packaging is not proof of production deployment. |
 | Change history | [Changelog](../CHANGELOG.md) | Implemented Unreleased changes and recorded baseline, not invented publication. |
@@ -221,5 +215,5 @@ historical plan differs.
 
 - [Hermes WebUI feature and architecture study](product/hermes-webui-feature-study.md) — long-run chat, recovery, session, onboarding, and operations lessons with authority-safe Wing dispositions
 - [Buzz UX and archived Nostr research](research/buzz-nostr-lessons.md) — Nostr control transport deferred
-- [Matrix messaging lessons for Wing and Wing Link](research/matrix-messaging-lessons.md)
+- [Archived Matrix messaging research](research/matrix-messaging-lessons.md)
 - [Archived offline bilingual mobile voice research](research/offline-bilingual-voice-architecture.md) — not adopted; Wing does not ship or load app-owned voice models

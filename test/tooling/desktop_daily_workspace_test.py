@@ -37,7 +37,7 @@ class WorkspaceTest(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='daily-workspace-test.') as temp:
             base = pathlib.Path(temp)
             source, sdk = base / 'source', base / 'sdk'
-            for name in ('lib', 'test', 'integration_test', 'assets', 'linux', 'wing_link',
+            for name in ('lib', 'test', 'integration_test', 'assets', 'linux',
                          'scripts/support', 'playwright/support', '.dart_tool'):
                 (source / name).mkdir(parents=True)
             (sdk / 'bin/cache').mkdir(parents=True)
@@ -45,7 +45,6 @@ class WorkspaceTest(unittest.TestCase):
             (sdk / 'bin/cache/lockfile').write_text('shared-lock')
             (source / 'lib/main.dart').write_text('source')
             (source / 'playwright/support/dependency.mjs').write_text('fixture')
-            (source / 'wing_link/go.mod').write_text('host closure')
             (source / 'linux/flutter/ephemeral').mkdir(parents=True)
             (source / 'linux/flutter/ephemeral/shared-build').write_text('preserve')
             (source / '.dart_tool/package_graph.json').write_text('{"roots":["wing"]}')
@@ -63,7 +62,7 @@ class WorkspaceTest(unittest.TestCase):
             self.assertEqual([p['rootUri'] for p in config['packages']], [
                 app.as_uri(), (isolated / 'packages/flutter').as_uri(), external.as_uri()])
             self.assertTrue((app / 'playwright/support/dependency.mjs').is_file())
-            self.assertTrue((app / 'wing_link/go.mod').is_file())
+            self.assertFalse((app / 'wing_link').exists())
             self.assertTrue((app / '.dart_tool/package_graph.json').is_file())
             self.assertFalse((app / 'linux/flutter/ephemeral').exists())
             (isolated / 'bin/cache/lockfile').write_text('owned-lock')

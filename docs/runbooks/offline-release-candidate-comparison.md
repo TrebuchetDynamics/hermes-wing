@@ -62,9 +62,8 @@ identity/certificate disagreements, byte mismatches and an absent/altered index.
 The command reuses `readJson`, `verifyManifest` and `qualificationIndex` from
 [release_evidence.mjs](../../scripts/release_evidence.mjs). It checks the independent
 public certificate against the Android manifest separately, then deep-compares
-the published index with recomputed bindings for all four manifests, ten
-artifacts, dependency inputs, generated Android bootstrap, auxiliary files and
-required Android/macOS/Windows/host receipts. Object key order is irrelevant;
+the published index with recomputed bindings for all three manifests, four
+client artifacts, dependency inputs, auxiliary files and required Android/host receipts. Object key order is irrelevant;
 array order and exact fields remain significant. It preserves the existing
 schema and receipt contracts. JSON reads are limited to 128 KiB, text smoke
 receipts to 8 KiB, dependency inputs to 16 MiB and artifact hashes to 2 GiB per
@@ -104,3 +103,7 @@ exact exits and fixed outputs, a blank tool lookup PATH, poisoned identity
 environment, separate source/bundle trees, byte snapshots before/after every
 invocation, matching inputs and discriminating failure cases. They are not
 observed releases or platform qualification.
+
+Historical service-bearing manifests and bootstrap payloads are not accepted by
+the current client-only comparison contract. Preserve their receipts as history,
+not as evidence for a new release. No legacy release mode is offered.

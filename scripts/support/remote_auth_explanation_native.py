@@ -29,8 +29,6 @@ if spec is None or spec.loader is None:
 retry = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(retry)
 dependencies = retry.dependencies
-go_dependencies = retry.go_dependencies
-verify_go_dependencies = retry.verify_go_dependencies
 
 
 def helpers():
@@ -113,7 +111,6 @@ def run(source):
             env['PKG_CONFIG_PATH'] = str(sysroot / 'usr/lib/x86_64-linux-gnu/pkgconfig')
             env['LIBRARY_PATH'] = str(sysroot / 'usr/lib/x86_64-linux-gnu')
             env['WING_RETRY_ROOT'] = str(root)
-            result['go_dependencies'] = go_dependencies(app, root, evidence, env, snapshot)
             prepared_hashes = {name: snapshot.digest(app / name)
                                for name in snapshot.candidate_hashes(identity)}
             if prepared_hashes != snapshot.candidate_hashes(identity):
@@ -210,7 +207,6 @@ def run(source):
             result['executed_input_hashes'] = hashes
             if hashes != snapshot.candidate_hashes(identity):
                 raise ValueError('Executed source changed')
-            verify_go_dependencies(root, evidence, snapshot)
             if native_hashes != {str(p.relative_to(sysroot)): snapshot.digest(p)
                     for p in sorted(sysroot.rglob('*')) if p.is_file()}:
                 raise ValueError('Executed native dependencies changed')

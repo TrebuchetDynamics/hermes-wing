@@ -38,7 +38,7 @@ def freeze(source, app):
     helper.OWNED = ()
     helper.OVERLAYS = ()
     helper.ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux',
-                    'wing_link', 'scripts', 'playwright/support')
+                    'scripts', 'playwright/support')
     identity = helper.freeze(source, app)
     for name, row in identity['inputs'].items():
         row['owner'] = CARD if name in OWNED else 'preexisting-worktree'
@@ -57,10 +57,7 @@ def isolated_environment(root):
                XDG_RUNTIME_DIR=str(root / 'runtime'), TMPDIR=str(root / 'cache'),
                WING_DIRECT_ROOT=str(root), GDK_BACKEND='x11',
                LIBGL_ALWAYS_SOFTWARE='1', CMAKE_BUILD_PARALLEL_LEVEL='2',
-               PUB_CACHE=os.environ.get('PUB_CACHE', str(pathlib.Path.home() / '.pub-cache')),
-               GOMODCACHE=subprocess.check_output(['go', 'env', 'GOMODCACHE'], timeout=30).decode().strip(),
-               GOMAXPROCS='2', GOFLAGS='-p=2', GOPROXY='off', GOSUMDB='off',
-               GOTOOLCHAIN='local', GOCACHE=str(root / 'cache/go-build'))
+               PUB_CACHE=os.environ.get('PUB_CACHE', str(pathlib.Path.home() / '.pub-cache')))
     return env
 
 

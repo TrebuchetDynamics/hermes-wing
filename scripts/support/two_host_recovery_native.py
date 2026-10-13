@@ -36,8 +36,6 @@ def prerequisites():
 
 shared = prerequisites()
 dependencies = shared.dependencies
-go_dependencies = shared.go_dependencies
-verify_go_dependencies = shared.verify_go_dependencies
 
 
 def helpers():
@@ -295,7 +293,6 @@ def run(source):
             env.pop('WING_DIRECT_ROOT')
             env['WING_TWO_HOST_ROOT'] = str(root)
             result['native_dependencies'] = native_dependencies(root, evidence, env, snapshot)
-            result['go_dependencies'] = go_dependencies(app, root, evidence, env, snapshot)
             prepared_hashes = {name: snapshot.digest(app / name)
                                for name in snapshot.candidate_hashes(identity)}
             if prepared_hashes != snapshot.candidate_hashes(identity):
@@ -393,7 +390,6 @@ def run(source):
             result['executed_input_hashes'] = hashes
             if hashes != snapshot.candidate_hashes(identity):
                 raise ValueError('Executed source changed')
-            verify_go_dependencies(root, evidence, snapshot)
             # Chromium's singleton socket cannot use the deeply nested evidence path.
             browser_scratch = pathlib.Path.home() / '.hermes/cache/scratch' / CARD
             browser_scratch.mkdir(parents=True, exist_ok=True)

@@ -5,147 +5,60 @@ locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
 [withdrawn as official parity evidence](docs/quality/official-desktop-reference.md).
 Existing Wing test results do not establish parity with this corrected reference.
 
-Hermes Wing is a Flutter port of Hermes Desktop, not a separately designed client
-with similar features. Hermes Agent owns agent state. Wing Link is the deprecated
-legacy remote management API, retained until removal and never a prerequisite for Agent use.
-
-## Product language
-
-**Hermes Wing** — the Android, web, and desktop client. Avoid _companion_ and
-_Electron clone_.
-
-**Hermes Agent** — the authoritative runtime for profiles, projects, providers,
-models, sessions, tools, schedules, memory, and gateway state.
-
-**Wing Link** — the remote management plane for setup, pairing, lifecycle,
-health, diagnostics, approved host directories, and reviewed fixed compatibility
-operations. Avoid _proxy_, _shell bridge_, and _second backend_.
-
-**Hermes Agent data plane** — direct authenticated Agent API traffic for chat,
-sessions, runs, tools, approvals, and advertised administration. It does not
-transit Wing Link.
-
-**Hermes Project** — an Agent-owned, per-profile workspace with one or more
-folders and a primary folder. Use this for repository/subfolder assignment;
-do not invent a Wing-owned profile `workdir`.
-
-**Directory grant** — a locally approved host root exposed by Wing Link through
-opaque handles. It is not an unrestricted saved path.
-
-**Capability parity** — a 1:1 Hermes Desktop product port: feature coverage,
-welcome, navigation, screen structure, terminology, layout, visual hierarchy,
-interaction and recovery behavior are the reference.
-Flutter/native implementation may differ; product deviations must be explicit.
-Parity is a delivery goal, not evidence of implemented or accepted behavior.
-
-**Accessible equivalent** — a fully operable path that does not depend on 3D,
-canvas, pointer, speech, motion, sound, or color alone.
-
-**Detached run** — Agent-owned work that continues while Wing is suspended and
-is reconciled on return.
-
-## Authority rules
-
-- Never modify Hermes Agent itself, including reference clones, installed runtimes
-  or forks. Missing contracts must be handled within Wing/Wing Link's supported
-  boundaries or left unavailable; see the
-  [hard ADR](docs/adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent).
-- Prefer the advertised Hermes Agent API.
-- Wing Link is deprecated. New product flows must not use its host operations
-  or compatibility catalog. Preserve existing checks until consumer retirement.
-- Compatibility operations use fixed executable/argument shapes, bounded output,
-  no shell, no global `profile use` or `project use`, and no shadow domain state.
-- Provider secrets are write-only and must not enter argv, responses, logs, or
-  diagnostics.
-- Remote folder selection is rooted, handle-based, bounded, and revocable. Wing
-  Link returns folders only; it never enumerates file names, metadata, or content.
-- Server state wins after reconnect. Wing does not queue mutations offline; retryable
-  Wing Link mutations use bounded idempotency keys and replay the same durable
-  terminal operation status rather than executing twice.
+Hermes Wing is a Flutter client pursuing Hermes Desktop product parity.
+Hermes Agent owns profiles, Projects, providers, models, configuration, sessions,
+runs, tools, approvals, schedules, memory and gateway state. Wing never creates a
+second backend or shadow inventory. Wing Link client, service, installers and
+bundling are removed; historical plans and receipts are not current setup guides.
 
 ## Connections
 
-Local / SSH / Remote must connect to Agent without Wing Link prerequisites.
-[Replacement requirements](docs/product/prd.md#connection-path-requirements)
-and [retirement work](TODO.md#now--next) distinguish intent from current code.
+Local / SSH / Remote connect directly to Agent. Android welcome order is SSH,
+Remote server, then Termux. Linux Local checks Hermes-home directory metadata and
+allows deliberate alternate folder selection. This does not read Agent files,
+select a Project, install/start Agent or prove readiness. Android uses manual
+Agent preparation in the separate Termux sandbox, not external-command access.
+Use [direct connection](docs/getting-started.md#direct-agent-connection).
 
-### Retained legacy pairing
+Saved Agent endpoint/profile/session identities and credentials survive retirement.
+Raw legacy records and secure slots are preserved but never used for management.
+A missing Agent credential requires direct reauthentication. Changed origins must
+not reuse another origin's credential. Legacy handoff input is discarded without
+parsing, exchange, persistence or display; cancel preserves caller ownership.
 
-The following contract describes deprecated code, not supported new-user setup.
-A legacy paired host has two independent connections:
+## Authority and security
 
-1. a Hermes Agent origin and profile-bound credential; and
-2. a Wing Link origin and management credential.
+Never modify Hermes Agent, installed runtimes or upstream references. Prefer an
+advertised exact Agent operation, required grants and current resource identity.
+Absent operations remain unavailable; no shell bridge, direct-file mutation or
+replacement management catalog is permitted. Profiles and Projects are Agent-owned,
+with explicit request identities and no hidden global selection.
 
-Wing Link serves HTTP only on loopback. Every non-loopback listener uses TLS 1.3
-with a durable owner-only host identity bundle: the preserved Ed25519 host root
-and a persistent Android-compatible RSA TLS key. Native Wing clients pin the reviewed TLS key's SHA-256
-SPKI fingerprint; browser clients still require normally trusted HTTPS
-because web code cannot override the browser trust store. A changed or missing
-fingerprint fails closed and requires an explicit new pairing flow. Network
-location is never authorization.
+Server state wins after reconnect; Wing never silently replays mutations.
+Revisions or authoritative concurrency checks protect edits. Persistence and
+reload/restart success are separate outcomes. Agent API/provider credentials belong
+in platform secure storage, not URLs, clipboards, argv, ordinary preferences,
+responses, logs or diagnostics. Diagnostics redact credentials, paths and content.
+Remote HTTPS validates the origin and certificate. Non-local Agent HTTP requires
+explicit consent inside an authenticated encrypted VPN or isolated trusted LAN;
+network location is not authorization. Native SSH verifies the host fingerprint.
 
-Each paired device receives a named, individually revocable bearer credential
-with exact grants. The host console is the trust administrator: remote devices
-may inspect and revoke only themselves, while peer revocation, permission
-expansion, identity rotation, sensitive secret writes, destructive actions, and
-install/update approval remain local. Current Wing Link protocol generation is 2
-and implementations support only the current and immediately previous generation.
+Historical handoffs used a single-use pairing code expiring after five minutes,
+which never contains a bearer credential, with a no-store handoff page.
+These are retired inputs, not an offered pairing procedure.
 
-## Profile and workspace flow
+## Product language and routes
 
-Create/select profile → choose an approved host directory → create a Hermes
-Project in that profile → set the chosen repository or subfolder as primary →
-open Chat in that explicit profile/project context.
+A Hermes Project is an Agent-owned per-profile workspace, not a Wing-owned workdir.
+Capability parity is a product/interaction goal, not evidence of qualification.
+An accessible equivalent works without speech, sound, motion, pointer, canvas,
+3D or color alone. Detached runs are Agent-owned and reconciled after suspension.
+Route support lives in [routes](docs/product/routes.md). Missing Project assignment,
+host lifecycle, remote directory browsing and peer administration remain unavailable
+unless their individual authoritative Agent contracts are advertised and verified.
 
-Profile and Project names are local to one canonical Agent origin. They are not
-global Wing gateway IDs.
+## Voice and qualification
 
-## Route language
-
-- `/hermes` — connection, sessions, chat, runs, voice, approvals, and diagnostics.
-- `/profiles` — profile lifecycle and project assignment.
-- `/providers` — provider/model inventory and typed configuration when supported.
-- `/tools` — skills, toolsets, and MCP discovery/administration.
-- `/tasks` — scheduled jobs and Kanban outcomes.
-- `/gateway` — host and gateway health/lifecycle.
-- `/settings` — local Wing preferences and installation controls.
-
-Route status lives in [docs/product/routes.md](docs/product/routes.md).
-
-## Voice language
-
-Voice input prefers an advertised exact Hermes audio route and otherwise uses
-device recognition. Speech output may prefer an advertised Agent synthesis route
-and falls back to platform speech. Current Hermes Agent 0.20 advertises neither
-HTTP audio route; deterministic tests are not physical microphone, AEC, or
-acoustic evidence.
-
-## Security language
-
-A pairing handoff may carry a random single-use pairing code in a QR code,
-`wing://connect` intent, explicit Android share, or the ephemeral local handoff
-page, which must use `Cache-Control: no-store`. The code expires after
-five minutes, never contains a bearer credential, and must not be persisted,
-analyzed, included in diagnostics, or written to ordinary logs. Explicit paste is a
-user-initiated fallback, not background clipboard monitoring; the app drops the
-raw text immediately after parsing.
-
-Hermes API keys, Wing Link control tokens, provider credentials, and exchanged
-bearer credentials remain forbidden in URLs, QR payloads, clipboards, shared
-text, command arguments, and ordinary preferences. Recognized speech remains
-secret, and diagnostics must redact credentials, host paths, and content.
-
-## Legacy setup catalog (pending retirement)
-
-The retained compatibility contract below is not the new-product direction.
-New profile/model flows must use supported Agent contracts or explain missing
-capabilities. [The Profiles candidate](docs/quality/profiles-agent-only-follow-through.md)
-removes one consumer, but is not integrated into the canonical source.
-
-Legacy provider/model setup autocomplete uses Wing Link's typed, profile-scoped
-`model-options` read backed by Hermes Agent's advertised inventory. This approved
-setup exception returns display fields only, including unconfigured providers,
-without caching domain state or expanding provider mutation permissions. Chat,
-sessions, runs, tools, and approvals continue to use Agent directly. See
-[API and state](docs/adr/api-and-state.md#provider-model-setup-catalog).
+Voice uses exact advertised Agent audio routes where available, otherwise supported
+platform speech. Fixtures, web compilation and cross-compilation do not prove
+physical microphone, acoustic, native/device, live authentication or provider support.

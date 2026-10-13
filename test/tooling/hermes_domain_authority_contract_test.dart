@@ -2,15 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-bool _isRetainedLinkPath(String filePath, String rootPath) => filePath
-    .replaceAll('\\', '/')
-    .startsWith('${rootPath.replaceAll('\\', '/')}/core/wing_link/');
-
 List<String> _linkConsumers(Directory root) => root
     .listSync(recursive: true)
     .whereType<File>()
     .where((file) => file.path.endsWith('.dart'))
-    .where((file) => !_isRetainedLinkPath(file.path, root.path))
     .where(
       (file) => RegExp(
         r'wing_link/|wing_link\w*\.dart|\bWingLink\w*|\bwingLinkClient\w*',
@@ -20,44 +15,18 @@ List<String> _linkConsumers(Directory root) => root
     .toList();
 
 void main() {
-  test(
-    'retained core exclusion handles Windows paths without excluding siblings',
-    () {
-      for (final root in ['lib', r'C:\workspace\lib']) {
-        expect(
-          _isRetainedLinkPath('$root\\core\\wing_link\\client.dart', root),
-          isTrue,
-        );
-        expect(
-          _isRetainedLinkPath(
-            '$root\\core\\wing_link_extra\\client.dart',
-            root,
-          ),
-          isFalse,
-        );
-        expect(
-          _isRetainedLinkPath('$root/core/wing_link/client.dart', root),
-          isTrue,
-        );
-        expect(
-          _isRetainedLinkPath('$root/core/wing_link_extra/client.dart', root),
-          isFalse,
-        );
-      }
-    },
-  );
-
-  test('complete client outside retained core uses Agent authority only', () {
+  test('complete client uses Agent authority only', () {
     expect(_linkConsumers(Directory('lib')), isEmpty);
   });
 
-  test('client guard rejects Link consumers outside the exact retained core', () {
+  test('client guard rejects all Link consumers', () {
     final root = Directory.systemTemp.createTempSync('agent-authority-');
     addTearDown(() => root.deleteSync(recursive: true));
     File('${root.path}/core/wing_link/client.dart')
       ..createSync(recursive: true)
       ..writeAsStringSync('WingLinkClient()');
-    expect(_linkConsumers(root), isEmpty);
+    expect(_linkConsumers(root), ['${root.path}/core/wing_link/client.dart']);
+    File('${root.path}/core/wing_link/client.dart').deleteSync();
     for (final entry in {
       'app/caller.dart':
           "import 'package:wing/core/wing_link/wing_link_client.dart';",
@@ -110,31 +79,5 @@ void main() {
     }
     expect(gatewayDirectory, isNot(contains('WingLinkProfileLoader')));
     expect(gatewayDirectory, isNot(contains('_loadWingLinkProfiles')));
-  });
-
-  test('retained Link client and service keep compatibility safety checks', () {
-    final wingLinkClient = File(
-      'lib/core/wing_link/wing_link_client.dart',
-    ).readAsStringSync();
-    final server = File('wing_link/internal/app/serve.go').readAsStringSync();
-    expect(
-      wingLinkClient,
-      contains(
-        "Future<void> verifyPendingCredential() async {\n"
-        "    _decode(await _get(_uri('/v1/status'), _headers));\n"
-        '  }',
-      ),
-    );
-    expect(
-      server,
-      contains('const wingLinkProfileCompatibilityEnabled = true'),
-    );
-    expect(
-      server,
-      contains(
-        'if wingLinkProfileCompatibilityEnabled && request.URL.Path == "/v1/profiles"',
-      ),
-    );
-    expect(server, isNot(contains('providerBackend')));
   });
 }

@@ -26,10 +26,9 @@ An existing tag at the workflow's exact revision is allowed. See
 Before publication it downloads the exact candidate files, enforces their
 allowlist, verifies every checksum, verifies the APK/AAB signing certificate,
 rejects unsafe archives, launches the Linux bundle and packaged web client,
-installs and launches the APK on an emulator, and runs the native Windows and
-available macOS Wing Link binary. Publication consumes only the resulting
+and installs and launches the APK on an emulator. Publication consumes only the resulting
 verified artifact bundle and includes `release-verification-receipt.json` plus
-the Android, macOS Wing Link, and Windows Wing Link smoke receipts.
+the Android artifact smoke receipt.
 Use the APK for sideloading, the AAB for Play Store uploads, and extract the web
 archive onto a static host.
 
@@ -37,9 +36,8 @@ Before dispatching, verify the current commit with the commands in
 `CONTRIBUTING.md` and complete the physical Android microphone receipt when the
 release claims microphone support. The generic Linux archive and checksums are
 alpha integrity evidence, not the signed APT/RPM release authority required for
-a canonical release. The Android/Termux Wing Link binary and the non-native
-macOS architecture receive checksum and format verification but still require
-matching-device runtime receipts before those platform claims advance.
+a canonical release. There are no host-service binaries or bootstrap metadata in the release set.
+Platform support still requires matching-device runtime receipts.
 
 ## Local artifact verification
 

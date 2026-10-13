@@ -1,10 +1,9 @@
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const platformJobs = ['linux-web-android', 'wing-link-directory-host', 'wing-link-directory-android-build',
-  'windows-build', 'ios-simulator-build', 'macos-build'];
-export const releaseJobs = ['validation', 'android', 'linux', 'web', 'wing-link', 'verify-artifacts',
-  'android-artifact-smoke', 'wing-link-macos-smoke', 'wing-link-windows-smoke'];
+export const platformJobs = ['linux-web-android', 'windows-build', 'ios-simulator-build', 'macos-build'];
+export const releaseJobs = ['validation', 'android', 'linux', 'web', 'verify-artifacts',
+  'android-artifact-smoke'];
 
 export function verifyJobs(mode, needs, options = {}) {
   const required = mode === 'platform' ? [...platformJobs] : mode === 'release' ? [...releaseJobs] : null;

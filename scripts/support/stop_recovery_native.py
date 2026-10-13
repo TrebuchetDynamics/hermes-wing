@@ -63,7 +63,7 @@ def freeze(source, app, snapshot):
     snapshot.OWNED = ()
     snapshot.OVERLAYS = ()
     snapshot.ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux',
-                      'wing_link', 'scripts', 'playwright/support')
+                      'scripts', 'playwright/support')
     identity = snapshot.freeze(source, app)
     for name, row in identity['inputs'].items():
         row['owner'] = CARD if name in OWNED else 'preexisting-worktree'
@@ -123,7 +123,6 @@ def run(source):
             env['PKG_CONFIG_PATH'] = str(sysroot / 'usr/lib/x86_64-linux-gnu/pkgconfig')
             env['LIBRARY_PATH'] = str(sysroot / 'usr/lib/x86_64-linux-gnu')
             env['WING_STOP_ROOT'] = str(root)
-            result['go_dependencies'] = retry_helpers().go_dependencies(app, root, evidence, env, snapshot)
             prepared_hashes = {name: snapshot.digest(app / name)
                                for name in snapshot.candidate_hashes(identity)}
             if prepared_hashes != snapshot.candidate_hashes(identity):
@@ -229,7 +228,6 @@ def run(source):
             result['executed_input_hashes'] = hashes
             if hashes != snapshot.candidate_hashes(identity):
                 raise ValueError('Executed source changed')
-            retry_helpers().verify_go_dependencies(root, evidence, snapshot)
             result['native_binary_sha256'] = snapshot.digest(app / 'build/linux/x64/debug/bundle/wing')
             result['linked_libraries'] = subprocess.check_output(['ldd', str(app / 'build/linux/x64/debug/bundle/wing')], env=env, timeout=30).decode()
             if any(snapshot.digest(sysroot / name) != value for name, value in result['environment']['sysroot_hashes'].items()):

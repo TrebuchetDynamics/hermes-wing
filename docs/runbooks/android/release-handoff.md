@@ -7,9 +7,7 @@ Use this when handing a local Hermes Wing Android build to a trusted tester or i
 The release workflow emits `android-release-evidence.json` after dependency
 resolution, generated Termux metadata, and APK/AAB creation. It records actual
 input digests, source dirty status, version/build, toolchain, workflow run and
-attempt, signing certificate identity, and separate APK/AAB digests. The generated
-metadata travels as `android-termux-bootstrap.json` so verification checks the
-bytes embedded by the Android build rather than the original checkout metadata.
+attempt, signing certificate identity, and separate APK/AAB digests. There is no generated host-service bootstrap metadata or binary in the release.
 
 The emulator smoke pulls the installed single base APK back through Android's
 package manager identity and checks its digest against the artifact being tested.
@@ -134,22 +132,9 @@ build/app/outputs/bundle/release/app-release.aab
 
 - Use debug APKs only for local development and a trusted tester.
 - Do not ship pairing tokens, gateway URLs, logs, screenshots, or private Hermes host details inside an artifact handoff.
-- Share setup separately. With NetBird or Tailscale active on the host,
-  `wing-link pair` automatically binds Hermes Agent to a safely detected local
-  overlay address and starts non-loopback pairing. Distinct simultaneous overlay
-  addresses fail closed. For another trusted VPN or an isolated trusted LAN,
-  configure a phone-reachable Agent address explicitly and set `WING_HERMES_URL`
-  and `WING_LINK_URL` before running `wing-link pair`.
-
-  Remote pairing uses TLS 1.3. By default, use Wing's **Paste pairing link**
-  action with the five-minute, single-use output. Run `wing-link pair --qr` and
-  choose **Scan QR code** when scanning from another screen; native Wing verifies
-  the self-signed broker with the reviewed SPKI pin. Browsers cannot validate the
-  pin. For a pairing link already in a text message, use Android **Share → Hermes
-  Wing**.
-  The ordinary `/open` helper is loopback-only for same-host clients. Entering a
-  Hermes API URL and token manually is a one-profile fallback only and does not
-  import Wing Link or other Hermes profiles.
+- Share setup separately through the [direct Agent guide](../../getting-started.md#direct-agent-connection).
+  The app offers no service bootstrap or pairing mode. Never include credentials,
+  private host details or handoff payloads with a release artifact.
 
 - Treat release signing keys as external secrets; do not add them to this repository or to issue reports.
 

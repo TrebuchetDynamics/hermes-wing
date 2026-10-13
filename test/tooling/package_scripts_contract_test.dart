@@ -717,41 +717,16 @@ void main() {
     }
   });
 
-  test('wing-link installer creates a runnable global command', () async {
-    final installDir = await Directory.systemTemp.createTemp(
-      'wing-link-install-',
-    );
-    addTearDown(() => installDir.delete(recursive: true));
+  test('retired handoff policy never exposes bearer credentials', () {
+    final context = File('CONTEXT.md').readAsStringSync();
+    final adr = File('docs/adr/security-and-privacy.md').readAsStringSync();
+    final threat = File('docs/security/threat-model.md').readAsStringSync();
 
-    final install = await Process.run('./install-wing-link.sh', [
-      '--build',
-      '--prefix',
-      installDir.path,
-    ]);
-    expect(install.exitCode, 0, reason: install.stderr as String);
-
-    final installed = File('${installDir.path}/wing-link');
-    expect(installed.existsSync(), isTrue);
-    expect(installed.statSync().mode & 0x49, isNonZero);
-
-    final version = await Process.run(installed.path, ['version']);
-    expect(version.exitCode, 0);
-    expect(version.stdout, contains('dev'));
+    for (final document in [context, adr, threat]) {
+      expect(document, contains('single-use pairing code'));
+      expect(document, contains('five minutes'));
+      expect(document, contains('never contains a bearer credential'));
+      expect(document, contains('no-store'));
+    }
   });
-
-  test(
-    'pairing policy distinguishes handoff codes from bearer credentials',
-    () {
-      final context = File('CONTEXT.md').readAsStringSync();
-      final adr = File('docs/adr/security-and-privacy.md').readAsStringSync();
-      final threat = File('docs/security/threat-model.md').readAsStringSync();
-
-      for (final document in [context, adr, threat]) {
-        expect(document, contains('single-use pairing code'));
-        expect(document, contains('five minutes'));
-        expect(document, contains('never contains a bearer credential'));
-        expect(document, contains('no-store'));
-      }
-    },
-  );
 }

@@ -19,14 +19,3 @@ String requireLinuxTestRoot(String prefix) {
   }
   return root;
 }
-
-/// A live grant must be the exact canonical child of the validated test root.
-String requireLinuxLiveDirectoryRoot(String root, String testRoot) {
-  if (root != '$testRoot/grant-root' ||
-      !Directory(root).existsSync() ||
-      Directory(root).resolveSymbolicLinksSync() != root ||
-      Directory(root).parent.resolveSymbolicLinksSync() != testRoot) {
-    throw StateError('An owned synthetic directory root is required.');
-  }
-  return root;
-}

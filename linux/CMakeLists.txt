@@ -57,32 +57,6 @@ pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
 
-# Build the bounded Linux host supervisor from source and bundle it beside Wing.
-# The Flutter process invokes only this sibling binary, never a PATH candidate.
-find_program(GO_EXECUTABLE go REQUIRED)
-file(GLOB_RECURSE WING_LINK_GO_SOURCES CONFIGURE_DEPENDS
-  "${CMAKE_SOURCE_DIR}/../wing_link/*.go")
-set(WING_LINK_BUNDLE_BINARY "${CMAKE_BINARY_DIR}/wing-link")
-if(DEFINED FLUTTER_VERSION_NAME AND NOT FLUTTER_VERSION_NAME STREQUAL "")
-  set(WING_LINK_VERSION "${FLUTTER_VERSION_NAME}")
-else()
-  set(WING_LINK_VERSION "dev")
-endif()
-add_custom_command(
-  OUTPUT "${WING_LINK_BUNDLE_BINARY}"
-  COMMAND "${CMAKE_COMMAND}" -E env CGO_ENABLED=0
-    "${GO_EXECUTABLE}" build -trimpath
-    "-ldflags=-s -w -X main.version=${WING_LINK_VERSION}"
-    -o "${WING_LINK_BUNDLE_BINARY}" .
-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/../wing_link"
-  DEPENDS ${WING_LINK_GO_SOURCES}
-    "${CMAKE_SOURCE_DIR}/../wing_link/go.mod"
-    "${CMAKE_SOURCE_DIR}/../wing_link/go.sum"
-  COMMENT "Building bundled Wing Link host supervisor"
-  VERBATIM)
-add_custom_target(wing_link_host ALL DEPENDS "${WING_LINK_BUNDLE_BINARY}")
-add_dependencies(${BINARY_NAME} wing_link_host)
-
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
 
@@ -129,9 +103,6 @@ set(INSTALL_BUNDLE_DATA_DIR "${CMAKE_INSTALL_PREFIX}/data")
 set(INSTALL_BUNDLE_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 
 install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
-  COMPONENT Runtime)
-install(PROGRAMS "${WING_LINK_BUNDLE_BINARY}"
-  DESTINATION "${CMAKE_INSTALL_PREFIX}"
   COMPONENT Runtime)
 
 install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"

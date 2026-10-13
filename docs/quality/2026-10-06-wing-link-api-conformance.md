@@ -77,9 +77,9 @@ unrelated full Go suite (which includes network listeners) was not run.
    families is structural coverage only, not behavior qualification.
 
 2. **Discovery contract:** the recorder probe binds to unchanged
-   `ServeHTTP` in [serve.go](../../wing_link/internal/app/serve.go) (430–485),
+   `ServeHTTP` in [serve.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/serve.go) (430–485),
    negotiation parsing (765–772), constructor fallback (399–414), JSON encoding
-   (1493–1497), and [CurrentMetadata](../../wing_link/internal/protocol/metadata.go)
+   (1493–1497), and [CurrentMetadata](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/protocol/metadata.go)
    (24–62). The fixture outputs are validated against the referenced response
    schemas in the snapshot, not recreated expected JSON.
 
@@ -143,3 +143,8 @@ and global API conformance. This source-run checker depends on existing Python
 Questions: none. Defaults applied: offline discovery only, task-owned overlay
 instead of shared test edits, reserved-ledger handoff, no live service or tooling
 installation.
+
+Retirement link maintenance: removed-source links now point at the last tracked
+pre-retirement baseline `918e7c318bab1d91f348570e2309598d729ecb9c`. These are
+source lookup pointers, not replacements for the original dirty-source manifests
+or fresh qualification of the historical results above.

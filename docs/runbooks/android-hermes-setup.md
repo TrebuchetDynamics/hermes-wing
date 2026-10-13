@@ -1,162 +1,24 @@
 # Android Hermes setup
 
-Deprecated Wing Link procedure: retained for existing installations only. Do not
-use this as the new-user setup direction. Use [direct Agent connection](../getting-started.md#direct-agent-connection).
-The [product decision](../adr/product.md#wing-link-deprecation) requires an Agent-only
-replacement. Commands below describe existing legacy behavior; this pass does not
-install, restart, migrate or remove anything.
+Wing connects directly to Hermes Agent. Prepare the unmodified Agent using its
+[official documentation](https://hermes-agent.nousresearch.com/docs/), not a Wing
+host-management installer. Wing does not install, restart or reconfigure a host.
 
-This runbook pairs Android with a remote Linux Hermes host that has a functioning
-systemd user session. For the same-phone Tier 2 candidate, use the separate
-[Android/Termux local Agent runbook](android-termux-local-agent.md).
+Choose **Connect via SSH**, **Connect to Remote Hermes**, or **Use this phone
+(Termux)**, in that order. SSH verifies the host fingerprint; Remote retains
+HTTPS and VPN choices. Enter the Agent credential in its separate masked field,
+never a URL, shared text, clipboard or QR. Loopback on the phone means the phone,
+not the remote host. Non-local HTTP requires explicit consent within an
+authenticated encrypted VPN or isolated trusted LAN.
 
-This is a **deprecated Wing Link management and pairing procedure**, retained
-for existing installations. It is not a supported new-user setup path.
-For an existing authenticated Agent API, use the
-[direct connection steps](../getting-started.md#direct-agent-connection).
-Older builds place direct access inside pairing, without requiring a pairing
-transaction or Wing Link credential. The current development worktree exposes
-primary Add Hermes access before optional setup/pairing. First-run qualification
-and main delivery remain open. The current development client includes
-Wing-managed native SSH; live SSH and Android full-app qualification remain open.
-See the [current direct connection procedure](../getting-started.md#direct-agent-connection).
+For same-phone preparation use the [manual Termux guide](android-termux-local-agent.md).
+Termux and Wing are separate sandboxes; background operation remains unqualified.
+No external-command access, management service or pairing bootstrap is offered.
 
-## Before you start
+Saved connections retain exact Agent identities and credentials. Missing credentials
+require direct reauthentication. Old handoffs are discarded with direct-connection
+guidance; Back/Cancel preserves the caller, and reconnect never replays mutations.
 
-Have Git, `curl`, Go 1.26 or newer, network access, a trusted encrypted VPN, and
-Hermes Wing on the Android device. Clone the repository on the Linux host and
-enter its root directory:
-
-```bash
-git clone --depth 1 https://github.com/TrebuchetDynamics/hermes-wing.git
-cd hermes-wing
-```
-
-1. Install Wing Link and prepare Hermes on the Linux host. Setup starts the
-   gateway only if needed and leaves an already-running gateway undisturbed:
-
-   ```bash
-   ./install-wing-link.sh
-   export PATH="$HOME/.local/bin:$PATH"
-   ```
-
-2. Continue to pairing. After pairing, use **Set up a profile** in Hermes Wing
-   to choose a new profile's provider and model. To configure an existing profile
-   locally instead, use `hermes setup` on the host.
-
-   The installer uses aligned CHECK/OK/READY labels and a separate NEXT command.
-   Interactive terminals get subtle color; redirected output, `TERM=dumb`, and
-   `NO_COLOR` remain plain text. Advanced pairing
-   options are available through `./install-wing-link.sh --help`; setup failures
-   still show their error and retry command. Rerunning uses Go's build cache and
-   keeps an identical installed binary untouched. An authenticated healthy Hermes
-   gateway keeps its credentials and endpoint configuration and is not restarted.
-   If health verification fails, setup follows its normal repair path.
-
-   Reuse the existing checkout when updating; cloning inside it creates another
-   nested copy and does not update the original installation source.
-
-3. `wing-link setup` initially binds the Hermes Agent API to `127.0.0.1`. Wing
-   Link's remote listener does not forward the Agent API. With NetBird or
-   Tailscale active, bare pairing detects a local overlay address, binds Hermes
-   to it, restarts the gateway, and continues automatically:
-
-   ```bash
-   wing-link pair --label "My Android device"
-   ```
-
-   The command prints the handoff and stays in the foreground until Wing
-   confirms it. Leave this terminal open while you paste or scan the handoff;
-   press `Ctrl-C` only to cancel and create a new one.
-
-   Wing Link uses fixed, bounded NetBird CLI probes for local custom-range IPv4
-   and IPv6 addresses and retains the default-range NetBird/Tailscale fallback.
-   If NetBird and Tailscale are both active with different addresses, pairing
-   fails closed; bind the intended local address explicitly and set
-   `WING_HERMES_URL` and `WING_LINK_URL` before pairing. Never bind the Agent API
-   to a public interface. Android asks for explicit confirmation before sending
-   the Agent credential over non-local HTTP; approve only inside the authenticated
-   encrypted VPN or an isolated trusted LAN.
-
-4. The pairing command installs, starts, and verifies the persistent per-user
-   Wing Link service; no separate `serve` terminal is required.
-
-   The default command prints both a pasteable handoff line and a QR. In Wing choose
-   **Paste pairing link** and paste it. To scan from another screen instead, run:
-
-   ```bash
-   wing-link pair --qr --label "My Android device"
-   ```
-
-   The default link and QR are both five-minute, single-use handoffs, not bearer
-   credentials; do not persist or publish them. Native Wing verifies the
-   self-signed broker with the reviewed SPKI
-   pin; a browser cannot do so. If a pairing link is already in a message, use
-   Android **Share → Hermes Wing**. The ordinary `/open` helper is loopback-only
-   for same-host clients.
-
-   Review the host, access,
-   profile count, protocol generation, and SHA-256 host fingerprint in Wing, then
-   confirm. A changed fingerprint requires a new explicit pairing review. The handoff
-   contains only a short-lived code and no bearer credential. Exchange is
-   idempotent until acknowledgment and issues separate Hermes credentials plus a
-   pending Wing Link credential. Wing first stores the endpoint bundle with that
-   pending marker, acknowledges it, then persists the bundle without the marker.
-   Wing Link persists its server-side control credential only after acknowledgment.
-   Entering a Hermes API URL and token manually is a one-profile fallback only; it
-   does not import Wing Link or other Hermes profiles.
-
-5. Confirm direct Hermes `/health` and `/v1/capabilities` load. Confirm Wing Link
-   `/healthz` is reachable and the Profiles screen lists the paired local profiles.
-   In multiplex mode each named profile uses `/p/<profile>/...` and its own
-   `API_SERVER_KEY`; the default key must not authenticate a named prefix.
-6. Verify local profile create/clone, rename, and typed-confirmation delete through
-   Wing Link's fixed Hermes CLI adapter. A create request may also set a
-   description, allowlisted provider, bounded model string, and optional write-only
-   credential;
-   setup failure rolls back that new profile. Existing-profile provider or
-   credential edits are not shipped. A rename changes the Agent-local profile
-   name; Wing's saved gateway identity remains endpoint-scoped. Persona,
-   directory, and Hermes Project administration remain planned Wing Link
-   operations.
-7. The planned repository flow is profile → approved directory → per-profile
-   Hermes Project. Do not expose arbitrary host paths or use `profile use` or
-   `project use` as hidden global state.
-8. Wing Link uses HTTP only on loopback and TLS 1.3 remotely. Native Android Wing
-   verifies the reviewed SPKI pin. Web Wing requires normally trusted HTTPS.
-9. Install/update, provider-secret writes, and destructive profile actions pause
-   for local host approval. Review them with `wing-link approvals list`, then use
-   `wing-link approvals approve <id>` or `reject <id>`; never approve from remote UI.
-
-## Recovery checks
-
-Run these on the Linux host; they do not require exposing credentials:
-
-```bash
-~/.local/bin/wing-link inspect
-~/.local/bin/wing-link status
-curl --fail http://127.0.0.1:8642/health
-```
-
-- If `wing-link` is not found, use the full `~/.local/bin/wing-link` path.
-- If local Agent health works but the phone cannot connect, verify the trusted
-  VPN address with `curl` from another device. `127.0.0.1` on the phone is the
-  phone itself.
-- If Wing Link is stopped, use `wing-link restart`. This does not restart Hermes
-  Agent. Use `hermes gateway restart` only after changing the Agent listener or
-  Agent configuration.
-- Use `wing-link devices list` to inspect safe local trust metadata and
-  `wing-link devices revoke <device-id>` for a stolen device. Revoke-all is a
-  local recovery action and does not delete Agent profiles or data.
-- If pairing expired, create a new handoff. Never copy a bearer credential into
-  a QR code, URL, issue, or diagnostic log.
-- A reinstall that preserves the complete owner-only Wing Link state preserves the
-  TLS fingerprint. Upgrading a pre-hardening state that has only the legacy
-  Ed25519 key generates the persistent Android-compatible TLS key once and therefore
-  requires explicit re-pairing; it must never be silently accepted as the old pin.
-  If state or either host key is lost or intentionally rotated, every
-  pinned client must fail closed. Review the replacement fingerprint at the host,
-  revoke obsolete device entries, and complete a new explicit pairing flow; never
-  accept an identity change as an automatic reconnect.
-- If a named profile fails while the default profile works, verify that the named
-  profile has its own API key and that the client uses `/p/<profile>/...`.
+See [first connection and recovery](../getting-started.md#direct-agent-connection).
+Deterministic fixtures and Chromium do not qualify physical Android, live SSH,
+Agent authentication, provider inference or process survival.

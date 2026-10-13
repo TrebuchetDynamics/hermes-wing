@@ -5,32 +5,13 @@ locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
 [withdrawn as official parity evidence](../quality/official-desktop-reference.md).
 Existing Wing test results do not establish parity with this corrected reference.
 
-Profiles has an [Agent-only removal candidate](../quality/profiles-agent-only-follow-through.md)
-on an isolated branch. It removes one legacy consumer, not the canonical route
-implementation described below. Fixture results, full-analysis failure, native/live
-qualification, review and main delivery remain distinct.
-
-Required direction: first-run Local / SSH / Remote connects directly to Agent
-without requiring Wing Link installation, pairing or credentials. The route table
-below describes current code, including unmerged worktree changes. `/enroll`
-now shows the Desktop-guided welcome with Get Started and SSH/Remote actions
-before optional Local/Termux setup. Deprecated pairing routes and intent/share
-handoffs now discard input and show direct reconnection guidance. Fresh `/hermes` entry resolves secure saved ownership
-before exposing the shell. The [welcome receipt](../quality/desktop-welcome.md)
-records widget/Chromium qualification. The [welcome recovery receipt](../quality/desktop-welcome-recovery.md)
-adds isolated Linux GTK keyboard cancellation, sanitized denial, deliberate retry
-and fresh-process owner restoration. Android, live authentication, physical
-keychain and protected-main delivery remain unqualified. The
-[first-run receipt](../quality/direct-first-run.md) records bounded widget/Chromium
-qualification on Linux. The [native first-run receipt](../quality/direct-first-run-native.md)
-adds Linux GTK fixture proof, not main delivery, Android or live authentication. Native managed SSH key/password UI is
-implemented with focused regressions; full native SSH qualification remains open.
-Missing Agent APIs remain explicitly unavailable. Wing Link management routes are
-deprecated but still implemented. Their authorization remains enforced until
-removal; they never gate a supported direct Agent connection. Linux Hermes-home
-discovery and Android guided same-phone setup remain replacement work, not current
-route qualification. The isolated [Connections removal candidate](../quality/connections-agent-only-follow-through.md)
-removes its trust reads and device-revoke UI only; other legacy consumers remain.
+Local / SSH / Remote connect directly to Hermes Agent. Android welcome order is
+SSH, Remote, then Termux. Linux Local uses metadata-only Hermes-home discovery and
+a deliberate alternate-folder chooser; it does not install/start Agent or select
+a Project. Legacy handoff input is discarded with generic reconnection guidance.
+Saved Agent credentials and identities survive; missing credentials require direct
+reauthentication. No management client/service/catalog or legacy mode is offered.
+Fixtures do not establish Android, native/live authentication or installation support.
 
 Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles, and Connections in the compact bottom bar and places the other working slices in More. Desktop and wide web separate **Workflow** (Chat, Office, Schedules) from **Utilities** (Providers, Connections, Tools, Profiles, Persona, Settings) in the sidebar. All nine working destinations remain explicit, named and route-selected when expanded or icon-only; short windows scroll the groups while keeping the collapse control available. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands. See the [desktop navigation runbook](../runbooks/desktop-navigation-groups.md) for evidence and deliberate Desktop differences.
 
@@ -40,7 +21,7 @@ Hermes Wing uses one adaptive route tree. Android currently keeps Chat, Profiles
 | `/discover`    | Discover          | Skills and MCP discovery.                                                                                                                                                                                                                                                                          | planned     |
 | `/office`      | More              | Accessible 2D workspace over authoritative gateway contacts with search, refresh, status/session counts, and exact contact activation into Chat; representative, account/wallet, and desktop 3D interactions remain gated.                                                                         | partial     |
 | `/tasks`       | More              | Gateway-scoped scheduled-job inventory with refresh and recovery. Agent mutation routes are not yet advertised as exact scoped operations, so create/edit/pause/run/delete controls and Kanban remain hidden.                                                                                                                                                                  | partial     |
-| `/profiles`    | Profiles              | Profile inventory and lifecycle, Agent-backed provider/model autocomplete through Wing Link during setup, plus approved child-folder browsing through device-bound opaque handles (`/agents` redirects for compatibility). Project creation remains unavailable until Hermes Agent advertises a suitable machine-readable operation; Project-aware Chat is separately gated. | partial     |
+| `/profiles`    | Profiles              | Profile inventory and lifecycle, provider/model autocomplete through exact advertised Agent operations; remote folder browsing is unavailable (`/agents` redirects for compatibility). Project creation remains unavailable until Hermes Agent advertises a suitable machine-readable operation; Project-aware Chat is separately gated. | partial     |
 | `/soul`        | More              | Standalone profile persona editor, available only when the selected Agent advertises exact scoped SOUL read/write operations.                                                                                                                                                                  | partial     |
 | `/enroll`      | (deep link)       | Direct Agent welcome: desktop/web Get Started, SSH and Remote; Android SSH, Remote and Termux. Legacy `?step=pair` and intent/share inputs show accessible generic reconnection guidance without parsing/exchange, Link construction or raw payload display. Warm cancellation preserves the caller and draft. Fixture checks are not physical Android or live authentication qualification. | implemented |
 | `/setup/local` | enrollment        | Linux reuses Local metadata-only Hermes-home discovery, deliberate folder selection and direct Agent authentication. Android/Termux reuses the Local manual Agent guide and direct authenticated form. Neither installs/starts a service, returns to pairing or claims automatic readiness. Native installation and live authentication remain unqualified. | partial |
@@ -260,15 +241,9 @@ overwrite the pointer. Generic 404 does not imply deletion. See the
 [remembered session recovery runbook](../runbooks/chat-session-restoration.md)
 for operation/grant gating, race evidence and deterministic qualification limits.
 
-Computer enrollment now completes host installation and pairing before provider
-configuration. A confirmed Wing Link pairing offers **Set up a profile**, opening
-`/profiles?setup=new` and the transactional new-profile editor after the selected
-host's authenticated profile inventory loads. The editor collects provider,
-model, and a write-only credential; any required approval remains on the host.
-Opening or cancelling it does not create a profile. Existing-profile compatibility
-configuration remains unavailable; advertised Agent configuration APIs retain
-priority. Wing Link profile management is independent of the Agent chat
-connection, while chat still requires a separately enrolled Agent endpoint.
+Profile inventory, lifecycle and model suggestions require exact advertised Agent
+operations and authorization. Former host approval, directory grants and management
+catalog reads are unavailable. No setup fallback or host write is inferred.
 
 Settings keeps voice configuration on `/settings/voice`, reached through the
 **Voice & speech** row. The overview links to Connections and contains appearance,
@@ -277,11 +252,8 @@ At desktop widths, voice and diagnostics share the column beside appearance.
 Profile setup suggestions open toward the available space so options remain
 reachable near the bottom of a window or keyboard viewport.
 
-Profiles follows the selected host as saved connections finish loading. Guided
-setup opens once after its authoritative inventory becomes available. Failed
-Wing Link inventory reads expose Retry without connecting chat or replaying a
-mutation. Enrollment changes invalidate displayed management controls, and a
-failed enrolled-profile connection leaves Profiles open with an error.
+Profiles follows the selected Agent owner. Explicit read retry never connects Chat
+or replays a mutation; owner changes invalidate cached controls.
 
 Chat reconciles streamed assistant segments against the current user turn's
 canonical reply. Equivalent pre-tool text is replaced by its authoritative
@@ -324,7 +296,7 @@ ownership before writing; other native save/share targets remain unavailable.
 Executor native file readback/cancel/owner-change checks and the original Linux
 input suite on the named real IBus X11/GTK target pass. Bare simple GTK composition,
 complete live-service qualification and same-card independent acceptance remain open.
-Disposable actual Agent/Wing Link targets are authorized. Actual generation must
+Disposable actual Agent targets are authorized. Actual generation must
 use `gpt-6.1-sol` / `openai-codex`; local-model inference has stopped and supported
 private OAuth provisioning is still needed for the isolated target. Permission
 alone is not a passing runtime result. See the
@@ -333,7 +305,7 @@ download readback evidence, size bounds and platform limits.
 See the [long-conversation runbook](../runbooks/chat-long-conversation.md) for
 Chromium fixture qualification and explicit platform/performance limitations.
 
-Connections owns saved-host management. Selecting a host only changes the inspection target; **Connect chat** opens its Agent connection explicitly. **Disconnect** closes the local chat connection and clears automatic startup restoration, while preserving saved credentials. It does not stop Hermes Agent or any host service. **Remove** forgets saved access locally. The isolated Connections removal candidate no longer reads Wing Link trust or offers device revocation, even when legacy credentials remain saved. Missing Agent lifecycle, logs and peer-management contracts remain unavailable; no replacement management service is simulated. Chat traffic continues directly to Hermes Agent. See the [bounded removal receipt](../quality/connections-agent-only-follow-through.md) for checks and exclusions.
+Connections owns saved-host management. Selecting a host only changes the inspection target; **Connect chat** opens its Agent connection explicitly. **Disconnect** closes the local chat connection and clears automatic startup restoration, while preserving saved credentials. It does not stop Hermes Agent or any host service. **Remove** forgets saved access locally. Connections does not read legacy trust or offer device revocation, even when inert legacy credentials remain saved. Missing Agent lifecycle, logs and peer-management contracts remain unavailable; no replacement management service is simulated. Chat traffic continues directly to Hermes Agent. See the [bounded removal receipt](../quality/connections-agent-only-follow-through.md) for checks and exclusions.
 
 Connections health refresh and explicit retry belong to the current Agent channel,
 host/profile, selected management host and exact authorized read. Ownership loss

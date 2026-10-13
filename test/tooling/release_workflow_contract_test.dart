@@ -10,7 +10,6 @@ void main() {
         '--test',
         'test/tooling/release_evidence_test.mjs',
         'test/tooling/record_release_qualification_test.mjs',
-        'test/tooling/linux_service_qualification_test.mjs',
         'test/tooling/ci_gate_test.mjs',
         'test/tooling/ci_test_receipt_test.mjs',
         'test/tooling/platform_artifact_identity_test.mjs',
@@ -33,7 +32,7 @@ void main() {
       publication.indexOf('gh release create'),
       greaterThan(publication.indexOf('release_evidence.mjs aggregate dist')),
     );
-    for (final target in ['android', 'linux', 'web', 'wing-link']) {
+    for (final target in ['android', 'linux', 'web']) {
       expect(workflow, contains('release_evidence.mjs emit $target .'));
       expect(workflow, contains('$target-release-evidence.json'));
     }
@@ -138,7 +137,7 @@ void main() {
 
     expect(
       RegExp(
-        r'  verify-artifacts:\n(?:.|\n)*?    needs: \[android, linux, web, wing-link\]',
+        r'  verify-artifacts:\n(?:.|\n)*?    needs: \[android, linux, web\]',
       ).hasMatch(workflow),
       isTrue,
     );
@@ -154,26 +153,13 @@ void main() {
       workflow,
       contains('com.trebuchetdynamics.hermes.wing/.MainActivity'),
     );
-    expect(workflow, contains('  wing-link-macos-smoke:\n'));
-    expect(workflow, contains('  wing-link-windows-smoke:\n'));
     expect(workflow, contains('android-artifact-smoke-receipt'));
-    expect(workflow, contains('wing-link-macos-smoke-receipt'));
-    expect(workflow, contains('wing-link-windows-smoke-receipt'));
-    expect(
-      RegExp(
-        r'wing-link-checksums\.sha256(?:.|\n)*?'
-        r'checksum manifest does not exactly cover expected artifacts',
-      ).allMatches(workflow),
-      hasLength(3),
-    );
     expect(
       RegExp(
         r'  publish:\n(?:.|\n)*?    needs:\n'
         r'      - release-readiness\n'
         r'      - verify-artifacts\n'
-        r'      - android-artifact-smoke\n'
-        r'      - wing-link-macos-smoke\n'
-        r'      - wing-link-windows-smoke',
+        r'      - android-artifact-smoke',
       ).hasMatch(workflow),
       isTrue,
     );

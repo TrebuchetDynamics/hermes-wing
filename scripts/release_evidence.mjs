@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createReadStream, readFileSync } from 'node:fs';
-import { lstat, readFile, writeFile, realpath, open } from 'node:fs/promises';
+import { lstat, writeFile, realpath, open } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -9,10 +9,8 @@ export const artifactsByTarget = Object.freeze({
   android: ['hermes-wing-android.apk', 'hermes-wing-android.aab'],
   linux: ['hermes-wing-linux-x64.tar.gz'],
   web: ['hermes-wing-web.tar.gz'],
-  'wing-link': ['wing-link-android-arm64', 'wing-link-darwin-amd64', 'wing-link-darwin-arm64',
-    'wing-link-linux-amd64', 'wing-link-linux-arm64', 'wing-link-windows-amd64.exe'],
 });
-export const inputs = ['pubspec.lock', 'package-lock.json', 'wing_link/go.mod', 'wing_link/go.sum'];
+export const inputs = ['pubspec.lock', 'package-lock.json'];
 const hashPattern = /^[a-f0-9]{64}$/;
 const fail = message => { throw new Error(message); };
 const exactKeys = (object, keys) => {
@@ -55,7 +53,7 @@ function validateIdentity(identity) {
 export async function createManifest(root, dist, target, identity, toolchains, signingIdentity = null) {
   validateIdentity(identity);
   if (!Object.hasOwn(artifactsByTarget, target)) fail('unknown target');
-  const requiredInputs = [...inputs, ...(target === 'android' ? ['assets/config/termux_bootstrap.json'] : [])];
+  const requiredInputs = inputs;
   const inputHashes = {};
   for (const name of requiredInputs) inputHashes[name] = await digest(join(root, name), 16 * 1024 ** 2);
   const artifacts = [];
@@ -70,9 +68,9 @@ export function validateManifest(manifest) {
   validateIdentity(manifest.identity);
   if (!Object.hasOwn(artifactsByTarget, manifest.target)) fail('unknown target');
   if (manifest.target === 'android' ? !hashPattern.test(manifest.signing_identity) : manifest.signing_identity !== null) fail('invalid signing identity');
-  exactKeys(manifest.toolchains, manifest.target === 'wing-link' ? ['node', 'go'] : ['node', 'flutter']);
+  exactKeys(manifest.toolchains, ['node', 'flutter']);
   for (const value of Object.values(manifest.toolchains)) text(value);
-  const expectedInputs = [...inputs, ...(manifest.target === 'android' ? ['assets/config/termux_bootstrap.json'] : [])];
+  const expectedInputs = inputs;
   exactKeys(manifest.inputs, expectedInputs);
   for (const value of Object.values(manifest.inputs)) validateDigest(value);
   if (!Array.isArray(manifest.artifacts) || manifest.artifacts.length !== artifactsByTarget[manifest.target].length) fail('artifact inventory mismatch');
@@ -90,9 +88,7 @@ export async function verifyManifest(manifest, root, dist, expectedIdentity, tar
     if (manifest.identity[key] !== value) fail(`identity mismatch: ${key}`);
   }
   for (const [name, expected] of Object.entries(manifest.inputs)) {
-    // Android's generated input travels with the artifact, not the verifier checkout.
-    const path = name === 'assets/config/termux_bootstrap.json'
-      ? join(dist, 'android-termux-bootstrap.json') : join(root, name);
+    const path = join(root, name);
     const actual = await digest(path, 16 * 1024 ** 2);
     if (actual.sha256 !== expected.sha256 || actual.size !== expected.size) fail(`input mismatch: ${name}`);
   }
@@ -127,8 +123,6 @@ export async function readJson(path) {
 }
 const smokeReceipts = {
   'android-artifact-smoke.txt': { target: 'android', names: ['hermes-wing-android.apk'], result: 'verified-installed-launched', evidence: 'emulator', scenario: 'apk-install-launch' },
-  'wing-link-macos-smoke.txt': { target: 'wing-link', names: ['wing-link-darwin-arm64', 'wing-link-darwin-amd64'], result: 'verified-ran-version', evidence: 'native', scenario: 'binary-version' },
-  'wing-link-windows-smoke.txt': { target: 'wing-link', names: ['wing-link-windows-amd64.exe'], result: 'verified-ran-version', evidence: 'native', scenario: 'binary-version' },
 };
 export function validateSmokeReceipt(receipt, manifest, manifestHash, contract) {
   exactKeys(receipt, ['tag', 'source_revision', 'run_id', 'run_attempt', 'build_number', 'binary',
@@ -175,11 +169,9 @@ export async function qualificationIndex(root, dist, identity) {
   if (host.schema_version !== 1 || host.tag !== identity.tag || host.source_revision !== identity.source_revision ||
       host.android_certificate_sha256.replaceAll(/[:\s]/g, '').toLowerCase() !== manifests.android.signing_identity) fail('host receipt identity mismatch');
   const expectedChecks = ['exact_allowlist', 'sha256_sidecars', 'android_apk_signature', 'android_aab_signature',
-    'archive_path_safety', 'linux_bundle_launch', 'web_browser_launch', 'wing_link_linux_amd64_version',
-    'wing_link_linux_arm64_version', 'foreign_binary_formats'];
+    'archive_path_safety', 'linux_bundle_launch', 'web_browser_launch'];
   if (!Array.isArray(host.checks) || [...host.checks].sort().join(',') !== expectedChecks.sort().join(',')) fail('host checks incomplete');
-  const auxiliary = ['android-termux-bootstrap.json', 'wing-link-checksums.sha256',
-    ...Object.keys(manifestDigests), ...artifacts.filter(item => item.name.startsWith('hermes-wing')).map(item => `${item.name}.sha256`)];
+  const auxiliary = [...Object.keys(manifestDigests), ...artifacts.filter(item => item.name.startsWith('hermes-wing')).map(item => `${item.name}.sha256`)];
   const expectedFiles = [...artifacts.map(item => item.name), ...auxiliary].sort();
   if (!Array.isArray(host.artifacts) || host.artifacts.map(item => item.name).sort().join(',') !== expectedFiles.join(',')) fail('host receipt artifact inventory mismatch');
   for (const item of host.artifacts) {
@@ -191,7 +183,7 @@ export async function qualificationIndex(root, dist, identity) {
     scenario: 'archive-signature-launch', evidence_kind: 'native-and-emulated' });
   return { schema_version: 1, identity: expected, inputs: manifests.web.inputs, manifests: manifestDigests,
     artifacts, auxiliary: host.artifacts.filter(item => auxiliary.includes(item.name)), receipts,
-    limitations: ['No physical voice qualification', 'APK launch does not qualify AAB delivery', 'Native version execution does not qualify service lifecycle'] };
+    limitations: ['No physical voice qualification', 'APK launch does not qualify AAB delivery'] };
 }
 export function currentIdentity(root) {
   const [version, build_number = '1'] = readFileSyncVersion(root).split('+');
@@ -218,7 +210,7 @@ export async function main(args) {
     return;
   }
   if (!['emit', 'verify'].includes(command) || args.length !== 3 || !Object.hasOwn(artifactsByTarget, target)) {
-    fail('usage: release_evidence.mjs emit|verify android|linux|web|wing-link DIST');
+    fail('usage: release_evidence.mjs emit|verify android|linux|web DIST');
   }
   const dist = resolve(directory);
   const path = join(dist, `${target}-release-evidence.json`);
@@ -226,12 +218,10 @@ export async function main(args) {
   if (command === 'emit') {
     // Read versions from the installed toolchain; never infer them from workflow labels.
     const toolchains = { node: process.version };
-    if (target === 'wing-link') toolchains.go = execFileSync('go', ['version'], { encoding: 'utf8' }).trim().split(' ')[2];
-    else toolchains.flutter = JSON.parse(execFileSync('flutter', ['--version', '--machine'], { encoding: 'utf8' })).frameworkVersion;
+    toolchains.flutter = JSON.parse(execFileSync('flutter', ['--version', '--machine'], { encoding: 'utf8' })).frameworkVersion;
     const signingIdentity = target === 'android'
       ? (process.env.WING_RELEASE_CERT_SHA256 ?? '').replaceAll(/[:\s]/g, '').toLowerCase() : null;
     const manifest = await createManifest(root, dist, target, identity, toolchains, signingIdentity);
-    if (target === 'android') await writeFile(join(dist, 'android-termux-bootstrap.json'), await readFile(join(root, 'assets/config/termux_bootstrap.json')), { flag: 'wx' });
     await writeFile(path, `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
   } else {
     const { source_dirty, ...expected } = identity;

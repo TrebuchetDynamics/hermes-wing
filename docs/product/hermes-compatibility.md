@@ -1,12 +1,11 @@
 # Hermes Agent compatibility
 
-Status: retained integration contract; Wing Link compatibility is deprecated
+Status: Agent-only integration contract
 
-The [product decision](../adr/product.md#wing-link-deprecation) requires Agent-only
-product flows and retirement of Link-dependent compatibility. Rules below bound
-existing legacy consumers, not new compatibility expansion. Missing direct Agent
-operations stay unavailable until advertised; no Agent patches or arbitrary shell
-substitute are permitted.
+Wing requires exact advertised Agent operations. The former management catalog,
+compatibility adapters and pairing service are removed, including legacy mode.
+Missing direct operations remain unavailable; no Agent patches, direct-file
+mutation or arbitrary shell substitute are permitted.
 
 Verified against Hermes Agent `v0.20.0` (`2026.8.3`) and the official documentation
 on 2026-08-14. Hermes Agent documentation is authoritative when this file and a
@@ -142,42 +141,9 @@ administration routes used by older Wing plans. Direct profile administration
 therefore remains unavailable unless a future supported Agent advertises an exact
 compatible contract.
 
-For current supported releases, Wing Link provides the typed compatibility
-exception in the [runtime decision](../adr/runtime-and-delivery.md). The shipped
-surface invokes only fixed Hermes CLI argument vectors for:
-
-- `hermes profile list`;
-- `hermes profile create`;
-- `hermes profile rename`; and
-- `hermes profile delete`.
-
-### Compatibility-adapter registry
-
-| Adapter               | Authoritative Agent endpoint                                   | Supported release window                 | Removal trigger                                                                                                      |
-| --------------------- | -------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Profile inventory     | Advertised profile-list HTTP route                             | Agent 0.20 plus the next audited release | Remove after every supported release advertises an equivalent bounded inventory route.                               |
-| Profile create/clone  | Advertised profile-create HTTP route                           | Agent 0.20 plus the next audited release | Remove after every supported release advertises create/clone with stable typed errors.                               |
-| Profile rename/delete | Advertised profile mutation routes                             | Agent 0.20 plus the next audited release | Remove after every supported release advertises revision-aware rename and delete.                                    |
-| New-profile setup     | Advertised typed profile configuration and secret-write routes | Agent 0.20 plus the next audited release | Remove after every supported release provides allowlisted configuration and stdin-equivalent write-only credentials. |
-
-The Agent API remains authoritative in every row. Adapters retain no shadow domain
-state, and the release compatibility audit must update this registry before the
-supported window changes.
-
-For a profile created by the same request, Wing Link may additionally run fixed
-description, allowlisted provider, bounded model string, stdin-only
-`hermes auth add`, exact postcondition, and bounded `Hi` readiness commands. Failure deletes that newly
-created profile. Existing-profile description/provider/model/credential editing
-is rejected before mutation because the released CLI offers no transactional
-restore contract.
-
-During pairing it may resolve each validated profile's environment path with
-fixed `hermes --profile <id> config env-path`, set
-`gateway.multiplex_profiles`, restart the active default gateway, and verify one
-connection per profile. It never invokes `hermes profile use`, accepts arbitrary CLI text, or stores a
-shadow profile inventory. Hermes Project and general provider operations require
-separate fixed contracts, authorization, and tests; they are not implied by the
-current adapter.
+Profile administration uses only exact advertised Agent operations. Wing does not
+invoke profile CLI adapters, configure multiplexing, create credentials during
+reads or restart a gateway. Missing lifecycle/SOUL operations remain unavailable.
 
 With multiplexing enabled, one default gateway serves named profiles at
 `/p/<profile>/...`. Every named prefix requires that profile's own
@@ -206,12 +172,9 @@ evidence.
 Hermes Agent 0.20 provides a per-profile `hermes project` CLI with list, create,
 show, folder management, rename, set-primary, archive, and restore operations.
 Projects are the authoritative way to associate a profile with a repository or
-subfolder. Wing Link does not expose these operations yet.
-
-The planned adapter will translate only locally approved opaque directory handles
-into fixed per-profile Project commands. Remote clients will not submit absolute
-paths, browse outside granted roots, read file contents, or change hidden global
-state through `project use`.
+subfolder. Wing Project assignment remains unavailable without an exact
+authoritative Agent API; no directory-grant or fixed CLI fallback is offered.
+Linux Local discovery is not Project selection.
 
 ## Detailed health
 
@@ -227,11 +190,10 @@ The supported upstream API-server credential is `API_SERVER_KEY`. Hermes Agent's
 messaging-platform DM pairing codes are a different authorization system and must
 not be described as Wing API enrollment.
 
-Wing Link pairing uses a short-lived broker code and transfers either
-an Agent-issued scoped credential when an exact enrollment contract is advertised
-or a clearly labeled compatibility full-access key. The QR/link never contains a
-bearer token. A separate staged Wing Link control credential must be acknowledged
-before supervisor mutations are authorized.
+Connect directly with the selected Agent's credential in the masked form. Saved
+identities and credentials survive retirement; missing credentials require direct
+reauthentication. Legacy handoff input is discarded without parsing or exchange.
+No management credential, broker or fallback key is used.
 
 ## Disconnect and reconnect
 
@@ -246,7 +208,6 @@ reconciles status before attaching again.
 
 Resource handles, same-host filesystem grants, portable backup/restore,
 revisioned generic administration, Hermes One account/wallet behavior, and other
-future contracts in product planning remain proposals until Hermes Agent or a
-reviewed Wing Link compatibility adapter has matching runtime and contract-test
+future contracts in product planning remain proposals until unmodified Hermes Agent provides matching runtime and contract-test
 evidence. Flutter must not substitute direct server file, database, config, or
 CLI access.

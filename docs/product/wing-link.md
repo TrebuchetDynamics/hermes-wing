@@ -1,5 +1,10 @@
 # Wing Link
 
+Status: archived historical reference; the client, service, installers and release artifacts are removed.
+Do not execute these former procedures. Use [direct Agent connection](../getting-started.md#direct-agent-connection).
+Personal installed services and records are not changed by source retirement.
+
+
 Status: deprecated product component; retained implementation reference
 
 The owner requires removal of Wing Link from Wing's product flows and eventual

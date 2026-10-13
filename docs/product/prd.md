@@ -111,17 +111,15 @@ or approve new runtime, storage, notification or active-content features.
 Renderer controls and additional voice controls remain proposals. Existing
 requirements and task ownership determine implementation scope.
 
-Hermes Wing requires a direct authenticated Hermes Agent connection. Wing Link
-is not required for Local, SSH or Remote use. The current integration separates:
+Hermes Wing requires a direct authenticated Hermes Agent connection. Local, SSH
+and Remote use no second management plane. The former management client/service,
+installers, bootstrap metadata and delivery dependencies are removed. Missing
+Agent operations remain unavailable; no legacy mode or replacement catalog exists.
 
-- the **Hermes Agent data plane** for chat, sessions, runs, tools, approvals, and
-  every supported Agent API; and
-- retained **Wing Link management code**, pending removal. It is deprecated,
-  not an optional supported setup path or a requirement for Agent use.
-
-Retained management credentials and security checks remain separate from Agent
-credentials until consumer retirement. Their presence does not authorize new
-management dependencies or imply that replacement native operations are qualified.
+Saved Agent endpoint/profile/session identities and credentials survive. Raw legacy
+records and secure slots remain inert and preserved, without credential merging,
+recovery through management, or personal service operations. Missing Agent credentials
+require direct reauthentication. Fixture evidence is not native/live qualification.
 
 ## Leading acceptance outcome
 
@@ -164,7 +162,7 @@ platform-specific.
    answer approvals, and stop or resume work.
 3. Inspect health and perform explicit lifecycle or recovery actions.
 4. Create, clone, rename, describe, and delete profiles through Agent-owned or
-   advertised Agent contracts. Retained Wing Link compatibility is deprecated;
+   advertised Agent contracts. The former compatibility adapter is removed;
    missing direct operations remain unavailable until supported.
 5. Browse approved host folders—without listing files—and create a per-profile
    Hermes Project for a repository or subfolder.
@@ -206,8 +204,8 @@ Use a qualified authenticated Agent file contract or separately reviewed bounded
 native operation, with exact owner identity and canonical root containment.
 Prevent traversal and symlink escape; keep credentials and file content out of
 logs and diagnostics. Permission to chat is not blanket file access. Unsupported
-file operations remain clearly unavailable. The existing Wing Link folder-only
-contract is unchanged. Qualify browse/read/download and downloaded-byte readback
+file operations remain clearly unavailable. The former management folder browser is removed; Project assignment remains
+unavailable without an exact authoritative Agent contract. Qualify browse/read/download and downloaded-byte readback
 separately on Linux and Android; fixture tests alone do not establish native saves.
 
 Default scope: read-only browsing, text previews and individual-file downloads;
@@ -222,7 +220,8 @@ metadata does not qualify runtime behavior or authorize remote installation,
 personal service changes or live inference.
 
 The latest owner decision deprecates Wing Link entirely, superseding the earlier
-optional-management target. Existing code and pairing state remain until removal.
+optional-management target. The client/service and delivery dependencies are removed; raw legacy records and
+secure slots remain inert and preserved.
 New setup/connection must use Agent directly or bounded native operations. The
 [deprecation decision](../adr/product.md#wing-link-deprecation) owns this boundary.
 
@@ -232,8 +231,8 @@ The [source comparison](desktop-connection-paths.md) distinguishes Desktop behav
 from Wing's implemented three-primary-path grouping over four transport modes.
 
 Owner correction, 2026-10-07: Wing Link installation, pairing and credentials
-must not be prerequisites for any of these paths. The committed enrollment chooser
-places manual Agent connection inside pairing. The current development worktree
+must not be prerequisites for any of these paths. The current enrollment chooser
+offers direct Agent actions. The current implementation
 adds primary **Add Hermes** access and separates optional setup/pairing. The
 [first-run receipt](../quality/direct-first-run.md) records bounded widget/Chromium
 qualification on Linux. The [native first-run receipt](../quality/direct-first-run-native.md)
@@ -285,10 +284,10 @@ managed native backend.
 
 - Gate direct-client features on the exact connected Agent operation. A missing
   Agent API leaves the feature unavailable with an explanation, not a Wing Link
-  requirement. Retained legacy management actions remain gated during Wing Link retirement.
+  requirement. No legacy management action or fallback is offered.
 - Keep remote mutations explicit; never queue or replay them after reconnect.
 - Use stable resource IDs and opaque directory handles, not client-supplied host
-  paths. Wing Link returns child folders only, never file entries.
+  paths. Future directory APIs require canonical containment and bounded, authorized data.
 - Keep secrets in platform secure storage. Prefer trusted HTTPS or an encrypted
   VPN remotely; future provider-secret operations must reject plaintext.
 - Require confirmation for destructive, secret, filesystem-grant, and lifecycle
@@ -298,15 +297,15 @@ managed native backend.
 
 ## Current status
 
-Wing Link-dependent functions listed below describe retained legacy code, not
-future product requirements. Do not add compatibility expansion to compensate for
-missing Agent APIs. Removal and direct/native replacement require their own checks.
+Former host-management functions are removed, not optional alpha support. Missing
+Agent operations stay unavailable; no compatibility expansion, shadow state or
+arbitrary shell can compensate. Live/native replacement requires separate evidence.
 
-The alpha supports direct Agent chat/runs/sessions, approvals, health, pairing,
-Linux Wing Link lifecycle, bounded profile lifecycle, capability-gated provider,
-model, and SOUL management, and read-only navigation of locally approved host
-folders. Hermes Project creation and assignment, project-scoped Chat, public signed
-distribution, and non-Linux Wing Link services remain planned or unqualified.
+The alpha implements direct Agent chat/runs/sessions, approvals, health, and
+exact-capability-gated profile/provider/model/SOUL operations. Host lifecycle,
+directory grants, peer administration and compatibility profile setup are unavailable.
+Hermes Project creation/assignment, project-scoped Chat and public signed
+distribution remain planned or unqualified.
 Isolated private Android release packaging is implemented; artifact checks do not
 establish named-device install, upgrade or recovery. See the
 [private APK handoff](../runbooks/android/release-handoff.md#private-release-apk-handoff).

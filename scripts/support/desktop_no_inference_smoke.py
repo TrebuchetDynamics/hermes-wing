@@ -23,7 +23,7 @@ OWNED = ('scripts/run_linux_desktop_no_inference_smoke.sh',
          'integration_test/support/desktop_no_inference_fixture.dart',
          'test/tooling/desktop_no_inference_smoke_test.py',
          'docs/quality/native-no-inference-bootstrap-recovery.md')
-ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux', 'wing_link',
+ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux',
          'scripts', 'playwright/support', 'docs')
 FILES = ('pubspec.yaml', 'pubspec.lock', 'analysis_options.yaml', 'l10n.yaml',
          'serve_web.mjs', 'CONTEXT.md', 'CONTRIBUTING.md', 'AGENTS.md', 'SECURITY.md')
@@ -275,9 +275,7 @@ def run(source):
             env.update(HOME=str(root / 'home'), XDG_CONFIG_HOME=str(root / 'config'), XDG_DATA_HOME=str(root / 'data'),
                        XDG_CACHE_HOME=str(root / 'cache'), XDG_RUNTIME_DIR=str(root / 'runtime'), TMPDIR=str(root / 'cache'),
                        WING_SMOKE_ROOT=str(root), GDK_BACKEND='x11', LIBGL_ALWAYS_SOFTWARE='1', CMAKE_BUILD_PARALLEL_LEVEL='2',
-                       PUB_CACHE=os.environ.get('PUB_CACHE', str(pathlib.Path.home() / '.pub-cache')),
-                       GOMODCACHE=subprocess.check_output(['go', 'env', 'GOMODCACHE'], timeout=30).decode().strip(),
-                       GOMAXPROCS='2', GOFLAGS='-p=2', GOPROXY='off', GOSUMDB='off', GOTOOLCHAIN='local', GOCACHE=str(root / 'cache/go-build'))
+                       PUB_CACHE=os.environ.get('PUB_CACHE', str(pathlib.Path.home() / '.pub-cache')))
             result['environment'] = {'uname': list(os.uname()), 'sdk': subprocess.check_output([str(sdk / 'bin/flutter'), '--version'], env=env, timeout=30).decode(),
                                      'package_config_sha256': digest(app / '.dart_tool/package_config.json'), 'plugins_sha256': digest(app / '.flutter-plugins-dependencies'),
                                      'build_dependency_archives': {p.name: digest(p) for p in sorted((evidence_root / 'deps/downloads').glob('*.deb'))},

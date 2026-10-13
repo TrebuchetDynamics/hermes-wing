@@ -101,7 +101,7 @@ jobs:
 
   android:
     name: Signed Android APK and AAB
-    needs: [validation, wing-link]
+    needs: validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -113,58 +113,6 @@ jobs:
         with:
           flutter-version: 3.44.2
           cache: true
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: wing-link-release
-          path: wing-link-dist
-      - name: Bind Termux bootstrap to exact Wing Link artifact
-        env:
-          TAG: ${{ inputs.tag }}
-        run: |
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import os
-          import re
-          from pathlib import Path
-
-          root = Path.cwd()
-          dist = root / "wing-link-dist"
-          asset = dist / "wing-link-android-arm64"
-          manifest = dist / "wing-link-checksums.sha256"
-          if not asset.is_file() or not manifest.is_file():
-              raise SystemExit("missing Android Wing Link release metadata")
-          matches = []
-          for line in manifest.read_text().splitlines():
-              match = re.fullmatch(r"([0-9a-f]{64}) [ *]([^/\\]+)", line)
-              if match and match.group(2) == asset.name:
-                  matches.append(match.group(1))
-          if len(matches) != 1:
-              raise SystemExit("expected exactly one Android Wing Link checksum")
-          asset_bytes = asset.read_bytes()
-          asset_size = len(asset_bytes)
-          if not 1 <= asset_size <= 50 * 1024 * 1024:
-              raise SystemExit("Android Wing Link asset exceeds 50 MiB")
-          asset_sha = hashlib.sha256(asset_bytes).hexdigest()
-          if asset_sha != matches[0]:
-              raise SystemExit("Android Wing Link checksum mismatch")
-          installer = root / "install-wing-link.sh"
-          installer_bytes = installer.read_bytes()
-          if not 1 <= len(installer_bytes) <= 1024 * 1024:
-              raise SystemExit("Wing Link installer exceeds 1 MiB")
-          metadata = {
-              "available": True,
-              "tag": os.environ["TAG"],
-              "installer_commit": os.environ["GITHUB_SHA"],
-              "installer_sha256": hashlib.sha256(installer_bytes).hexdigest(),
-              "asset_sha256": asset_sha,
-              "asset_size": asset_size,
-          }
-          target = root / "assets/config/termux_bootstrap.json"
-          temporary = target.with_suffix(".tmp")
-          temporary.write_text(json.dumps(metadata, separators=(",", ":")) + "\n")
-          temporary.replace(target)
-          PY
       - name: Require release signing secrets
         env:
           KEYSTORE: ${{ secrets.WING_RELEASE_KEYSTORE_BASE64 }}
@@ -187,7 +135,7 @@ jobs:
           WING_RELEASE_KEY_PASSWORD: ${{ secrets.WING_RELEASE_KEY_PASSWORD }}
         run: |
           flutter pub get
-          flutter test test/features/local_setup/termux_bootstrap_command_test.dart test/features/local_setup/termux_hermes_setup_test.dart
+          flutter test test/features/local_setup/termux_hermes_setup_test.dart
           flutter build apk --release
           flutter build appbundle --release
           cp build/app/outputs/flutter-apk/app-release.apk hermes-wing-android.apk
@@ -208,7 +156,6 @@ jobs:
             hermes-wing-android.aab
             hermes-wing-android.aab.sha256
             android-release-evidence.json
-            android-termux-bootstrap.json
           if-no-files-found: error
 
   linux:
@@ -217,10 +164,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: wing_link/go.mod
-          cache-dependency-path: wing_link/go.sum
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.44.2
@@ -277,54 +220,9 @@ jobs:
             web-release-evidence.json
           if-no-files-found: error
 
-  wing-link:
-    name: Wing Link host binaries
-    needs: validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: wing_link/go.mod
-          cache-dependency-path: wing_link/go.sum
-      - name: Test and build Wing Link targets
-        working-directory: wing_link
-        env:
-          CGO_ENABLED: "0"
-          TAG: ${{ inputs.tag }}
-        run: |
-          go test ./...
-          version=${TAG#v}
-          ldflags="-s -w -X main.version=${version}"
-          GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-linux-amd64 .
-          GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-linux-arm64 .
-          GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-darwin-amd64 .
-          GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-darwin-arm64 .
-          GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="$ldflags" -o ../wing-link-windows-amd64.exe .
-          GOOS=android GOARCH=arm64 go build -trimpath -buildmode=pie -ldflags="$ldflags" -o ../wing-link-android-arm64 .
-      - name: Generate Wing Link checksums
-        run: sha256sum wing-link-* > wing-link-checksums.sha256
-      - name: Record exact Wing Link build inputs and artifacts
-        env:
-          TAG: ${{ inputs.tag }}
-        run: node scripts/release_evidence.mjs emit wing-link .
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: wing-link-release
-          path: |
-            wing-link-linux-amd64
-            wing-link-linux-arm64
-            wing-link-darwin-amd64
-            wing-link-darwin-arm64
-            wing-link-windows-amd64.exe
-            wing-link-android-arm64
-            wing-link-checksums.sha256
-            wing-link-release-evidence.json
-          if-no-files-found: error
-
   verify-artifacts:
     name: Verify and smoke exact release artifacts
-    needs: [android, linux, web, wing-link]
+    needs: [android, linux, web]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -346,7 +244,7 @@ jobs:
       - name: Install artifact verification dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl file libgtk-3-0 libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libsecret-1-0 qemu-user-static unzip xvfb
+          sudo apt-get install -y curl file libgtk-3-0 libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libsecret-1-0 unzip xvfb
           npm ci
           npx playwright install --with-deps chromium
       - name: Verify checksums, signatures, archives, and runnable artifacts
@@ -421,85 +319,10 @@ jobs:
           path: android-artifact-smoke.txt
           if-no-files-found: error
 
-  wing-link-macos-smoke:
-    name: Run exact Wing Link macOS artifact
-    needs: wing-link
-    runs-on: macos-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: wing-link-release
-      - name: Verify and run the native macOS binary
-        env:
-          TAG: ${{ inputs.tag }}
-        run: |
-          expected=$(printf '%s\n' wing-link-android-arm64 wing-link-darwin-amd64 wing-link-darwin-arm64 wing-link-linux-amd64 wing-link-linux-arm64 wing-link-windows-amd64.exe | sort)
-          actual=$(awk 'NF == 2 && $1 ~ /^[0-9a-fA-F]+$/ && $2 !~ /[\\\/]/ {print $2}' wing-link-checksums.sha256 | sort)
-          test "$(wc -l < wing-link-checksums.sha256)" -eq 6 && test "$actual" = "$expected" || { echo "checksum manifest does not exactly cover expected artifacts" >&2; exit 1; }
-          shasum -a 256 -c wing-link-checksums.sha256
-          file wing-link-darwin-amd64 | grep -q 'Mach-O 64-bit'
-          file wing-link-darwin-arm64 | grep -q 'Mach-O 64-bit'
-          case "$(uname -m)" in
-            arm64) binary=wing-link-darwin-arm64 ;;
-            x86_64) binary=wing-link-darwin-amd64 ;;
-            *) echo "unsupported macOS runner architecture" >&2; exit 1 ;;
-          esac
-          chmod +x "$binary"
-          test "$(./$binary version)" = "${TAG#v}"
-          artifact_sha256=$(shasum -a 256 "$binary" | cut -d' ' -f1)
-          manifest_sha256=$(shasum -a 256 wing-link-release-evidence.json | cut -d' ' -f1)
-          build_number=$(node -p "require('./wing-link-release-evidence.json').identity.build_number")
-          printf 'tag=%s\nsource_revision=%s\nrun_id=%s\nrun_attempt=%s\nbuild_number=%s\nbinary=%s\nartifact_sha256=%s\nmanifest_sha256=%s\nresult=verified-ran-version\nevidence_kind=native\nscenario=binary-version\ntimestamp_utc=%s\n' "$TAG" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$build_number" "$binary" "$artifact_sha256" "$manifest_sha256" "$(date -u +%FT%TZ)" > wing-link-macos-smoke.txt
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: wing-link-macos-smoke-receipt
-          path: wing-link-macos-smoke.txt
-          if-no-files-found: error
-
-  wing-link-windows-smoke:
-    name: Run exact Wing Link Windows artifact
-    needs: wing-link
-    runs-on: windows-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: wing-link-release
-      - name: Verify and run the Windows binary
-        shell: pwsh
-        env:
-          TAG: ${{ inputs.tag }}
-        run: |
-          $expectedFiles = @('wing-link-android-arm64', 'wing-link-darwin-amd64', 'wing-link-darwin-arm64', 'wing-link-linux-amd64', 'wing-link-linux-arm64', 'wing-link-windows-amd64.exe')
-          $manifest = @(Get-Content wing-link-checksums.sha256)
-          $entries = @($manifest | ForEach-Object {
-            if ($_ -notmatch '^([0-9a-fA-F]{64}) [ *]([^/\\]+)$') { throw 'checksum manifest does not exactly cover expected artifacts' }
-            [pscustomobject]@{ Hash = $Matches[1].ToLowerInvariant(); Name = $Matches[2] }
-          })
-          if ($entries.Count -ne $expectedFiles.Count -or (Compare-Object ($entries.Name | Sort-Object -Unique) $expectedFiles)) { throw 'checksum manifest does not exactly cover expected artifacts' }
-          $entries | ForEach-Object {
-            $actual = (Get-FileHash -Algorithm SHA256 $_.Name).Hash.ToLowerInvariant()
-            if ($actual -ne $_.Hash) { throw "checksum mismatch: $($_.Name)" }
-          }
-          $actualVersion = (& .\wing-link-windows-amd64.exe version).Trim()
-          $expectedVersion = $env:TAG.TrimStart('v')
-          if ($actualVersion -ne $expectedVersion) { throw "version mismatch" }
-          $artifactHash = (Get-FileHash -Algorithm SHA256 wing-link-windows-amd64.exe).Hash.ToLowerInvariant()
-          $manifestHash = (Get-FileHash -Algorithm SHA256 wing-link-release-evidence.json).Hash.ToLowerInvariant()
-          $buildNumber = (Get-Content wing-link-release-evidence.json | ConvertFrom-Json).identity.build_number
-          $timestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-          "tag=$env:TAG`nsource_revision=$env:GITHUB_SHA`nrun_id=$env:GITHUB_RUN_ID`nrun_attempt=$env:GITHUB_RUN_ATTEMPT`nbuild_number=$buildNumber`nbinary=wing-link-windows-amd64.exe`nartifact_sha256=$artifactHash`nmanifest_sha256=$manifestHash`nresult=verified-ran-version`nevidence_kind=native`nscenario=binary-version`ntimestamp_utc=$timestamp" | Set-Content -Encoding utf8 wing-link-windows-smoke.txt
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: wing-link-windows-smoke-receipt
-          path: wing-link-windows-smoke.txt
-          if-no-files-found: error
-
   release-readiness:
     name: Release readiness
     if: ${{ always() }}
-    needs: [validation, android, linux, web, wing-link, verify-artifacts, android-artifact-smoke, wing-link-macos-smoke, wing-link-windows-smoke]
+    needs: [validation, android, linux, web, verify-artifacts, android-artifact-smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -518,8 +341,6 @@ jobs:
       - release-readiness
       - verify-artifacts
       - android-artifact-smoke
-      - wing-link-macos-smoke
-      - wing-link-windows-smoke
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -596,6 +417,6 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --title "Hermes Wing $TAG" \
-            --notes "Verified alpha release with a signed Android APK/AAB, Linux x64 bundle, static web archive, Wing Link binaries, checksums, and a pre-publication verification receipt. See README.md for support limits." \
+            --notes "Verified alpha release with a signed Android APK/AAB, Linux x64 bundle, static web archive, checksums, and a pre-publication verification receipt. See README.md for support limits." \
             --prerelease
           trap - EXIT

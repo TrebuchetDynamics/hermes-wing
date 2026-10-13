@@ -24,7 +24,7 @@ to Agent. Wing Link grants and local host approvals are a separate management
 boundary. No production control, capability or protocol was changed.
 
 Only this receipt and the new
-[unspent approval regression](../../wing_link/internal/approval/security_current_boundary_test.go)
+[unspent approval regression](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/approval/security_current_boundary_test.go)
 are card-owned deliverables. Existing dirty files, upstream references and the
 untracked approval-settlement predecessor test were read-only. Broad Go execution
 includes current unrelated OmniRoute edits; it is not a clean-HEAD release test.
@@ -48,19 +48,19 @@ management security row; [threat-model authorization](../security/threat-model.m
 and current controls for named grants/acknowledgment.
 
 Caller/control: `wingLinkServer.requireDeviceAuthorization` in
-[serve.go](../../wing_link/internal/app/serve.go) checks the exact route scope via
-`Store.AuthorizeDevice` in [device.go](../../wing_link/internal/state/device.go).
-`serveDirectoryRoute` in [workspaces.go](../../wing_link/internal/app/workspaces.go)
+[serve.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/serve.go) checks the exact route scope via
+`Store.AuthorizeDevice` in [device.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/state/device.go).
+`serveDirectoryRoute` in [workspaces.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/workspaces.go)
 requires `directories:read`; no network location supplies authority.
 
 Oracle: `TestDeviceScopesAreEnforcedPerRoute` allows health but rejects profile/setup
 without their grants; `TestPendingCredentialCanVerifyReadsButCannotMutateBeforeAcknowledgment`
 rejects pending mutation; `TestDeviceCanInspectAndRevokeOnlyItself` checks self
 inspection excludes token hashes and the revoked credential stops authorizing.
-These are [server tests](../../wing_link/internal/app/serve_test.go), command D1.
+These are [server tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/serve_test.go), command D1.
 The title of the self-device test is not proof of every peer-administration route.
 `TestRemoteDirectoryRoutesEnforceScopeAndStrictRequests` in
-[route tests](../../wing_link/internal/app/workspaces_test.go), command R1, checks
+[route tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/workspaces_test.go), command R1, checks
 missing token/scope, caller-selected path query, duplicate/invalid query, bodies
 and disallowed verbs with bounded typed errors and safety headers.
 
@@ -73,17 +73,17 @@ Claim: [threat-model Directories and Projects](../security/threat-model.md#direc
 and test-plan management-security revoked-root/symlink expectations.
 
 Caller/control: `serveDirectoryRoute` delegates opaque handles to `Browser.Children`
-in [browser.go](../../wing_link/internal/workspaces/browser.go). It checks device
+in [browser.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/workspaces/browser.go). It checks device
 and expiry with `record`, resolves the current grant with `Store.Resolve` in
-[grants.go](../../wing_link/internal/workspaces/grants.go), opens roots with
+[grants.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/workspaces/grants.go), opens roots with
 `openRootNoSymlinks` and confines relative browsing with Go `os.Root`. The route
 serializes only `Handle` / `Name` via `remoteDirectories`, never host paths/files.
 
-Oracle: [browser tests](../../wing_link/internal/workspaces/browser_test.go)
+Oracle: [browser tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/workspaces/browser_test.go)
 `TestBrowserContainedSymlinkRetargetFailsClosed` rejects retargeted child/ancestor;
 `TestBrowserConcurrentSymlinkRetargetNeverEscapes` never emits the outside child;
 `TestBrowserRevokedRemovedExpiredAndEvictedHandlesFailClosed` rejects retired
-handles. [Grant tests](../../wing_link/internal/workspaces/grants_test.go)
+handles. [Grant tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/workspaces/grants_test.go)
 `TestDirectoryGrantResolveRejectsRevokedAndSymlinkReplacedRoots` rejects revoked or
 replaced roots. Command C1 passes four top-level tests plus nine subtests, no skips.
 R1 additionally exercises `TestRemoteDirectoryRoutesReturnHandlesAndNamesOnly`
@@ -97,9 +97,9 @@ Claim: [threat-model current controls](../security/threat-model.md#current-contr
 for bounded audit/diagnostics, and
 [adversarial cases](../security/threat-model.md#adversarial-cases) audit injection.
 
-Caller/control: `recordAudit` in [app/audit.go](../../wing_link/internal/app/audit.go)
+Caller/control: `recordAudit` in [app/audit.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/audit.go)
 constructs typed metadata, not request bodies. `Log.Append` / validation in
-[audit.go](../../wing_link/internal/audit/audit.go) persist only fixed fields with
+[audit.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/audit/audit.go) persist only fixed fields with
 allowlisted operations, bounded device IDs and owner-only storage. This is rejection
 before persistence, not a guarantee that arbitrary text can be safely logged.
 For Dart stored errors, `_connect` uses `_safeHermesError` in
@@ -107,7 +107,7 @@ For Dart stored errors, `_connect` uses `_safeHermesError` in
 which delegates to `wingRedactedPreview` in
 [shared redaction](../../lib/shared/security/wing_redaction.dart).
 
-Oracle: [audit tests](../../wing_link/internal/audit/audit_test.go)
+Oracle: [audit tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/audit/audit_test.go)
 `TestAuditPersistsOnlyAllowlistedBoundedFieldsOwnerOnly` and
 `TestAuditRejectsSecretsPathsPairingCodesAndUnknownOperations`, command P1: two
 passes and rejected data absent from disk. [Connection tests](../../test/core/hermes/channel/hermes_api_channel_tests/connection_tests.dart)
@@ -125,15 +125,15 @@ and approval replay in [adversarial cases](../security/threat-model.md#adversari
 [security ADR](../adr/security-and-privacy.md#decision) one-use digest-bound local
 approval, and the test-plan approval/Stop correlation row.
 
-Caller/control: `approvalGate` in [app/approval.go](../../wing_link/internal/app/approval.go)
+Caller/control: `approvalGate` in [app/approval.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/approval.go)
 reserves device/method-route/key/digest through `OperationManager.ReserveIdempotent`
 before `Store.Consume` / `Store.Request` in
-[approval.go](../../wing_link/internal/approval/approval.go). `deleteProfile` in
-[serve.go](../../wing_link/internal/app/serve.go) hashes profile ID plus supplied
+[approval.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/approval/approval.go). `deleteProfile` in
+[serve.go](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/app/serve.go) hashes profile ID plus supplied
 revision; execution separately checks the revision. This is not proof of an
 Agent-wide cross-process transactional mutation contract.
 
-Existing oracles: [approval tests](../../wing_link/internal/approval/approval_test.go)
+Existing oracles: [approval tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/approval/approval_test.go)
 `TestApprovalIsDigestBoundOneUseAndPersistent`,
 `TestApprovalBindsDeduplicationAndConsumptionToIdempotencyKey`, and
 `TestApprovalExpiresAndStoredMetadataIsBoundedAndRedacted`. A1 passes these plus
@@ -183,8 +183,8 @@ no late stream attach, second send denied) and [native-ID correlation tests](../
 replacement FIFO answer, no approval replay). “Native” here names Agent request-ID
 semantics in fake HTTP tests; it is not a native desktop launch.
 
-M1 executes [operation tests](../../wing_link/internal/operation/operation_test.go)
-and [journal tests](../../wing_link/internal/operation/journal_test.go):
+M1 executes [operation tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/operation/operation_test.go)
+and [journal tests](https://github.com/TrebuchetDynamics/hermes-wing/blob/918e7c318bab1d91f348570e2309598d729ecb9c/wing_link/internal/operation/journal_test.go):
 `TestDurableManagerReplaysIdempotentWorkAndCancelsByContext`,
 `TestJournalReplaysSameIdempotentRequestAndRejectsChangedPayload`,
 `TestJournalRecoversInterruptedOperationsWithoutPersistingPayloads`. R1's
@@ -270,3 +270,8 @@ also passes; the no-index check covers the new, untracked files it cannot inspec
   [Agent immutability](../adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent).
   Existing test-plan/threat-model files were not edited; their owners can integrate
   these bounded references without importing stronger support claims.
+
+Retirement link maintenance: removed-source links now point at the last tracked
+pre-retirement baseline `918e7c318bab1d91f348570e2309598d729ecb9c`. These are
+source lookup pointers, not replacements for the original dirty-source manifests
+or fresh qualification of the historical results above.

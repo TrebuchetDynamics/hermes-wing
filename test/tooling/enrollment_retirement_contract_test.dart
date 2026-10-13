@@ -3,6 +3,22 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('obsolete Linux Link profile journey cannot return', () {
+    expect(
+      File('integration_test/linux_live_wing_link_test.dart').existsSync(),
+      isFalse,
+    );
+    final runner = File('scripts/run_linux_live_e2e.sh').readAsStringSync();
+    for (final forbidden in [
+      'linux_live_wing_link_test.dart',
+      'WING_LIVE_LINK_MANIFEST',
+      'WING_LIVE_LINK_BINARY',
+      'WING_LINK_STATE',
+    ]) {
+      expect(runner, isNot(contains(forbidden)), reason: forbidden);
+    }
+  });
+
   test(
     'product and fixtures cannot restore the retired local host cluster',
     () {

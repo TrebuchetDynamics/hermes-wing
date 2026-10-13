@@ -3,6 +3,39 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'product and fixtures cannot restore the retired local host cluster',
+    () {
+      for (final path in ['lib', 'test', 'integration_test']) {
+        expect(_obsoleteLocalHost(Directory(path)), isEmpty, reason: path);
+      }
+    },
+  );
+
+  test('local host guard rejects restored files, imports and symbols', () {
+    final root = Directory.systemTemp.createTempSync('local-host-retirement-');
+    addTearDown(() => root.deleteSync(recursive: true));
+    for (final entry in {
+      'local_wing_link_host.dart': '',
+      'local_wing_link_process.dart': '',
+      'local_wing_link_platform_io.dart': '',
+      'local_wing_link_platform_stub.dart': '',
+      'import.dart': "import 'local_wing_link_host.dart';",
+      'export.dart': "export 'local_wing_link_process.dart';",
+      'conditional.dart':
+          "import 'stub.dart' if (dart.library.io) 'local_wing_link_platform_io.dart';",
+      'host.dart': 'LocalWingLinkHost()',
+      'inspection.dart': 'LocalHermesInspection()',
+      'result.dart': 'LocalHermesSetupResult()',
+    }.entries) {
+      final file = File('${root.path}/${entry.key}')
+        ..writeAsStringSync(entry.value);
+      expect(_obsoleteLocalHost(root), [file.path]);
+      file.deleteSync();
+    }
+    expect(_obsoleteLocalHost(root), isEmpty);
+  });
+
   test('production cannot restore obsolete client compatibility authority', () {
     expect(_obsoleteClientAuthority(Directory('lib')), isEmpty);
   });
@@ -228,6 +261,24 @@ void main() {
     expect(provider, contains('MethodChannelHermesConnectIntentSource()'));
   });
 }
+
+List<String> _obsoleteLocalHost(Directory root) => root
+    .listSync(recursive: true)
+    .whereType<File>()
+    .where((file) => file.path.endsWith('.dart'))
+    .where(
+      (file) => !file.path.endsWith('enrollment_retirement_contract_test.dart'),
+    )
+    .where((file) {
+      final source = file.readAsStringSync();
+      return file.path.contains('local_wing_link_') ||
+          source.contains('local_wing_link_') ||
+          source.contains('LocalWingLink') ||
+          source.contains('LocalHermesInspection') ||
+          source.contains('LocalHermesSetupResult');
+    })
+    .map((file) => file.path)
+    .toList();
 
 List<String> _obsoleteClientAuthority(Directory root) => root
     .listSync(recursive: true)

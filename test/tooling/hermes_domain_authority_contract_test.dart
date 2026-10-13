@@ -2,11 +2,15 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+bool _isRetainedLinkPath(String filePath, String rootPath) => filePath
+    .replaceAll('\\', '/')
+    .startsWith('${rootPath.replaceAll('\\', '/')}/core/wing_link/');
+
 List<String> _linkConsumers(Directory root) => root
     .listSync(recursive: true)
     .whereType<File>()
     .where((file) => file.path.endsWith('.dart'))
-    .where((file) => !file.path.startsWith('${root.path}/core/wing_link/'))
+    .where((file) => !_isRetainedLinkPath(file.path, root.path))
     .where(
       (file) => RegExp(
         r'wing_link/|wing_link\w*\.dart|\bWingLink\w*|\bwingLinkClient\w*',
@@ -16,6 +20,33 @@ List<String> _linkConsumers(Directory root) => root
     .toList();
 
 void main() {
+  test(
+    'retained core exclusion handles Windows paths without excluding siblings',
+    () {
+      for (final root in ['lib', r'C:\workspace\lib']) {
+        expect(
+          _isRetainedLinkPath('$root\\core\\wing_link\\client.dart', root),
+          isTrue,
+        );
+        expect(
+          _isRetainedLinkPath(
+            '$root\\core\\wing_link_extra\\client.dart',
+            root,
+          ),
+          isFalse,
+        );
+        expect(
+          _isRetainedLinkPath('$root/core/wing_link/client.dart', root),
+          isTrue,
+        );
+        expect(
+          _isRetainedLinkPath('$root/core/wing_link_extra/client.dart', root),
+          isFalse,
+        );
+      }
+    },
+  );
+
   test('complete client outside retained core uses Agent authority only', () {
     expect(_linkConsumers(Directory('lib')), isEmpty);
   });

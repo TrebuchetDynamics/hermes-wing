@@ -14,7 +14,7 @@ not this receipt, is the authority for admission ordering. The finish-task recei
 and native review handoff identify the exact commit/ref for this candidate.
 
 Owned Dart source fingerprint (sorted relative filenames, NUL, then file bytes;
-SHA-256): `0cd1f3697828f30f51062a75b5ee55f3b8b3873ebdc99779f76604ed5f5624e3`.
+SHA-256): `829c5424fe49c4c92482ecca9b57e499fd2e6be8b39d4529fe311a0094a4e593`.
 This excludes this evidence document. No production, service, packaging, stored
 user data, canonical backlog or goal-ledger changes were made.
 
@@ -78,7 +78,7 @@ checks are still present; this slice does not delete or qualify the service.
    the negative-control test failed on `app/caller.dart` (expected its path,
    actual `[]`). GREEN: the implemented collector passed the complete client and
    all negative controls, with the retained compatibility assertions unchanged.
-4. Focused Linux-host Flutter regression run: 495 tests passed in 1 minute
+4. Original focused Linux-host Flutter regression run: 495 tests passed in 1 minute
    42 seconds. Includes Profiles unavailable/denied/owner fencing and catalog
    retry/keyboard tests; gateway reconnect/exact-session restoration; old handoff
    rejection; endpoint security, secure storage and raw historical record
@@ -110,6 +110,37 @@ isolated workspace using existing dependencies without changing tracked manifest
 or the lockfile. No dependency was added. An initial analyzer run found the one
 cascade lint; it was corrected before the passing run. Cost and independent review
 duration are unknown.
+
+## Independent review rework
+
+Review of `b1b390a3dc5a0b74c528745d967e05773a6fa3b5` requested a Windows-path
+correction. Before rework, the task ref, admitted-base ancestry, four-file
+cumulative scope and owned file bytes matched that reviewed commit. Original
+admission remains unchanged; no post-edit startup-guard replay was used.
+
+The retained-core predicate now normalizes backslashes in both the enumerated
+file path and root before comparing the exact subtree. A small private predicate
+lets the existing collector and deterministic path regression exercise identical
+logic without a new dependency or production seam. The regression covers relative
+and Windows absolute roots, backslash and mixed separators, and rejection of
+`core/wing_link_extra` for each root. No consumer, fixture, config or export outside
+this existing test needs to change; retained catalog assertions are unchanged.
+
+RED: the new regression with the original predicate failed (`Expected: true`,
+`Actual: false`, exit 1). GREEN: all five authority-contract tests passed after
+normalization. Commands:
+
+```sh
+timeout 5m flutter test --no-pub --reporter expanded test/tooling/hermes_domain_authority_contract_test.dart --plain-name 'retained core exclusion handles Windows paths without excluding siblings'
+dart format test/tooling/hermes_domain_authority_contract_test.dart
+timeout 5m flutter test --no-pub --reporter expanded test/tooling/hermes_domain_authority_contract_test.dart
+```
+
+The mandatory finish gate reruns the exact acceptance commands above against this
+source before committing. `.dart_tool/t_7fb12f77-rework-finish.log` and the native
+review handoff bind its check outcomes to the new exact task commit. Windows-style
+paths were exercised on Linux, not on a Windows runtime. No production, service,
+packaging, stored-data or canonical-ledger edits were needed.
 
 ## Remaining milestone gaps
 

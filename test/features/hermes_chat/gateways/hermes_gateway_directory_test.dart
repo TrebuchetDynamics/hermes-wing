@@ -131,62 +131,6 @@ class _DeferredStartupCache extends FakeGatewayContactCache {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final offline in [false, true]) {
-    test(
-      'confirmed rename preserves enrollment with gateway offline=$offline',
-      () async {
-        final store = FakeHermesEndpointStore(
-          profiles: const [
-            HermesEndpointConfig(
-              id: 'saved',
-              label: 'old',
-              baseUrl: 'http://localhost:8080/p/old',
-              apiKey: 'synthetic-agent',
-              wingLinkOrigin: 'http://localhost:8787',
-              wingLinkToken: 'synthetic-link',
-              wingLinkDeviceId: 'device',
-            ),
-          ],
-        );
-        final channel = FakeHermesChannel.disconnected();
-        final loader = FakeGatewaySummaryLoader({'saved': gatewaySummary([])});
-        final cache = FakeGatewayContactCache();
-        final directory = HermesGatewayDirectory(
-          store: store,
-          cache: cache,
-          loader: loader,
-          activeChannel: channel,
-        );
-        addTearDown(directory.dispose);
-        addTearDown(channel.dispose);
-        await directory.refresh();
-        await directory.activateGateway('saved');
-        if (offline) loader.results['saved'] = StateError('gateway stopped');
-        await directory.reconcileManagedProfileRename(
-          sourceGatewayId: 'saved',
-          previousProfileId: 'old',
-          profileId: 'renamed',
-          displayName: 'renamed',
-        );
-        final config = (await store.loadProfiles()).single;
-        expect(config.baseUrl, 'http://localhost:8080/p/renamed');
-        expect(config.apiKey, 'synthetic-agent');
-        expect(config.wingLinkToken, 'synthetic-link');
-        expect(config.wingLinkDeviceId, 'device');
-        expect(config.label, 'renamed');
-        expect(directory.contacts.single.id.profileId, 'renamed');
-        expect(cache.stored.single.id.profileId, 'renamed');
-        expect(
-          directory.activeContactId?.profileId,
-          offline ? isNull : 'renamed',
-        );
-        expect(
-          directory.contacts.single.availability,
-          offline ? GatewayAvailability.offline : GatewayAvailability.online,
-        );
-      },
-    );
-  }
   test('disposal during startup does not begin gateway refresh', () async {
     final cache = _DeferredStartupCache();
     final loader = FakeGatewaySummaryLoader(const {});
@@ -462,129 +406,6 @@ void main() {
       isFalse,
     );
   });
-
-  final enrollmentBoundaryCases =
-      <({String name, HermesEndpointConfig candidate})>[
-        (
-          name:
-              'managed profile enrollment rejects a different Hermes authority',
-          candidate: const HermesEndpointConfig(
-            id: 'candidate',
-            baseUrl: 'https://other.example:8642/p/link',
-            apiKey: 'candidate-key',
-            wingLinkOrigin: 'https://control.example:8654',
-            wingLinkHostFingerprint: 'sha256/source-pin',
-          ),
-        ),
-        (
-          name:
-              'managed profile enrollment rejects a different Wing Link authority',
-          candidate: const HermesEndpointConfig(
-            id: 'candidate',
-            baseUrl: 'https://hermes.example:8642/p/link',
-            apiKey: 'candidate-key',
-            wingLinkOrigin: 'https://other-control.example:8654',
-            wingLinkHostFingerprint: 'sha256/source-pin',
-          ),
-        ),
-        (
-          name: 'managed profile enrollment rejects a changed Wing Link pin',
-          candidate: const HermesEndpointConfig(
-            id: 'candidate',
-            baseUrl: 'https://hermes.example:8642/p/link',
-            apiKey: 'candidate-key',
-            wingLinkOrigin: 'https://control.example:8654',
-            wingLinkHostFingerprint: 'sha256/other-pin',
-          ),
-        ),
-        (
-          name:
-              'managed profile enrollment rejects a blank endpoint credential',
-          candidate: const HermesEndpointConfig(
-            id: 'candidate',
-            baseUrl: 'https://hermes.example:8642/p/link',
-            apiKey: '   ',
-            wingLinkOrigin: 'https://control.example:8654',
-            wingLinkHostFingerprint: 'sha256/source-pin',
-          ),
-        ),
-      ];
-
-  for (final boundaryCase in enrollmentBoundaryCases) {
-    test(boundaryCase.name, () async {
-      const source = HermesEndpointConfig(
-        id: 'source',
-        baseUrl: 'https://hermes.example:8642/p/default',
-        apiKey: 'source-key',
-        wingLinkOrigin: 'https://control.example:8654',
-        wingLinkHostFingerprint: 'sha256/source-pin',
-      );
-      final channel = FakeHermesChannel.disconnected();
-      addTearDown(channel.dispose);
-      final directory = HermesGatewayDirectory(
-        store: FakeHermesEndpointStore(
-          profiles: [source, boundaryCase.candidate],
-        ),
-        cache: FakeGatewayContactCache(),
-        loader: FakeGatewaySummaryLoader({
-          'source': gatewaySummary(['default']),
-          'candidate': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      addTearDown(directory.dispose);
-      await directory.refresh();
-
-      expect(
-        directory.enrolledGatewayIdForManagedProfile(
-          sourceGatewayId: 'source',
-          profileId: 'link',
-        ),
-        isNull,
-      );
-    });
-  }
-
-  test(
-    'managed HTTPS profile enrollment requires the reviewed Wing Link pin',
-    () async {
-      const source = HermesEndpointConfig(
-        id: 'source',
-        baseUrl: 'https://hermes.example:8642/p/default',
-        apiKey: 'source-key',
-        wingLinkOrigin: 'https://control.example:8654',
-        wingLinkHostFingerprint: 'sha256/reviewed-pin',
-      );
-      const candidate = HermesEndpointConfig(
-        id: 'candidate',
-        baseUrl: 'https://hermes.example:8642/p/link',
-        apiKey: 'candidate-key',
-        wingLinkOrigin: 'https://control.example:8654',
-        wingLinkHostFingerprint: 'sha256/reviewed-pin',
-      );
-      final channel = FakeHermesChannel.disconnected();
-      addTearDown(channel.dispose);
-      final directory = HermesGatewayDirectory(
-        store: FakeHermesEndpointStore(profiles: const [source, candidate]),
-        cache: FakeGatewayContactCache(),
-        loader: FakeGatewaySummaryLoader({
-          'source': gatewaySummary(['default']),
-          'candidate': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      addTearDown(directory.dispose);
-      await directory.refresh();
-
-      expect(
-        directory.enrolledGatewayIdForManagedProfile(
-          sourceGatewayId: 'source',
-          profileId: 'link',
-        ),
-        'candidate',
-      );
-    },
-  );
 
   test('profile-prefixed endpoints keep distinct contact identities', () async {
     const config = HermesEndpointConfig(
@@ -1511,6 +1332,8 @@ void main() {
             wingLinkOrigin: 'https://home.example:8654',
             wingLinkToken: 'control-secret',
             wingLinkPendingCredentialId: 'pending-id',
+            wingLinkHostFingerprint: 'fixture-pin',
+            wingLinkDeviceId: 'fixture-device',
           ),
         ],
       );
@@ -1524,12 +1347,26 @@ void main() {
       );
       await directory.refresh();
 
+      final original = (await store.loadProfiles()).single;
       await directory.renameGateway('sidon', 'Home');
 
       final saved = store.saveCalls.single;
+      expect(saved.id, 'sidon');
+      expect(saved.label, 'Home');
+      expect(saved.baseUrl, 'https://home.example/p/sidon');
+      expect(saved.apiKey, original.apiKey);
       expect(saved.wingLinkOrigin, 'https://home.example:8654');
       expect(saved.wingLinkToken, 'control-secret');
       expect(saved.wingLinkPendingCredentialId, 'pending-id');
+      expect(saved.wingLinkHostFingerprint, 'fixture-pin');
+      expect(saved.wingLinkDeviceId, 'fixture-device');
+      expect(await store.loadProfiles(), [saved]);
+      expect(store.saveAllCalls, isEmpty);
+      expect(store.deleteProfileCalls, isEmpty);
+      expect(store.clearCalls, 0);
+      expect(directory.contacts.single.id.profileId, 'sidon');
+      expect(directory.configForGateway('sidon')?.baseUrl, saved.baseUrl);
+      expect(directory.configForGateway('sidon')?.apiKey, saved.apiKey);
       expect(
         directory.configForGateway('sidon')?.wingLinkToken,
         'control-secret',

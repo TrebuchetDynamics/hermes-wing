@@ -22,6 +22,8 @@ void main() {
             'clearWingLinkEnrollment',
             'PendingWingLinkCredentialRecovery',
             'pendingCredentialRecovery',
+            'reconcileManagedProfileRename',
+            'enrolledGatewayIdForManagedProfile',
           ]) {
             expect(
               source.contains(forbidden),

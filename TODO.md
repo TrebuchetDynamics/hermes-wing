@@ -279,30 +279,33 @@ active workers and coordinate exact source ownership before dispatch.
   continue the complete-removal plan on this same parent; no duplicate worker.
   Checks: public-control enrollment/router/local-setup/saved-connection regressions,
   retained Agent security tests, analysis and affected integrated web/native guards.
-  Current closeout plan (owner speed correction; supersedes the old frontier):
-  original card t_587682e1 now has local retirement commit
-  bce4ec5fb9109d29520b81260f13bad93c6f2cb7, based on delivered 918e7c31.
-  Git inspection confirms the coherent client/service/installer/delivery removal;
-  the native card records completed final acceptance after the earlier interrupted
-  run. Independent review run 309 is active; no approval or publication inferred.
-  The handoff previously rejected a circular prerequisite (review transition
-  required before requesting that transition); same-card correction already reached
-  review. Do not recreate that gate, rerun matching checks or replace the reviewer.
-  Closeout order: await this original review result; repair only concrete rejection
-  findings if any; on approval verify exact candidate and integration inputs, then
-  serialize canonical integration and authorized origin/main publication in the
-  same coordinator occurrence. Reuse matching receipts where policy allows;
-  changed inputs and mandatory checks still apply. Reconcile both parent tasks
-  against actual delivered acceptance once; retain named native/live gaps without
-  claiming them passed. No new audit, worker, priority change or timer from this plan.
-  This planning pass does not implement or qualify the remaining behavior.
+  Delivered offline outcome: original card t_587682e1 produced retirement commit
+  bce4ec5fb9109d29520b81260f13bad93c6f2cb7; native independent review run 309
+  approved that exact source. Coordinator integrated and verified origin/main at
+  963b9b5bd2233d83506655ec354438a0be0b97d7. All 186 owned blobs/modes/deletions
+  match the reviewed commit; only newer canonical TODO/goals context differs.
+  Client/service trees, installers, bootstrap asset, Linux Go bundling and service
+  release/package dependencies are removed together. Agent behavior, secure storage
+  and inert legacy raw records remain preserved. No installed service was touched.
+  Acceptance: full Flutter 3757 passed/8 skipped, Chromium 47 passed/1 live skip,
+  Node 118 and Python 109 passed, analysis/web build/audit passed; independent review
+  exercised 207 Flutter tests and the tooling suites. Integration-specific retirement/
+  archive checks passed 48 tests; goals validation and diff whitespace passed.
+  The interrupted earlier suite remains a failure, not reused passing evidence.
+  Remaining combined parent acceptance: named Linux native chooser/setup and Android/
+  Termux direct setup/migration qualification, not another source-removal batch.
+  Reuse existing CONNECTION-SETUP-AUTH-MATRIX and native/device tasks; preserve their
+  leases and live-operation exclusions. Packaging retirement is already delivered;
+  do not dispatch another deletion/guard card. Keep this parent in_progress until
+  its stated named-target acceptance is evidenced. See
+  [the acceptance map](docs/quality/link-delivery-retirement.md).
 
 - [ ] **CONNECTION-LINK-RETIREMENT** — Goal: CONNECTION-PATHS. Retire legacy
   Wing Link packaging, installers and compatibility dependencies after replacement.
   Payoff: a standalone Wing client with Agent-only/native setup, not a second backend.
-  Implementation is included in the same active t_587682e1 batch, not a future
-  second deletion worker. Local candidate bce4ec5f exists and is under review;
-  closure still requires approved delivery and exact acceptance reconciliation.
+  Offline implementation was reviewed and delivered with the same t_587682e1
+  batch at origin/main 963b9b5b; no second deletion worker is needed.
+  Named Linux/Android direct setup and migration acceptance remains unqualified.
   Keep offline removal/build evidence separate from native/device/live acceptance;
   do not block independent closeout on an invented approval or report completion
   from implementation alone. Preserve installed services, raw records and history.

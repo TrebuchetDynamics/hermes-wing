@@ -3,6 +3,26 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('production cannot restore obsolete client compatibility authority', () {
+    expect(_obsoleteClientAuthority(Directory('lib')), isEmpty);
+  });
+
+  test('client authority guard rejects a restored file, import or flag', () {
+    final root = Directory.systemTemp.createTempSync('client-authority-');
+    addTearDown(() => root.deleteSync(recursive: true));
+    for (final entry in {
+      'hermes_domain_authority.dart': '',
+      'caller.dart': "import 'hermes_domain_authority.dart';",
+      'flag.dart': 'const wingLinkProfileCompatibilityEnabled = true;',
+    }.entries) {
+      final file = File('${root.path}/${entry.key}')
+        ..writeAsStringSync(entry.value);
+      expect(_obsoleteClientAuthority(root), [file.path]);
+      file.deleteSync();
+    }
+    expect(_obsoleteClientAuthority(root), isEmpty);
+  });
+
   test('saved host controls cannot restore legacy metadata projection', () {
     for (final path in [
       'lib/features/hermes_chat/gateways/hermes_gateway_directory.dart',
@@ -208,3 +228,16 @@ void main() {
     expect(provider, contains('MethodChannelHermesConnectIntentSource()'));
   });
 }
+
+List<String> _obsoleteClientAuthority(Directory root) => root
+    .listSync(recursive: true)
+    .whereType<File>()
+    .where((file) => file.path.endsWith('.dart'))
+    .where((file) {
+      final source = file.readAsStringSync();
+      return file.path.endsWith('hermes_domain_authority.dart') ||
+          source.contains('hermes_domain_authority.dart') ||
+          source.contains('wingLinkProfileCompatibilityEnabled');
+    })
+    .map((file) => file.path)
+    .toList();

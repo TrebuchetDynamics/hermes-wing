@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Wing Link exposes only the bounded profile compatibility domain', () {
-    final authority = File('lib/core/hermes/hermes_domain_authority.dart');
+  test('public profile and provider controls use Agent authority only', () {
     final profiles = File(
       'lib/features/profiles/screens/profiles_screen.dart',
     ).readAsStringSync();
@@ -14,20 +13,11 @@ void main() {
     final providers = File(
       'lib/features/providers/screens/providers_screen.dart',
     ).readAsStringSync();
-    final wingLinkClient = File(
-      'lib/core/wing_link/wing_link_client.dart',
-    ).readAsStringSync();
+
     final gatewayDirectory = File(
       'lib/features/hermes_chat/gateways/hermes_gateway_directory.dart',
     ).readAsStringSync();
-    final server = File('wing_link/internal/app/serve.go').readAsStringSync();
 
-    expect(authority.existsSync(), isTrue);
-    final authorityText = authority.readAsStringSync();
-    expect(
-      authorityText,
-      contains('const wingLinkProfileCompatibilityEnabled = true;'),
-    );
     expect(profiles, isNot(contains('wingLinkProfileCompatibilityEnabled')));
     expect(profiles, isNot(contains('WingLinkClient(')));
     expect(profiles, isNot(contains('directory.refresh()')));
@@ -36,6 +26,19 @@ void main() {
     expect(editor, contains('channel.renameProfile('));
     expect(editor, contains('channel.deleteProfile('));
     expect(providers, isNot(contains('WingLinkProvider')));
+    for (final source in [profiles, editor, providers, gatewayDirectory]) {
+      expect(source, isNot(contains('core/wing_link/')));
+      expect(source, isNot(contains('WingLinkClient(')));
+    }
+    expect(gatewayDirectory, isNot(contains('WingLinkProfileLoader')));
+    expect(gatewayDirectory, isNot(contains('_loadWingLinkProfiles')));
+  });
+
+  test('retained Link client and service keep compatibility safety checks', () {
+    final wingLinkClient = File(
+      'lib/core/wing_link/wing_link_client.dart',
+    ).readAsStringSync();
+    final server = File('wing_link/internal/app/serve.go').readAsStringSync();
     expect(
       wingLinkClient,
       contains(
@@ -44,8 +47,6 @@ void main() {
         '  }',
       ),
     );
-    expect(gatewayDirectory, isNot(contains('WingLinkProfileLoader')));
-    expect(gatewayDirectory, isNot(contains('_loadWingLinkProfiles')));
     expect(
       server,
       contains('const wingLinkProfileCompatibilityEnabled = true'),

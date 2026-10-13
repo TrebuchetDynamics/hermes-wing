@@ -5,7 +5,11 @@ locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
 [withdrawn as official parity evidence](docs/quality/official-desktop-reference.md).
 Existing Wing test results do not establish parity with this corrected reference.
 
-Hermes Wing is a Flutter client pursuing Hermes Desktop product parity.
+Hermes Wing targets a 1:1 Flutter port of official Hermes Desktop. Implement only
+features traced to `hermes-agent/apps/desktop`; platform/accessibility adaptations
+must preserve those outcomes, not add Wing-only capabilities. Standalone Office
+is non-reference and queued for removal, not enhancement. See
+[feature admission](docs/adr/product.md#official-desktop-features-only).
 Hermes Agent owns profiles, Projects, providers, models, configuration, sessions,
 runs, tools, approvals, schedules, memory and gateway state. Wing never creates a
 second backend or shadow inventory. Wing Link client, service, installers and

@@ -50,6 +50,36 @@ copy and bottom navigation, with Chat selected while the title reads Profiles.
 This is not Desktop's welcome experience. Primary direct access qualifies a
 connection prerequisite, not welcome fidelity or the delivered APK's parity.
 
+## Official Desktop features only
+
+Status: Accepted
+
+The owner explicitly requires a **1:1 Flutter port**, implementing only product
+features present in the official `hermes-agent/apps/desktop` reference. This
+supersedes earlier permission to develop Wing-specific extra surfaces. Every
+feature/task must identify the pinned official source and its actual user outcome,
+navigation, terminology and interaction/recovery behavior before implementation.
+An Agent API, a third-party client, an old matrix or an existing Wing screen alone
+is not evidence that the feature belongs to Desktop.
+
+Flutter/platform/accessibility adaptations may deliver the same reference outcome;
+they may not introduce unrelated product capabilities. Missing safe Agent contracts
+remain explicit gaps, not a fork, shadow backend or invented UI. Preserve Agent
+immutability, user data, credential safety and current active ownership.
+
+The established repository path is `hermes-agent/apps/desktop`. The owner's literal
+`hermes-agents/apps/desktop` does not exist in this checkout; no alternate upstream
+was substituted. The read-only inspected revision is `158fd638da1629c8e62caf9ade1515d162def8ab`,
+not a claim of latest upstream or executed parity.
+
+[Office source evidence](../quality/office-contact-session-reference.md#scope-and-verdict)
+finds no Office-named reference surface. Retire Wing's standalone Office route and
+navigation instead of enhancing it or calling the Bots roster an Office equivalent.
+Preserve shared Agent profiles/connections/sessions; a canonical Bot Chat port is
+separate and requires its real official contract. Existing completed Office study
+remains history. This decision queues removal; it does not claim the UI is removed
+or authorize implementation, a worker or a schedule in this planning pass.
+
 ## Wing Link deprecation
 
 Status: Accepted

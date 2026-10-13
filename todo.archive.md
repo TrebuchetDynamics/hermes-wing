@@ -5034,5 +5034,5 @@ Source section: Now / Next
   Scope: read-only source, nearest tests and sanitized receipt inspection for this
   outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
   Acceptance: Map Schedules owner-change and denied-read outcomes to matching widget/browser receipts or one missing oracle. Preserve Tools qualification and read-only inventory.
-  Dependencies: DOC-M4-INVENTORY-EVIDENCE; not eligible until that task is done.
+  Dependencies: DOC-M4-INVENTORY-EVIDENCE is complete and archived; this predecessor is satisfied.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.

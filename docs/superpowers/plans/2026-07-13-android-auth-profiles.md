@@ -4,10 +4,12 @@
 
 Disposition: Superseded. Current supported enrollment/persona assessment only; no proposed Agent routes.
 
-Canonical owners: `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M3-ROLLBACK-EVIDENCE`, `DOC-PERSONA-EVIDENCE`.
+Canonical owners: `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M3-ROLLBACK-EVIDENCE`.
 Use the [task bodies](../../../TODO.md#now--next) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
+`DOC-PERSONA-EVIDENCE` is complete and retained in [TODO history](../../../todo.archive.md);
+it is not an open owner or permission to reopen the work.
 
 
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). This does not reactivate superseded Agent contract proposals.

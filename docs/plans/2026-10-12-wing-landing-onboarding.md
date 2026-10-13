@@ -17,11 +17,14 @@ Desktop-guided Flutter application or introduce another Agent backend.
 
 ## Backlog connection
 
-Canonical owners are `LANDING-FIRST-REPLY`, `LANDING-PRODUCT-PROOF` and
-`LANDING-PAGES-QUALITY` in [TODO.md](../../TODO.md#now--next). The
-[plan-to-task coverage index](README.md#plan-to-task-coverage) records their scope.
-Existing `CONNECTION-SETUP-AUTH-MATRIX` and `PARITY-LIVE-WORKFLOW` retain live
-qualification ownership. This plan neither dispatches them nor changes their leases.
+`LANDING-FIRST-REPLY` is complete for offline onboarding and archived in
+[TODO history](../../todo.archive.md); authenticated first reply remains with
+`CONNECTION-SETUP-AUTH-MATRIX`. The open `LANDING-PRODUCT-PROOF` and
+`LANDING-PAGES-QUALITY` tasks in [TODO.md](../../TODO.md#now--next) own the
+remaining visual and delivery outcomes. The
+[plan-to-task coverage index](README.md#plan-to-task-coverage) records current
+owners. `PARITY-LIVE-WORKFLOW` retains combined live qualification ownership.
+This plan neither dispatches those tasks nor changes their leases.
 
 ## Located source and delivery
 
@@ -234,11 +237,10 @@ that it serves this open-source onboarding goal.
 
 ## Delivery slices and acceptance
 
-1. **LANDING-FIRST-REPLY — connection-first copy and guided entry.** Implement the
-   honest CTA, prerequisites, selected-path handoff and compact recovery section.
-   Synchronize relevant README/getting-started anchors without rewriting their
-   active owners. Extend existing Pages smoke for CTA destinations and core
-   readiness content. Offline qualification must not close live acceptance.
+1. **LANDING-FIRST-REPLY — complete; archived.** The reviewed offline onboarding
+   implementation and README/getting-started handoff are recorded in
+   [TODO history](../../todo.archive.md). Authenticated first reply remains an
+   explicit live qualification gap owned by `CONNECTION-SETUP-AUTH-MATRIX`.
 2. **LANDING-PRODUCT-PROOF — coherent product-first visual rebuild.** Build the
    selected composition across desktop/mobile using provenance-labeled current
    captures, revised hierarchy, typography, status, trust, FAQ and sharing assets.
@@ -273,10 +275,11 @@ chat at line 97 and source build at line 139. The guide starts with deprecated
 management/development status; its direct-connection steps precede acquisition
 and mix user instructions with worktree, fixture, storage and delivery history.
 
-Reuse `LANDING-FIRST-REPLY` for the documentation continuation. It already owns
-README/getting-started handoff; no new goal, duplicate task or worker is needed.
-Keep the accepted opening, Desktop/Flutter purpose, honest preview, API readiness,
-network security, credential distinction and qualification limits intact.
+The README/getting-started documentation continuation was delivered under
+`LANDING-FIRST-REPLY` and is recorded in [TODO history](../../todo.archive.md).
+Do not reopen that task or create a duplicate. Preserve its accepted opening,
+Desktop/Flutter purpose, honest preview, API readiness, network security,
+credential distinction and qualification limits in future edits.
 
 ### First: reorder the README without another full rewrite
 
@@ -456,9 +459,10 @@ links or deliberate stable navigation, not every former heading.
 
 ### Queue ownership and checks
 
-Reuse `LANDING-FIRST-REPLY` for tutorial/order, primary CTA, plain-language limits,
-readable readiness/SSH status and optional post-smoke instructions. Include the
-small generator provenance correction in that first truthfulness pass.
+The tutorial/order, CTA, readiness/SSH status and generator-provenance work for
+this continuation is complete under archived `LANDING-FIRST-REPLY`. Keep later
+landing copy and asset changes within the open product-proof and Pages-quality
+owners; do not create a duplicate first-reply task.
 `LANDING-PRODUCT-PROOF` owns the more compelling task/crop/composition and share
 assets. `LANDING-PAGES-QUALITY` retains artifact-level checks. No new tasks,
 focus/status/dependency changes, workers or timer are introduced.

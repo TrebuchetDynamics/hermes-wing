@@ -20,7 +20,11 @@ desktop and wide web as the fidelity baseline while preserving mobile usability.
 Match welcome and connection flow, navigation, screen structure, terminology,
 layout, visual hierarchy, interactions, Chat, sessions, profiles, settings and recovery;
 platform-native implementation may differ, but product deviations must be explicit.
-See [product boundaries](../adr/product.md) and the
+Only official `apps/desktop` product features are in scope. Each implementation
+must map to pinned reference source and behavior; Agent API availability alone is
+not feature admission. Wing-only Office is retirement work, not a parity target.
+See [feature admission](../adr/product.md#official-desktop-features-only),
+[product boundaries](../adr/product.md) and the
 [parity ledger](hermes-desktop-parity.md).
 
 ### User-demand emphasis

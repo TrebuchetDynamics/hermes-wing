@@ -40,6 +40,13 @@ not executed feature verification. The older feature matrix has withdrawn refere
 citations: do not turn its row counts or old Wing-specific pairing rows into a
 completion percentage. Update operation-level mapping alongside each real port slice.
 
+Feature admission: [official Desktop only](docs/adr/product.md#official-desktop-features-only).
+Every named surface below requires an actual official source/behavior mapping;
+the lists are not permission to implement all Agent APIs or retained Wing extras.
+Retire confirmed non-reference Office through existing
+DOC-OFFICE-ACCESSIBLE-EQUIVALENT; preserve DOC-OFFICE-REFERENCE as completed study.
+No new Office/3D feature or proxy is authorized.
+
 ### 1. Finish the connection foundation
 
 - Finish all Link consumers and packaging, including saved-endpoint APIs, fixtures,
@@ -115,7 +122,7 @@ completion percentage. Update operation-level mapping alongside each real port s
   DOC-M4-DISCOVERY-SELECTION-CONTRACT, DOC-M4-MCP-CONTRACT,
   DOC-M4-MEMORY-CONTRACT, DOC-M4-SCHEDULE-CONTRACT, DOC-M4-KANBAN-CONTRACT,
   DOC-M4-PLATFORM-CONTRACT, DOC-ARTIFACT-CONTRACT, FILES-TERMINAL-BROWSE,
-  FILES-TERMINAL-DOWNLOAD, DOC-ACCOUNT-CONTRACT, DOC-OFFICE-REFERENCE.
+  FILES-TERMINAL-DOWNLOAD, DOC-ACCOUNT-CONTRACT.
 - Exit: each advertised action has capability/grant/owner/error/concurrency checks
   and a matching user journey. Source-only discoveries are not acceptance evidence;
   unsupported operations stay gaps rather than a renamed second backend.
@@ -124,11 +131,12 @@ completion percentage. Update operation-level mapping alongside each real port s
 
 - Qualify native window/menu/shortcut/clipboard/storage behavior, Android lifecycle,
   voice permissions/cancellation, accessible equivalents, diagnosis and backup/import.
-  Keep 3D/Office enhancements and account/voice contracts behind reliable text work.
+  Include spatial/account/voice surfaces only when the official source proves
+  them; no standalone Office enhancements are planned.
 - Owners: PARITY-NATIVE-LINUX, PARITY-MAESTRO-ANDROID-DEVICE,
   DOC-NATIVE-DESIGN-REVIEW, DOC-M5-LARGE-TEXT-EVIDENCE,
   DOC-VOICE-QUALIFICATION, DOC-DIAGNOSTICS-CONTRACT,
-  DOC-DIAGNOSTICS-BACKUP-CONTRACT, DOC-OFFICE-ACCESSIBLE-EQUIVALENT.
+  DOC-DIAGNOSTICS-BACKUP-CONTRACT.
 - Exit: named targets have real runtime receipts, reduced-motion/keyboard/non-spatial
   paths and failure recovery. Windows/macOS/iOS qualification remains separate work;
   compilation and Chromium are not proof for those native targets.
@@ -279,12 +287,13 @@ selection order is superseded by Current delivery order above.
   outcome, not a blocker for bounded Linux/web validation. M4 supported reads stay
   available; missing Project/provider/push/admin contracts block only their subparts.
 - **Later — Remaining Desktop surfaces and qualified distribution:** Discover,
-  memory, Kanban, complete provider/schedule/tool/gateway administration, Office
-  interactions and native install/update behavior remain gaps until their exact
+  memory, Kanban, complete provider/schedule/tool/gateway administration and native
+  install/update behavior are candidates only where official source establishes their exact
   contracts and named-platform evidence exist. Continue remaining M4 administration
   and M5 output/native polish where each
   contract is qualified, then integrated M6 alpha. Accessibility starts now;
-  voice/acoustic and optional Office/3D/account expansion follow reliable text.
+  voice/acoustic/spatial/account work requires official-reference admission;
+  Wing-only Office is queued for removal, not later expansion.
 
 Dependency spine: **M1 → M2 → M6**. Existing M3 setup, M4 reads and M5 export/
 accessibility may proceed independently; new operations pass individual gates.

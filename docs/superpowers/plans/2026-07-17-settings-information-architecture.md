@@ -2,12 +2,15 @@
 
 ## Backlog connection
 
-Disposition: Historical. Original extraction is not reopened; current overlays, diagnostics and voice retain separate owners.
+Disposition: Historical. Original extraction is not reopened. The diagnostics-read
+contract task is complete and archived; `WING-TASK-408` and
+`DOC-VOICE-QUALIFICATION` retain the current Settings-composition and voice outcomes.
 
-Canonical owners: `WING-TASK-408`, `DOC-DIAGNOSTICS-CONTRACT`, `DOC-VOICE-QUALIFICATION`.
 Use the [task bodies](../../../TODO.md#now--next) and
-[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
-These connections are not implementation, qualification or dispatch evidence.
+[plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current
+scope and ordering. The archived diagnostics receipt is in
+[TODO history](../../../todo.archive.md). These connections are not implementation,
+qualification or dispatch evidence.
 
 
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Historical Settings layout is not official-app fidelity evidence.

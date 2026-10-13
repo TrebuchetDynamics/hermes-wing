@@ -4,10 +4,12 @@
 
 Disposition: Historical. Artifact-bound qualification successors, not signed distribution or old plan completion.
 
-Canonical owners: `DOC-M6-CHECKER-NODE22`, `DOC-M6-INTEGRATED-RECEIPT-GAP`, `DOC-DESKTOP-DELIVERY-EVIDENCE`, `DOC-DESKTOP-UNINSTALL-EVIDENCE`, `MT-RERUN-TRAIN`.
+Canonical owners: `DOC-M6-CHECKER-NODE22`, `DOC-M6-INTEGRATED-RECEIPT-GAP`, `DOC-DESKTOP-UNINSTALL-EVIDENCE`, `MT-RERUN-TRAIN`.
 Use the [task bodies](../../../TODO.md#now--next) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
+`DOC-DESKTOP-DELIVERY-EVIDENCE` is complete and retained in [TODO history](../../../todo.archive.md);
+it is not an open owner or permission to reopen the work.
 
 
 > Current Flutter port target: `hermes-agent/apps/desktop/`, the official Nous Research app. Follow [the plan reference policy](../../plans/README.md). Packaging evidence does not establish app fidelity.

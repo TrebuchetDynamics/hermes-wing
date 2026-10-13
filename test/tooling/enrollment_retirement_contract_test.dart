@@ -3,6 +3,47 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('retained Linux visual tour cannot restore Link prerequisites', () {
+    final source = File(
+      'integration_test/linux_live_visual_test.dart',
+    ).readAsStringSync();
+    final runner = File('scripts/run_linux_live_visual.sh').readAsStringSync();
+    for (final forbidden in [
+      'core/wing_link/',
+      'WingLink',
+      'wingLink',
+      'WING_LIVE_LINK_',
+      'removeProfile',
+      'createdProfile',
+      'pairing-entry',
+      'pairing-paste-dialog',
+      'gateway-trust-actions',
+      'gateway-revoke-confirmation',
+      'profile-directory-browser',
+    ]) {
+      expect(source, isNot(contains(forbidden)), reason: forbidden);
+      expect(runner, isNot(contains(forbidden)), reason: forbidden);
+    }
+    for (final retained in [
+      'secretValues.any',
+      "RegExp(r'/(home|Users|tmp)/')",
+      'EditableText',
+      'channel.createSession',
+      'channel.deleteSession',
+      'channel.disconnect',
+      'channel.connect',
+      'channel.selectSession',
+      'chat-model-picker',
+      'chat-reconnected',
+      'direct-agent-entry',
+      'container.dispose()',
+      'channel.dispose()',
+      'store.clear()',
+    ]) {
+      expect(source, contains(retained), reason: retained);
+    }
+  });
+
   test('obsolete Linux Link profile journey cannot return', () {
     expect(
       File('integration_test/linux_live_wing_link_test.dart').existsSync(),

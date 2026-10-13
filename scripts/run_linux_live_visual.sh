@@ -2,13 +2,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 : "${WING_LIVE_PROFILE_MANIFEST:?Provide the real isolated Agent manifest}"
-: "${WING_LIVE_LINK_MANIFEST:?Provide the acknowledged real Wing Link manifest}"
-: "${WING_LIVE_LINK_BINARY:?Provide the local Wing Link CLI for isolated profile cleanup approval}"
+manifest="$WING_LIVE_PROFILE_MANIFEST"
+[[ -f "$manifest" && ! -L "$manifest" && -O "$manifest" ]] || { echo 'Live manifest must be an owned regular file, not a symlink.' >&2; exit 2; }
+mode="$(stat -c '%a' "$manifest")"
+(( (8#$mode & 077) == 0 )) || { echo 'Live manifest must have owner-only permissions.' >&2; exit 2; }
+umask 077
 export WING_VISUAL_OUTPUT="${WING_VISUAL_OUTPUT:-$PWD/test-results/linux-live-visual}"
 mkdir -p "$WING_VISUAL_OUTPUT"
 WING_VISUAL_OUTPUT="$(realpath "$WING_VISUAL_OUTPUT")"
-umask 077
-visual_keyring_root=$(mktemp -d /tmp/wing-visual-keyring.XXXXXX)
+visual_keyring_root=$(mktemp -d "${TMPDIR:-/tmp}/wing-visual-keyring.XXXXXX")
 cleanup() {
   for mount in "$visual_keyring_root/run/doc" "$visual_keyring_root/run/gvfs"; do
     if findmnt -rn --mountpoint "$mount" > /dev/null; then

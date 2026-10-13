@@ -10,7 +10,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:wing/app.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/core/hermes/setup/secure_hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -23,24 +22,18 @@ void main() {
   testWidgets(
     'native Linux real-service visual feature tour',
     (tester) async {
-      final manifest = Platform.environment['WING_LIVE_LINK_MANIFEST'];
       final profiles = Platform.environment['WING_LIVE_PROFILE_MANIFEST'];
       final outputPath = Platform.environment['WING_VISUAL_OUTPUT'];
-      if (manifest == null || profiles == null || outputPath == null) {
+      if (profiles == null || outputPath == null) {
         throw TestFailure(
-          'Real pairing, profile manifests and screenshot output are required',
+          'Real isolated Agent manifest and screenshot output are required',
         );
       }
-      final issued =
-          jsonDecode(File(manifest).readAsStringSync()) as Map<String, dynamic>;
       final agent =
           (jsonDecode(File(profiles).readAsStringSync()) as List).first
               as Map<String, dynamic>;
       final output = Directory(outputPath)..createSync(recursive: true);
-      final secretValues = <String>[
-        issued['wing_link_token'] as String,
-        agent['token'] as String,
-      ];
+      final secretValues = <String>[agent['token'] as String];
       final store = SecureHermesEndpointStore();
       await store.saveAll([
         HermesEndpointConfig(
@@ -48,9 +41,6 @@ void main() {
           label: 'Linux UI review',
           baseUrl: agent['origin'] as String,
           apiKey: agent['token'] as String,
-          wingLinkOrigin: issued['wing_link_origin'] as String,
-          wingLinkToken: issued['wing_link_token'] as String,
-          wingLinkDeviceId: issued['wing_link_credential_id'] as String,
         ),
       ]);
       final channel = HermesApiChannel();
@@ -73,43 +63,6 @@ void main() {
                   as List)
               .cast<Map<String, dynamic>>(),
       ];
-      final link = WingLinkClient(
-        origin: Uri.parse(issued['wing_link_origin'] as String),
-        token: issued['wing_link_token'] as String,
-      );
-      String? createdProfile;
-      Future<void> removeProfile() async {
-        if (createdProfile == null) return;
-        final row = (await link.listProfiles()).singleWhere(
-          (p) => p.id == createdProfile,
-        );
-        Future<void> remove(String? key) => link.deleteProfile(
-          id: row.id,
-          revision: row.deleteRevision ?? row.revision,
-          idempotencyKey: key,
-        );
-        try {
-          await remove(null);
-        } on WingLinkApprovalRequired catch (approval) {
-          final binary = Platform.environment['WING_LIVE_LINK_BINARY'];
-          if (binary == null) {
-            throw TestFailure(
-              'Local approval binary is required for isolated profile cleanup',
-            );
-          }
-          final result = await Process.run(binary, [
-            'approvals',
-            'approve',
-            approval.approvalId,
-          ]);
-          if (result.exitCode != 0) {
-            throw TestFailure('Local profile cleanup approval failed');
-          }
-          await remove(approval.idempotencyKey);
-        }
-        createdProfile = null;
-      }
-
       final sessions = <String>{};
       var sequence = records.where((r) => r['file'] != null).length;
       Future<void> pause() async {
@@ -262,162 +215,16 @@ void main() {
           }
         }
         await theme.setMode(ThemeMode.light);
-        await visit('/profiles');
-        if (await click(find.widgetWithText(FilledButton, 'New Profile'))) {
-          await Future<void>.delayed(const Duration(seconds: 3));
-          await capture(
-            'profile-create-editor',
-            'Real Wing Link setup catalog',
-          );
-          await click(find.widgetWithText(TextFormField, 'Provider'));
-          final field = find.widgetWithText(TextFormField, 'Provider');
-          if (field.evaluate().isNotEmpty) {
-            await tester.enterText(field, 'open');
-            await pause();
-            await capture(
-              'profile-provider-autocomplete',
-              'Live Agent provider suggestions',
-            );
-          }
-          final catalog = await link.getProfileModelOptions('default');
-          final provider = catalog.providers.firstWhere(
-            (p) => p.models.isNotEmpty,
-          );
-          final providerField = find.widgetWithText(TextFormField, 'Provider');
-          await tester.enterText(providerField, provider.slug);
-          await pause();
-          await click(find.widgetWithText(InkWell, provider.slug));
-          final modelField = find.widgetWithText(TextFormField, 'Model');
-          await tester.ensureVisible(modelField);
-          await tester.enterText(modelField, provider.models.first);
-          await capture(
-            'profile-model-autocomplete',
-            'Model suggestions from real Agent catalog through Wing Link',
-          );
-          await click(find.widgetWithText(InkWell, provider.models.first));
-          await capture(
-            'profile-model-selected',
-            'Provider and model selection',
-          );
-          await tester.enterText(providerField, '');
-          final name = 'visual${DateTime.now().millisecondsSinceEpoch}';
-          await tester.enterText(
-            find.widgetWithText(TextFormField, 'Profile name'),
-            name,
-          );
-          await capture(
-            'profile-clone-ready',
-            'Clone working profile without changing provider credentials',
-          );
-          await click(find.widgetWithText(FilledButton, 'Create'));
-          final deadline = DateTime.now().add(const Duration(seconds: 60));
-          while (!(await link.listProfiles()).any((p) => p.id == name)) {
-            if (DateTime.now().isAfter(deadline)) {
-              throw TestFailure('Profile UI creation timed out');
-            }
-            await Future<void>.delayed(const Duration(milliseconds: 300));
-          }
-          createdProfile = name;
-          await visit('/office');
-          await visit('/profiles');
-          await capture(
-            'profile-created',
-            'Profile created through native UI and real Wing Link',
-          );
-          expect(
-            await click(find.widgetWithText(OutlinedButton, 'Edit')),
-            isTrue,
-          );
-          await capture(
-            'profile-edit-editor',
-            'Existing profile editor with capability-gated configuration',
-          );
-          await tester.enterText(
-            find.widgetWithText(TextFormField, 'Profile name'),
-            '${name}r',
-          );
-          await capture('profile-rename-ready', 'Native UI rename draft');
-          expect(
-            await click(find.widgetWithText(FilledButton, 'Save')),
-            isTrue,
-          );
-          final renameDeadline = DateTime.now().add(
-            const Duration(seconds: 60),
-          );
-          while (!(await link.listProfiles()).any((p) => p.id == '${name}r')) {
-            if (DateTime.now().isAfter(renameDeadline)) {
-              throw TestFailure('Native profile rename timed out');
-            }
-            await Future<void>.delayed(const Duration(milliseconds: 300));
-          }
-          createdProfile = '${name}r';
-          while (find
-              .widgetWithText(FilledButton, 'Save')
-              .evaluate()
-              .isNotEmpty) {
-            if (DateTime.now().isAfter(renameDeadline)) {
-              throw TestFailure('Profile rename UI did not finish');
-            }
-            await Future<void>.delayed(const Duration(milliseconds: 200));
-            await tester.pump();
-          }
-          await pause();
-          await capture(
-            'profile-renamed',
-            'Profile renamed through native UI and real Wing Link',
-          );
-          expect(
-            await click(find.widgetWithText(TextButton, 'Delete profile')),
-            isTrue,
-          );
-          await capture(
-            'profile-delete-editor',
-            'Profile deletion editor before typed confirmation',
-          );
-          expect(
-            await click(find.widgetWithText(TextButton, 'Delete profile')),
-            isTrue,
-          );
-          await capture(
-            'profile-delete-confirmation-empty',
-            'Typed-name deletion guard; not confirmed',
-          );
-          final confirm = find.descendant(
-            of: find.byType(AlertDialog),
-            matching: find.byType(TextField),
-          );
-          await tester.enterText(confirm, '${name}r');
-          await capture(
-            'profile-delete-confirmation-ready',
-            'Matching profile name enables deletion; cancelled',
-          );
-          await dismiss();
-          await dismiss();
-          await removeProfile();
-          await visit('/office');
-          await visit('/profiles');
-          await capture(
-            'profile-deleted',
-            'After approved backend deletion; immediate UI may retain cached profile row',
-          );
-        }
-        await visit('/profiles');
-        if (await click(
-          find.byKey(const ValueKey('agent-browse-folders-default')),
-        )) {
-          await capture(
-            'profile-directory-browser',
-            'Real directory grants or capability explanation',
-          );
-          await dismiss();
-        }
         await visit('/settings');
         if (await click(
           find.byKey(
             const ValueKey('settings-gateway-menu-linux-visual-review'),
           ),
         )) {
-          await capture('settings-gateway-actions', 'Paired gateway actions');
+          await capture(
+            'settings-gateway-actions',
+            'Saved Agent connection actions',
+          );
           final remove = find.byWidgetPredicate(
             (w) => w is PopupMenuItem<String> && w.value == 'remove',
           );
@@ -489,28 +296,7 @@ void main() {
         }
         await visit('/gateway');
         if (await click(find.byKey(const ValueKey('gateway-refresh-button')))) {
-          await capture('gateway-refreshed', 'Real host health refresh');
-        }
-        final gatewayScrolls = tester.stateList<ScrollableState>(
-          find.byType(Scrollable),
-        );
-        for (final scroll in gatewayScrolls) {
-          if (scroll.position.hasContentDimensions &&
-              scroll.position.maxScrollExtent > 0) {
-            scroll.position.jumpTo(scroll.position.maxScrollExtent);
-          }
-        }
-        await pause();
-        await capture(
-          'gateway-trust-actions',
-          'Lower real Wing Link trust details and actions',
-        );
-        if (await click(find.byKey(const ValueKey('gateway-trust-revoke')))) {
-          await capture(
-            'gateway-revoke-confirmation',
-            'Revocation review; cancelled',
-          );
-          await dismiss();
+          await capture('gateway-refreshed', 'Agent connection refresh');
         }
         await visit('/enroll');
         expect(
@@ -525,20 +311,6 @@ void main() {
           'direct-agent-entry',
           'Welcome exposes direct Agent choices without legacy computer or QR setup',
         );
-        await visit('/enroll?step=pair');
-        await capture(
-          'pairing-entry',
-          'Pairing entry with no live code exposed',
-        );
-        if (await click(
-          find.byKey(const ValueKey('hermes-enrollment-paste-link')),
-        )) {
-          await capture(
-            'pairing-paste-dialog',
-            'Real empty-clipboard validation after explicit paste',
-          );
-          await dismiss();
-        }
         await visit('/hermes');
         await channel.createSession(title: 'Linux visual review');
         sessions.add(channel.state.activeSessionId!);
@@ -657,7 +429,6 @@ void main() {
           greaterThanOrEqualTo(28),
         );
       } finally {
-        await removeProfile();
         for (final id in sessions) {
           await channel.deleteSession(id);
         }

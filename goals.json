@@ -6699,14 +6699,6 @@
     },
     {
       "depends_on": [],
-      "goal": "M4",
-      "id": "DOC-M4-INVENTORY-EVIDENCE",
-      "section": "Now",
-      "status": "in_progress",
-      "title": "Map one Tools inventory journey to current-source evidence"
-    },
-    {
-      "depends_on": [],
       "goal": "OFFICE",
       "id": "DOC-OFFICE-REFERENCE",
       "section": "Now",
@@ -7829,6 +7821,14 @@
       "section": "Done",
       "status": "done",
       "title": "Review the synthetic isolation and immutable-input proof contract before implementation"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4",
+      "id": "DOC-M4-INVENTORY-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Map one Tools inventory journey to current-source evidence"
     },
     {
       "depends_on": [],

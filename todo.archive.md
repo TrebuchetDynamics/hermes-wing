@@ -4861,3 +4861,73 @@ not current task state. Consult the ledger and source-bound evidence for today.
   Ownership: completed historical record; no live owner or worker created.
   Checks: historical goal evidence remains verbatim in the ledger; no feature
   checks were executed or newly marked passed in this documentation repair.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-INVENTORY-EVIDENCE** — Goal: M4. Section: Now. Map one Tools inventory journey to current-source evidence.
+  Status: done. Source-bound [receipt](docs/quality/tools-inventory-evidence.md) independently reviewed and delivered at `f9373d022e7975fef6d6203bc2c1d4425b8e2181`; 33 focused widget tests and analysis passed on the unchanged executable source. Linux native/live inventory and operation-specific administration remain unqualified; M4 stays partial.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
+  Scope: Existing Tools/channel/widget/browser checks and sanitized receipt only; exclude new contracts, mutations and personal targets.
+  Acceptance: Identify source-bound keyboard/search/owner-denial checks and the smallest remaining named-platform verification scenario.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **LANDING-FIRST-REPLY** — Goal: LANDING-ONBOARDING. Give existing Hermes
+  users an honest connection-first entry from the public landing page.
+  Status: done. Reviewed implementation delivered at `5e9671e8d1db8a465398e4c9a9087ebe5758b330`; prior independent build, asset and five Chromium regressions plus integration analysis and 11 focused tests passed. This closes offline onboarding only; live first reply remains with CONNECTION-SETUP-AUTH-MATRIX.
+  Section: Now.
+  Sources: [full landing plan](docs/plans/2026-10-12-wing-landing-onboarding.md),
+  [landing onboarding outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
+  [README re-review continuation](docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence),
+  [remaining review findings](docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow),
+  `site/index.html`, `site/styles.css`, `README.md`, `docs/getting-started.md`,
+  `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`.
+  Scope: primary Connect my Agent action, native/web choice, exact maintained
+  guide anchors, enabled authenticated API and Wing-capability prerequisites,
+  browser HTTPS/CORS explanation, first-reply success signal and compact recovery.
+  Correct preview/illustration promises. Preserve existing setup-document owners;
+  no runtime changes, Wing Link, credential collection, backend or automatic send.
+  First correct the linked documentation: README explicitly separates Preview UI,
+  Connect existing Agent and Build native client, with client acquisition before
+  connection/use. Rewrite getting-started as prerequisites/actions/success/recovery;
+  move internal worktree, synthetic-store and delivery/QA narration to existing
+  evidence owners. Preserve accepted README fixes, anchors and useful limits.
+  Keep Set up your first chat primary and preview secondary; burn DEMO DATA /
+  SIMULATED SESSION into shared showcase exports at the generator, replacing
+  LIVE RUN and cross-device live implications. Publish a concise user-facing
+  platform verification matrix with current-source evidence and SSH UI/fixture/live
+  distinctions beside setup. Add a bounded optional repository-summary workflow
+  after the no-tools first-reply smoke; approvals/background reliability stay gated.
+  Simplify QA wording without converting not-verified into unsupported/unavailable;
+  historical undelivered receipts are not current-main availability evidence.
+  Acceptance: readiness proxy improves from 0 to 4; candidate browser checks prove
+  correct CTA/guide destinations and understandable prerequisites at compact and
+  desktop widths; core entry works without JavaScript. Preserve source-only/alpha
+  disclosure. Content coverage does not qualify live first reply or usability.
+  Documentation acceptance: each starting path is independently followable;
+  tutorial steps require no internal engineering vocabulary; UI labels and links
+  match current source. Add a focused ordering/anchor regression during implementation;
+  classify obsolete README/Termux text assertions without restoring retired setup
+  or dropping security/authority coverage. Editorial 7.5/10 is not a measured score.
+  Standalone shared images visibly retain demo provenance; platform cells link
+  exact target/source evidence; optional tool use is explicit and permission/cost
+  bounded. Preserve known incoming anchors without speculative alias expansion.
+  Dependencies: none for offline landing work.
+  Qualification ownership: authenticated qualification stays with
+  CONNECTION-SETUP-AUTH-MATRIX; do not duplicate its worker.
+  Ownership: wing; no worker claimed by this planning pass. Next action: implement
+  the bounded README sequencing and tutorial correction, then landing copy/connection
+  and showcase truthfulness with focused regressions. This plan changes no public
+  tutorial or image yet; broader visual composition stays with LANDING-PRODUCT-PROOF.

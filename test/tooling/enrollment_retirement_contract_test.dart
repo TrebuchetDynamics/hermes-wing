@@ -3,6 +3,98 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'Linux Agent features cannot restore retained service prerequisites',
+    () {
+      final source = File(
+        'integration_test/linux_live_feature_journeys_test.dart',
+      ).readAsStringSync();
+      final runner = File(
+        'scripts/run_linux_live_features_e2e.sh',
+      ).readAsStringSync();
+      for (final forbidden in [
+        'core/wing_link/',
+        'WingLink',
+        'wingLink',
+        'WING_LIVE_LINK_',
+        'WING_LINK_STATE',
+        'WING_LIVE_DIRECTORY_ROOT',
+        'directories',
+      ]) {
+        expect(source, isNot(contains(forbidden)), reason: forbidden);
+        expect(runner, isNot(contains(forbidden)), reason: forbidden);
+      }
+      for (final retained in [
+        'client.createSession',
+        'client.deleteSession',
+        'client.listSessionsPage',
+        'hermes-session-search-field',
+        'hermes-session-title-save',
+        'Copy details',
+        'Unpin',
+        'Load more sessions',
+        'container.dispose',
+        'channel.dispose',
+        'activateGateway',
+        'tools-refresh',
+        'installed-skills-search',
+        'toolsets-search',
+        'office-agent-search',
+        'office-refresh',
+        'office-open-',
+        'Providers unavailable',
+        'Schedules unavailable',
+        'Persona editing unavailable',
+        'profile_soul_update',
+      ]) {
+        expect(source, contains(retained), reason: retained);
+      }
+    },
+  );
+
+  test('retained directory service safety remains separate and intact', () {
+    final source = File(
+      'integration_test/linux_live_directory_service_test.dart',
+    ).readAsStringSync();
+    final runner = File(
+      'scripts/run_linux_live_directory_service_e2e.sh',
+    ).readAsStringSync();
+    expect(source, isNot(contains('core/hermes/')));
+    expect(runner, isNot(contains('WING_LIVE_PROFILE_MANIFEST')));
+    for (final retained in [
+      'requireLinuxLiveDirectoryRoot',
+      'requireLinuxTestRoot',
+      'WingLinkClient',
+      "['directories', 'grant', root]",
+      "['directories', 'revoke', id]",
+      'addTearDown',
+      'lessThanOrEqualTo(32)',
+      'limit: 1',
+      'hasLength(1)',
+      'page.nextOffset, isNull',
+      "isNot(contains('private-file.txt'))",
+      'for (final handle in [granted.handle, child.handle])',
+      'WingLinkHttpException',
+      '410',
+      'row.handle == granted.handle',
+    ]) {
+      expect(source, contains(retained), reason: retained);
+    }
+    for (final retained in [
+      'WING_LIVE_LINK_MANIFEST',
+      'WING_LIVE_LINK_BINARY',
+      'WING_LINK_STATE',
+      'cleanup_coverage',
+      'trap cleanup_coverage EXIT',
+      '.wing-linux-test-owner',
+      'linux-picker-sample.txt',
+      'WING_LIVE_DIRECTORY_ROOT',
+      'linux_live_directory_service_test.dart',
+    ]) {
+      expect(runner, contains(retained), reason: retained);
+    }
+  });
+
   test('retained Linux visual tour cannot restore Link prerequisites', () {
     final source = File(
       'integration_test/linux_live_visual_test.dart',

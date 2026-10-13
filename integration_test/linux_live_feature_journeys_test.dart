@@ -12,14 +12,13 @@ import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/client/hermes_api_client.dart';
 import 'package:wing/core/hermes/client/hermes_api_config.dart';
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
+
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
 
 import '../test/features/hermes_chat/support/fake_hermes_endpoint_store.dart';
-import 'support/linux_test_isolation.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +44,7 @@ void main() {
   }
 
   setUp(() {
-    // Only local preferences/storage are isolated; all Agent and Link requests
+    // Only local preferences/storage are isolated; all Agent requests
     // use their real clients. Persistence has a separate two-process suite.
     SharedPreferences.setMockInitialValues({});
     binding.testTextInput.register();
@@ -184,7 +183,7 @@ void main() {
     'live Tools search/refresh, Office activation and capability gaps',
     (tester) async {
       final agent = manifest('WING_LIVE_PROFILE_MANIFEST');
-      final link = manifest('WING_LIVE_LINK_MANIFEST');
+
       final channel = HermesApiChannel();
       final store = FakeHermesEndpointStore(
         profiles: [
@@ -193,9 +192,6 @@ void main() {
             label: 'Linux test gateway',
             baseUrl: agent['origin'] as String,
             apiKey: agent['token'] as String,
-            wingLinkOrigin: link['wing_link_origin'] as String,
-            wingLinkToken: link['wing_link_token'] as String,
-            wingLinkDeviceId: link['wing_link_credential_id'] as String,
           ),
         ],
       );
@@ -293,65 +289,6 @@ void main() {
       expect(find.widgetWithText(FilledButton, 'Save'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
-    },
-  );
-
-  testWidgets(
-    'retained directory service grant, file exclusion and revocation',
-    (tester) async {
-      final issued = manifest('WING_LIVE_LINK_MANIFEST');
-      final binary = Platform.environment['WING_LIVE_LINK_BINARY']!;
-      final root = requireLinuxLiveDirectoryRoot(
-        Platform.environment['WING_LIVE_DIRECTORY_ROOT']!,
-        requireLinuxTestRoot('wing-linux-coverage.'),
-      );
-      final client = WingLinkClient(
-        origin: Uri.parse(issued['wing_link_origin'] as String),
-        token: issued['wing_link_token'] as String,
-      );
-      final grant = await Process.run(binary, ['directories', 'grant', root]);
-      expect(grant.exitCode, 0);
-      final id = (grant.stdout as String).trim().split('\t').first;
-      var revoked = false;
-      addTearDown(() async {
-        if (!revoked) await Process.run(binary, ['directories', 'revoke', id]);
-      });
-      final roots = await client.listDirectoryRoots();
-      final granted = roots.singleWhere((row) => row.name == 'grant-root');
-      expect(roots.length, lessThanOrEqualTo(32));
-      final page = await client.listChildDirectories(
-        handle: granted.handle,
-        limit: 1,
-      );
-      expect(page.directories, hasLength(1));
-      final child = page.directories.single;
-      expect(child.name, 'child-folder');
-      expect(page.nextOffset, isNull);
-      expect(
-        page.directories.map((row) => row.name),
-        isNot(contains('private-file.txt')),
-      );
-      final revoke = await Process.run(binary, ['directories', 'revoke', id]);
-      expect(revoke.exitCode, 0);
-      revoked = true;
-      for (final handle in [granted.handle, child.handle]) {
-        await expectLater(
-          client.listChildDirectories(handle: handle),
-          throwsA(
-            isA<WingLinkHttpException>().having(
-              (error) => error.statusCode,
-              'status',
-              410,
-            ),
-          ),
-        );
-      }
-      expect(
-        (await client.listDirectoryRoots()).any(
-          (row) => row.handle == granted.handle,
-        ),
-        isFalse,
-      );
     },
   );
 }

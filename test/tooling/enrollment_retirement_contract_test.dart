@@ -7,6 +7,81 @@ void main() {
     expect(_managementConsumers(Directory('lib')), isEmpty);
   });
 
+  test('native product-control fixtures stay Agent-only', () {
+    expect(_managementConsumers(Directory('integration_test')), isEmpty);
+  });
+
+  test('native fixture guard retains only the standalone service check', () {
+    final parent = Directory.systemTemp.createTempSync('native-consumers-');
+    addTearDown(() => parent.deleteSync(recursive: true));
+    final root = Directory('${parent.path}/integration_test')..createSync();
+    File(
+      '${root.path}/linux_live_directory_service_test.dart',
+    ).writeAsStringSync('WingLinkClient()');
+    for (final relative in [
+      'linux_live_directory_service_test_extra.dart',
+      'support/linux_live_directory_service_test.dart',
+      'core/wing_link/client.dart',
+      'android_secure_storage_regression_test.dart',
+      'linux_secure_storage_integration_test.dart',
+    ]) {
+      final file = File('${root.path}/$relative')..createSync(recursive: true);
+      const retention = "const row = {'wingLinkToken': 'retained'};";
+      file.writeAsStringSync(retention);
+      expect(_managementConsumers(root), isEmpty);
+      for (final source in [
+        "import 'package:wing/core/wing_link/wing_link_client.dart';",
+        "export '../lib/core/wing_link/wing_link_client.dart';",
+        'final client = WingLinkClient();',
+        'final client = wingLinkClientBuilder();',
+      ]) {
+        file.writeAsStringSync('$retention\n$source');
+        expect(_managementConsumers(root), [
+          file.path,
+        ], reason: '$relative: $source');
+      }
+      file.deleteSync();
+    }
+  });
+
+  test('standalone service exception is exact across path separators', () {
+    for (final separator in ['/', r'\']) {
+      final root = ['workspace', 'integration_test'].join(separator);
+      String path(String relative) =>
+          '$root$separator${relative.replaceAll('/', separator)}';
+      for (final rootPath in [
+        root,
+        root.replaceAll(r'\', '/'),
+        'integration_test',
+      ]) {
+        final file = rootPath == 'integration_test'
+            ? 'integration_test${separator}linux_live_directory_service_test.dart'
+            : path('linux_live_directory_service_test.dart');
+        expect(_isRetainedManagementSource(rootPath, file), isTrue);
+      }
+      for (final relative in [
+        'linux_live_directory_service_test_extra.dart',
+        'support/linux_live_directory_service_test.dart',
+        'core/wing_link/client.dart',
+        'android_secure_storage_regression_test.dart',
+        'linux_secure_storage_integration_test.dart',
+      ]) {
+        expect(
+          _isRetainedManagementSource(root, path(relative)),
+          isFalse,
+          reason: relative,
+        );
+      }
+      expect(
+        _isRetainedManagementSource(
+          '${root}_extra',
+          '${root}_extra${separator}linux_live_directory_service_test.dart',
+        ),
+        isFalse,
+      );
+    }
+  });
+
   test('management guard rejects directives and runtime client references', () {
     final root = Directory.systemTemp.createTempSync('management-consumers-');
     addTearDown(() => root.deleteSync(recursive: true));
@@ -838,9 +913,14 @@ List<String> _managementConsumers(Directory root) => root
     .map((file) => file.path)
     .toList();
 
-bool _isRetainedManagementSource(String root, String file) => file
-    .replaceAll(r'\', '/')
-    .startsWith('${root.replaceAll(r'\', '/')}/core/wing_link/');
+bool _isRetainedManagementSource(String root, String file) {
+  final rootPath = root.replaceAll(r'\', '/');
+  final filePath = file.replaceAll(r'\', '/');
+  // Keep standalone service safety coverage until the service itself is retired.
+  return rootPath.split('/').last == 'integration_test'
+      ? filePath == '$rootPath/linux_live_directory_service_test.dart'
+      : filePath.startsWith('$rootPath/core/wing_link/');
+}
 
 List<String> _obsoleteLocalHost(Directory root) => root
     .listSync(recursive: true)

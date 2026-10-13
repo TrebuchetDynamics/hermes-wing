@@ -11,11 +11,6 @@ void main() {
     id: 'first',
     label: 'Shared',
     baseUrl: 'https://first.example.invalid/p/shared',
-    wingLinkOrigin: 'https://link.example.invalid',
-    wingLinkToken: 'synthetic-management',
-    wingLinkHostFingerprint: 'synthetic-pin',
-    wingLinkDeviceId: 'device',
-    wingLinkPendingCredentialId: 'pending',
   );
   const other = HermesEndpointConfig(
     id: 'second',
@@ -29,7 +24,7 @@ void main() {
     await store.saveAll([original, other]);
   });
   test(
-    'exact ID editing preserves same endpoint trust but drops changed identity trust',
+    'exact ID editing retains Agent identity and isolates unrelated rows',
     () async {
       await store.save(
         profileId: 'first',
@@ -37,7 +32,8 @@ void main() {
         label: original.label,
         apiKey: 'synthetic-agent',
       );
-      expect((await store.load())!.wingLinkToken, original.wingLinkToken);
+
+      expect((await store.load())!.apiKey, 'synthetic-agent');
       await store.save(
         profileId: 'first',
         baseUrl: 'https://new.example.invalid/p/shared',
@@ -47,11 +43,7 @@ void main() {
       final rows = await store.loadProfiles();
       final row = rows.singleWhere((row) => row.id == 'first');
       expect(row.apiKey, 'synthetic-new-agent');
-      expect(row.wingLinkOrigin, isNull);
-      expect(row.wingLinkToken, isNull);
-      expect(row.wingLinkHostFingerprint, isNull);
-      expect(row.wingLinkDeviceId, isNull);
-      expect(row.wingLinkPendingCredentialId, isNull);
+
       expect(
         rows.singleWhere((row) => row.id == 'second').baseUrl,
         other.baseUrl,

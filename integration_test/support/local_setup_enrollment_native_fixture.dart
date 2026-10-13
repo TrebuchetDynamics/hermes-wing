@@ -161,8 +161,7 @@ Future<Map<String, Object?>> runLocalEnrollmentJourney(
     reason:
         'status=${channel.state.status} saves=${store.saveCalls.length} reads=${data.requests}',
   );
-  expect(store.saveCalls.single.wingLinkToken, isNull);
-  expect(store.saveCalls.single.wingLinkOrigin, isNull);
+
   expect(router.routeInformationProvider.value.uri.path, '/hermes');
   expect(home.inspections, 3);
   expect(data.mutationAttempts, 0);

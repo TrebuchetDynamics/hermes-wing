@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +30,11 @@ void main() {
     tester,
   ) async {
     final store = SecureHermesEndpointStore();
+    const secure = FlutterSecureStorage();
+    const bundleKey = 'wing.hermes.endpoint_bundle.v1';
+    Future<Map> rawRow() async =>
+        (jsonDecode((await secure.read(key: bundleKey))!) as List).single
+            as Map;
     final prefs = await SharedPreferences.getInstance();
     const receiptKey = 'android-secure-storage-regression-digests';
     String digest(String value) =>
@@ -46,12 +52,18 @@ void main() {
       );
       final agent = credential();
       final link = credential();
-      await store.save(
-        profileId: 'android-storage-regression',
-        baseUrl: 'http://127.0.0.1:18642',
-        apiKey: agent,
-        wingLinkOrigin: 'http://127.0.0.1:18643',
-        wingLinkToken: link,
+      // Seed a historical secure record; management is no longer a public API.
+      await secure.write(
+        key: bundleKey,
+        value: jsonEncode([
+          {
+            'id': 'android-storage-regression',
+            'baseUrl': 'http://127.0.0.1:18642',
+            'apiKey': agent,
+            'wingLinkOrigin': 'http://127.0.0.1:18643',
+            'wingLinkToken': link,
+          },
+        ]),
       );
       await prefs.setString(
         receiptKey,
@@ -63,21 +75,23 @@ void main() {
       final expected = jsonDecode(receipt!) as Map;
       final saved = await store.load();
       expect(saved != null, isTrue);
-      expect(saved!.apiKey != null && saved.wingLinkToken != null, isTrue);
+      final legacy = await rawRow();
+      expect(saved!.apiKey != null && legacy['wingLinkToken'] != null, isTrue);
       // Boolean comparisons prevent a failing test from printing credentials.
       expect(digest(saved.apiKey!) == expected['agent'], isTrue);
-      expect(digest(saved.wingLinkToken!) == expected['link'], isTrue);
-      expect(saved.apiKey != saved.wingLinkToken, isTrue);
+      expect(
+        digest(legacy['wingLinkToken'] as String) == expected['link'],
+        isTrue,
+      );
+      expect(saved.apiKey != legacy['wingLinkToken'], isTrue);
       expect(saved.baseUrl == 'http://127.0.0.1:18642', isTrue);
-      expect(saved.wingLinkOrigin == 'http://127.0.0.1:18643', isTrue);
+      expect(legacy['wingLinkOrigin'] == 'http://127.0.0.1:18643', isTrue);
       if (phase == 'rotate') {
         final rotated = credential();
         await store.save(
           profileId: saved.id,
           baseUrl: saved.baseUrl,
           apiKey: rotated,
-          wingLinkOrigin: saved.wingLinkOrigin,
-          wingLinkToken: saved.wingLinkToken,
         );
         await prefs.setString(
           receiptKey,
@@ -92,9 +106,13 @@ void main() {
         .map((key) => prefs.get(key).toString())
         .join('\n');
     expect(ordinaryValues.contains(saved.apiKey!), isFalse);
-    expect(ordinaryValues.contains(saved.wingLinkToken!), isFalse);
+    expect(
+      ordinaryValues.contains((await rawRow())['wingLinkToken'] as String),
+      isFalse,
+    );
     if (phase == 'verify') {
       await store.clear();
+      expect((await secure.read(key: bundleKey)) == '[]', isTrue);
       expect(await SecureHermesEndpointStore().load() == null, isTrue);
       await prefs.remove(receiptKey);
     }

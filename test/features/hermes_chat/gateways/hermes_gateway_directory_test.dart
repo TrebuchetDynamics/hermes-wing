@@ -176,68 +176,49 @@ void main() {
     await expectLater(refresh, completes);
     expect(directory.contacts, isEmpty);
   });
-  test(
-    'refresh never recovers a stored pending Wing Link credential',
-    () async {
-      const origin = 'http://127.0.0.1:8654';
-      final config = HermesEndpointConfig(
-        id: 'pending',
-        baseUrl: origin,
-        apiKey: 'hermes-token',
-        wingLinkOrigin: origin,
-        wingLinkToken: 'wlc-token',
-        wingLinkPendingCredentialId: 'cred_pending',
-      );
-      final store = FakeHermesEndpointStore(
-        initial: config,
-        profiles: [config],
-      );
-      final channel = FakeHermesChannel.disconnected();
-      addTearDown(channel.dispose);
-      final directory = HermesGatewayDirectory(
-        store: store,
-        cache: FakeGatewayContactCache(),
-        loader: FakeGatewaySummaryLoader({
-          'pending': gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      addTearDown(directory.dispose);
+  test('refresh reads saved Agent access without mutations', () async {
+    const origin = 'http://127.0.0.1:8654';
+    final config = HermesEndpointConfig(
+      id: 'pending',
+      baseUrl: origin,
+      apiKey: 'hermes-token',
+    );
+    final store = FakeHermesEndpointStore(initial: config, profiles: [config]);
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final directory = HermesGatewayDirectory(
+      store: store,
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'pending': gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(directory.dispose);
 
-      await directory.refresh();
+    await directory.refresh();
 
-      expect(store.saveCalls, isEmpty);
-      expect(store.saveAllCalls, isEmpty);
-      expect(store.deleteProfileCalls, isEmpty);
-      expect(store.clearCalls, 0);
-      expect((await store.loadProfiles()).single, same(config));
-      expect(directory.configForGateway('pending'), same(config));
-    },
-  );
+    expect(store.saveCalls, isEmpty);
+    expect(store.saveAllCalls, isEmpty);
+    expect(store.deleteProfileCalls, isEmpty);
+    expect(store.clearCalls, 0);
+    expect((await store.loadProfiles()).single, same(config));
+    expect(directory.configForGateway('pending'), same(config));
+  });
 
   test(
-    'startup and foreground reads preserve pending bundles without recovery',
+    'startup and foreground reads preserve Agent bundles without recovery',
     () async {
       const configs = [
         HermesEndpointConfig(
           id: 'sidon',
           baseUrl: 'https://home.example/p/sidon',
           apiKey: 'sidon-token',
-          wingLinkOrigin: 'https://home.example:8654',
-          wingLinkToken: 'control-token',
-          wingLinkPendingCredentialId: 'bundle-credential',
-          wingLinkHostFingerprint: 'fixture-fingerprint',
-          wingLinkDeviceId: 'fixture-device',
         ),
         HermesEndpointConfig(
           id: 'link',
           baseUrl: 'https://home.example/p/link',
           apiKey: 'link-token',
-          wingLinkOrigin: 'https://home.example:8654',
-          wingLinkToken: 'control-token',
-          wingLinkPendingCredentialId: 'bundle-credential',
-          wingLinkHostFingerprint: 'fixture-fingerprint',
-          wingLinkDeviceId: 'fixture-device',
         ),
       ];
       final store = FakeHermesEndpointStore(profiles: configs);
@@ -316,11 +297,6 @@ void main() {
         label: 'Saved Agent',
         baseUrl: 'https://agent.example',
         apiKey: 'fixture-agent',
-        wingLinkOrigin: 'https://link.example',
-        wingLinkToken: 'fixture-link',
-        wingLinkPendingCredentialId: 'fixture-pending',
-        wingLinkHostFingerprint: 'fixture-pin',
-        wingLinkDeviceId: 'fixture-device',
       );
       final store = FakeHermesEndpointStore(profiles: const [config]);
       final loader = _SequencedGatewaySummaryLoader();
@@ -369,43 +345,44 @@ void main() {
     },
   );
 
-  test('Wing Link credentials do not manufacture profile contacts', () async {
-    const config = HermesEndpointConfig(
-      id: 'home',
-      label: 'Home',
-      baseUrl: 'https://home.example',
-      wingLinkOrigin: 'https://home.example:8654',
-      wingLinkToken: 'control-token',
-    );
-    final channel = FakeHermesChannel.disconnected();
-    addTearDown(channel.dispose);
-    final directory = HermesGatewayDirectory(
-      store: FakeHermesEndpointStore(profiles: const [config]),
-      cache: FakeGatewayContactCache(),
-      loader: FakeGatewaySummaryLoader({
-        'home': const GatewaySummary(
-          profiles: [],
-          sessionsByProfile: {},
-          unscopedSessions: [],
-          profileContextAvailable: true,
-        ),
-      }),
-      activeChannel: channel,
-    );
-    addTearDown(directory.dispose);
+  test(
+    'saved endpoint metadata does not manufacture profile contacts',
+    () async {
+      const config = HermesEndpointConfig(
+        id: 'home',
+        label: 'Home',
+        baseUrl: 'https://home.example',
+      );
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(profiles: const [config]),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({
+          'home': const GatewaySummary(
+            profiles: [],
+            sessionsByProfile: {},
+            unscopedSessions: [],
+            profileContextAvailable: true,
+          ),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(directory.dispose);
 
-    await directory.refresh();
+      await directory.refresh();
 
-    expect(directory.contacts, hasLength(1));
-    expect(directory.contacts.single.id.profileId, 'default');
-    expect(directory.contacts.single.gatewayLabel, 'Home');
-    expect(directory.contacts.single.profileName, 'Endpoint contact');
-    expect(directory.contacts.single.isFallbackProfile, isTrue);
-    expect(
-      directory.contacts.any((contact) => contact.id.profileId == 'link'),
-      isFalse,
-    );
-  });
+      expect(directory.contacts, hasLength(1));
+      expect(directory.contacts.single.id.profileId, 'default');
+      expect(directory.contacts.single.gatewayLabel, 'Home');
+      expect(directory.contacts.single.profileName, 'Endpoint contact');
+      expect(directory.contacts.single.isFallbackProfile, isTrue);
+      expect(
+        directory.contacts.any((contact) => contact.id.profileId == 'link'),
+        isFalse,
+      );
+    },
+  );
 
   test('profile-prefixed endpoints keep distinct contact identities', () async {
     const config = HermesEndpointConfig(
@@ -442,15 +419,11 @@ void main() {
         id: 'default-endpoint',
         label: 'BlueBlack · default',
         baseUrl: 'https://home.example/p/default',
-        wingLinkOrigin: 'https://control.example:8654',
-        wingLinkDeviceId: 'device-1',
       ),
       HermesEndpointConfig(
         id: 'sidon-endpoint',
         label: 'BlueBlack · sidon',
         baseUrl: 'https://home.example/p/sidon',
-        wingLinkOrigin: 'https://control.example:8654',
-        wingLinkDeviceId: 'device-1',
       ),
     ];
     final channel = FakeHermesChannel.disconnected();
@@ -976,52 +949,45 @@ void main() {
     expect(channel.state.activeSessionId, wingSessionId);
   });
 
-  test(
-    'saved host reads retain shared enrollment and direct Agent ownership',
-    () async {
-      final channel = FakeHermesChannel.disconnected();
-      final configs = [
-        for (final id in ['default', 'coder', 'other'])
-          HermesEndpointConfig(
-            id: id,
-            baseUrl: 'https://agent.example/p/$id',
-            apiKey: 'agent-fixture',
-            wingLinkOrigin: 'https://link.example',
-            wingLinkToken: 'link-fixture',
-            wingLinkDeviceId: id == 'other' ? 'second-device' : 'shared-device',
-            wingLinkHostFingerprint: 'fixture-pin',
-          ),
-      ];
-      final store = FakeHermesEndpointStore(profiles: configs);
-      final directory = HermesGatewayDirectory(
-        store: store,
-        cache: FakeGatewayContactCache(),
-        loader: FakeGatewaySummaryLoader({
-          for (final config in configs) config.id!: gatewaySummary(['default']),
-        }),
-        activeChannel: channel,
-      );
-      addTearDown(directory.dispose);
-      addTearDown(channel.dispose);
-      await directory.refresh();
-      await directory.activateGateway('coder');
-      directory.selectManagementGateway('default');
-      await directory.reconnectGateway('default');
-      await directory.refresh();
-      for (final config in configs) {
-        expect(directory.configForGateway(config.id!), same(config));
-      }
-      expect(await store.loadProfiles(), orderedEquals(configs));
-      expect(store.saveCalls, isEmpty);
-      expect(store.saveAllCalls, isEmpty);
-      expect(store.deleteProfileCalls, isEmpty);
-      expect(store.clearCalls, 0);
-      expect(directory.activeContactId?.gatewayId, 'coder');
-      expect(channel.disconnectCalls, 0);
-      expect(channel.connectCalls.single.baseUrl, configs[1].baseUrl);
-      expect(channel.connectCalls.single.apiKey, configs[1].apiKey);
-    },
-  );
+  test('saved host reads retain independent Agent ownership', () async {
+    final channel = FakeHermesChannel.disconnected();
+    final configs = [
+      for (final id in ['default', 'coder', 'other'])
+        HermesEndpointConfig(
+          id: id,
+          baseUrl: 'https://agent.example/p/$id',
+          apiKey: 'agent-fixture',
+        ),
+    ];
+    final store = FakeHermesEndpointStore(profiles: configs);
+    final directory = HermesGatewayDirectory(
+      store: store,
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        for (final config in configs) config.id!: gatewaySummary(['default']),
+      }),
+      activeChannel: channel,
+    );
+    addTearDown(directory.dispose);
+    addTearDown(channel.dispose);
+    await directory.refresh();
+    await directory.activateGateway('coder');
+    directory.selectManagementGateway('default');
+    await directory.reconnectGateway('default');
+    await directory.refresh();
+    for (final config in configs) {
+      expect(directory.configForGateway(config.id!), same(config));
+    }
+    expect(await store.loadProfiles(), orderedEquals(configs));
+    expect(store.saveCalls, isEmpty);
+    expect(store.saveAllCalls, isEmpty);
+    expect(store.deleteProfileCalls, isEmpty);
+    expect(store.clearCalls, 0);
+    expect(directory.activeContactId?.gatewayId, 'coder');
+    expect(channel.disconnectCalls, 0);
+    expect(channel.connectCalls.single.baseUrl, configs[1].baseUrl);
+    expect(channel.connectCalls.single.apiKey, configs[1].apiKey);
+  });
 
   test('reconnect waits for the previous disconnect to finish', () async {
     final channel = _DisconnectBarrierChannel();
@@ -1324,63 +1290,47 @@ void main() {
     expect(loader.calls.where((id) => id == 'b'), hasLength(1));
   });
 
-  test(
-    'renaming one imported profile preserves legacy stored fields',
-    () async {
-      final store = FakeHermesEndpointStore(
-        profiles: const [
-          HermesEndpointConfig(
-            id: 'sidon',
-            label: 'BlueBlack · sidon',
-            baseUrl: 'https://home.example/p/sidon',
-            apiKey: 'sidon-secret',
-            wingLinkOrigin: 'https://home.example:8654',
-            wingLinkToken: 'control-secret',
-            wingLinkPendingCredentialId: 'pending-id',
-            wingLinkHostFingerprint: 'fixture-pin',
-            wingLinkDeviceId: 'fixture-device',
-          ),
-        ],
-      );
-      final directory = HermesGatewayDirectory(
-        store: store,
-        cache: FakeGatewayContactCache(),
-        loader: FakeGatewaySummaryLoader({
-          'sidon': gatewaySummary(['sidon']),
-        }),
-        activeChannel: FakeHermesChannel.disconnected(),
-      );
-      await directory.refresh();
+  test('renaming one imported profile preserves Agent access', () async {
+    final store = FakeHermesEndpointStore(
+      profiles: const [
+        HermesEndpointConfig(
+          id: 'sidon',
+          label: 'BlueBlack · sidon',
+          baseUrl: 'https://home.example/p/sidon',
+          apiKey: 'sidon-secret',
+        ),
+      ],
+    );
+    final directory = HermesGatewayDirectory(
+      store: store,
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({
+        'sidon': gatewaySummary(['sidon']),
+      }),
+      activeChannel: FakeHermesChannel.disconnected(),
+    );
+    await directory.refresh();
 
-      final original = (await store.loadProfiles()).single;
-      await directory.renameGateway('sidon', 'Home');
+    final original = (await store.loadProfiles()).single;
+    await directory.renameGateway('sidon', 'Home');
 
-      final saved = store.saveCalls.single;
-      expect(saved.id, 'sidon');
-      expect(saved.label, 'Home');
-      expect(saved.baseUrl, 'https://home.example/p/sidon');
-      expect(saved.apiKey, original.apiKey);
-      expect(saved.wingLinkOrigin, 'https://home.example:8654');
-      expect(saved.wingLinkToken, 'control-secret');
-      expect(saved.wingLinkPendingCredentialId, 'pending-id');
-      expect(saved.wingLinkHostFingerprint, 'fixture-pin');
-      expect(saved.wingLinkDeviceId, 'fixture-device');
-      expect(await store.loadProfiles(), [saved]);
-      expect(store.saveAllCalls, isEmpty);
-      expect(store.deleteProfileCalls, isEmpty);
-      expect(store.clearCalls, 0);
-      expect(directory.contacts.single.id.profileId, 'sidon');
-      expect(directory.configForGateway('sidon')?.baseUrl, saved.baseUrl);
-      expect(directory.configForGateway('sidon')?.apiKey, saved.apiKey);
-      expect(
-        directory.configForGateway('sidon')?.wingLinkToken,
-        'control-secret',
-      );
-    },
-  );
+    final saved = store.saveCalls.single;
+    expect(saved.id, 'sidon');
+    expect(saved.label, 'Home');
+    expect(saved.baseUrl, 'https://home.example/p/sidon');
+    expect(saved.apiKey, original.apiKey);
+
+    expect(await store.loadProfiles(), [saved]);
+    expect(store.saveAllCalls, isEmpty);
+    expect(store.deleteProfileCalls, isEmpty);
+    expect(store.clearCalls, 0);
+    expect(directory.contacts.single.id.profileId, 'sidon');
+    expect(directory.configForGateway('sidon')?.baseUrl, saved.baseUrl);
+    expect(directory.configForGateway('sidon')?.apiKey, saved.apiKey);
+  });
 
   test(
-    'direct edit preserves legacy fields and the independently saved sibling',
+    'direct edit preserves Agent access and the independently saved sibling',
     () async {
       final configs = [
         for (final id in ['default', 'coder'])
@@ -1389,11 +1339,6 @@ void main() {
             label: 'Host · $id',
             baseUrl: 'https://host.example/p/$id',
             apiKey: 'fixture-agent-$id',
-            wingLinkOrigin: 'https://link.example',
-            wingLinkToken: 'fixture-link-$id',
-            wingLinkPendingCredentialId: 'fixture-pending-$id',
-            wingLinkHostFingerprint: 'fixture-pin',
-            wingLinkDeviceId: 'shared-device',
           ),
       ];
       final store = FakeHermesEndpointStore(profiles: configs);
@@ -1422,21 +1367,7 @@ void main() {
       expect(saved.baseUrl, configs.first.baseUrl);
       expect(saved.label, configs.first.label);
       expect(saved.apiKey, configs.first.apiKey);
-      expect(saved.wingLinkOrigin, configs.first.wingLinkOrigin);
-      expect(saved.wingLinkToken, configs.first.wingLinkToken);
-      expect(
-        saved.wingLinkPendingCredentialId,
-        configs.first.wingLinkPendingCredentialId,
-      );
-      expect(
-        saved.wingLinkHostFingerprint,
-        configs.first.wingLinkHostFingerprint,
-      );
-      expect(saved.wingLinkDeviceId, configs.first.wingLinkDeviceId);
-      expect(
-        directory.configForGateway('default')?.wingLinkToken,
-        saved.wingLinkToken,
-      );
+
       expect((await store.loadProfiles()).last, same(configs.last));
       expect(directory.configForGateway('coder'), same(configs.last));
       expect(store.saveAllCalls, isEmpty);
@@ -1450,7 +1381,7 @@ void main() {
   );
 
   test(
-    'update connection sanitizes the origin and preserves a hidden credential',
+    'changed origin is sanitized and cannot inherit a hidden credential',
     () async {
       final store = FakeHermesEndpointStore(
         profiles: const [
@@ -1479,7 +1410,7 @@ void main() {
       );
 
       expect(store.saveCalls.single.baseUrl, 'https://new.example');
-      expect(store.saveCalls.single.apiKey, 'sentinel-secret');
+      expect(store.saveCalls.single.apiKey, isNull);
       expect(directory.gateways.single.baseUrl, 'https://new.example');
       expect(
         directory.contacts.map((contact) => contact.toJson()).toString(),
@@ -2006,11 +1937,6 @@ class _ThrowingHermesEndpointStore implements HermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
-    String? wingLinkOrigin,
-    String? wingLinkToken,
-    String? wingLinkPendingCredentialId,
-    String? wingLinkHostFingerprint,
-    String? wingLinkDeviceId,
   }) async {}
 
   @override

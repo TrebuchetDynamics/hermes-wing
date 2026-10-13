@@ -37,8 +37,6 @@ HermesCapabilityDocument _capabilities({
   },
 });
 
-const _testFingerprint = 'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-
 const _initialHealth = HermesHealthStatus(
   status: 'ok',
   platform: 'hermes-agent',
@@ -145,10 +143,6 @@ Future<HermesGatewayDirectory> _activeTrustDirectory(
         id: 'alpha',
         label: 'Alpha',
         baseUrl: 'https://alpha',
-        wingLinkOrigin: 'https://host.example:8654',
-        wingLinkToken: 'stored-token',
-        wingLinkHostFingerprint: _testFingerprint,
-        wingLinkDeviceId: 'cred_phone',
       ),
     ],
     loader: FakeGatewaySummaryLoader({
@@ -174,11 +168,6 @@ void main() {
             label: 'Host · $id',
             baseUrl: 'https://host.example/p/$id',
             apiKey: 'fixture-agent-$id',
-            wingLinkOrigin: 'https://link.example',
-            wingLinkToken: 'fixture-link-$id',
-            wingLinkPendingCredentialId: 'fixture-pending-$id',
-            wingLinkHostFingerprint: _testFingerprint,
-            wingLinkDeviceId: 'shared-device',
           ),
       ];
       final store = FakeHermesEndpointStore(profiles: configs);
@@ -280,11 +269,6 @@ void main() {
       label: 'Alpha',
       baseUrl: 'https://alpha.example',
       apiKey: 'fixture-agent-key',
-      wingLinkOrigin: 'https://link.example',
-      wingLinkToken: 'fixture-link-token',
-      wingLinkPendingCredentialId: 'fixture-pending',
-      wingLinkHostFingerprint: _testFingerprint,
-      wingLinkDeviceId: 'fixture-device',
     );
     final store = FakeHermesEndpointStore(profiles: const [config]);
     final directory = HermesGatewayDirectory(
@@ -331,14 +315,7 @@ void main() {
     final retained = (await store.loadProfiles()).single;
     expect(retained.baseUrl, config.baseUrl);
     expect(retained.apiKey, config.apiKey);
-    expect(retained.wingLinkOrigin, config.wingLinkOrigin);
-    expect(retained.wingLinkToken, config.wingLinkToken);
-    expect(
-      retained.wingLinkPendingCredentialId,
-      config.wingLinkPendingCredentialId,
-    );
-    expect(retained.wingLinkHostFingerprint, config.wingLinkHostFingerprint);
-    expect(retained.wingLinkDeviceId, config.wingLinkDeviceId);
+
     expect(store.deleteProfileCalls, isEmpty);
     expect(store.clearCalls, 0);
   });
@@ -665,8 +642,6 @@ void main() {
             id: id,
             label: 'Host',
             baseUrl: 'https://host.example/p/$id',
-            wingLinkOrigin: 'https://link.example',
-            wingLinkDeviceId: 'shared-device',
           ),
       ],
       loader: FakeGatewaySummaryLoader({
@@ -726,9 +701,6 @@ void main() {
           id: 'alpha',
           label: 'Alpha',
           baseUrl: 'https://alpha',
-          wingLinkOrigin: 'https://host.example:8654',
-          wingLinkToken: 'token-old',
-          wingLinkHostFingerprint: _testFingerprint,
         ),
       ],
       loader: FakeGatewaySummaryLoader({
@@ -745,7 +717,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(directory.configForGateway('alpha')!.label, 'Renamed');
-    expect(directory.configForGateway('alpha')!.wingLinkToken, 'token-old');
+
     expect(channel.connectCalls, hasLength(1));
     expect(channel.disconnectCalls, 0);
     expect(find.byKey(const ValueKey('gateway-trust-card')), findsNothing);
@@ -796,15 +768,11 @@ void main() {
             id: 'default-endpoint',
             label: 'Home · default',
             baseUrl: 'https://home.example/p/default',
-            wingLinkOrigin: 'https://link.example:8654',
-            wingLinkDeviceId: 'home-device',
           ),
           HermesEndpointConfig(
             id: 'coder-endpoint',
             label: 'Home · coder',
             baseUrl: 'https://home.example/p/coder',
-            wingLinkOrigin: 'https://link.example:8654',
-            wingLinkDeviceId: 'home-device',
           ),
           HermesEndpointConfig(
             id: 'work-endpoint',
@@ -815,8 +783,6 @@ void main() {
             id: 'other-device-endpoint',
             label: 'Other device',
             baseUrl: 'https://other.example/p/default',
-            wingLinkOrigin: 'https://link.example:8654',
-            wingLinkDeviceId: 'other-device',
           ),
         ],
       );
@@ -872,10 +838,7 @@ void main() {
         directory.configForGateway('work-endpoint')?.baseUrl,
         'https://work.example',
       );
-      expect(
-        directory.configForGateway('other-device-endpoint')?.wingLinkDeviceId,
-        'other-device',
-      );
+
       expect(
         (await store.loadProfiles()).map((config) => config.id),
         unorderedEquals([
@@ -908,15 +871,11 @@ void main() {
             id: 'default-endpoint',
             label: 'Home · default',
             baseUrl: 'https://home.example/p/default',
-            wingLinkOrigin: 'https://link.example:8654',
-            wingLinkDeviceId: 'home-device',
           ),
           HermesEndpointConfig(
             id: 'coder-endpoint',
             label: 'Home · coder',
             baseUrl: 'https://home.example/p/coder',
-            wingLinkOrigin: 'https://link.example:8654',
-            wingLinkDeviceId: 'home-device',
           ),
           HermesEndpointConfig(
             id: 'work-endpoint',
@@ -927,8 +886,6 @@ void main() {
             id: 'other-device-endpoint',
             label: 'Other device',
             baseUrl: 'https://other.example/p/default',
-            wingLinkOrigin: 'https://link.example:8654',
-            wingLinkDeviceId: 'other-device',
           ),
         ],
         loader: loader,

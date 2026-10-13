@@ -412,16 +412,10 @@ void main() {
               id: 'agent',
               baseUrl: 'https://agent.example',
               apiKey: 'fixture-agent',
-              wingLinkOrigin: 'https://link.example',
-              wingLinkToken: 'fixture-legacy',
-              wingLinkPendingCredentialId: 'fixture-pending',
             ),
             HermesEndpointConfig(
               id: 'other-agent',
               baseUrl: 'https://other-agent.example',
-              wingLinkOrigin: 'https://other-link.example',
-              wingLinkToken: 'fixture-other-legacy',
-              wingLinkPendingCredentialId: 'fixture-other-pending',
             ),
           ],
         );
@@ -649,10 +643,7 @@ void main() {
         expect(store.saveAllCalls, isEmpty);
         expect(store.deleteProfileCalls, isEmpty);
         expect(store.clearCalls, 0);
-        expect(
-          directory.configForGateway('agent')!.wingLinkToken,
-          'fixture-legacy',
-        );
+
         expect(tester.takeException(), isNull);
       },
     );
@@ -677,12 +668,7 @@ void main() {
       addTearDown(channel.dispose);
       final directory = directoryFor(
         configs: const [
-          HermesEndpointConfig(
-            id: 'legacy',
-            baseUrl: 'https://agent.example',
-            wingLinkOrigin: 'https://link.example',
-            wingLinkToken: 'fixture-only',
-          ),
+          HermesEndpointConfig(id: 'legacy', baseUrl: 'https://agent.example'),
         ],
         loader: FakeGatewaySummaryLoader({
           'legacy': gatewaySummary(['default']),
@@ -700,10 +686,6 @@ void main() {
       expect(find.text('Profiles unavailable'), findsOneWidget);
       expect(find.byType(ProfileEditorSheet), findsNothing);
       expect(channel.createProfileCalls, isEmpty);
-      expect(
-        directory.configForGateway('legacy')!.wingLinkToken,
-        'fixture-only',
-      );
     });
   }
 

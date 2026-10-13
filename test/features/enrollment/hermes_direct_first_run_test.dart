@@ -166,8 +166,7 @@ void main() {
           expect(requests, failureRequests, reason: 'Retry is explicit');
           await activate(tester, 'hermes-connect-button');
           expect(store.saveCalls, hasLength(1));
-          expect(store.saveCalls.single.wingLinkOrigin, isNull);
-          expect(store.saveCalls.single.wingLinkToken, isNull);
+
           expect(directory.hasSavedGateways, isTrue);
           expect(router.routeInformationProvider.value.uri.path, '/hermes');
           expect(key('hermes-welcome'), findsNothing);

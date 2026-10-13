@@ -182,7 +182,7 @@ void main() {
   });
 
   testWidgets(
-    'settings groups one paired host instead of listing its profiles as gateways',
+    'settings preserves independent controls for imported Agent endpoints',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       final channel = FakeHermesChannel.disconnected();
@@ -193,15 +193,11 @@ void main() {
             id: 'default-endpoint',
             label: 'BlueBlack · default',
             baseUrl: 'http://127.0.0.1:8642/p/default',
-            wingLinkOrigin: 'http://127.0.0.1:8654',
-            wingLinkDeviceId: 'device-1',
           ),
           HermesEndpointConfig(
             id: 'coder-endpoint',
             label: 'BlueBlack · coder',
             baseUrl: 'http://127.0.0.1:8642/p/coder',
-            wingLinkOrigin: 'http://127.0.0.1:8654',
-            wingLinkDeviceId: 'device-1',
           ),
         ],
       );
@@ -232,18 +228,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('BlueBlack'), findsOneWidget);
-      expect(find.text('BlueBlack · default'), findsNothing);
-      expect(find.text('BlueBlack · coder'), findsNothing);
-      expect(find.textContaining('2 profiles'), findsOneWidget);
+      expect(find.text('BlueBlack'), findsNothing);
+      expect(find.text('BlueBlack · default'), findsOneWidget);
+      expect(find.text('BlueBlack · coder'), findsOneWidget);
+      expect(find.textContaining('2 profiles'), findsNothing);
 
       await tester.tap(
         find.byKey(const ValueKey('settings-gateway-menu-default-endpoint')),
       );
       await tester.pumpAndSettle();
       expect(find.text('Manage profiles'), findsOneWidget);
-      expect(find.text('Rename'), findsNothing);
-      expect(find.text('Update connection'), findsNothing);
+      expect(find.text('Rename'), findsOneWidget);
+      expect(find.text('Update connection'), findsOneWidget);
 
       await tester.tap(find.text('Remove'));
       await tester.pumpAndSettle();
@@ -251,7 +247,8 @@ void main() {
         find.byKey(const ValueKey('settings-gateway-remove-confirm')),
       );
       await tester.pumpAndSettle();
-      expect(store.deleteProfileCalls, ['default-endpoint', 'coder-endpoint']);
+      expect(store.deleteProfileCalls, ['default-endpoint']);
+      expect((await store.loadProfiles()).single.id, 'coder-endpoint');
       expect(find.text('BlueBlack'), findsNothing);
     },
   );

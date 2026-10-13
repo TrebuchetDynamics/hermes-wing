@@ -39,22 +39,12 @@ class HermesEndpointConfig {
     this.apiKey,
     this.id,
     this.label,
-    this.wingLinkOrigin,
-    this.wingLinkToken,
-    this.wingLinkPendingCredentialId,
-    this.wingLinkHostFingerprint,
-    this.wingLinkDeviceId,
   });
 
   final String baseUrl;
   final String? apiKey;
   final String? id;
   final String? label;
-  final String? wingLinkOrigin;
-  final String? wingLinkToken;
-  final String? wingLinkPendingCredentialId;
-  final String? wingLinkHostFingerprint;
-  final String? wingLinkDeviceId;
 
   String get displayLabel {
     final trimmed = label?.trim();
@@ -83,11 +73,6 @@ abstract interface class HermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
-    String? wingLinkOrigin,
-    String? wingLinkToken,
-    String? wingLinkPendingCredentialId,
-    String? wingLinkHostFingerprint,
-    String? wingLinkDeviceId,
   });
 
   Future<void> deleteProfile(String profileId);
@@ -115,11 +100,6 @@ class EmptyHermesEndpointStore implements HermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
-    String? wingLinkOrigin,
-    String? wingLinkToken,
-    String? wingLinkPendingCredentialId,
-    String? wingLinkHostFingerprint,
-    String? wingLinkDeviceId,
   }) async {}
 
   @override

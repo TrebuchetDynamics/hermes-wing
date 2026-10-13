@@ -80,42 +80,6 @@ void main() {
       expect(loaded?.baseUrl, 'https://hermes.example');
     });
 
-    test('the Wing Link token is secure and round-trips separately', () async {
-      await store.save(
-        baseUrl: 'https://hermes.example:8642',
-        apiKey: 'hermes-secret',
-        wingLinkOrigin: 'https://hermes.example:8654',
-        wingLinkToken: 'wing-link-secret',
-        wingLinkPendingCredentialId: 'cred_pending',
-        wingLinkHostFingerprint:
-            'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-        wingLinkDeviceId: 'cred_device',
-      );
-
-      final loaded = await store.load();
-
-      expect(loaded?.wingLinkOrigin, 'https://hermes.example:8654');
-      expect(loaded?.wingLinkToken, 'wing-link-secret');
-      expect(loaded?.wingLinkPendingCredentialId, 'cred_pending');
-      expect(
-        loaded?.wingLinkHostFingerprint,
-        'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-      );
-      expect(loaded?.wingLinkDeviceId, 'cred_device');
-      expect(await _preferenceDump(), isNot(contains('wing-link-secret')));
-      expect(await _preferenceDump(), isNot(contains('sha256/AAAA')));
-      expect(await _preferenceDump(), contains('cred_device'));
-      expect(loaded?.apiKey, 'hermes-secret');
-
-      await store.save(
-        baseUrl: 'https://hermes.example:8642',
-        apiKey: 'hermes-secret',
-        wingLinkPendingCredentialId: '',
-      );
-      expect((await store.load())?.wingLinkPendingCredentialId, isNull);
-      expect((await store.load())?.wingLinkToken, 'wing-link-secret');
-    });
-
     test('saving without a credential leaves none behind', () async {
       await store.save(baseUrl: 'https://hermes.example', apiKey: 'first');
       await store.save(baseUrl: 'https://hermes.example', apiKey: null);
@@ -168,7 +132,7 @@ void main() {
       },
     );
 
-    test('normalizes Wing Link origin when loading secure bundle', () async {
+    test('passive loading leaves inert raw origin unchanged', () async {
       FlutterSecureStorage.setMockInitialValues({
         'wing.hermes.endpoint_bundle.v1': jsonEncode([
           {
@@ -182,7 +146,16 @@ void main() {
 
       final loaded = await store.loadProfiles();
 
-      expect(loaded.single.wingLinkOrigin, 'https://hermes.example:8654');
+      expect(loaded.single.baseUrl, 'https://hermes.example');
+      final raw = jsonDecode(
+        (await const FlutterSecureStorage().read(
+          key: 'wing.hermes.endpoint_bundle.v1',
+        ))!,
+      );
+      expect(
+        raw.single['wingLinkOrigin'],
+        'https://hermes.example:8654/?token=secret#fragment',
+      );
     });
 
     test('saved profiles round-trip with their metadata', () async {

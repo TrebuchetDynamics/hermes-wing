@@ -222,8 +222,7 @@ void main() {
           DirectFirstRunNativeFixture.origin,
         );
         expect(store.saveCalls.single.apiKey, isNull);
-        expect(store.saveCalls.single.wingLinkOrigin, isNull);
-        expect(store.saveCalls.single.wingLinkToken, isNull);
+
         expect(directory.hasSavedGateways, true);
         // The direct form saves but does not implicitly activate the directory.
         await tester.pageBack();

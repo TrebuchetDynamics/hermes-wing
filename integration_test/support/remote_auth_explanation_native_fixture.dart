@@ -193,8 +193,7 @@ Future<Map<String, Object?>> runRemoteAuthExplanationJourney(
     store.saveCalls.single.apiKey,
     RemoteAuthExplanationFixture.placeholder,
   );
-  expect(store.saveCalls.single.wingLinkOrigin, isNull);
-  expect(store.saveCalls.single.wingLinkToken, isNull);
+
   expect(fixture.mutationAttempts, 0);
   expect(fixture.forbiddenReadAttempts, 0);
 

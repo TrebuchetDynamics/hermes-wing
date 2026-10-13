@@ -263,6 +263,101 @@ Reuse `CONNECTION-SETUP-AUTH-MATRIX` for authenticated connection/first reply an
 create duplicate live workers or change their leases. Full landing success stays
 unverified until the applicable authorized live journey is observed.
 
+## README re-review: acquisition before use, tutorial before evidence
+
+Planning continuation from the owner's supplied README re-review. Its **7.5/10**
+is a provisional editorial opinion, not measured usability or a completion metric.
+Only the supplied findings are addressed here; do not invent an omitted review.
+Source inspected at Wing `c9608c19`: README Quickstart starts at line 61, first
+chat at line 97 and source build at line 139. The guide starts with deprecated
+management/development status; its direct-connection steps precede acquisition
+and mix user instructions with worktree, fixture, storage and delivery history.
+
+Reuse `LANDING-FIRST-REPLY` for the documentation continuation. It already owns
+README/getting-started handoff; no new goal, duplicate task or worker is needed.
+Keep the accepted opening, Desktop/Flutter purpose, honest preview, API readiness,
+network security, credential distinction and qualification limits intact.
+
+### First: reorder the README without another full rewrite
+
+Present three explicit starting paths, each with prerequisites → actions → success:
+
+- **Preview UI:** browser → open the hosted connection-screen preview → see the
+  welcome/form. No Agent or credential is needed to inspect it; no reply is promised.
+- **Connect an existing Hermes Agent:** obtain/open a suitable client first (hosted
+  web, or a link to native source-build instructions), then check enabled
+  authenticated API, supported capability, provider/model and native/web transport;
+  connect deliberately and send the existing no-tools prompt → authoritative reply.
+- **Build a native client:** Git/Flutter and target-platform tools → build/open the
+  client using the maintained build guide → visible welcome screen, then continue
+  to the existing-Agent path. Build success is not Agent readiness or generation.
+
+Keep limitations adjacent to the decisions they affect. Retain incoming explicit
+anchors and first-chat/build/help links. Reuse existing content rather than expanding
+README into a platform manual or making readers jump past usage to obtain the app.
+
+### Second: make getting-started a user tutorial
+
+Recommended order: purpose and prerequisites → obtain/open Wing → prepare Agent
+→ choose the connection route → send the first message → troubleshoot → data,
+permissions and concise platform limitations. Link deeper native build/setup pages
+and official Agent instructions instead of duplicating installation reference.
+
+Trace labels to current main and localization before writing steps. Preserve
+Android's SSH, Remote server, Termux choices; distinguish native Linux Local from
+browser access. Do not promote older QR/pairing choices or restore deprecated
+management setup. Local discovery not starting Agent, browser SSH/OAuth limits,
+secure-storage variation and unqualified same-phone hosting remain useful user
+limitations, but should say what the user can do next, not narrate a QA run.
+
+Move worktree status, fake stores, Chromium/native receipts, keyboard-test matrices
+and commit/delivery chronology out of tutorial prose. The existing `docs/quality/`
+receipts and product/runbook owners retain that evidence; use a short linked
+status/limits summary. Preserve historical evidence verbatim and check current
+source/delivery before making any new availability claim. Relocation is not new
+platform/live qualification and must not erase real limitations.
+
+### Acceptance and verification for this continuation
+
+- Each README starting path can be followed without searching below usage for how
+  to obtain the client. Prerequisites and a truthful success signal are explicit.
+- A reader can follow the tutorial through client acquisition, Agent readiness,
+  selected-route connection and first-message outcome without learning repository
+  worktrees, synthetic stores, qualification receipts or delivery vocabulary.
+- Preserve existing anchors and resolve README → guide → platform/Agent/help links;
+  compare UI wording with current implementation, not archived screenshots.
+- Keep security, provider-cost warning, token/provider distinction, unsupported
+  browser modes and actual qualification limits. Never broaden access to obtain a
+  successful walkthrough or infer generation from a healthy endpoint.
+- Add the smallest ordering/anchor regression to the existing tooling tests during
+  implementation. Review the rendered Markdown and selected public UI labels;
+  human first-reply observation stays with the existing live-QA owner and budget.
+
+Verification here is observable document/route consistency, not an invented numeric
+quality score. The existing landing readiness proxy does not measure tutorial
+ordering. Planned implementation checks include focused README/docs contracts,
+plan traceability and local anchor validation; actual command outcomes must be
+recorded. Current `readme_assets_contract_test.dart` still asserts old **Try the
+web alpha** wording, and `wing_link_docs_contract_test.dart` still asserts retired
+Termux port/pairing text. Reproduce/classify their failures, update genuinely
+obsolete expectations with behavior/security-equivalent coverage under existing
+retirement ownership, and never restore obsolete instructions merely to pass.
+
+Planning guard actually run on the isolated continuation candidate:
+`flutter test --no-pub test/tooling/readme_assets_contract_test.dart test/tooling/wing_link_docs_contract_test.dart test/tooling/plan_backlog_traceability_test.dart`
+exited 1: three tests passed and two failed on existing text expectations—README
+`Try the web alpha` at line 68 and Termux `127.0.0.1:8654` at line 94. README,
+guide, Termux runbook and test inputs are unchanged from the baseline. These are
+retained failures, not newly passing guards or a reason to undo accurate copy.
+Plan traceability passed; future documentation implementation must reconcile the
+affected assertions while preserving security and truthful preview coverage.
+
+Sequence this documentation correction before landing CTAs depend on the revised
+guide. No new hard dependency, priority change or live worker is introduced.
+Rejected alternatives: another broad README rewrite would reopen accepted fixes;
+deleting all limitations would conceal risk; another audit task would duplicate a
+known correction. This planning pass changes neither README nor the tutorial.
+
 ## Verification configuration and limits
 
 A cheap numeric proxy is **onboarding readiness points**: on-page API enablement,

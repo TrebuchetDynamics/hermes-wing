@@ -5568,6 +5568,11 @@
           "kind": "inspection",
           "ref": "docs/plans/2026-10-12-wing-landing-onboarding.md#located-source-and-delivery",
           "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence [README and getting-started at c9608c19; ordering/evidence narration gaps confirmed]",
+          "result": "pass"
         }
       ],
       "id": "LANDING-ONBOARDING",

@@ -6691,14 +6691,6 @@
     },
     {
       "depends_on": [],
-      "goal": "DIAGNOSTICS-RECOVERY",
-      "id": "DOC-DIAGNOSTICS-CONTRACT",
-      "section": "Now",
-      "status": "open",
-      "title": "Trace one redacted log/diagnostic read"
-    },
-    {
-      "depends_on": [],
       "goal": "OFFICE",
       "id": "DOC-OFFICE-REFERENCE",
       "section": "Now",
@@ -7542,6 +7534,14 @@
       "section": "Done",
       "status": "done",
       "title": "Compare one reasoning/tool transcript disclosure interaction"
+    },
+    {
+      "depends_on": [],
+      "goal": "DIAGNOSTICS-RECOVERY",
+      "id": "DOC-DIAGNOSTICS-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one redacted log/diagnostic read"
     },
     {
       "depends_on": [

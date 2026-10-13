@@ -4931,3 +4931,19 @@ Source section: Now / Next
   the bounded README sequencing and tutorial correction, then landing copy/connection
   and showcase truthfulness with focused regressions. This plan changes no public
   tutorial or image yet; broader visual composition stays with LANDING-PRODUCT-PROOF.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-DIAGNOSTICS-CONTRACT** — Goal: DIAGNOSTICS-RECOVERY. Section: Now. Trace one redacted log/diagnostic read.
+  Closure: [source-bound receipt](docs/quality/diagnostics-read-contract.md), commit `ecc7ac78`; independent native review approved exact source with analyze and 65 focused fixture tests. Privacy/ownership implementation and native/live qualification remain separate.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [DIAGNOSTICS-RECOVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing diagnostics and contracts; exclude restore, file copying, secret exports and generic config commands.
+  Acceptance: Name allowed fields, limits, redaction and exact grant, or absent contract. Keep atomic backup/import and fixes separately gated.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.

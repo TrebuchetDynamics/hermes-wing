@@ -94,6 +94,126 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @connectionGuideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect step by step'**
+  String get connectionGuideTitle;
+
+  /// No description provided for @connectionGuidePrepare.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Prepare Hermes Agent'**
+  String get connectionGuidePrepare;
+
+  /// No description provided for @connectionGuidePrepareBody.
+  ///
+  /// In en, this message translates to:
+  /// **'On the computer running Agent, open the official Hermes dashboard with hermes dashboard. Choose the intended profile, then Channels → API server. Enable the API on loopback for this computer, or ask the host administrator for a trusted HTTPS endpoint. Wing does not install or start Agent.'**
+  String get connectionGuidePrepareBody;
+
+  /// No description provided for @connectionGuideAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Enter this profile\'s address'**
+  String get connectionGuideAddress;
+
+  /// No description provided for @connectionGuideAddressBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Run hermes gateway status on the Agent host to find its API address. In Wing, omit the final /v1. A shared gateway uses /p/<profile> for a named profile, for example http://127.0.0.1:8642/p/demo. Keep that prefix. On another device, 127.0.0.1 points to that device, not your computer.'**
+  String get connectionGuideAddressBody;
+
+  /// No description provided for @connectionGuideToken.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Set up your access token'**
+  String get connectionGuideToken;
+
+  /// No description provided for @connectionGuideTokenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Agent access token is API_SERVER_KEY, not an OpenAI or Nous provider key. In the official dashboard, select the same profile and open Channels → API server. Set a strong, unique secret in its masked API key field, or obtain the existing credential securely from the administrator. Enter that same secret in Wing\'s masked token field. Do not rotate an existing key without reviewing its other clients. If activation requires a gateway restart, the administrator must arrange it; a shared restart affects other profiles.'**
+  String get connectionGuideTokenBody;
+
+  /// No description provided for @connectionGuideGenerateToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic token setup unavailable'**
+  String get connectionGuideGenerateToken;
+
+  /// No description provided for @connectionGuideGenerateTokenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This Agent API has no verified secure operation to generate, register and deliver an access token to Wing. A random value generated here would not grant access. Use the official Agent setup above; Wing never reads secret files or runs host configuration commands.'**
+  String get connectionGuideGenerateTokenBody;
+
+  /// No description provided for @connectionGuideBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Allow this browser'**
+  String get connectionGuideBrowser;
+
+  /// No description provided for @connectionGuideBrowserBody.
+  ///
+  /// In en, this message translates to:
+  /// **'On the Agent host, allow the exact Wing origin below in API_SERVER_CORS_ORIGINS. Keep the allowlist narrow. A blocked browser origin cannot be repaired by changing the token. Wing does not change or restart your gateway.'**
+  String get connectionGuideBrowserBody;
+
+  /// No description provided for @connectionGuideVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Check, save, then chat'**
+  String get connectionGuideVerify;
+
+  /// No description provided for @connectionGuideVerifyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Test connection below. Once discovery is verified, choose Add Hermes to connect and save. Open Chat for the saved Agent, select a supported model and send your first message deliberately. Only a reply proves generation; testing does not send a message.'**
+  String get connectionGuideVerifyBody;
+
+  /// No description provided for @connectionGuideNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next step'**
+  String get connectionGuideNext;
+
+  /// No description provided for @connectionGuideBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous step'**
+  String get connectionGuideBack;
+
+  /// No description provided for @connectionGuideReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to test'**
+  String get connectionGuideReady;
+
+  /// No description provided for @connectionGuideDocs.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Agent setup instructions'**
+  String get connectionGuideDocs;
+
+  /// No description provided for @connectionGuideDocsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the instructions. Visit hermes-agent.nousresearch.com/docs/user-guide/features/api-server.'**
+  String get connectionGuideDocsFailed;
+
+  /// No description provided for @profileGenerateAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate avatar'**
+  String get profileGenerateAvatar;
+
+  /// No description provided for @profileAvatarUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar generation and assignment are unavailable through this Agent API connection. Hermes Desktop has a separate avatar workflow; Wing cannot use it through this API. Your profile is unchanged.'**
+  String get profileAvatarUnavailable;
+
   /// No description provided for @connectionCheckAction.
   ///
   /// In en, this message translates to:

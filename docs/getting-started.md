@@ -114,6 +114,13 @@ Enter the running Agent's loopback endpoint and separate masked Agent API token.
 Web Local cannot inspect host folders; loopback refers to the browser's device.
 
 Local and Remote forms offer **Test connection**, an explicit read-only capability
+discovery check. **Connect step by step** guides preparation, the exact profile
+address, API_SERVER_KEY setup in the official Agent dashboard, browser CORS and
+deliberate Test/Add Hermes/Chat actions. No automatic key registration is available
+through the verified Agent API. Profiles explain that **Generate avatar** is
+unavailable through this API connection: Desktop's separate RPC workflow is not
+a Wing API contract. No generated token or image is presented as registered.
+The test is a read-only capability
 discovery check. It does not save credentials, activate Chat, send a prompt or
 prove generation. Edit or cancel discards late results; retry is deliberate.
 Browser setup shows Wing's exact origin for the Agent CORS allowlist. A browser

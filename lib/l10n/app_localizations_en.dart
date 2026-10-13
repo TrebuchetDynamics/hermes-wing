@@ -9,6 +9,75 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get connectionGuideTitle => 'Connect step by step';
+
+  @override
+  String get connectionGuidePrepare => '1. Prepare Hermes Agent';
+
+  @override
+  String get connectionGuidePrepareBody =>
+      'On the computer running Agent, open the official Hermes dashboard with hermes dashboard. Choose the intended profile, then Channels → API server. Enable the API on loopback for this computer, or ask the host administrator for a trusted HTTPS endpoint. Wing does not install or start Agent.';
+
+  @override
+  String get connectionGuideAddress => '2. Enter this profile\'s address';
+
+  @override
+  String get connectionGuideAddressBody =>
+      'Run hermes gateway status on the Agent host to find its API address. In Wing, omit the final /v1. A shared gateway uses /p/<profile> for a named profile, for example http://127.0.0.1:8642/p/demo. Keep that prefix. On another device, 127.0.0.1 points to that device, not your computer.';
+
+  @override
+  String get connectionGuideToken => '3. Set up your access token';
+
+  @override
+  String get connectionGuideTokenBody =>
+      'The Agent access token is API_SERVER_KEY, not an OpenAI or Nous provider key. In the official dashboard, select the same profile and open Channels → API server. Set a strong, unique secret in its masked API key field, or obtain the existing credential securely from the administrator. Enter that same secret in Wing\'s masked token field. Do not rotate an existing key without reviewing its other clients. If activation requires a gateway restart, the administrator must arrange it; a shared restart affects other profiles.';
+
+  @override
+  String get connectionGuideGenerateToken =>
+      'Automatic token setup unavailable';
+
+  @override
+  String get connectionGuideGenerateTokenBody =>
+      'This Agent API has no verified secure operation to generate, register and deliver an access token to Wing. A random value generated here would not grant access. Use the official Agent setup above; Wing never reads secret files or runs host configuration commands.';
+
+  @override
+  String get connectionGuideBrowser => '4. Allow this browser';
+
+  @override
+  String get connectionGuideBrowserBody =>
+      'On the Agent host, allow the exact Wing origin below in API_SERVER_CORS_ORIGINS. Keep the allowlist narrow. A blocked browser origin cannot be repaired by changing the token. Wing does not change or restart your gateway.';
+
+  @override
+  String get connectionGuideVerify => 'Check, save, then chat';
+
+  @override
+  String get connectionGuideVerifyBody =>
+      'Choose Test connection below. Once discovery is verified, choose Add Hermes to connect and save. Open Chat for the saved Agent, select a supported model and send your first message deliberately. Only a reply proves generation; testing does not send a message.';
+
+  @override
+  String get connectionGuideNext => 'Next step';
+
+  @override
+  String get connectionGuideBack => 'Previous step';
+
+  @override
+  String get connectionGuideReady => 'Ready to test';
+
+  @override
+  String get connectionGuideDocs => 'Official Agent setup instructions';
+
+  @override
+  String get connectionGuideDocsFailed =>
+      'Could not open the instructions. Visit hermes-agent.nousresearch.com/docs/user-guide/features/api-server.';
+
+  @override
+  String get profileGenerateAvatar => 'Generate avatar';
+
+  @override
+  String get profileAvatarUnavailable =>
+      'Avatar generation and assignment are unavailable through this Agent API connection. Hermes Desktop has a separate avatar workflow; Wing cannot use it through this API. Your profile is unchanged.';
+
+  @override
   String get connectionCheckAction => 'Test connection';
 
   @override

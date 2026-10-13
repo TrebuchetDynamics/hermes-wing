@@ -795,6 +795,15 @@ class _ProfileCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 4,
                 children: [
+                  Tooltip(
+                    message: strings.profileAvatarUnavailable,
+                    child: OutlinedButton.icon(
+                      key: ValueKey('profile-generate-avatar-${profile.id}'),
+                      onPressed: null,
+                      icon: const Icon(Icons.auto_awesome_outlined),
+                      label: Text(strings.profileGenerateAvatar),
+                    ),
+                  ),
                   if (!inlineChat) chatAction,
                   if (canEdit)
                     Semantics(
@@ -825,6 +834,10 @@ class _ProfileCard extends StatelessWidget {
                       ),
                     ),
                 ],
+              ),
+              Text(
+                strings.profileAvatarUnavailable,
+                style: theme.textTheme.bodySmall,
               ),
             ],
           ),

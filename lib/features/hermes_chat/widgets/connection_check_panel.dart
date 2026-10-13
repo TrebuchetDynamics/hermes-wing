@@ -8,6 +8,7 @@ import '../../../core/hermes/policy/hermes_endpoint_security.dart';
 import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../l10n/app_localizations.dart';
+import 'connection_setup_guide.dart';
 
 /// Explicit read-only discovery, independent of Chat and secure persistence.
 class ConnectionCheckPanel extends StatefulWidget {
@@ -185,7 +186,7 @@ class _ConnectionCheckPanelState extends State<ConnectionCheckPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(strings.connectionSetupChecklist),
+        ConnectionSetupGuide(browserOrigin: widget.browserOrigin),
         if (widget.browserOrigin != null) ...[
           const SizedBox(height: 8),
           Semantics(

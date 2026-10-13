@@ -29,26 +29,30 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: ConnectionCheckPanel(
-            url: url,
-            token: token,
-            enabled: true,
-            ownsIntent: owns ?? () => true,
-            confirmCleartext: (_) async => false,
-            browserOrigin: browser ? 'http://127.0.0.1:8767' : null,
-            clientBuilder: (config) => HermesApiClient(
-              config: config,
-              get: (uri, _) async {
-                expect(uri.path, '/p/demo/v1/capabilities');
-                return read();
-              },
-              post: (_, _, _) async => throw StateError('Unexpected mutation'),
+          body: SingleChildScrollView(
+            child: ConnectionCheckPanel(
+              url: url,
+              token: token,
+              enabled: true,
+              ownsIntent: owns ?? () => true,
+              confirmCleartext: (_) async => false,
+              browserOrigin: browser ? 'http://127.0.0.1:8767' : null,
+              clientBuilder: (config) => HermesApiClient(
+                config: config,
+                get: (uri, _) async {
+                  expect(uri.path, '/p/demo/v1/capabilities');
+                  return read();
+                },
+                post: (_, _, _) async =>
+                    throw StateError('Unexpected mutation'),
+              ),
             ),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
+    await tester.ensureVisible(button);
   }
 
   const document =

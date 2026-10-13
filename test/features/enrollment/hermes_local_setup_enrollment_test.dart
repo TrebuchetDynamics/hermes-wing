@@ -21,7 +21,19 @@ void main() {
             tester,
             capture: (_) async {},
           );
-          expect(receipt['inspect'], 3);
+          expect(receipt['inspect'], 4);
+          expect(receipt['picker_calls'], 2);
+          for (final key in [
+            'chooser_cancel_preserved',
+            'metadata_missing_default_selected',
+            'saved_owner_preserved',
+            'inert_legacy_preserved',
+          ]) {
+            expect(receipt[key], true, reason: key);
+          }
+          expect(receipt['legacy_reads'], 0);
+          expect(receipt['legacy_deletes'], 0);
+          expect(receipt['link_operations'], 0);
           expect(receipt['mutations'], 0);
           expect(receipt['forbidden_reads'], 0);
         },

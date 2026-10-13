@@ -10,7 +10,7 @@ import sys
 import tempfile
 import time
 
-CARD = 't_4c7cb087'
+CARD = 't_69ceda90'
 OWNED = (
     'integration_test/linux_local_setup_enrollment_test.dart',
     'scripts/run_linux_local_setup_enrollment.sh',
@@ -90,9 +90,13 @@ def validate_receipt(value):
             value.get('width') not in (390.0, 1280.0) or
             value.get('text_scale') not in (1.0, 2.0) or value.get('route') != '/hermes' or
             any(type(value.get(k)) is not int or value[k] != expected
-                for k, expected in dict(inspect=3, mutations=0, forbidden_reads=0).items()) or
+                for k, expected in dict(inspect=4, picker_calls=2, mutations=0,
+                    forbidden_reads=0, legacy_reads=0, legacy_deletes=0,
+                    link_operations=0).items()) or
             any(value.get(k) is not True for k in ('direct_retry',
-                'no_automatic_replay', 'direct_without_management'))):
+                'no_automatic_replay', 'direct_without_management',
+                'chooser_cancel_preserved', 'metadata_missing_default_selected',
+                'saved_owner_preserved', 'inert_legacy_preserved'))):
         raise ValueError('Incomplete or replaying Local enrollment journey')
     return value
 
@@ -216,7 +220,10 @@ def run(source):
                     for path in (root / 'cache').glob('*.png'):
                         shutil.copyfile(path, evidence / path.name)
                     renders = {p.name: helper.digest(p) for p in evidence.glob('*.png')}
-                    if len(renders) != 20 or len(set(renders.values())) < 3:
+                    expected_renders = {f'local-{phase}-{width}-{scale}.png'
+                        for phase in ('direct-local', 'default-home', 'selected-home', 'direct-denied', 'direct')
+                        for width in (390.0, 1280.0) for scale in (1.0, 2.0)}
+                    if set(renders) != expected_renders or len(set(renders.values())) < 3:
                         raise ValueError('Missing or unchanged native renders')
                     result['renders'] = renders
                     raise Finished()

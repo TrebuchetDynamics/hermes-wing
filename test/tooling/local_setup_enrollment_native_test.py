@@ -15,11 +15,17 @@ class ReceiptTest(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         value = dict(native_pid=123, width=390.0, text_scale=2.0,
-                     inspect=3, mutations=0, forbidden_reads=0, route='/hermes',
+                     inspect=4, picker_calls=2, mutations=0, forbidden_reads=0,
+                     legacy_reads=0, legacy_deletes=0, link_operations=0,
+                     chooser_cancel_preserved=True, metadata_missing_default_selected=True,
+                     saved_owner_preserved=True, inert_legacy_preserved=True, route='/hermes',
                      direct_retry=True, no_automatic_replay=True,
                      direct_without_management=True)
         self.assertEqual(module.validate_receipt(value), value)
-        for key, changed in [('inspect', 4), ('mutations', 1),
+        for key, changed in [('inspect', 3), ('picker_calls', 1), ('mutations', 1),
+                             ('legacy_reads', 1), ('legacy_deletes', 1), ('link_operations', 1),
+                             ('chooser_cancel_preserved', False), ('metadata_missing_default_selected', False),
+                             ('saved_owner_preserved', False), ('inert_legacy_preserved', False),
                              ('forbidden_reads', 1), ('no_automatic_replay', False),
                              ('direct_retry', False)]:
             with self.assertRaises(ValueError):

@@ -16,13 +16,16 @@ The [plan-to-task coverage](docs/plans/README.md#plan-to-task-coverage) connects
 both plan collections to canonical task bodies. Historical/proposed context does
 not reopen old steps. The deferred Nostr proposal has no executable task.
 [Autogoal workflow policy](docs/product/autogoal-workflows.md) governs selection,
-vertical-slice contracts, qualification and protected-main delivery. The owner's
-reordered priority is P0 Desktop welcome and connection fidelity, then P1 daily use.
-Ledger focus is CONNECTION-PATHS for that first slice. M1 remains the daily-use
-milestone: connect → select profile/model → generate → approve → Stop → relaunch →
-restore → send again. Resume M1 focus after the P0 entry/connection outcome is
-qualified and delivered. Preserve existing active workers; priority does not
-cancel their leases or prove that queued work has started.
+vertical-slice contracts, qualification and protected-main delivery.
+Current owner order: **easy tasks first** among accepted, dependency-ready work.
+The bounded quick wins below precede the remaining strategic queue; its relative
+goal order is retained. Goal priorities and Now/Next placement enforce this order;
+the former CONNECTION-PATHS focus bias is cleared, not claimed complete.
+Desktop parity/daily-use acceptance is unchanged. Effort ranks are estimates, not
+promised durations. Active workers, real prerequisites and Needs decision gates
+remain intact.
+
+First unclaimed quick wins: `DOC-M4-INVENTORY-EVIDENCE`, `DOC-DIAGNOSTICS-CONTRACT`, `DOC-DESKTOP-DELIVERY-EVIDENCE`, `DOC-SLASH-CATALOG-CONTRACT`, `DOC-OFFICE-REFERENCE`, `DOC-PERSONA-EVIDENCE`.
 [Completed task history](todo.archive.md) retains the earlier scoped receipts.
 Historical observations do not authorize a retry or prove current ownership is clear.
 The [corrected native shell smoke](docs/quality/native-no-inference-smoke.md#executed-corrected-qualification)
@@ -55,6 +58,14 @@ Generated from `goals.json` by `goals.py render`. `met` requires an executed, pa
 
 | Goal | Status | Evidence | Task |
 | --- | --- | --- | --- |
+| M4: Qualify supported inventory and administration operation by operation | partial | inspection `ROADMAP.md#m4--discover-and-administer-supported-agent-work` → pass | DOC-M4-INVENTORY-EVIDENCE, DOC-M4-SCHEDULE-INVENTORY-EVIDENCE |
+| DIAGNOSTICS-RECOVERY: Provide safe backup/import, logs and config diagnosis/recovery | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-DIAGNOSTICS-BACKUP-CONTRACT, DOC-DIAGNOSTICS-CONTRACT |
+| DESKTOP-DELIVERY: Qualify desktop windows, install and signed update/recovery | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-DESKTOP-DELIVERY-EVIDENCE, DOC-DESKTOP-UNINSTALL-EVIDENCE |
+| SESSIONS: Qualify exact session search/resume/fork/rename/delete | met | executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/format.log` → pass; executed `dart format test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `flutter analyze` → pass; executed `flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze-final.log` → pass; executed `flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze.log` → fail; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'fork|session mutation ownership'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history' 2>&1 | tee .task-evidence/t_8866900e/channel-selection.log` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'session mutation ownership|deleteSession'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'session mutation ownership'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name deleteSession` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller' 2>&1 | tee .task-evidence/t_8866900e/channel-open.log` → pass; executed `flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --name 'deletes a session over DELETE|rejects an unconfirmed delete response'` → pass; executed `flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --plain-name 'forks a session over POST'` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session'` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session' 2>&1 | tee .task-evidence/t_8866900e/filtering.log` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart 2>&1 | tee .task-evidence/t_36a391f7/journey.log (initial run; retained as journey-initial.log)` → fail; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey-initial.log` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey.log` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart 2>&1 | tee .task-evidence/t_8866900e/settlement-owner.log` → pass; executed `git diff --check -- goals.json TODO.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-delete-journey.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-fork-journey.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-rename-journey.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-search-resume-journey.md` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `git diff-tree --check f84e8ebde582e626669492856464a31b44de1d4b^ f84e8ebde582e626669492856464a31b44de1d4b` → pass; executed `git show --format= --check 222be4ee4068a00aa553a1dceddc52b21a52ffed` → pass; executed `git show --format= --check agent/wing/t_36a391f7` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate .` → pass; inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | — |
+| SLASH-CATALOG: Match supported full Desktop slash commands and completion | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-SLASH-CATALOG-CONTRACT, DOC-SLASH-DENIAL-EVIDENCE |
+| OFFICE: Match Office interactions with an accessible non-spatial path | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-OFFICE-ACCESSIBLE-EQUIVALENT, DOC-OFFICE-REFERENCE |
+| PERSONA: Qualify standalone and embedded profile persona fidelity | unverified | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-PERSONA-CONFLICT-EVIDENCE, DOC-PERSONA-EVIDENCE |
+| GLOBAL-LOADED-SESSIONS: Open/create loaded sessions from feature routes without incidental reads | met | executed `flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (build)` → pass; executed `flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (build)` → pass; executed `flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (nearest)` → pass; executed `flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (nearest)` → pass; executed `flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (widgets)` → pass; executed `flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (widgets)` → pass; executed `npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=.task-evidence/t_1c1e6f37/browser-verified-final; receipt: .task-evidence/t_1c1e6f37/verified-commands.json and global-browser-verified-final-results.json` → pass; executed `npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (browser)` → pass; executed `npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (browser)` → pass; inspection `.task-evidence/t_1c1e6f37/final-hashes.json (current app_shell.dart differs; 19 other lib/test/playwright fingerprints match; see docs/runbooks/global-session-access.md#current-snapshot-limit)` → fail; inspection `.task-evidence/t_d06ef06d/source-inputs.json (later messaging, history parsing/models and channel regression edits differ from nine of 521 inputs; review-snapshot acceptance preserved; see docs/runbooks/global-session-access.md#current-snapshot-limit)` → fail; inspection `docs/runbooks/desktop-shell-reference-fidelity.md#evidence-and-exact-checks (four current source hashes match; 57-widget and two-browser passing logs inspected; remaining input attribution unverified)` → pass; inspection `docs/runbooks/desktop-shell-reference-fidelity.md#independent-review-p1-correction (four final source hashes match; focus-fix logs record 57 widget and two Chromium passes; full input attribution and independent verdict remain unverified)` → pass | — |
 | INTEGRATION: Source-bound merge-train integration verification | partial | executed `cd <home>/.hermes/cache/scratch/t_cd815647/base && flutter pub get` → pass; executed `cd <home>/.hermes/cache/scratch/t_cd815647/base && flutter test --concurrency=1 test/shared/widgets/app_shell_test.dart` → pass; executed `cd <home>/.hermes/cache/scratch/t_cd815647/candidate && dart format --output=none --set-exit-if-changed test/shared/widgets/app_shell_test.dart` → pass; executed `cd <home>/.hermes/cache/scratch/t_cd815647/candidate && flutter analyze` → pass; executed `cd <home>/.hermes/cache/scratch/t_cd815647/candidate && flutter pub get` → pass; executed `cd <home>/.hermes/cache/scratch/t_cd815647/candidate && flutter test --concurrency=1` → pass; executed `cd <home>/.hermes/cache/scratch/t_cd815647/candidate && flutter test --concurrency=1 test/shared/widgets/app_shell_test.dart [unrepaired f0bbb356c023a12074216fe88f9c99d57d45f15a]` → fail; executed `cd <home>/.hermes/cache/scratch/t_cd815647/candidate && flutter test --concurrency=1 test/shared/widgets/app_shell_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_profile_footer_test.dart test/features/hermes_chat/widgets` → pass; executed `cd <home>/.hermes/cache/scratch/t_cd815647/candidate && flutter test --concurrency=1 test/tooling/release_workflow_contract_test.dart` → pass; executed `cd <repo> && dart format --output=none --set-exit-if-changed test/shared/widgets/app_shell_test.dart` → pass; executed `cd <repo> && flutter analyze` → pass; executed `cd <repo> && flutter test --concurrency=1 test/shared/widgets/app_shell_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_profile_footer_test.dart test/features/hermes_chat/widgets` → pass; executed `cd <repo> && git diff --check -- test/shared/widgets/app_shell_test.dart` → pass; executed `cd <repo> && git diff --check -- test/shared/widgets/app_shell_test.dart docs/quality/merge-train-shell-status-bar.md goals.json TODO.md` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → pass | MT-RERUN-TRAIN, MT-VERIFY-BROWSER-GATES |
 | M1: Complete the integrated Desktop daily-use workflow | partial | executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && NODE_OPTIONS=--max-old-space-size=2048 flutter build web --release --no-pub --no-wasm-dry-run -t lib/main_e2e.dart) [t_3ad70dd4]` → pass; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && PORT=18977 HERMES_E2E_PORT=18978 WING_APP_URL=http://127.0.0.1:18977/ CHROME_EXECUTABLE=/usr/bin/chromium NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/desktop-daily-workflow.spec.mjs --workers=1 --retries=0 --output=<home>/.hermes/cache/scratch/t_3ad70dd4/verified-browser-artifacts) [t_3ad70dd4]` → fail; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && PORT=18987 HERMES_E2E_PORT=18988 WING_APP_URL=http://127.0.0.1:18987/ CHROME_EXECUTABLE=/usr/bin/chromium NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/desktop-daily-workflow.spec.mjs --workers=1 --retries=0 --output=<home>/.hermes/cache/scratch/t_3ad70dd4/verified-daily-artifacts) [t_3ad70dd4]` → fail; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/features/hermes_chat/widgets/session_model_picker_sheet.dart test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart) [t_3ad70dd4]` → pass; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && flutter analyze --no-pub) [t_3ad70dd4]` → pass; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && flutter gen-l10n) [t_3ad70dd4]` → pass; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart test/features/hermes_chat/widgets/session_model_picker_sheet_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart) [t_3ad70dd4]` → fail; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart test/features/hermes_chat/widgets/session_model_picker_sheet_test.dart test/features/hermes_chat/widgets/session_model_picker_search_test.dart test/features/hermes_chat/screens/hermes_chat_model_picker_open_order_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/core/hermes/channel/hermes_api_channel_test.dart) [t_3ad70dd4]` → pass; executed `(cd <home>/.hermes/cache/scratch/t_3ad70dd4/repo && node --test playwright/support/hermes_desktop_daily_fixture_test.mjs) [t_3ad70dd4]` → pass; executed `(cd <repo>/build/t_2e1f363d-review/candidate && timeout 120s bash -c 'bash -n scripts/run_linux_desktop_live_workflow.sh') [independent review at 1749a739873d01acc965f61d2f2318a6d466a8d4; synthetic Linux only; expected exit 0]` → pass; executed `(cd <repo>/build/t_2e1f363d-review/candidate && timeout 120s bash -c 'bash scripts/run_linux_desktop_live_workflow.sh < /dev/null') [independent review at 1749a739873d01acc965f61d2f2318a6d466a8d4; synthetic Linux only; expected exit 2]` → pass; executed `(cd <repo>/build/t_2e1f363d-review/candidate && timeout 120s bash -c 'git diff --check 8bdae36cd40bccbf5b7fd6056d395606f01f58db HEAD') [independent review at 1749a739873d01acc965f61d2f2318a6d466a8d4; synthetic Linux only; expected exit 0]` → pass; executed `(cd <repo>/build/t_2e1f363d-review/candidate && timeout 120s bash -c 'python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py') [independent review at 1749a739873d01acc965f61d2f2318a6d466a8d4; synthetic Linux only; expected exit 0]` → pass; executed `(cd <repo>/build/t_2e1f363d/candidate && timeout 120s bash -c 'bash -n scripts/run_linux_desktop_live_workflow.sh') [t_2e1f363d synthetic orchestration only; expected exit 0]` → pass; executed `(cd <repo>/build/t_2e1f363d/candidate && timeout 120s bash -c 'bash scripts/run_linux_desktop_live_workflow.sh < /dev/null') [t_2e1f363d synthetic orchestration only; expected exit 2]` → pass; executed `(cd <repo>/build/t_2e1f363d/candidate && timeout 120s bash -c 'git diff --check') [t_2e1f363d synthetic orchestration only; expected exit 0]` → pass; executed `(cd <repo>/build/t_2e1f363d/candidate && timeout 120s bash -c 'python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py') [t_2e1f363d synthetic orchestration only; expected exit 0]` → pass; executed `<home>/.hermes/profiles/wing/cache/scratch/native-relaunch-checks.lnu562xm/workspace/flutter/bin/flutter analyze --no-pub` → pass; executed `<home>/.hermes/profiles/wing/cache/scratch/native-relaunch-checks.lnu562xm/workspace/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/gateway_contact_cache_test.dart test/tooling/linux_live_directory_isolation_test.dart` → pass; executed `<repo>/build/native-model-checks/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/native-model-checks/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart test/features/hermes_chat/screens/hermes_chat_model_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/core/hermes/channel/hermes_api_channel_test.dart` → pass; executed `<repo>/build/t_2d93a7e9/attempt-c316tryg/wing-linux-live.v58x7b6y/flutter/bin/flutter analyze --no-pub` → fail; executed `<repo>/build/t_2d93a7e9/attempt-d5jcbmje/wing-linux-live.cx5lzkpd/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_remote_connection_retry_test.dart integration_test/support/remote_connection_retry_native_fixture.dart` → pass; executed `<repo>/build/t_2d93a7e9/attempt-d5jcbmje/wing-linux-live.cx5lzkpd/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_2d93a7e9/attempt-d5jcbmje/wing-linux-live.cx5lzkpd/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_remote_connection_retry_test.dart` → pass; executed `<repo>/build/t_2d93a7e9/attempt-d5jcbmje/wing-linux-live.cx5lzkpd/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_2d93a7e9/attempt-dtefsqzg/wing-linux-live.cw4j4t0w/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_remote_connection_retry_test.dart` → fail; executed `<repo>/build/t_2d93a7e9/attempt-k98schlk/wing-linux-live.fsl3xlrj/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_remote_connection_retry_test.dart integration_test/support/remote_connection_retry_native_fixture.dart` → pass; executed `<repo>/build/t_2d93a7e9/attempt-k98schlk/wing-linux-live.fsl3xlrj/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_2d93a7e9/attempt-k98schlk/wing-linux-live.fsl3xlrj/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_remote_connection_retry_test.dart` → pass; executed `<repo>/build/t_2d93a7e9/attempt-k98schlk/wing-linux-live.fsl3xlrj/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_2d93a7e9/attempt-qb7yndec/wing-linux-live.ypdskjx0/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_remote_connection_retry_test.dart` → fail; executed `<repo>/build/t_2d93a7e9/attempt-vij2j3lv/wing-linux-live.t26z_9yt/flutter/bin/flutter analyze --no-pub` → fail; executed `<repo>/build/t_3e074d68/attempt-1zxd2lyo/wing-linux-live.99cpy7z9/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_desktop_no_inference_smoke_test.dart integration_test/support/desktop_no_inference_fixture.dart` → pass; executed `<repo>/build/t_3e074d68/attempt-1zxd2lyo/wing-linux-live.99cpy7z9/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_3e074d68/attempt-1zxd2lyo/wing-linux-live.99cpy7z9/flutter/bin/flutter test --no-pub --concurrency=1 test/tooling/desktop_live_workflow_budget_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart` → pass; executed `<repo>/build/t_4a9f2ee8/evidence/attempt-irzvw79d/wing-linux-live.jg67swem/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_status_accessibility_test.dart integration_test/support/status_accessibility_native_fixture.dart test/shared/widgets/app_shell_status_accessibility_test.dart lib/shared/widgets/app_shell.dart lib/shared/widgets/sheet_presenter.dart` → pass; executed `<repo>/build/t_4a9f2ee8/evidence/attempt-irzvw79d/wing-linux-live.jg67swem/flutter/bin/flutter analyze --no-pub` → fail; executed `<repo>/build/t_4a9f2ee8/evidence/attempt-yvyh4r9l/wing-linux-live.7gr5_8oz/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_status_accessibility_test.dart integration_test/support/status_accessibility_native_fixture.dart test/shared/widgets/app_shell_status_accessibility_test.dart lib/shared/widgets/app_shell.dart lib/shared/widgets/sheet_presenter.dart` → pass; executed `<repo>/build/t_4a9f2ee8/evidence/attempt-yvyh4r9l/wing-linux-live.7gr5_8oz/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_4a9f2ee8/evidence/attempt-yvyh4r9l/wing-linux-live.7gr5_8oz/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_status_accessibility_test.dart` → pass; executed `<repo>/build/t_4a9f2ee8/evidence/attempt-yvyh4r9l/wing-linux-live.7gr5_8oz/flutter/bin/flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_status_accessibility_test.dart test/shared/widgets/app_shell_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart` → pass; executed `<repo>/build/t_912b8858/evidence/attempt-m5sboot_/wing-linux-live.ewe4p6gx/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_transcript_recovery_test.dart integration_test/support/transcript_recovery_native_fixture.dart` → pass; executed `<repo>/build/t_912b8858/evidence/attempt-m5sboot_/wing-linux-live.ewe4p6gx/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_912b8858/evidence/attempt-m5sboot_/wing-linux-live.ewe4p6gx/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_transcript_recovery_test.dart` → pass; executed `<repo>/build/t_912b8858/evidence/attempt-m5sboot_/wing-linux-live.ewe4p6gx/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart test/core/hermes/channel/hermes_approval_settlement_owner_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-3ov2k_fa/wing-linux-live.trmyqcaf/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-3ov2k_fa/wing-linux-live.trmyqcaf/flutter/bin/flutter analyze --no-pub` → fail; executed `<repo>/build/t_95a5ae74/attempt-3vig3655/wing-linux-live.eqmpt848/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-3vig3655/wing-linux-live.eqmpt848/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_95a5ae74/attempt-3vig3655/wing-linux-live.eqmpt848/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_direct_first_run_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-3vig3655/wing-linux-live.eqmpt848/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-7mno17hy/wing-linux-live.t2q9vkvv/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-7mno17hy/wing-linux-live.t2q9vkvv/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_95a5ae74/attempt-7mno17hy/wing-linux-live.t2q9vkvv/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_direct_first_run_test.dart` → fail; executed `<repo>/build/t_95a5ae74/attempt-7mno17hy/wing-linux-live.t2q9vkvv/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-mefh56yi/wing-linux-live.d7mab_2z/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-mefh56yi/wing-linux-live.d7mab_2z/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_95a5ae74/attempt-mefh56yi/wing-linux-live.d7mab_2z/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_direct_first_run_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-mefh56yi/wing-linux-live.d7mab_2z/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-s5h2y0qu/wing-linux-live.bv5owmli/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-s5h2y0qu/wing-linux-live.bv5owmli/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_95a5ae74/attempt-s5h2y0qu/wing-linux-live.bv5owmli/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_direct_first_run_test.dart` → fail; executed `<repo>/build/t_95a5ae74/attempt-s5h2y0qu/wing-linux-live.bv5owmli/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-v11jt14t/wing-linux-live.0ylb0bwg/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-v11jt14t/wing-linux-live.0ylb0bwg/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_95a5ae74/attempt-v11jt14t/wing-linux-live.0ylb0bwg/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_direct_first_run_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-v11jt14t/wing-linux-live.0ylb0bwg/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-vb13y6ou/wing-linux-live.5u2yh53u/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `<repo>/build/t_95a5ae74/attempt-vb13y6ou/wing-linux-live.5u2yh53u/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_95a5ae74/attempt-vb13y6ou/wing-linux-live.5u2yh53u/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_direct_first_run_test.dart` → fail; executed `<repo>/build/t_95a5ae74/attempt-vb13y6ou/wing-linux-live.5u2yh53u/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/build/t_a7ab04dd/evidence/attempt-4f2hc85p/wing-linux-live.51_qvriu/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_stop_recovery_test.dart integration_test/support/stop_recovery_native_fixture.dart` → pass; executed `<repo>/build/t_a7ab04dd/evidence/attempt-4f2hc85p/wing-linux-live.51_qvriu/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_a7ab04dd/evidence/attempt-4f2hc85p/wing-linux-live.51_qvriu/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_stop_recovery_test.dart` → fail; executed `<repo>/build/t_a7ab04dd/evidence/attempt-4f2hc85p/wing-linux-live.51_qvriu/flutter/bin/flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart` → pass; executed `<repo>/build/t_a7ab04dd/evidence/attempt-zt9xnmpu/wing-linux-live.pxt0dvp8/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_stop_recovery_test.dart integration_test/support/stop_recovery_native_fixture.dart` → pass; executed `<repo>/build/t_a7ab04dd/evidence/attempt-zt9xnmpu/wing-linux-live.pxt0dvp8/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_a7ab04dd/evidence/attempt-zt9xnmpu/wing-linux-live.pxt0dvp8/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_stop_recovery_test.dart` → pass; executed `<repo>/build/t_a7ab04dd/evidence/attempt-zt9xnmpu/wing-linux-live.pxt0dvp8/flutter/bin/flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart` → pass; executed `<repo>/build/t_ac65a3cb/attempt-43fqf0rj/wing-linux-live.rtc9b1kf/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_desktop_no_inference_smoke_test.dart integration_test/support/desktop_no_inference_fixture.dart` → pass; executed `<repo>/build/t_ac65a3cb/attempt-43fqf0rj/wing-linux-live.rtc9b1kf/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_ac65a3cb/attempt-43fqf0rj/wing-linux-live.rtc9b1kf/flutter/bin/flutter test --no-pub --concurrency=1 test/tooling/desktop_live_workflow_budget_test.dart test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart` → pass; executed `<repo>/build/t_ac65a3cb/attempt-fq28lfnc/wing-linux-live.6c4q6ekd/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_desktop_no_inference_smoke_test.dart integration_test/support/desktop_no_inference_fixture.dart` → pass; executed `<repo>/build/t_ac65a3cb/attempt-fq28lfnc/wing-linux-live.6c4q6ekd/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_ac65a3cb/attempt-fq28lfnc/wing-linux-live.6c4q6ekd/flutter/bin/flutter test --no-pub --concurrency=1 test/tooling/desktop_live_workflow_budget_test.dart test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart` → pass; executed `<repo>/build/t_d83a3347/wing-linux-live.5j10utqg/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_saved_endpoint_storage_test.dart integration_test/support/saved_endpoint_storage_native_fixture.dart` → pass; executed `<repo>/build/t_d83a3347/wing-linux-live.5j10utqg/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_d83a3347/wing-linux-live.5j10utqg/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_saved_endpoint_storage_test.dart` → pass; executed `<repo>/build/t_d83a3347/wing-linux-live.5j10utqg/flutter/bin/flutter test --no-pub --concurrency=1 test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-a6jtfh8g/wing-linux-live.znpt3mfr/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-a6jtfh8g; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-a6jtfh8g/wing-linux-live.znpt3mfr/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-a6jtfh8g; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-a6jtfh8g/wing-linux-live.znpt3mfr/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-a6jtfh8g; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-bx1pktwp/wing-linux-live.irlsau5l/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-bx1pktwp; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-bx1pktwp/wing-linux-live.irlsau5l/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-bx1pktwp; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-bx1pktwp/wing-linux-live.irlsau5l/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-bx1pktwp; frozen synthetic Linux GTK only]` → fail; executed `<repo>/build/t_e168b601/evidence/attempt-pxddt1hp/wing-linux-live.7kxs7t54/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-pxddt1hp; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-pxddt1hp/wing-linux-live.7kxs7t54/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-pxddt1hp; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-pxddt1hp/wing-linux-live.7kxs7t54/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-pxddt1hp; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-q3n9rhh1/wing-linux-live.oqzlakwh/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_native_fixture.dart [t_e168b601 attempt-q3n9rhh1; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-q3n9rhh1/wing-linux-live.oqzlakwh/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-q3n9rhh1; frozen synthetic Linux GTK only]` → fail; executed `<repo>/build/t_e168b601/evidence/attempt-qq3oqm4b/wing-linux-live.dclskf4y/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-qq3oqm4b; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-qq3oqm4b/wing-linux-live.dclskf4y/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-qq3oqm4b; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-qq3oqm4b/wing-linux-live.dclskf4y/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-qq3oqm4b; frozen synthetic Linux GTK only]` → fail; executed `<repo>/build/t_e168b601/evidence/attempt-s6uti2h1/wing-linux-live.r7b0n8k9/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-s6uti2h1; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-s6uti2h1/wing-linux-live.r7b0n8k9/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-s6uti2h1; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-s6uti2h1/wing-linux-live.r7b0n8k9/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-s6uti2h1; frozen synthetic Linux GTK only]` → fail; executed `<repo>/build/t_e168b601/evidence/attempt-smnv5pgc/wing-linux-live.kfu5weto/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-smnv5pgc; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-smnv5pgc/wing-linux-live.kfu5weto/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-smnv5pgc; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-smnv5pgc/wing-linux-live.kfu5weto/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-smnv5pgc; frozen synthetic Linux GTK only]` → fail; executed `<repo>/build/t_e168b601/evidence/attempt-tzkamfe2/wing-linux-live.ao6lzfhk/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-tzkamfe2; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-tzkamfe2/wing-linux-live.ao6lzfhk/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-tzkamfe2; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-tzkamfe2/wing-linux-live.ao6lzfhk/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-tzkamfe2; frozen synthetic Linux GTK only]` → fail; executed `<repo>/build/t_e168b601/evidence/attempt-vqr1eu3b/wing-linux-live.mmu1iixv/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_integrated_daily_restart_test.dart integration_test/support/integrated_daily_restart_fixture.dart [t_e168b601 attempt-vqr1eu3b; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-vqr1eu3b/wing-linux-live.mmu1iixv/flutter/bin/flutter analyze --no-pub [t_e168b601 attempt-vqr1eu3b; frozen synthetic Linux GTK only]` → pass; executed `<repo>/build/t_e168b601/evidence/attempt-vqr1eu3b/wing-linux-live.mmu1iixv/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_integrated_daily_restart_test.dart [t_e168b601 attempt-vqr1eu3b; frozen synthetic Linux GTK only]` → fail; executed `<repo>/build/t_e662982c/attempt-nrx5dzoe/wing-linux-live.g83qwhtu/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_desktop_no_inference_smoke_test.dart integration_test/support/desktop_no_inference_fixture.dart` → pass; executed `<repo>/build/t_e662982c/attempt-nrx5dzoe/wing-linux-live.g83qwhtu/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_e662982c/attempt-nrx5dzoe/wing-linux-live.g83qwhtu/flutter/bin/flutter test --no-pub --concurrency=1 test/tooling/desktop_live_workflow_budget_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart` → pass; executed `<repo>/build/t_e662982c/attempt-nrx5dzoe/wing-linux-live.g83qwhtu/flutter/bin/flutter test --verbose --no-pub --concurrency=1 -d linux integration_test/linux_desktop_no_inference_smoke_test.dart` → pass; executed `<repo>/build/t_eb176d28/candidate :: CI=true FLUTTER_SUPPRESS_ANALYTICS=true timeout 180s npm run test -- --no-pub test/tooling/desktop_live_workflow_budget_test.dart` → pass; executed `<repo>/build/t_eb176d28/candidate :: bash -n scripts/run_linux_desktop_live_workflow.sh` → pass; executed `<repo>/build/t_eb176d28/candidate :: bash -n scripts/run_linux_desktop_live_workflow.sh [independent review]` → pass; executed `<repo>/build/t_eb176d28/candidate :: bash scripts/run_linux_desktop_live_workflow.sh < /dev/null` → pass; executed `<repo>/build/t_eb176d28/candidate :: bash scripts/run_linux_desktop_live_workflow.sh < /dev/null [independent review: expected exit 2, AUTHORIZATION_REQUIRED_NO_NETWORK, zero operations]` → pass; executed `<repo>/build/t_eb176d28/candidate :: flutter pub get --offline` → pass; executed `<repo>/build/t_eb176d28/candidate :: flutter test --no-pub --concurrency=1 test/tooling/desktop_live_workflow_budget_test.dart` → pass; executed `<repo>/build/t_eb176d28/candidate :: git diff --check` → pass; executed `<repo>/build/t_eb176d28/candidate :: git diff --check 19e59ea10f3424c3973b317cdabdaf3a77269292 894439b76c889fed45f3c4d57b73086f1e18d479 [independent review]` → pass; executed `<repo>/build/t_eb176d28/candidate :: git diff --check 19e59ea10f3424c3973b317cdabdaf3a77269292 agent/wing/t_eb176d28` → pass; executed `<repo>/build/t_eb176d28/candidate :: python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py` → pass; executed `<repo>/build/t_eb176d28/candidate :: timeout 120s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py` → pass; executed `<repo>/build/t_eb176d28/candidate :: timeout 120s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py -k fresh_process` → pass; executed `<repo>/build/t_eb176d28/candidate :: timeout 120s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py -k live_call_ceiling` → pass; executed `<repo>/build/t_eb176d28/candidate :: timeout 120s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py [independent review first attempt: 1 failure/9 errors, build directory disappeared during execution; 16.037s]` → fail; executed `<repo>/build/t_eb176d28/candidate :: timeout 120s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py [independent review: unchanged retry, 31 pass in 41.915s; initial attempt failed when build directory disappeared]` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-3e3m_gwd/wing-linux-live.cw6rqt3a/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_saved_endpoint_edit_test.dart integration_test/support/saved_endpoint_edit_native_fixture.dart` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-3e3m_gwd/wing-linux-live.cw6rqt3a/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-3e3m_gwd/wing-linux-live.cw6rqt3a/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_saved_endpoint_edit_test.dart` → fail; executed `<repo>/build/t_f18c95fe/evidence/attempt-3e3m_gwd/wing-linux-live.cw6rqt3a/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-875k_v1d/wing-linux-live.rib8vwt_/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_saved_endpoint_edit_test.dart integration_test/support/saved_endpoint_edit_native_fixture.dart` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-875k_v1d/wing-linux-live.rib8vwt_/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-875k_v1d/wing-linux-live.rib8vwt_/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_saved_endpoint_edit_test.dart` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-875k_v1d/wing-linux-live.rib8vwt_/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-8tiak_fm/wing-linux-live.bii47avw/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_saved_endpoint_edit_test.dart integration_test/support/saved_endpoint_edit_native_fixture.dart` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-8tiak_fm/wing-linux-live.bii47avw/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/build/t_f18c95fe/evidence/attempt-8tiak_fm/wing-linux-live.bii47avw/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_saved_endpoint_edit_test.dart` → fail; executed `<repo>/build/t_f18c95fe/evidence/attempt-8tiak_fm/wing-linux-live.bii47avw/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:18871/ timeout 10m npx playwright test --config=playwright.config.mjs playwright/tests/regression/saved-endpoint-edit.spec.mjs --workers=1 --retries=0 (cwd: build/t_c7e40011/source)` → pass; executed `PKG_CONFIG_PATH="$PWD/build/t_2d93a7e9/deps/root/usr/lib/x86_64-linux-gnu/pkgconfig" LIBRARY_PATH="$PWD/build/t_2d93a7e9/deps/root/usr/lib/x86_64-linux-gnu" timeout 12m bash scripts/run_linux_remote_connection_retry.sh` → pass; executed `PKG_CONFIG_PATH="$PWD/build/t_95a5ae74/deps/root/usr/lib/x86_64-linux-gnu/pkgconfig" LIBRARY_PATH="$PWD/build/t_95a5ae74/deps/root/usr/lib/x86_64-linux-gnu" timeout 20m bash scripts/run_linux_direct_first_run.sh` → pass; executed `WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 python build/t_98b85c1b/check.py browser-captures timeout 12m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=build/t_98b85c1b/browser` → fail; executed `WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 python build/t_98b85c1b/check.py browser-captures-retry timeout 12m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=build/t_98b85c1b/browser` → pass; executed `WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 python build/t_98b85c1b/check.py browser-final timeout 12m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=build/t_98b85c1b/browser` → fail; executed `WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 python build/t_98b85c1b/check.py browser-qualified timeout 12m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=build/t_98b85c1b/browser` → pass; executed `WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 python build/t_98b85c1b/check.py browser-retry timeout 12m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=build/t_98b85c1b/browser` → fail; executed `WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 python build/t_98b85c1b/check.py direct-browser-iterate timeout 6m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs --workers=1 --output=build/t_98b85c1b/browser --grep 'Local.*390px'` → fail; executed `WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 python build/t_98b85c1b/check.py direct-browser-iterate2 timeout 6m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs --workers=1 --output=build/t_98b85c1b/browser --grep 'Local.*390px'` → fail; executed `WING_APP_URL=http://127.0.0.1:18871/ timeout 10m npx playwright test --config=playwright.config.mjs playwright/tests/regression/saved-endpoint-edit.spec.mjs --workers=1 --retries=0 (cwd: build/t_c7e40011/source)` → fail; executed `WING_SMOKE_PHASE=verify <repo>/build/t_ac65a3cb/attempt-fq28lfnc/wing-linux-live.6c4q6ekd/flutter/bin/flutter test --verbose --no-pub --concurrency=1 -d linux integration_test/linux_desktop_no_inference_smoke_test.dart` → pass; executed `WING_SMOKE_PHASE=write <repo>/build/t_ac65a3cb/attempt-fq28lfnc/wing-linux-live.6c4q6ekd/flutter/bin/flutter test --verbose --no-pub --concurrency=1 -d linux integration_test/linux_desktop_no_inference_smoke_test.dart` → pass; executed `bash -n scripts/run_linux_desktop_daily_workflow_e2e.sh` → pass; executed `bash -n scripts/run_linux_desktop_daily_workflow_e2e.sh (cwd=<repo>)` → pass; executed `bash -n scripts/run_linux_desktop_live_workflow.sh (independent round-2 review, immutable 8bdae36cd40bccbf5b7fd6056d395606f01f58db)` → pass; executed `bash -n scripts/run_linux_desktop_no_inference_smoke.sh` → pass; executed `bash -n scripts/run_linux_direct_first_run.sh` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-a6jtfh8g; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-bx1pktwp; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-pxddt1hp; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-q3n9rhh1; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-qq3oqm4b; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-s6uti2h1; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-smnv5pgc; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-tzkamfe2; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-vqr1eu3b; frozen synthetic Linux GTK only]` → pass; executed `bash -n scripts/run_linux_remote_connection_retry.sh` → pass; executed `bash -n scripts/run_linux_saved_endpoint_edit.sh` → pass; executed `bash -n scripts/run_linux_saved_endpoint_feedback.sh` → pass; executed `bash -n scripts/run_linux_saved_endpoint_storage.sh` → pass; executed `bash -n scripts/run_linux_status_accessibility.sh` → pass; executed `bash -n scripts/run_linux_stop_recovery.sh` → pass; executed `bash -n scripts/run_linux_stop_recovery.sh (independent review run 1146)` → pass; executed `bash -n scripts/run_linux_transcript_recovery.sh` → pass; executed `bash scripts/run_linux_desktop_live_workflow.sh '< /dev/null'; frozen base b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + tested overlays at 6b45b38d0fa7475d3eb8779b7c47243d0b574782; expected refusal exit 2, zero network/mutation/inference` → pass; executed `bash scripts/run_linux_desktop_live_workflow.sh < /dev/null` → pass; executed `bash scripts/run_linux_desktop_live_workflow.sh < /dev/null (expected exit 2, no network/mutation/inference; isolated snapshot)` → pass; executed `bash scripts/run_linux_desktop_live_workflow.sh < /dev/null (expected exit 2; no external I/O)` → pass; executed `bash scripts/run_linux_desktop_live_workflow.sh < /dev/null (independent round-2 review, immutable 8bdae36cd40bccbf5b7fd6056d395606f01f58db; expected exit 2, zero reads/mutations/inference)` → pass; executed `cd <home>/.hermes/cache/scratch/t_3ad70dd4/review-636/repo && NODE_OPTIONS=--max-old-space-size=2048 flutter build web --release --no-pub --no-wasm-dry-run -t lib/main_e2e.dart` → pass; executed `cd <home>/.hermes/cache/scratch/t_3ad70dd4/review-636/repo && dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/features/hermes_chat/widgets/session_model_picker_sheet.dart test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart` → pass; executed `cd <home>/.hermes/cache/scratch/t_3ad70dd4/review-636/repo && flutter analyze --no-pub` → pass; executed `cd <home>/.hermes/cache/scratch/t_3ad70dd4/review-636/repo && flutter pub get --offline` → pass; executed `cd <home>/.hermes/cache/scratch/t_3ad70dd4/review-636/repo && flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart test/features/hermes_chat/widgets/session_model_picker_sheet_test.dart test/features/hermes_chat/widgets/session_model_picker_search_test.dart test/features/hermes_chat/screens/hermes_chat_model_picker_open_order_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/core/hermes/channel/hermes_api_channel_test.dart` → pass; executed `cd <home>/.hermes/cache/scratch/t_3ad70dd4/review-636/repo && node --test playwright/support/hermes_desktop_daily_fixture_test.mjs` → pass; executed `cd <repo>/build/live-workflow-review-rework/source && bash -n scripts/run_linux_desktop_live_workflow.sh` → pass; executed `cd <repo>/build/live-workflow-review-rework/source && bash scripts/run_linux_desktop_live_workflow.sh < /dev/null [expected exit 2; no network or mutation]` → pass; executed `cd <repo>/build/live-workflow-review-rework/source && python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py [t_a8a79cf5 round-1 correction: 14 synthetic boundary tests; no native/Agent qualification]` → pass; executed `cd build/t_a8c770c8/candidate && bash -n scripts/run_linux_desktop_live_workflow.sh (19e59ea10f3424c3973b317cdabdaf3a77269292)` → pass; executed `cd build/t_a8c770c8/candidate && bash scripts/run_linux_desktop_live_workflow.sh < /dev/null (19e59ea10f3424c3973b317cdabdaf3a77269292; expected exit 2, zero operations)` → pass; executed `cd build/t_a8c770c8/candidate && dpkg-query -W xvfb xauth x11-utils` → pass; executed `cd build/t_a8c770c8/candidate && git diff --check (attributed overlay against 1749a739873d01acc965f61d2f2318a6d466a8d4)` → pass; executed `cd build/t_a8c770c8/candidate && python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py (19e59ea10f3424c3973b317cdabdaf3a77269292; 29 tests)` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_desktop_daily_workflow_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_desktop_daily_workflow_test.dart (cwd=<repo>)` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_direct_first_run_test.dart integration_test/support/direct_first_run_native_fixture.dart` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_saved_endpoint_edit_test.dart integration_test/support/saved_endpoint_edit_native_fixture.dart` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_saved_endpoint_feedback_test.dart integration_test/support/saved_endpoint_feedback_native_fixture.dart lib/features/hermes_chat/screens/widgets/hermes_saved_endpoint_editor.dart test/features/hermes_chat/screens/hermes_saved_endpoint_feedback_accessibility_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_saved_endpoint_storage_test.dart integration_test/support/saved_endpoint_storage_native_fixture.dart` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_stop_recovery_test.dart integration_test/support/stop_recovery_native_fixture.dart (independent review run 1146)` → pass; executed `dart format --output=none --set-exit-if-changed lib/core/hermes/setup/secure_hermes_endpoint_store.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/features/hermes_chat/screens/widgets/hermes_chat_error.dart lib/features/hermes_chat/screens/widgets/hermes_saved_endpoint_editor.dart lib/l10n/app_localizations.dart lib/l10n/app_localizations_en.dart test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart test/features/enrollment/hermes_direct_first_run_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/hermes_chat/messaging/approvals/hermes_approval_queue.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/core/hermes/channel/hermes_approval_settlement_owner_test.dart` → pass; executed `dart format integration_test/linux_desktop_daily_workflow_test.dart` → pass; executed `dart format test/core/hermes/channel/hermes_approval_settlement_owner_test.dart` → pass; executed `env GIT_INDEX_FILE=<repo>/build/t_4a9f2ee8/static.index git diff --cached --check -- lib/shared/widgets/app_shell.dart lib/shared/widgets/sheet_presenter.dart test/shared/widgets/app_shell_status_accessibility_test.dart integration_test/linux_status_accessibility_test.dart integration_test/support/status_accessibility_native_fixture.dart scripts/run_linux_status_accessibility.sh scripts/support/status_accessibility_native.py test/tooling/status_accessibility_native_test.py docs/quality/native-status-accessibility.md` → pass; executed `flutter analyze --no-pub` → pass; executed `flutter analyze --no-pub (frozen attempt-4f2hc85p; exact SDK path in verification.json)` → pass; executed `flutter analyze --no-pub (initial isolated snapshot; build/live-workflow-evidence/attempt-1-analyze.log; two unnecessary null assertions)` → fail; executed `flutter analyze --no-pub (run593)` → pass; executed `flutter analyze --no-pub; prepared-driver attempt-2-analyze.log` → fail; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_approval_settlement_owner_test.dart test/core/hermes/channel/approvals/hermes_approval_responder_test.dart test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/client/hermes_api_approval_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 --timeout 5s test/core/hermes/channel/hermes_approval_settlement_owner_test.dart --plain-name 'dispose retires delayed approval failure=false'` → fail; executed `flutter test --no-pub --concurrency=1 -d linux integration_test/linux_saved_endpoint_feedback_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart (frozen attempt-4f2hc85p)` → pass; executed `flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_approval_settlement_owner_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_approval_settlement_owner_test.dart test/core/hermes/channel/approvals/hermes_approval_responder_test.dart test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/client/hermes_api_approval_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_review_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_review_test.dart (run593: 34 pass; deterministic only, final review pending)` → pass; executed `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_queue_test.dart test/features/hermes_chat/screens/hermes_chat_approval_review_test.dart test/core/hermes/channel/hermes_approval_settlement_owner_test.dart (run593: exit124; inherited owner harness missing active session, current 44-test pass NOT established)` → fail; executed `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_saved_endpoint_feedback_accessibility_test.dart test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart` → pass; executed `git diff --cached --check -- integration_test/linux_remote_connection_retry_test.dart integration_test/support/remote_connection_retry_native_fixture.dart scripts/run_linux_remote_connection_retry.sh scripts/support/remote_connection_retry_native.py test/tooling/remote_connection_retry_native_test.py docs/quality/remote-connection-retry-native.md docs/quality/remote-connection-retry-native-receipt.json` → pass; executed `git diff --check` → pass; executed `git diff --check -- integration_test/linux_desktop_daily_workflow_test.dart scripts/run_linux_desktop_daily_workflow_e2e.sh` → pass; executed `git diff --check -- integration_test/linux_desktop_daily_workflow_test.dart scripts/run_linux_desktop_daily_workflow_e2e.sh docs/quality/native-model-relaunch-workflow.md` → pass; executed `git diff --check -- integration_test/linux_desktop_daily_workflow_test.dart scripts/run_linux_desktop_daily_workflow_e2e.sh playwright/support/hermes_lifecycle_fixture.mjs playwright/support/hermes_desktop_daily_fixture_test.mjs docs/quality/native-resumed-send.md (cwd=<repo>)` → pass; executed `git diff --check -- integration_test/linux_transcript_recovery_test.dart integration_test/support/transcript_recovery_native_fixture.dart scripts/run_linux_transcript_recovery.sh scripts/support/transcript_recovery_native.py test/tooling/transcript_recovery_native_test.py docs/quality/native-transcript-recovery.md` → pass; executed `git diff --check -- lib/shared/widgets/app_shell.dart lib/shared/widgets/sheet_presenter.dart` → pass; executed `git diff --check -- scripts/run_linux_desktop_daily_workflow_e2e.sh integration_test/linux_desktop_daily_workflow_test.dart` → pass; executed `git diff --check 1749a739873d01acc965f61d2f2318a6d466a8d4 19e59ea10f3424c3973b317cdabdaf3a77269292; exit 0` → pass; executed `git diff --check 1749a739873d01acc965f61d2f2318a6d466a8d4 agent/wing/t_a8c770c8 (19e59ea10f3424c3973b317cdabdaf3a77269292)` → pass; executed `git diff --check 358f645c52c9cb53f8368ecb3346d577c05e9f68 agent/wing/t_e662982c` → pass; executed `git diff --check 6b45b38d0fa7475d3eb8779b7c47243d0b574782 8bdae36cd40bccbf5b7fd6056d395606f01f58db` → pass; executed `git diff --check 71d9703ab2dad5134007394bcd9bf415b433c109^ 73335a1e091562d7a19a0649baf3ee91d7ba4c89 -- integration_test/linux_stop_recovery_test.dart integration_test/support/stop_recovery_native_fixture.dart scripts/run_linux_stop_recovery.sh scripts/support/stop_recovery_native.py test/tooling/stop_recovery_native_test.py docs/quality/native-stop-recovery.md (independent review run 1146)` → pass; executed `git diff --check 8bdae36 agent/wing/t_2e1f363d [1749a739873d01acc965f61d2f2318a6d466a8d4]` → pass; executed `git diff --check 8bdae36 agent/wing/t_2e1f363d [a65a8b9133d550b542e929f2f85c2e3ecacad0a8]` → pass; executed `git diff --check HEAD agent/wing/t_9cc17611` → pass; executed `git diff --check HEAD agent/wing/t_c7e40011` → pass; executed `git diff --check [t_3ad70dd4]` → pass; executed `git diff --check a0b60c6422446d111d70f845f8883f8ce3a3399f^ a0b60c6422446d111d70f845f8883f8ce3a3399f` → pass; executed `git diff --check a0b60c6422446d111d70f845f8883f8ce3a3399f^ a0b60c6422446d111d70f845f8883f8ce3a3399f (run593)` → pass; executed `git diff --check agent/wing/t_158c055a agent/wing/t_d6467f03 (at final 7cf7f8b4d2c64744beb36488b780a78db3caebb4)` → pass; executed `git diff --check agent/wing/t_3e074d68^ agent/wing/t_3e074d68` → pass; executed `git diff --check agent/wing/t_95a5ae74^ agent/wing/t_95a5ae74` → pass; executed `git diff --check agent/wing/t_ac65a3cb^ agent/wing/t_ac65a3cb` → pass; executed `git diff --check agent/wing/t_d6467f03^ agent/wing/t_d6467f03 (at initial 7b0764d398b26275c332bd658b7491e89fce1a0e)` → fail; executed `git diff --check agent/wing/t_e168b601^ agent/wing/t_e168b601` → pass; executed `git diff --check c0a64544..agent/wing/t_d6467f03` → pass; executed `git diff 046267501ae884fde73e5a0ea1dae02353d5c8c8^ 046267501ae884fde73e5a0ea1dae02353d5c8c8 --check` → pass; executed `git diff 3467eb4^ 3467eb4 --check` → pass; executed `git diff 358f645c 8504956f --check` → pass; executed `git diff 45a80e42^ 45a80e42 --check` → pass; executed `git diff agent/wing/t_4a9f2ee8^ agent/wing/t_4a9f2ee8 --check` → pass; executed `git diff-tree --check 142ffb46307aa74de84f535b103de908f043652f^ 142ffb46307aa74de84f535b103de908f043652f` → pass; executed `git diff-tree --check agent/wing/t_2d93a7e9^ agent/wing/t_2d93a7e9` → pass; executed `git diff-tree --check dcd983d657ca8c26f99b3ad1f11915bc87266280^ dcd983d657ca8c26f99b3ad1f11915bc87266280` → pass; executed `git diff-tree --check fcff3d30f0ce97c95e16f6048d01ed139c7498c5^ fcff3d30f0ce97c95e16f6048d01ed139c7498c5` → pass; executed `git diff-tree --check refs/heads/agent/wing/t_f18c95fe^ refs/heads/agent/wing/t_f18c95fe` → pass; executed `git show --format= --check 589e0a7 (review run1118)` → pass; executed `git show --format= --check agent/wing/t_ac65a3cb` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-a6jtfh8g; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-bx1pktwp; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-pxddt1hp; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-qq3oqm4b; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-s6uti2h1; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-smnv5pgc; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-tzkamfe2; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart [t_e168b601 attempt-vqr1eu3b; frozen synthetic Linux GTK only]` → pass; executed `npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/hermes_chat/screens/hermes_chat_endpoint_load_intent_test.dart test/core/hermes/setup/hermes_endpoint_store_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart (shared workspace; targeted)` → pass; executed `npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart test/core/hermes/channel/hermes_approval_settlement_owner_test.dart` → pass; executed `npm run test -- --no-pub test/features/hermes_chat/screens/hermes_saved_endpoint_feedback_accessibility_test.dart test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart` → pass; executed `npm run test -- test/features/enrollment/hermes_direct_first_run_test.dart test/features/enrollment/hermes_enrollment_journey_test.dart test/features/enrollment/hermes_enrollment_payload_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `npm run test -- test/features/hermes_chat/screens/hermes_chat_session_picker_test.dart --reporter expanded` → pass; executed `npm run test > .task-evidence/repo-docs-picker-verification.log 2>&1` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → pass; executed `python build/native-model-relaunch-evidence/verify_freshness.py` → pass; executed `python build/native-resumed-send-evidence/verify.py` → pass; executed `python build/t_98b85c1b/check.py analyze timeout 5m flutter analyze` → pass; executed `python build/t_98b85c1b/check.py analyze-final timeout 5m flutter analyze` → pass; executed `python build/t_98b85c1b/check.py browser timeout 12m npx playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=build/t_98b85c1b/browser` → fail; executed `python build/t_98b85c1b/check.py diff-check git diff --check -- lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/l10n/app_en.arb lib/l10n/app_localizations.dart lib/l10n/app_localizations_en.dart test/features/enrollment/hermes_direct_first_run_test.dart playwright/tests/regression/direct-first-run.spec.mjs` → pass; executed `python build/t_98b85c1b/check.py direct-widgets timeout 5m flutter test --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart` → pass; executed `python build/t_98b85c1b/check.py format dart format --output=none --set-exit-if-changed lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart test/features/enrollment/hermes_direct_first_run_test.dart` → pass; executed `python build/t_98b85c1b/check.py l10n flutter gen-l10n` → pass; executed `python build/t_98b85c1b/check.py web-build-retry timeout 8m flutter build web --release -t lib/main_e2e.dart --no-wasm-dry-run` → pass; executed `python build/t_98b85c1b/check.py web-final timeout 8m flutter build web --release -t lib/main_e2e.dart --no-wasm-dry-run` → pass; executed `python build/t_98b85c1b/check.py widgets timeout 8m flutter test --concurrency=1 test/features/enrollment test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `python build/t_98b85c1b/check.py widgets-final timeout 8m flutter test --concurrency=1 test/features/enrollment test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py` → fail; executed `python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py (independent round-2 review, immutable 8bdae36cd40bccbf5b7fd6056d395606f01f58db; 14 synthetic tests only)` → pass; executed `python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py [isolated predecessor + tested overlays committed at 1749a739873d01acc965f61d2f2318a6d466a8d4; 23 passed; synthetic Linux only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p desktop_no_inference_smoke_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p direct_first_run_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-a6jtfh8g; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-bx1pktwp; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-pxddt1hp; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-q3n9rhh1; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-qq3oqm4b; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-s6uti2h1; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-smnv5pgc; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-tzkamfe2; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p integrated_daily_restart_native_test.py [t_e168b601 attempt-vqr1eu3b; frozen synthetic Linux GTK only]` → pass; executed `python3 -B -m unittest discover -s test/tooling -p remote_connection_retry_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p saved_endpoint_edit_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p saved_endpoint_feedback_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p saved_endpoint_storage_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p status_accessibility_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p stop_recovery_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p stop_recovery_native_test.py (independent review run 1146; 5 tests)` → pass; executed `python3 -B -m unittest discover -s test/tooling -p transcript_recovery_native_test.py` → pass; executed `python3 -B -m unittest test.tooling.desktop_live_workflow_test.BoundaryTests.test_no_auth_no_network_or_workspace test.tooling.desktop_live_workflow_test.BoundaryTests.test_live_call_ceiling_refusal_survives_remaining_and_exhausted_budget test.tooling.desktop_live_workflow_test.BoundaryTests.test_fresh_process_phase_and_reset_counter_cannot_upgrade_live_admission test.tooling.desktop_live_workflow_test.BoundaryTests.test_real_launcher_no_inputs` → pass; executed `python3 -B build/t_3e074d68/audit-evidence.py` → pass; executed `python3 -B build/t_ac65a3cb/attempt-fq28lfnc/verify_retained_candidate.py` → pass; executed `python3 -B build/t_e168b601/evidence/audit_final.py` → pass; executed `python3 -B build/t_e662982c/audit-evidence.py` → pass; executed `python3 -m unittest discover -s test/tooling -p desktop_daily_workspace_test.py` → pass; executed `python3 -m unittest discover -s test/tooling -p desktop_daily_workspace_test.py (cwd=<repo>)` → pass; executed `python3 -m unittest discover -s test/tooling -p desktop_live_workflow_test.py` → pass; executed `python3 -m unittest discover -s test/tooling -p desktop_live_workflow_test.py (independent round-2 review, immutable 8bdae36cd40bccbf5b7fd6056d395606f01f58db; 14 synthetic tests only)` → pass; executed `python3 build/t_ac65a3cb/attempt-fq28lfnc/verify_retained_candidate.py` → pass; executed `t_a8c770c8 independent review at 19e59ea10f3424c3973b317cdabdaf3a77269292: bash -n scripts/run_linux_desktop_live_workflow.sh; exit 0` → pass; executed `t_a8c770c8 independent review at 19e59ea10f3424c3973b317cdabdaf3a77269292: bash scripts/run_linux_desktop_live_workflow.sh < /dev/null; expected exit 2, zero reads/mutations/inference` → pass; executed `t_a8c770c8 independent review at 19e59ea10f3424c3973b317cdabdaf3a77269292: timeout 120s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py; 29 tests OK, 40.691s; Linux X protocol only` → pass; executed `timeout --kill-after=10s 180s <repo>/build/live-workflow-check-snapshot/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_desktop_live_workflow_test.dart (cwd: isolated b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + t_a8a79cf5 snapshot; build/live-workflow-evidence/checks.json)` → pass; executed `timeout --kill-after=10s 180s <repo>/build/live-workflow-check-snapshot/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_desktop_live_workflow_test.dart test/tooling/desktop_live_workflow_budget_test.dart; frozen base b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + tested overlays at 6b45b38d0fa7475d3eb8779b7c47243d0b574782` → pass; executed `timeout --kill-after=10s 180s <repo>/build/live-workflow-check-snapshot/flutter/bin/flutter analyze --no-pub (cwd: isolated b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + t_a8a79cf5 snapshot; build/live-workflow-evidence/checks.json)` → pass; executed `timeout --kill-after=10s 180s <repo>/build/live-workflow-check-snapshot/flutter/bin/flutter analyze --no-pub; frozen base b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + tested overlays at 6b45b38d0fa7475d3eb8779b7c47243d0b574782` → pass; executed `timeout --kill-after=10s 180s <repo>/build/live-workflow-check-snapshot/flutter/bin/flutter test --no-pub --concurrency=1 test/core/hermes/hermes_api_test.dart (cwd: isolated b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + t_a8a79cf5 snapshot; build/live-workflow-evidence/checks.json)` → pass; executed `timeout --kill-after=10s 180s <repo>/build/live-workflow-check-snapshot/flutter/bin/flutter test --no-pub --concurrency=1 test/core/hermes/hermes_api_test.dart; frozen base b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + tested overlays at 6b45b38d0fa7475d3eb8779b7c47243d0b574782` → pass; executed `timeout --kill-after=10s 180s <repo>/build/live-workflow-check-snapshot/flutter/bin/flutter test --no-pub --concurrency=1 test/tooling/desktop_live_workflow_budget_test.dart; frozen base b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + tested overlays at 6b45b38d0fa7475d3eb8779b7c47243d0b574782` → pass; executed `timeout --kill-after=10s 180s bash -n scripts/run_linux_desktop_live_workflow.sh (cwd: isolated b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + t_a8a79cf5 snapshot; build/live-workflow-evidence/checks.json)` → pass; executed `timeout --kill-after=10s 180s bash -n scripts/run_linux_desktop_live_workflow.sh; frozen base b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + tested overlays at 6b45b38d0fa7475d3eb8779b7c47243d0b574782` → pass; executed `timeout --kill-after=10s 180s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py (cwd: isolated b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + t_a8a79cf5 snapshot; build/live-workflow-evidence/checks.json)` → pass; executed `timeout --kill-after=10s 180s python3 -B -m unittest discover -s test/tooling -p desktop_live_workflow_test.py; frozen base b9eb5b3d9f6f3a433dd36cb6271ad8ec769b2319 + tested overlays at 6b45b38d0fa7475d3eb8779b7c47243d0b574782` → pass; executed `timeout 10m flutter build web --release -t lib/main_e2e.dart (cwd: build/t_c7e40011/source)` → pass; executed `timeout 10m npm run test -- --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart` → pass; executed `timeout 10m npm run test -- --no-pub test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart` → pass; executed `timeout 10m npm run test -- --no-pub test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart` → pass; executed `timeout 10m npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart` → pass; executed `timeout 10m npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart` → pass; executed `timeout 180s <repo>/build/native-resumed-send-checks/flutter/bin/flutter analyze --no-pub (cwd=<repo>/build/native-resumed-send-checks/app)` → pass; executed `timeout 180s npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart test/features/hermes_chat/screens/hermes_chat_model_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/core/hermes/channel/hermes_api_channel_test.dart (targeted canonical npm entrypoint; 340 tests)` → pass; executed `timeout 180s npm run test -- --no-pub test/tooling/desktop_live_workflow_budget_test.dart (targeted canonical npm entrypoint; 6 tests; unchanged source hashes match 19e59ea10f3424c3973b317cdabdaf3a77269292)` → pass; executed `timeout 20m bash scripts/run_linux_direct_first_run.sh` → fail; executed `timeout 20s flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_approval_settlement_owner_test.dart --plain-name 'dispose retires delayed approval failure=false'` → fail; executed `timeout 240s <repo>/build/native-resumed-send-checks/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_model_authority_test.dart test/features/hermes_chat/screens/hermes_chat_model_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/core/hermes/channel/hermes_api_channel_test.dart (cwd=<repo>/build/native-resumed-send-checks/app)` → pass; executed `timeout 25m bash scripts/run_linux_status_accessibility.sh` → pass; executed `timeout 25m bash scripts/run_linux_stop_recovery.sh` → pass; executed `timeout 25m bash scripts/run_linux_stop_recovery.sh (attempt-4f2hc85p)` → fail; executed `timeout 25m bash scripts/run_linux_transcript_recovery.sh` → pass; executed `timeout 2m flutter gen-l10n (cwd: build/t_c7e40011/source)` → pass; executed `timeout 30m bash scripts/run_linux_desktop_no_inference_smoke.sh` → pass; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-a6jtfh8g; frozen synthetic Linux GTK only]` → pass; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-bx1pktwp; frozen synthetic Linux GTK only]` → fail; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-pxddt1hp; frozen synthetic Linux GTK only]` → pass; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-q3n9rhh1; frozen synthetic Linux GTK only]` → fail; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-qq3oqm4b; frozen synthetic Linux GTK only]` → fail; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-s6uti2h1; frozen synthetic Linux GTK only]` → fail; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-smnv5pgc; frozen synthetic Linux GTK only]` → fail; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-tzkamfe2; frozen synthetic Linux GTK only]` → fail; executed `timeout 30m bash scripts/run_linux_integrated_daily_restart.sh [t_e168b601 attempt-vqr1eu3b; frozen synthetic Linux GTK only]` → fail; executed `timeout 30m bash scripts/run_linux_saved_endpoint_edit.sh` → pass; executed `timeout 30m bash scripts/run_linux_saved_endpoint_feedback.sh` → pass; executed `timeout 30m bash scripts/run_linux_saved_endpoint_storage.sh` → pass; executed `timeout 3m flutter analyze --no-pub` → pass; executed `timeout 3m flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `timeout 4m flutter analyze --no-pub` → pass; executed `timeout 4m flutter test --no-pub --concurrency=1 test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart` → pass; executed `timeout 4m npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `timeout 550s python3 build/run_native_model_checks.py` → pass; executed `timeout 5m flutter analyze` → pass; executed `timeout 5m flutter analyze (cwd: build/t_c7e40011/source)` → pass; executed `timeout 5m flutter analyze (review run1118; shared inputs match frozen manifest)` → pass; executed `timeout 5m flutter test --no-pub --concurrency=1 test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart test/core/hermes/client (cwd: build/t_c7e40011/source)` → pass; executed `timeout 5m flutter test --no-pub --concurrency=1 test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart test/core/hermes/client test/core/hermes/models/hermes_capabilities_test.dart (cwd: build/t_c7e40011/source)` → fail; executed `timeout 5m flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart (review run1118)` → pass; executed `timeout 5m flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/hermes_chat/screens/hermes_chat_endpoint_load_intent_test.dart test/core/hermes/setup/hermes_endpoint_store_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart (cwd: build/t_c7e40011/source)` → pass; executed `timeout 5m flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/hermes_chat/screens/hermes_chat_endpoint_load_intent_test.dart test/core/hermes/setup/hermes_endpoint_store_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart (review run1118)` → pass; executed `timeout 5m npm run test -- --no-pub --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/messaging/approvals/hermes_approval_profile_owner_test.dart` → pass; executed `timeout 5m npm run test -- --no-pub test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `timeout 5m npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/core/hermes/setup/saved_endpoint_edit_store_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `timeout 5m npm run test -- --no-pub test/shared/widgets/app_shell_status_accessibility_test.dart test/shared/widgets/app_shell_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart` → pass; executed `timeout 5m npm run test -- test/tooling/desktop_live_workflow_budget_test.dart test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart` → pass; executed `timeout 60s bash scripts/run_linux_desktop_daily_workflow_e2e.sh` → fail; executed `timeout 60s dart format --output=none --set-exit-if-changed integration_test/linux_desktop_daily_workflow_test.dart` → pass; executed `timeout 60s node --test playwright/support/hermes_desktop_daily_fixture_test.mjs` → pass; executed `timeout 60s node --test playwright/support/hermes_desktop_daily_fixture_test.mjs (cwd=<repo>)` → pass; executed `timeout 60s python3 -m unittest discover -s test/tooling -p desktop_daily_workspace_test.py` → pass; executed `timeout 700s bash scripts/run_linux_desktop_daily_workflow_e2e.sh` → pass; inspection `docs/plans/2026-10-03-desktop-daily-workflow.md#owner-update--wing-implementation-and-qa; Telegram owner decisions: disposable local QA, three short generations, Wing implementation and QA` → pass; inspection `docs/product/prd.md#leading-acceptance-outcome` → pass; inspection `docs/quality/live-desktop-daily-workflow.md (agent/wing/t_a8a79cf5 at 6b45b38d; prepared driver disabled, retained deterministic receipts only; live/native qualification NOT_CHECKED)` → pass; inspection `docs/quality/live-display-isolation.md; branch 19e59ea10f3424c3973b317cdabdaf3a77269292 matches six retained verification hashes; shared helper/test remain at orchestration predecessor; X protocol checks are not GTK/live qualification` → pass; inspection `docs/quality/live-provider-call-ceiling.md; agent/wing/t_eb176d28 at 894439b76c889fed45f3c4d57b73086f1e18d479: six receipt fingerprints match branch, 31 Python and six Dart guard passes retained; no supported physical-attempt ceiling, no GTK/live qualification` → pass; inspection `docs/quality/native-model-relaunch-workflow.md#same-card-acceptance-reconciliation: VERIFY-NATIVE-MODEL-RELAUNCH done means bounded supported-contract QA and review handoff only; original exact-pair requirement NOT_CHECKED, upstream authoritative read absent, M1 partial` → fail; inspection `docs/quality/native-no-inference-auth-recovery.md; agent/wing/t_3e074d68 at 358f645c: all 1067 archived/overlaid inputs match executed hashes; four retained GTK phase passes and zero mutation counters; shared live helper/tests differ, synthetic qualification only` → pass; inspection `docs/quality/native-no-inference-smoke.md#executed-corrected-qualification; build/t_ac65a3cb/attempt-fq28lfnc: complete pre-check archive and all 1065 manifest/executed input hashes verified; retained two GTK phase passes and zero fixture mutations; shared helper/tests differ from overlays, no live or main qualification` → pass; inspection `docs/quality/native-no-inference-smoke.md#review-correction; agent/wing/t_ac65a3cb at 05c027ee632b4597620396961e2172a300443650: prior GTK receipt superseded by incomplete source archive and excluded local tool-state capture; fresh corrected qualification not yet recorded, M1 remains partial` → fail; inspection `docs/quality/native-relaunch-workflow.md (628 native input hashes match; retained distinct GTK phases and zero replay; separate model scenario, not model persistence or live acceptance)` → pass; inspection `docs/quality/saved-endpoint-edit-native.md; build/t_f18c95fe/evidence/attempt-875k_v1d: archive digest and all 767 archived/executed/current input hashes match; retained four GTK journeys and 51 focused passes, fake endpoint store only` → pass; inspection `docs/quality/session-model-pair-read.md (nine scoped hashes match; retained 358 focused passes and two integrated exact-pair failures; bounded fallback only)` → pass; inspection `t_158c055a comment 536; docs/quality/native-model-relaunch-workflow.md: exact pair restart read unsupported; M1 partial` → fail | M1-MOBILE-AWAY-STATUS, M1-NOTIFICATION-CONTRACT, PARITY-LIVE-WORKFLOW, VERIFY-LIVE-WORKFLOW-RECOVERY |
 | SECURITY: Preserve exact authority, isolation, privacy and no replay | partial | executed `(cd <home>/.hermes/cache/scratch/t_3e01e0a9/e2e && PORT=18867 HERMES_E2E_PORT=18868 CHROME_EXECUTABLE=/usr/bin/chromium NODE_OPTIONS=--max-old-space-size=2048 npm run web:e2e)` → fail; executed `(cd wing_link && go test -p 2 -count=1 -json -overlay=../.task-evidence/security-current-boundary/negative-overlay.json ./internal/approval -run '^TestCurrentSecurityApprovalMismatchPreservesExactUnspentRequest$')` → fail; executed `(cd wing_link && go test -p 2 -count=1 -json ./...)` → pass; executed `(cd wing_link && go test -p 2 -count=1 -json ./internal/app -run '^(TestDeviceScopesAreEnforcedPerRoute|TestDeviceCanInspectAndRevokeOnlyItself|TestPendingCredentialCanVerifyReadsButCannotMutateBeforeAcknowledgment)$')` → pass; executed `(cd wing_link && go test -p 2 -count=1 -json ./internal/app -run '^(TestRoutineProfileCreateReplaysExactKeyWithoutApprovalOrMutation|TestSensitiveProfileMutationsWaitForHostApproval|TestRemoteDirectoryRoutesReturnHandlesAndNamesOnly|TestRemoteDirectoryRoutesEnforceScopeAndStrictRequests|TestRemoteDirectoryHandlesExpireBindToDeviceAndObserveRevocation)$')` → pass; executed `(cd wing_link && go test -p 2 -count=1 -json ./internal/approval -run '^(TestApprovalIsDigestBoundOneUseAndPersistent|TestApprovalBindsDeduplicationAndConsumptionToIdempotencyKey|TestApprovalExpiresAndStoredMetadataIsBoundedAndRedacted|TestCurrentSecurityApprovalMismatchPreservesExactUnspentRequest)$')` → pass; executed `(cd wing_link && go test -p 2 -count=1 -json ./internal/approval -run '^TestCurrentSecurityApprovalMismatchPreservesExactUnspentRequest$')` → pass; executed `(cd wing_link && go test -p 2 -count=1 -json ./internal/audit -run '^(TestAuditPersistsOnlyAllowlistedBoundedFieldsOwnerOnly|TestAuditRejectsSecretsPathsPairingCodesAndUnknownOperations)$')` → pass; executed `(cd wing_link && go test -p 2 -count=1 -json ./internal/operation -run '^(TestJournalReplaysSameIdempotentRequestAndRejectsChangedPayload|TestJournalRecoversInterruptedOperationsWithoutPersistingPayloads|TestDurableManagerReplaysIdempotentWorkAndCancelsByContext)$')` → pass; executed `(cd wing_link && go test -p 2 -count=1 -json ./internal/workspaces -run '^(TestBrowserContainedSymlinkRetargetFailsClosed|TestBrowserConcurrentSymlinkRetargetNeverEscapes|TestBrowserRevokedRemovedExpiredAndEvictedHandlesFailClosed|TestDirectoryGrantResolveRejectsRevokedAndSymlinkReplacedRoots)$')` → pass; executed `(cd wing_link && go test -p 2 ./...)` → pass; executed `(cd wing_link && go test -p 2 ./internal/app -run 'TestOmniRoute' -count=1)` → pass; executed `(cd wing_link && go test -p 2 ./internal/app -run TestOmniRoute -count=1)` → pass; executed `(cd wing_link && go test -p 2 ./internal/app -run ^TestOmniRoute -count=1 -v)` → pass; executed `(cd wing_link/internal/app/omniroute_assets && npm audit --audit-level=high --json) (review617: four high, zero critical)` → fail; executed `NODE_OPTIONS=--max-old-space-size=2048 CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:18977/ npx playwright test playwright/tests/regression/hermes-smoke.spec.mjs playwright/tests/regression/chat-tts.spec.mjs --workers=1 --retries=0` → pass; executed `NODE_OPTIONS=--max-old-space-size=2048 CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:18977/ npx playwright test playwright/tests/regression/hermes-smoke.spec.mjs playwright/tests/regression/chat-tts.spec.mjs --workers=1 --retries=0 --grep 'Hermes route renders connected|Agent speech stops when starting'` → pass; executed `NODE_OPTIONS=--max-old-space-size=2048 CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:18977/ npx playwright test playwright/tests/regression/hermes-smoke.spec.mjs playwright/tests/regression/chat-tts.spec.mjs --workers=1 --retries=0 --grep 'Hermes route renders connected|Agent speech stops when starting' (t_4df15a47 RED; 2 strict locator failures)` → fail; executed `cd .task-evidence/ship-request/omniroute-only/snapshot && npm audit` → pass; executed `cd .task-evidence/ship-request/omniroute-only/snapshot && npm run test` → pass; executed `cd .task-evidence/ship-request/omniroute-only/snapshot && npm run web:e2e` → pass; executed `flutter build web --release -t lib/main_e2e.dart` → pass; executed `flutter test --concurrency=1 --reporter expanded test/core/hermes/channel/hermes_api_channel_test.dart --name 'connect redacts|failed reconnect clears|stale connect results|recent turns never survive|connect never creates a session'` → pass; executed `flutter test --concurrency=1 --reporter expanded test/core/hermes/channel/hermes_api_channel_test.dart --name 'reconnect during pending submission retains late run ownership|native approval request_id correlates'` → pass; executed `flutter test --concurrency=1 --reporter expanded test/core/hermes/channel/hermes_approval_settlement_owner_test.dart` → pass; executed `git diff --check` → pass; executed `git diff --check -- docs/quality/security-current-boundary.md wing_link/internal/approval/security_current_boundary_test.go` → pass; executed `git diff --check agent/wing/t_0ad69d39^ agent/wing/t_0ad69d39` → pass; executed `git diff --check agent/wing/t_3e01e0a9^ agent/wing/t_3e01e0a9` → pass; executed `git diff --check agent/wing/t_ed5ca7b4^ agent/wing/t_ed5ca7b4` → pass; executed `git show --format= --check 6e8f5900ff5f90818a3e0282fced11357f48c2f7` → pass; executed `gofmt -w wing_link/internal/approval/security_current_boundary_test.go` → pass; executed `node --check playwright/tests/regression/chat-tts.spec.mjs` → pass; executed `node --check playwright/tests/regression/hermes-smoke.spec.mjs` → pass; executed `node --check playwright/tests/regression/hermes-smoke.spec.mjs && node --check playwright/tests/regression/chat-tts.spec.mjs && git diff --check && git diff --check HEAD agent/wing/t_4df15a47` → pass; executed `node --max-old-space-size=2048 <home>/.hermes/cache/scratch/t_ed5ca7b4/dependency-compatibility.cjs <home>/.hermes/cache/scratch/t_ed5ca7b4/nested-ci` → pass; executed `node <home>/.hermes/cache/scratch/t_3e01e0a9/dependency-compatibility.cjs <home>/.hermes/cache/scratch/t_3e01e0a9/nested-ci` → pass; executed `node <home>/.hermes/cache/scratch/t_ed5ca7b4/nested-ci/node_modules/omniroute/bin/omniroute.mjs --help` → pass; executed `node <home>/.hermes/cache/scratch/t_ed5ca7b4/nested-ci/node_modules/omniroute/bin/omniroute.mjs --version` → pass; executed `npm audit --audit-level=high` → pass; executed `npm audit --audit-level=high --json` → pass; executed `npm audit --prefix wing_link/internal/app/omniroute_assets --audit-level=high` → fail; executed `npm audit --prefix wing_link/internal/app/omniroute_assets --audit-level=high --json` → fail; executed `npm ci --prefix <home>/.hermes/cache/scratch/t_3e01e0a9/nested-ci --ignore-scripts --omit=dev --no-audit --no-fund` → pass; executed `npm ci --prefix <home>/.hermes/cache/scratch/t_3e01e0a9/root-ci --ignore-scripts --no-audit --no-fund` → pass; executed `npm ci --prefix <home>/.hermes/cache/scratch/t_ed5ca7b4/nested-ci --ignore-scripts --omit=dev --no-audit --no-fund` → pass; executed `npm ci --prefix <home>/.hermes/cache/scratch/t_ed5ca7b4/root-ci --ignore-scripts --omit=dev --no-audit --no-fund` → pass; executed `npm ls --prefix <home>/.hermes/cache/scratch/t_3e01e0a9/nested-ci --depth=0` → pass; executed `npm ls --prefix <home>/.hermes/cache/scratch/t_3e01e0a9/root-ci --depth=0` → pass; executed `npm ls --prefix <home>/.hermes/cache/scratch/t_ed5ca7b4/nested-ci --depth=0` → pass; executed `npm ls --prefix <home>/.hermes/cache/scratch/t_ed5ca7b4/nested-ci next braces smol-toml sprintf-js --all` → pass; executed `npm ls --prefix <home>/.hermes/cache/scratch/t_ed5ca7b4/root-ci --omit=dev --depth=0` → pass; executed `npm view braces versions dist-tags --json` → pass; executed `npm view http-proxy-middleware dist-tags dependencies --json` → pass; executed `npm view micromatch dist-tags dependencies --json` → pass; executed `npm view omniroute versions dist-tags dependencies --json` → pass; executed `python .task-evidence/security-current-boundary/check_receipt.py` → pass; executed `python <home>/.hermes/cache/scratch/t_ed5ca7b4/review/verify.py (review617: both isolated ci/ls pass; root audit exit0; embedded audit exit1 recorded separately)` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → pass; inspection `docs/product/prd.md#product-rules` → pass | SECURITY-RETAINED-RELEASE-AUDIT, VERIFY-OMNIROUTE-NODE22-CLOSURE |
@@ -63,15 +74,11 @@ Generated from `goals.json` by `goals.py render`. `met` requires an executed, pa
 | PARITY-COMPOSITION: Match profile footer, grouped recents and full session modal | partial | executed `<home>/.hermes/profiles/wing/cache/scratch/wing-linux-panel.ow5f0vs4/workspace/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_global_session_modal_test.dart integration_test/support/global_session_fixture.dart` → pass; executed `<home>/.hermes/profiles/wing/cache/scratch/wing-linux-panel.ow5f0vs4/workspace/flutter/bin/flutter analyze --no-pub` → pass; executed `<home>/.hermes/profiles/wing/cache/scratch/wing-linux-panel.ow5f0vs4/workspace/flutter/bin/flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_global_session_modal_adaptive_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart test/shared/widgets/app_shell_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart --reporter expanded` → pass; executed `<home>/.hermes/profiles/wing/cache/scratch/wing-linux-recents.8vw8t9qs/workspace/flutter/bin/flutter analyze --no-pub` → pass; executed `<home>/.hermes/profiles/wing/cache/scratch/wing-linux-recents.8vw8t9qs/workspace/flutter/bin/flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_grouped_recents_recovery_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart --reporter expanded` → pass; executed `<repo> :: dart format --output=none --set-exit-if-changed lib/features/hermes_chat/widgets/shell_session_access.dart test/shared/widgets/app_shell_grouped_recents_test.dart` → pass; executed `<repo> :: flutter analyze` → pass; executed `<repo> :: flutter pub get` → pass; executed `<repo> :: flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_profile_footer_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart` → pass; executed `<repo> :: git diff --check` → pass; executed `<repo>/build/t_8181e7ae/review-802 :: WING_APP_URL=http://127.0.0.1:8891/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --workers=1 --output=test-results/grouped-recents-review` → pass; executed `<repo>/build/t_8181e7ae/review-802 :: curl --fail --silent --output /dev/null http://127.0.0.1:8891/` → pass; executed `<repo>/build/t_8181e7ae/review-802 :: flutter build web --release -t lib/main_e2e.dart` → pass; executed `<repo>/build/t_8181e7ae/review-802 :: flutter gen-l10n` → pass; executed `<repo>/build/t_8181e7ae/review-802 :: flutter pub get` → pass; executed `PORT=18867 HERMES_E2E_PORT=18868 WING_APP_URL=http://127.0.0.1:18867/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/desktop-navigation-groups.spec.mjs playwright/tests/regression/global-session-access.spec.mjs --workers=1 --retries=0 --output=<home>/.hermes/cache/scratch/t_65ce1e31/browser-output` → fail; executed `PORT=18967 HERMES_E2E_PORT=18968 WING_APP_URL=http://127.0.0.1:18967/ CHROME_EXECUTABLE=/usr/bin/chromium NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/desktop-navigation-groups.spec.mjs playwright/tests/regression/global-session-access.spec.mjs --workers=1 --retries=0 --output=<home>/.hermes/cache/scratch/t_65ce1e31/browser-output` → pass; executed `TMPDIR=<home>/.hermes/profiles/wing/cache/scratch PKG_CONFIG_PATH="$PWD/build/t_3a6bafe4/prereqs/root/usr/lib/x86_64-linux-gnu/pkgconfig" LIBRARY_PATH="$PWD/build/t_3a6bafe4/prereqs/root/usr/lib/x86_64-linux-gnu" timeout --signal=TERM --kill-after=20s 1000s python3 scripts/support/grouped_recents_native.py > build/t_3a6bafe4/evidence/launcher.log 2>&1` → pass; executed `TMPDIR=<home>/.hermes/profiles/wing/cache/scratch PKG_CONFIG_PATH="$PWD/build/t_5ca5f71b/prereqs/root/usr/lib/x86_64-linux-gnu/pkgconfig" LIBRARY_PATH="$PWD/build/t_5ca5f71b/prereqs/root/usr/lib/x86_64-linux-gnu" timeout --signal=TERM --kill-after=20s 1500s python scripts/support/global_session_modal_native.py` → pass; executed `WING_APP_URL=http://127.0.0.1:8977/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-modal.spec.mjs --workers=1 --output=build/global-session-modal-browser` → pass; executed `WING_APP_URL=http://127.0.0.1:8987/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-modal.spec.mjs --workers=1 --output=build/global-session-modal-rework-browser` → pass; executed `WING_APP_URL=http://127.0.0.1:8997/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-modal.spec.mjs --workers=1 --output=build/global-session-modal-review-round2` → pass; executed `cd <repo> && dart format --output=none --set-exit-if-changed lib/features/hermes_chat/widgets/shell_session_access.dart test/shared/widgets/app_shell_grouped_recents_test.dart` → pass; executed `cd <repo> && flutter gen-l10n` → pass; executed `cd <repo> && flutter pub get` → pass; executed `cd <repo> && git diff --check` → pass; executed `cd <repo>/build/t_1e01f86b/qa && WING_APP_URL=http://127.0.0.1:8893/ CHROME_EXECUTABLE=/usr/bin/chromium NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/grouped-recents-recovery.spec.mjs --workers=1 --output=test-results/grouped-recents-recovery` → pass; executed `cd <repo>/build/t_1e01f86b/qa && curl --fail --silent --output /dev/null http://127.0.0.1:8893/` → pass; executed `cd <repo>/build/t_1e01f86b/qa && dart format --output=none --set-exit-if-changed test/shared/widgets/app_shell_grouped_recents_recovery_test.dart` → pass; executed `cd <repo>/build/t_1e01f86b/qa && flutter analyze` → pass; executed `cd <repo>/build/t_1e01f86b/qa && flutter build web --release -t lib/main_e2e.dart` → pass; executed `cd <repo>/build/t_1e01f86b/qa && flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_grouped_recents_recovery_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart --reporter expanded` → pass; executed `cd <repo>/build/t_8181e7ae/qa && WING_APP_URL=http://127.0.0.1:8879/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --workers=1 --output=test-results/grouped-recents` → pass; executed `cd <repo>/build/t_8181e7ae/qa && curl --fail --silent --output /dev/null http://127.0.0.1:8879/` → pass; executed `cd <repo>/build/t_8181e7ae/qa && flutter analyze` → pass; executed `cd <repo>/build/t_8181e7ae/qa && flutter build web --release -t lib/main_e2e.dart` → pass; executed `cd <repo>/build/t_8181e7ae/qa && flutter pub get` → pass; executed `cd <repo>/build/t_8181e7ae/qa && flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_profile_footer_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_global_session_modal_test.dart integration_test/support/global_session_fixture.dart` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/linux_grouped_recents_test.dart integration_test/support/grouped_recents_fixture.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart test/shared/widgets/app_shell_global_session_modal_adaptive_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/hermes_chat/widgets/global_session_scope.dart lib/features/hermes_chat/widgets/shell_session_access.dart lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/shared/widgets/app_shell.dart test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/shared/widgets/app_shell.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_profile_footer_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/shared/widgets/app_shell_grouped_recents_recovery_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/shared/widgets/inventory_keyboard_navigation_test.dart` → pass; executed `flutter analyze` → pass; executed `flutter build web --release -t lib/main_e2e.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'active header shows agent and gateway and opens sessions|sessions panel exposes Agent-backed load more|desktop shortcuts open sessions and create an authorized session|macOS command shortcut opens sessions'` → pass; executed `flutter test --concurrency=1 test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_reference_fidelity_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_global_session_access_test.dart --name 'production shell opens exact nonactive and active loaded rows once|late open rejected after (profile|disconnect|removed|collapse|channel) including change-back|rendered callback cannot revive after same-frame row removal|named selected semantics, keyboard, collapse and compact resize'` → pass; executed `flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_grouped_recents_recovery_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart --reporter expanded` → pass; executed `flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_reference_fidelity_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_navigation_groups_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_profile_footer_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_reference_fidelity_test.dart test/shared/widgets/app_shell_navigation_groups_test.dart test/shared/widgets/app_shell_desktop_parity_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/shared/widgets/inventory_keyboard_navigation_test.dart` → pass; executed `flutter test test/shared/widgets/app_shell_global_session_modal_adaptive_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_test.dart --concurrency=1` → pass; executed `flutter test test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_profile_footer_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_test.dart --concurrency=1` → pass; executed `git diff --check` → pass; executed `git diff --check -- lib/features/hermes_chat/widgets/shell_session_access.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart playwright/tests/regression/global-session-modal.spec.mjs docs/quality/global-session-modal.md` → pass; executed `git diff --check -- lib/shared/widgets/app_shell.dart lib/features/hermes_chat/widgets/shell_session_access.dart lib/features/hermes_chat/widgets/global_session_scope.dart lib/features/hermes_chat/screens/widgets/hermes_chat_sessions.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart playwright/tests/regression/global-session-modal.spec.mjs docs/quality/global-session-modal.md` → pass; executed `git diff --check agent/wing/t_3a6bafe4^ agent/wing/t_3a6bafe4` → pass; executed `git show --check agent/wing/t_6a1e03fc` → pass; executed `node .task-evidence/t_82b3229c/verify-footer.mjs` → pass; executed `python -m py_compile scripts/support/global_session_modal_native.py` → pass; executed `python -m py_compile scripts/support/grouped_recents_native.py` → pass; executed `python .task-evidence/t_6a1e03fc/check_receipt.py` → pass; executed `python .task-evidence/t_6fe8c9a6/check_receipt.py` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate .` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → pass; executed `python ~/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → pass; executed `timeout 10m flutter analyze` → pass; executed `timeout 10m flutter test test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_test.dart --concurrency=1` → pass; executed `timeout 10m flutter test test/shared/widgets/app_shell_global_session_modal_adaptive_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_test.dart --concurrency=1` → pass; executed `timeout 10m npm run test -- test/shared/widgets/app_shell_global_session_modal_adaptive_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart test/shared/widgets/app_shell_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart` → pass; executed `timeout 10m npm run test -- test/shared/widgets/app_shell_global_session_modal_adaptive_test.dart test/shared/widgets/app_shell_global_session_modal_test.dart test/shared/widgets/app_shell_global_session_modal_actions_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart test/shared/widgets/app_shell_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_test.dart` → pass; executed `timeout 120s flutter analyze --no-pub` → pass; executed `timeout 120s flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_grouped_recents_recovery_test.dart --reporter expanded > build/t_3a6bafe4/evidence/cheap-focused.log 2>&1` → pass; executed `timeout 15m flutter build web --release -t lib/main_e2e.dart` → pass; executed `timeout 180s flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_grouped_recents_recovery_test.dart test/shared/widgets/app_shell_grouped_recents_test.dart test/shared/widgets/app_shell_global_session_access_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart --reporter expanded` → pass; executed `timeout 5m flutter analyze --no-pub` → pass; executed `timeout 5m flutter test test/shared/widgets/app_shell_global_session_modal_adaptive_test.dart --concurrency=1` → pass; executed `timeout 6m env WING_APP_URL=http://127.0.0.1:8997/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-modal-adaptive.spec.mjs --workers=1 --output=build/global-session-modal-adaptive-browser` → fail; executed `timeout 6m env WING_APP_URL=http://127.0.0.1:8997/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-modal-adaptive.spec.mjs playwright/tests/regression/global-session-modal.spec.mjs --workers=1 --output=build/global-session-modal-adaptive-browser` → pass; executed `xvfb-run -a -s '-screen 0 1600x1200x24 -nolisten tcp' <home>/.cache/tmp/wing-linux-panel.h0goidj1/workspace/flutter/bin/flutter test --verbose --no-pub -d linux integration_test/linux_global_session_modal_test.dart --reporter expanded` → fail; executed `xvfb-run -a -s '-screen 0 1600x1200x24 -nolisten tcp' <home>/.hermes/profiles/wing/cache/scratch/wing-linux-panel.3dhm76wj/workspace/flutter/bin/flutter test --verbose --no-pub -d linux integration_test/linux_global_session_modal_test.dart --reporter expanded` → fail; executed `xvfb-run -a -s '-screen 0 1600x1200x24 -nolisten tcp' <home>/.hermes/profiles/wing/cache/scratch/wing-linux-panel.80wmne2u/workspace/flutter/bin/flutter test --verbose --no-pub -d linux integration_test/linux_global_session_modal_test.dart --reporter expanded` → fail; executed `xvfb-run -a -s '-screen 0 1600x1200x24 -nolisten tcp' <home>/.hermes/profiles/wing/cache/scratch/wing-linux-panel.ow5f0vs4/workspace/flutter/bin/flutter test --verbose --no-pub -d linux integration_test/linux_global_session_modal_test.dart --reporter expanded` → pass; executed `xvfb-run -a -s '-screen 0 1600x1200x24 -nolisten tcp' <home>/.hermes/profiles/wing/cache/scratch/wing-linux-recents.8vw8t9qs/workspace/flutter/bin/flutter test --verbose --no-pub -d linux integration_test/linux_grouped_recents_test.dart --reporter expanded` → pass; inspection `docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary` → pass; inspection `docs/quality/global-session-modal.md (eight scoped hashes and branch files match; retained 120 widget passes and compiled keyboard/focus receipt inspected; shared-tree build, not standalone branch/native/live qualification)` → pass; inspection `docs/runbooks/desktop-shell-reference-fidelity.md#committed-tree-validation` → pass | VERIFY-PROFILE-FOOTER-NATIVE, VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY, WING-TASK-408 |
 | CONNECTION-PATHS: Provide Local/SSH/Remote primary entry and owner-safe existing connection workflows | partial | executed `<repo>/.task-evidence/t_4c7cb087/attempt-k8l4p_go/wing-linux-live.r2io7f8t/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_local_setup_enrollment_test.dart test/features/enrollment/hermes_local_setup_enrollment_test.dart integration_test/support/local_setup_enrollment_native_fixture.dart` → pass; executed `<repo>/.task-evidence/t_4c7cb087/attempt-k8l4p_go/wing-linux-live.r2io7f8t/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/.task-evidence/t_4c7cb087/attempt-k8l4p_go/wing-linux-live.r2io7f8t/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_local_setup_enrollment_test.dart` → pass; executed `<repo>/.task-evidence/t_4c7cb087/attempt-k8l4p_go/wing-linux-live.r2io7f8t/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_local_setup_enrollment_test.dart test/features/local_setup` → pass; executed `<repo>/.task-evidence/t_4c7cb087/attempt-zm0qcpdw/wing-linux-live.966xdtxx/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_local_setup_enrollment_test.dart test/features/enrollment/hermes_local_setup_enrollment_test.dart integration_test/support/local_setup_enrollment_native_fixture.dart` → pass; executed `<repo>/.task-evidence/t_4c7cb087/attempt-zm0qcpdw/wing-linux-live.966xdtxx/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/.task-evidence/t_4c7cb087/attempt-zm0qcpdw/wing-linux-live.966xdtxx/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_local_setup_enrollment_test.dart` → pass; executed `<repo>/.task-evidence/t_4c7cb087/attempt-zm0qcpdw/wing-linux-live.966xdtxx/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_local_setup_enrollment_test.dart test/features/local_setup` → pass; executed `<repo>/.task-evidence/t_62edb5a9/native/attempt-ccvwjdmc/wing-linux-live.ass5z7md/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_remote_auth_explanation_test.dart integration_test/support/remote_auth_explanation_native_fixture.dart test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart` → pass; executed `<repo>/.task-evidence/t_62edb5a9/native/attempt-ccvwjdmc/wing-linux-live.ass5z7md/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/.task-evidence/t_62edb5a9/native/attempt-ccvwjdmc/wing-linux-live.ass5z7md/flutter/bin/flutter test --no-pub --concurrency=1 -d linux -v integration_test/linux_remote_auth_explanation_test.dart` → pass; executed `<repo>/.task-evidence/t_62edb5a9/native/attempt-ccvwjdmc/wing-linux-live.ass5z7md/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `<repo>/.task-evidence/t_636ced72/attempt-zu710z7d/wing-linux-live.2xvv7x4t/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_desktop_welcome_recovery_test.dart test/features/enrollment/hermes_welcome_recovery_test.dart lib/features/hermes_chat/screens/hermes_add_screen.dart` → pass; executed `<repo>/.task-evidence/t_636ced72/attempt-zu710z7d/wing-linux-live.2xvv7x4t/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/.task-evidence/t_636ced72/attempt-zu710z7d/wing-linux-live.2xvv7x4t/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_desktop_welcome_recovery_test.dart` → pass; executed `<repo>/.task-evidence/t_636ced72/attempt-zu710z7d/wing-linux-live.2xvv7x4t/flutter/bin/flutter test --no-pub --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart test/features/enrollment/hermes_welcome_recovery_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/router/connection_entry_gate_test.dart test/router/app_router_transitions_test.dart` → pass; executed `<repo>/.task-evidence/t_e40e9669/attempt-h_ds5dpw/wing-linux-live.4gdp0j2v/flutter/bin/dart format --output=none --set-exit-if-changed integration_test/linux_two_host_recovery_test.dart integration_test/support/two_host_recovery_native_fixture.dart test/features/hermes_chat/screens/hermes_chat_two_host_recovery_test.dart lib/features/hermes_chat/screens/widgets/hermes_chat_error.dart` → pass; executed `<repo>/.task-evidence/t_e40e9669/attempt-h_ds5dpw/wing-linux-live.4gdp0j2v/flutter/bin/flutter analyze --no-pub` → pass; executed `<repo>/.task-evidence/t_e40e9669/attempt-h_ds5dpw/wing-linux-live.4gdp0j2v/flutter/bin/flutter build web --release --no-pub --no-wasm-dry-run -t lib/main_e2e.dart` → pass; executed `<repo>/.task-evidence/t_e40e9669/attempt-h_ds5dpw/wing-linux-live.4gdp0j2v/flutter/bin/flutter test --no-pub --concurrency=1 -d linux integration_test/linux_two_host_recovery_test.dart` → pass; executed `<repo>/.task-evidence/t_e40e9669/attempt-h_ds5dpw/wing-linux-live.4gdp0j2v/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_two_host_recovery_test.dart` → pass; executed `<repo>/.task-evidence/t_e40e9669/attempt-h_ds5dpw/wing-linux-live.4gdp0j2v/flutter/bin/flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_two_host_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:19077/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=.dart_tool/connection-entry-labels/browser-accepted` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:19087/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=.dart_tool/connection-entry-labels/review-browser` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:19877/ timeout 8m npx playwright test --config=playwright.config.mjs playwright/tests/regression/remote-connection-retry.spec.mjs --workers=1 --output=build/t_96242625-browser` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:19877/ timeout 8m npx playwright test --config=playwright.config.mjs playwright/tests/regression/remote-connection-retry.spec.mjs --workers=1 --output=build/t_96242625-rework-browser` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:19877/ timeout 8m npx playwright test --config=playwright.config.mjs playwright/tests/regression/remote-connection-retry.spec.mjs --workers=1 --output=build/t_96242625-rework-browser (initial exact-text locator attempt)` → fail; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:19887/ timeout 8m npx playwright test --config=playwright.config.mjs playwright/tests/regression/remote-connection-retry.spec.mjs --workers=1 --output=build/t_96242625-review-round2` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:8897/ NODE_OPTIONS=--max-old-space-size=2048 timeout 8m npx playwright test --config=playwright.config.mjs playwright/tests/regression/saved-connection-workflows.spec.mjs --workers=1 --output=.dart_tool/receipts/t_90ae659f/browser` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:8977/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=.dart_tool/connection-primary-entry/browser` → pass; executed `CHROME_EXECUTABLE=/usr/bin/chromium WING_APP_URL=http://127.0.0.1:8997/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=.dart_tool/connection-primary-entry/review-browser` → pass; executed `CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 10m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1` → pass; executed `CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 5m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1 --grep "390px text 1"` → pass; executed `NODE_OPTIONS=--max-old-space-size=2048 timeout 10m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1` → fail; executed `PREFIX="$PWD/.task-evidence/t_636ced72/deps/root/usr" PKG_CONFIG_PATH="$PWD/.task-evidence/t_636ced72/deps/root/usr/lib/x86_64-linux-gnu/pkgconfig" CMAKE_PREFIX_PATH="$PWD/.task-evidence/t_636ced72/deps/root/usr" LIBRARY_PATH="$PWD/.task-evidence/t_636ced72/deps/root/usr/lib/x86_64-linux-gnu" timeout 15m bash scripts/run_linux_desktop_welcome_recovery.sh` → pass; executed `PREFIX=<repo>/.task-evidence/t_636ced72/deps/root/usr PKG_CONFIG_PATH=<repo>/.task-evidence/t_636ced72/deps/root/usr/lib/x86_64-linux-gnu/pkgconfig CMAKE_PREFIX_PATH=<repo>/.task-evidence/t_636ced72/deps/root/usr LIBRARY_PATH=<repo>/.task-evidence/t_636ced72/deps/root/usr/lib/x86_64-linux-gnu timeout 15m bash scripts/run_linux_desktop_welcome_recovery.sh` → pass; executed `Review frozen app .task-evidence/t_62edb5a9/review/app: timeout 120s flutter analyze --no-pub` → pass; executed `Review frozen app .task-evidence/t_62edb5a9/review/app: timeout 180s flutter test --no-pub --concurrency=1 --reporter expanded test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart (38 pass)` → pass; executed `Review frozen app: dart format --output=none --set-exit-if-changed integration_test/linux_remote_auth_explanation_test.dart integration_test/support/remote_auth_explanation_native_fixture.dart test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart` → pass; executed `Review t_9f4e6557 frozen candidate 54cdb34fd7058d4559400d11327037ae24adcf34e077420800b4b8f319feb6d9: timeout 5m flutter test --concurrency=1 test/router test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/shared/widgets/app_shell_test.dart -r expanded` → pass; executed `Review t_9f4e6557 frozen candidate: timeout 10m flutter build web --release -t lib/main_e2e.dart` → pass; executed `Review t_9f4e6557 frozen candidate: timeout 3m flutter analyze` → pass; executed `Review t_9f4e6557: dart format --output=none --set-exit-if-changed lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/features/enrollment/widgets/hermes_welcome.dart lib/features/hermes_chat/screens/hermes_add_screen.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/router/providers/app_router.dart lib/router/widgets/connection_entry_gate.dart test/router/app_router_transitions_test.dart test/router/connection_entry_gate_test.dart test/features/enrollment/hermes_direct_first_run_test.dart` → pass; executed `WING_APP_URL=http://127.0.0.1:18767/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 10m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1` → pass; executed `WING_APP_URL=http://127.0.0.1:8977/ NODE_OPTIONS=--max-old-space-size=2048 npx playwright test --config=playwright.config.mjs playwright/tests/regression/connection-primary-entry.spec.mjs --workers=1 --output=.dart_tool/connection-primary-entry/browser` → fail; executed `bash -n scripts/run_linux_desktop_welcome_recovery.sh` → pass; executed `bash -n scripts/run_linux_local_setup_enrollment.sh` → pass; executed `bash -n scripts/run_linux_remote_auth_explanation.sh` → pass; executed `bash -n scripts/run_linux_two_host_recovery.sh` → pass; executed `cd .dart_tool/local-setup-recovery && timeout 5m flutter analyze` → pass; executed `cd .dart_tool/local-setup-recovery && timeout 5m flutter test --concurrency=1 test/features/local_setup` → pass; executed `cd .dart_tool/local-setup-recovery && timeout 8m flutter build web --release -t lib/main_local_setup_recovery_e2e.dart` → pass; executed `cd <repo>/.dart_tool/connection-production-matrix/candidate && timeout 2m dart format --output=none --set-exit-if-changed lib/main_connection_production_matrix_e2e.dart test/integration/connection_production_matrix_fixture_test.dart lib/features/local_setup/providers/local_hermes_setup_provider.dart lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/router/providers/app_router.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart` → pass; executed `cd <repo>/.dart_tool/connection-production-matrix/candidate && timeout 3m flutter analyze --no-pub` → pass; executed `cd <repo>/.dart_tool/connection-production-matrix/candidate && timeout 4m flutter test --no-pub --concurrency=1 test/integration/connection_production_matrix_fixture_test.dart test/features/enrollment/hermes_local_setup_enrollment_test.dart test/features/local_setup/local_hermes_setup_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/hermes_chat/screens/hermes_chat_saved_endpoint_edit_test.dart test/router/app_router_transitions_test.dart test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart` → pass; executed `cd <repo>/.dart_tool/connection-production-matrix/candidate && timeout 4m npm run test -- --no-pub test/integration/connection_production_matrix_fixture_test.dart test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart` → pass; executed `cd <repo>/.dart_tool/connection-production-matrix/candidate && timeout 5m npx playwright test --config playwright/connection_production_matrix.config.mjs --workers=1 --retries=0` → pass; executed `cd <repo>/.dart_tool/connection-production-matrix/candidate && timeout 8m flutter build web --release --no-pub -t lib/main_connection_production_matrix_e2e.dart` → pass; executed `cd <repo>/.task-evidence/t_636ced72/browser-app &&  timeout 10m <repo>/.task-evidence/t_636ced72/browser-sdk/bin/flutter build web --release --no-wasm-dry-run --no-pub -t lib/main_e2e.dart` → pass; executed `cd <repo>/.task-evidence/t_636ced72/browser-app && WING_APP_URL=http://127.0.0.1:19767/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 10m ./node_modules/.bin/playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1` → pass; executed `curl --fail --silent --output /dev/null http://127.0.0.1:19077/` → pass; executed `curl --fail --silent --output /dev/null http://127.0.0.1:19087/` → pass; executed `curl --fail --silent --output /dev/null http://127.0.0.1:8877/` → fail; executed `curl --fail --silent --output /dev/null http://127.0.0.1:8997/` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/features/enrollment/widgets/hermes_welcome.dart lib/features/hermes_chat/screens/hermes_add_screen.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/router/providers/app_router.dart lib/router/widgets/connection_entry_gate.dart test/router/app_router_transitions_test.dart test/router/connection_entry_gate_test.dart test/features/enrollment/hermes_direct_first_run_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/main_e2e.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/widgets/hermes_chat_error.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/l10n/app_localizations.dart lib/l10n/app_localizations_en.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/state/hermes_chat_layout.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed lib/features/local_setup/providers/local_hermes_setup_provider.dart lib/main_local_setup_recovery_e2e.dart test/features/local_setup/local_hermes_setup_recovery_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `dart format lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/features/enrollment/widgets/hermes_welcome.dart lib/features/hermes_chat/screens/hermes_add_screen.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/router/providers/app_router.dart lib/router/widgets/connection_entry_gate.dart` → pass; executed `dart format lib/features/enrollment/screens/hermes_enrollment_screen.dart lib/features/enrollment/widgets/hermes_welcome.dart lib/features/hermes_chat/screens/hermes_add_screen.dart lib/features/hermes_chat/screens/hermes_chat_screen.dart lib/features/hermes_chat/screens/state/hermes_chat_connection.dart lib/features/hermes_chat/screens/state/hermes_chat_layout.dart lib/router/providers/app_router.dart lib/router/widgets/connection_entry_gate.dart test/router/app_router_transitions_test.dart test/router/connection_entry_gate_test.dart test/features/enrollment/hermes_direct_first_run_test.dart` → pass; executed `flutter analyze` → pass; executed `flutter build web --release -t lib/main_e2e.dart` → pass; executed `flutter gen-l10n` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart` → fail; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `git -C <repo> diff main...agent/wing/t_9f4e6557 --check` → pass; executed `git diff --check` → pass; executed `git diff --check -- lib/features/hermes_chat/screens/state/hermes_chat_layout.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `git diff --check HEAD refs/heads/agent/wing/t_22ea1211` → pass; executed `git diff --check agent/wing/t_b47919e4^ agent/wing/t_b47919e4` → pass; executed `git diff --check main agent/wing/t_9f4e6557` → pass; executed `git diff 0795af6b^ 0795af6b --check` → pass; executed `git diff main...agent/wing/t_636ced72 --check` → pass; executed `git diff-tree --check f4accbd^ f4accbd && git diff --check` → pass; executed `git show --format= --check 60f239b1` → pass; executed `node emblem.mjs` → pass; executed `node node_modules/@playwright/test/cli.js test --config=playwright.config.mjs playwright/tests/regression/remote-connection-retry.spec.mjs playwright/tests/regression/saved-connection-workflows.spec.mjs --workers=1 --retries=0 --output=<repo>/.task-evidence/t_e40e9669/attempt-h_ds5dpw/browser` → pass; executed `npm ci --ignore-scripts --no-audit --no-fund` → pass; executed `npm run test -- --no-pub test/features/hermes_chat/screens/hermes_chat_two_host_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart` → pass; executed `npm run test -- test/features/enrollment/hermes_local_setup_enrollment_test.dart test/features/local_setup` → pass; executed `npm run test; receipt: .task-evidence/connection-entry-labels/verification-npm-test-result.json` → pass; executed `python .task-evidence/local-key-help-integration/verify.py; frozen-source analyzer clean and focused union 132 pass; native storage/auth NOT_CHECKED` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate .` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → pass; executed `python ~/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → pass; executed `python3 -B -m unittest discover -s test/tooling -p desktop_welcome_recovery_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p local_setup_enrollment_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p remote_auth_explanation_native_test.py` → pass; executed `python3 -B -m unittest discover -s test/tooling -p two_host_recovery_native_test.py` → pass; executed `python3 -B .task-evidence/t_e40e9669/review_verify.py` → pass; executed `timeout 10m env CHROME_EXECUTABLE=/usr/bin/chromium NODE_OPTIONS=--max-old-space-size=2048 npx playwright test playwright/tests/regression/local-setup-recovery.spec.mjs --config playwright/local_setup_recovery.config.mjs --workers=1` → pass; executed `timeout 10m env CHROME_EXECUTABLE=/usr/bin/chromium NODE_OPTIONS=--max-old-space-size=2048 npx playwright test playwright/tests/regression/local-setup-recovery.spec.mjs --config playwright/local_setup_recovery.config.mjs --workers=1 --output .dart_tool/local-setup-recovery-review-evidence --reporter=list` → pass; executed `timeout 10m flutter analyze` → pass; executed `timeout 10m flutter build web --release -t lib/main_e2e.dart` → pass; executed `timeout 10m flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_endpoint_load_intent_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/core/hermes/setup/hermes_endpoint_store_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart` → pass; executed `timeout 120s flutter gen-l10n` → pass; executed `timeout 120s flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart` → fail; executed `timeout 15m bash scripts/run_linux_local_setup_enrollment.sh` → pass; executed `timeout 15m bash scripts/run_linux_two_host_recovery.sh` → pass; executed `timeout 15m flutter build web --release -t lib/main_e2e.dart` → pass; executed `timeout 15m npm run test -- test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_endpoint_load_intent_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/core/hermes/setup/hermes_endpoint_store_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart` → pass; executed `timeout 180s flutter analyze` → pass; executed `timeout 25m bash scripts/run_linux_remote_auth_explanation.sh` → pass; executed `timeout 3m flutter analyze` → pass; executed `timeout 4m flutter analyze` → pass; executed `timeout 4m flutter test --concurrency=1 test/core/hermes/setup/hermes_endpoint_store_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/features/hermes_chat/controllers/hermes_connection_form_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `timeout 4m flutter test --concurrency=1 test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart` → pass; executed `timeout 4m flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart` → pass; executed `timeout 4m flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart --plain-name 'Remote save failure retains connected draft and explicit retry saves once' (review regression before fix)` → fail; executed `timeout 5m flutter test --concurrency=1 test/features/enrollment/hermes_direct_first_run_test.dart -r expanded` → pass; executed `timeout 5m flutter test --concurrency=1 test/router test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/shared/widgets/app_shell_test.dart -r expanded` → pass; executed `timeout 5m npm run test -- test/features/hermes_chat/screens/hermes_remote_auth_explanation_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart` → pass; executed `timeout 5m npm run test -- test/router test/features/enrollment/hermes_direct_first_run_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/shared/widgets/app_shell_test.dart -r expanded` → pass; executed `timeout 60s python3 -B -m unittest discover -s test/tooling -p remote_auth_explanation_native_test.py` → pass; executed `timeout 8m flutter build web --release -t lib/main_e2e.dart` → pass; inspection `README.md#connect-your-assistant [review-driven API prerequisite and honest preview; official API guide/source corroboration; independent documentary approval; stranger/live workflow still unverified]` → pass; inspection `README.md#quickstart [value-first audit and editorial review; hosted and daa5b6bf cached-toolchain Chromium preview; no fresh-machine or authenticated generation qualification; stale Termux docs test retained in TODO]` → pass; inspection `ROADMAP.md#flutter-port-execution-roadmap [official Desktop pin158fd638; outcome phases and existing task mapping; independently reviewed plan; no runtime/parity certification]` → pass; inspection `TODO.md [closeout plan for original t_587682e1; local bce4ec5f verified, review309 active; not completion]` → pass; inspection `docs/adr/product.md#complete-removal-including-legacy [owner-directed full retirement plan; inventory 159; independent planning review approved; no runtime qualification]` → pass; inspection `docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences` → pass; inspection `docs/product/desktop-connection-paths.md#current-wing-support-and-gaps` → pass; inspection `docs/product/prd.md#connection-path-requirements (2026-10-07 owner correction: direct Agent entry without mandatory Wing Link; implementation remains open)` → pass; inspection `docs/product/prd.md#port-wide-fidelity-acceptance; Desktop Welcome at 2ed89070bc6c9e8231a37bb55df8a7722a3776b8; owner APK welcome mismatch` → pass; inspection `docs/quality/desktop-welcome.md; retained final logs confirm 41 widgets and four Chromium journeys; 565/569 candidate inputs match, four later app/shell/test differences; native/Android and main delivery unverified` → pass | CONNECTION-CRON-ADMISSION, CONNECTION-CRON-CANARY, CONNECTION-LINK-REMOVAL, CONNECTION-LINK-RETIREMENT, CONNECTION-OFFICIAL-DESKTOP-PORT, CONNECTION-OWNER-RECONNECT, CONNECTION-SAVED-WORKFLOWS, CONNECTION-SETUP-AUTH-MATRIX, WING-TASK-405, WING-TASK-406, WING-TASK-407 |
 | PARITY-TABS: Provide owner-safe multi-conversation tabs and close/Stop behavior | unmet | inspection `docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences` → pass; inspection `docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary` → pass; inspection `docs/quality/graphify-wing-recomparison.md [Desktop Layout close/keyboard behavior versus Wing shell; implementation queued]` → pass | DOC-PARITY-TAB-CONTRACT, DOC-PARITY-TAB-RECONNECT-CONTRACT |
-| SESSIONS: Qualify exact session search/resume/fork/rename/delete | met | executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/format.log` → pass; executed `dart format test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `flutter analyze` → pass; executed `flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze-final.log` → pass; executed `flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze.log` → fail; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'fork|session mutation ownership'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history' 2>&1 | tee .task-evidence/t_8866900e/channel-selection.log` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'session mutation ownership|deleteSession'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'session mutation ownership'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name deleteSession` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller'` → pass; executed `flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller' 2>&1 | tee .task-evidence/t_8866900e/channel-open.log` → pass; executed `flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --name 'deletes a session over DELETE|rejects an unconfirmed delete response'` → pass; executed `flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --plain-name 'forks a session over POST'` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session'` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session' 2>&1 | tee .task-evidence/t_8866900e/filtering.log` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart 2>&1 | tee .task-evidence/t_36a391f7/journey.log (initial run; retained as journey-initial.log)` → fail; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey-initial.log` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey.log` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart` → pass; executed `flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart 2>&1 | tee .task-evidence/t_8866900e/settlement-owner.log` → pass; executed `git diff --check -- goals.json TODO.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-delete-journey.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-fork-journey.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-rename-journey.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/session-search-resume-journey.md` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart` → pass; executed `git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart` → pass; executed `git diff-tree --check f84e8ebde582e626669492856464a31b44de1d4b^ f84e8ebde582e626669492856464a31b44de1d4b` → pass; executed `git show --format= --check 222be4ee4068a00aa553a1dceddc52b21a52ffed` → pass; executed `git show --format= --check agent/wing/t_36a391f7` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate .` → pass; inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | — |
 | SHELL-PERSISTENCE: Qualify collapse/expand persistence across desktop relaunch | unverified | executed `dart format --output=none --set-exit-if-changed lib/features/settings/providers/shell_preferences_provider.dart lib/shared/widgets/app_shell.dart test/features/settings/providers/shell_preferences_provider_test.dart test/shared/widgets/app_shell_sidebar_persistence_test.dart` → pass; executed `flutter analyze` → pass; executed `flutter test --no-pub --concurrency=1` → pass; executed `flutter test --no-pub --concurrency=1 .task-evidence/graphify-desktop-wing/render_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 test/features/settings/providers/shell_preferences_provider_test.dart test/shared/widgets .task-evidence/graphify-desktop-wing/render_test.dart` → pass; executed `git diff --check` → pass; executed `npm run test` → pass; executed `npm run test -- test/features/settings/providers/shell_preferences_provider_test.dart test/shared/widgets/app_shell_sidebar_persistence_test.dart` → pass; executed `npm run test [proc_9d65cfb39694; current worktree; 3699 passed, 9 failed]` → fail; executed `npm run test [proc_d670105d969e; full suite; 3711 passed, 0 failed]` → pass; inspection `docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary` → pass | DOC-SHELL-COMPACT-RETURN-EVIDENCE, DOC-SHELL-PERSISTENCE-EVIDENCE |
-| SLASH-CATALOG: Match supported full Desktop slash commands and completion | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-SLASH-CATALOG-CONTRACT, DOC-SLASH-DENIAL-EVIDENCE |
-| DESKTOP-DELIVERY: Qualify desktop windows, install and signed update/recovery | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-DESKTOP-DELIVERY-EVIDENCE, DOC-DESKTOP-UNINSTALL-EVIDENCE |
 | M3: Qualify trusted enrollment, profile setup and explicit Chat | partial | inspection `ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace` → pass | DOC-M3-CONTRACT-CHECKPOINT, DOC-M3-ROLLBACK-EVIDENCE |
 | M3-PROJECT: Create and assign an Agent-owned Project and enter scoped Chat | unmet | inspection `docs/product/prd.md#core-journeys` → pass | DOC-M3-PROJECT-ASSIGNMENT-CONTRACT, DOC-M3-PROJECT-CONTRACT |
 | M3-PROVIDER: Manage existing-profile provider credentials and atomic model assignment | unmet | inspection `docs/adr/api-and-state.md#required-agent-owned-mutation-contract` → pass | DOC-M3-PROVIDER-CONTRACT, DOC-M3-PROVIDER-REMOVAL-CONTRACT |
 | ARTIFACTS: Retrieve/preview/save supported artifacts without arbitrary paths | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-ARTIFACT-CONTRACT, DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE |
-| M4: Qualify supported inventory and administration operation by operation | partial | inspection `ROADMAP.md#m4--discover-and-administer-supported-agent-work` → pass | DOC-M4-INVENTORY-EVIDENCE, DOC-M4-SCHEDULE-INVENTORY-EVIDENCE |
 | M4-DISCOVER: Discover and install profile-targeted skills through exact contracts | unmet | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-M4-CONTRACT-CHECKPOINT, DOC-M4-DISCOVERY-SELECTION-CONTRACT |
 | M4-KANBAN: Inspect and manage Agent-owned Kanban cards and outcomes | unmet | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-M4-KANBAN-CONTRACT, DOC-M4-KANBAN-PAGINATION-EVIDENCE |
 | M4-MCP: Enable/disable toolsets and administer MCP safely | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-M4-MCP-CONFIG-CONTRACT, DOC-M4-MCP-CONTRACT |
@@ -79,17 +86,13 @@ Generated from `goals.json` by `goals.py render`. `met` requires an executed, pa
 | M4-PLATFORMS: Administer messaging gateways through typed per-platform operations | unmet | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-M4-HOST-LIFECYCLE-EVIDENCE, DOC-M4-PLATFORM-CONTRACT |
 | M4-SCHEDULES: Create/edit/pause/resume/run/delete scheduled jobs and delivery targets | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-M4-SCHEDULE-CONTRACT, DOC-M4-SCHEDULE-DELIVERY-CONTRACT |
 | M5: Qualify native output and accessible interaction | partial | inspection `ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction` → pass | DOC-M5-ANDROID-FIXTURE, DOC-M5-LARGE-TEXT-EVIDENCE |
-| DIAGNOSTICS-RECOVERY: Provide safe backup/import, logs and config diagnosis/recovery | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-DIAGNOSTICS-BACKUP-CONTRACT, DOC-DIAGNOSTICS-CONTRACT |
 | M6: Qualify exact artifacts, integrated install, upgrade and recovery | unverified | inspection `ROADMAP.md#m6--deliver-an-integrated-qualified-alpha` → pass; inspection `docs/quality/2026-10-06-m6-artifact-evidence.md` → pass; inspection `docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs` → pass; inspection `docs/runbooks/offline-release-candidate-comparison.md (four source fingerprints match .task-evidence/t_bef84284/validation.json; 120 retained synthetic passes; same-card review and actual candidate unverified)` → pass; inspection `docs/runbooks/release-alpha.md#local-artifact-verification` → pass; inspection `docs/test-plan.md#android-private-release-verification (isolated signing/package guard inspected; artifact receipt is not named-device install/upgrade/recovery proof)` → pass | DOC-M6-CHECKER-NODE22, DOC-M6-INTEGRATED-RECEIPT-GAP |
-| OFFICE: Match Office interactions with an accessible non-spatial path | partial | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-OFFICE-ACCESSIBLE-EQUIVALENT, DOC-OFFICE-REFERENCE |
-| PERSONA: Qualify standalone and embedded profile persona fidelity | unverified | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-PERSONA-CONFLICT-EVIDENCE, DOC-PERSONA-EVIDENCE |
 | ACCOUNT: Qualify account/OAuth/pools/credits/wallet authority before exposure | unmet | inspection `docs/product/hermes-desktop-parity.md#statuses` → pass | DOC-ACCOUNT-CONTRACT, DOC-ACCOUNT-REVOCATION-EVIDENCE |
 | API-CONFORMANCE: Verify owned code-first HTTP contract against handlers | unverified | executed `python3 .task-evidence/t_f2b5c61e/check_discovery.py; receipt: .task-evidence/t_f2b5c61e/validation.json and docs/quality/2026-10-06-wing-link-api-conformance.md (GET /meta and GET /healthz only; all 20 source hashes match; full API conformance unverified)` → pass; inspection `docs/api/wing-link.openapi.yaml` → pass | DOC-API-DEVICE-SELF-CONFORMANCE, DOC-API-PROTOCOL-ERROR-EVIDENCE |
 | NATIVE-INTEGRATION: Review bounded host-local integration before privileged implementation | unverified | inspection `docs/adr/client.md#decision` → pass | DOC-NATIVE-DESIGN-REVIEW, DOC-NATIVE-FAILURE-BOUNDARY |
 | REMOTE-BACKENDS: Provide typed SSH/Docker/WSL backend lifecycle outcomes | unmet | executed `.task-evidence/parallel-key-native/venv/bin/python -m unittest test/tooling/managed_ssh_key_native_test.py -v; 7 pass; preparation only, native execution NOT_CHECKED` → pass; executed `flutter analyze --no-pub; no issues, key implementation plus native harness` → pass; executed `npm run test -- --no-pub test/features/hermes_chat/screens/hermes_ssh_no_cli_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/ssh_keys test/features/hermes_chat/providers/managed_ssh_provider_test.dart test/features/hermes_chat/widgets/managed_ssh_host_key_dialog_test.dart test/core/hermes/ssh/managed_ssh_test.dart; parent-tests.log: 72 pass; fixture/widget only, native qualification open` → pass; executed `python .task-evidence/local-key-help-integration/verify.py; frozen-source analyzer clean and focused union 132 pass; native storage/auth NOT_CHECKED` → pass; inspection `docs/product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations; Desktop 2ed89070bc6c9e8231a37bb55df8a7722a3776b8; path selection, OpenSSH arguments, saved config, Wing ephemeral key callbacks; no runtime qualification` → pass; inspection `docs/product/desktop-connection-paths.md#ssh-is-managed-host-access-in-desktop` → pass; inspection `docs/product/hermes-desktop-parity.md#statuses` → pass; inspection `docs/quality/graphify-wing-recomparison.md [pinned Graphify 0.9.80 snapshot; partial key UI; native qualification open]` → pass | BACKEND-SSH-CONNECT, BACKEND-SSH-KEY-NATIVE, DOC-BACKEND-CONTRACT, DOC-BACKEND-DISCONNECT-CONTRACT |
 | VOICE: Qualify actual physical capture, speech and acoustic behavior | unverified | inspection `docs/product/prd.md#core-journeys` → pass | DOC-VOICE-OUTPUT-CANCEL-EVIDENCE, DOC-VOICE-QUALIFICATION |
-| GLOBAL-LOADED-SESSIONS: Open/create loaded sessions from feature routes without incidental reads | met | executed `flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (build)` → pass; executed `flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (build)` → pass; executed `flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (nearest)` → pass; executed `flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (nearest)` → pass; executed `flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (widgets)` → pass; executed `flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (widgets)` → pass; executed `npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=.task-evidence/t_1c1e6f37/browser-verified-final; receipt: .task-evidence/t_1c1e6f37/verified-commands.json and global-browser-verified-final-results.json` → pass; executed `npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (browser)` → pass; executed `npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (browser)` → pass; inspection `.task-evidence/t_1c1e6f37/final-hashes.json (current app_shell.dart differs; 19 other lib/test/playwright fingerprints match; see docs/runbooks/global-session-access.md#current-snapshot-limit)` → fail; inspection `.task-evidence/t_d06ef06d/source-inputs.json (later messaging, history parsing/models and channel regression edits differ from nine of 521 inputs; review-snapshot acceptance preserved; see docs/runbooks/global-session-access.md#current-snapshot-limit)` → fail; inspection `docs/runbooks/desktop-shell-reference-fidelity.md#evidence-and-exact-checks (four current source hashes match; 57-widget and two-browser passing logs inspected; remaining input attribution unverified)` → pass; inspection `docs/runbooks/desktop-shell-reference-fidelity.md#independent-review-p1-correction (four final source hashes match; focus-fix logs record 57 widget and two Chromium passes; full input attribution and independent verdict remain unverified)` → pass | — |
-| LANDING-ONBOARDING: Help existing Hermes users reach first reply through a credible accessible product landing page | unmet | inspection `docs/plans/2026-10-12-wing-landing-onboarding.md#located-source-and-delivery` → pass; inspection `docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence [README and getting-started at c9608c19; ordering/evidence narration gaps confirmed]` → pass; inspection `docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [actual showcase image and producer at e0aebfc0; no live qualification]` → pass | LANDING-FIRST-REPLY, LANDING-PAGES-QUALITY, LANDING-PRODUCT-PROOF |
+| LANDING-ONBOARDING: Help existing Hermes users reach first reply through a credible accessible product landing page | unmet | inspection `docs/plans/2026-10-12-wing-landing-onboarding.md#located-source-and-delivery` → pass; inspection `docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence [README and getting-started at c9608c19; ordering/evidence narration gaps confirmed]` → pass; inspection `docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [actual showcase image and producer at e0aebfc0; no live qualification]` → pass | LANDING-PAGES-QUALITY, LANDING-PRODUCT-PROOF |
 | M2: Recover Android owner/history after background and process death | unverified | executed `.task-evidence/t_2d1d55ab/commands.json (channel; exact argv, exit 0 and 23 passes)` → pass; executed `.task-evidence/t_2d1d55ab/owner-command.json (owner; exact argv, exit 0 and 5 passes)` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart integration_test/support/m2_metadata.dart test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart test/tooling/support/m2_fake_harness.dart test/tooling/support/m2_diagnostic_writer.dart test/tooling/support/m2_observer_cases.dart test/tooling/support/m2_receipt_admission_cases.dart test/tooling/support/m2_bootstrap_probe.dart.template` → pass; executed `dart format --output=none --set-exit-if-changed integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)` → pass; executed `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt: .task-evidence/t_e0af7ad4/format.json` → pass; executed `dart format --output=none --set-exit-if-changed test/shared/widgets/app_shell_global_session_access_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (format; compiled deterministic only, M2 remains unverified)` → pass; executed `dart format --output=none --set-exit-if-changed test/tooling/m2_receipt_admission_test.dart` → pass; executed `dart format test/tooling/m2_receipt_admission_test.dart` → pass; executed `flutter analyze` → pass; executed `flutter analyze --no-pub` → pass; executed `flutter analyze --no-pub integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)` → pass; executed `flutter analyze --no-pub test/tooling/m2_receipt_admission_test.dart` → pass; executed `flutter analyze --no-pub; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (analyze; compiled deterministic only, M2 remains unverified)` → pass; executed `flutter analyze; receipt: .task-evidence/t_e0af7ad4/analyze-verified.json` → pass; executed `flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (build; compiled deterministic only, M2 remains unverified)` → pass; executed `flutter test --concurrency=1 test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/hermes_api_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (nearest)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (focused)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_3a5135a8/isolated-project; receipt: .task-evidence/t_3a5135a8/commands.json (green.log; 18 passes; three changed source/test hashes and all retained command-log hashes match; independent same-card approval, Android and live counts unverified)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_3a5135a8/review-398-project; receipt: .task-evidence/t_3a5135a8/review-398-validation.json (18 passes; five authored fingerprints and seven command logs match; final native approval, Android and live counts unverified)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_session_caller_admission_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_load_owner_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-callers.log)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-focused.log)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/hermes_api_test.dart test/core/hermes/channel/hermes_api_channel_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-nearest.log)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=expanded test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (callers)` → pass; executed `flutter test --no-pub --concurrency=1 --reporter=json test/shared/widgets/app_shell_global_session_access_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (focused; compiled deterministic only, M2 remains unverified)` → pass; executed `flutter test --no-pub test/core/hermes/setup/secure_hermes_detached_run_store_test.dart test/core/hermes/channel/hermes_detached_run_store_test.dart --concurrency=1 --reporter expanded` → pass; executed `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt: .task-evidence/t_e0af7ad4/oracle-verified.json` → pass; executed `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt: .task-evidence/t_e0af7ad4/nearest-regressions.json` → pass; executed `flutter test --no-pub test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)` → pass; executed `flutter test --no-pub test/tooling/m2_receipt_admission_test.dart` → pass; executed `flutter test test/tooling/m2_bootstrap_test.dart` → fail; executed `git diff --check` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-coordinator-admission-trace.md .task-evidence/t_06c58314` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-custody-proof-review.md .task-evidence/t_321431fe (native review505; source-only integrity, not product acceptance)` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-custody-proof-review.md .task-evidence/t_321431fe (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-issuer-evidence-contract.md .task-evidence/t_620a6d33` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-receipt-handoff-contract.md .task-evidence/t_d6c8aa4f (offline proposed-contract checks only; M2 unverified)` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-refusal-continuation-preflight.md .task-evidence/t_c799c475` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-refusal-continuation-preflight.md .task-evidence/t_c799c475 TODO.md goals.json` → pass; executed `git diff --check -- docs/quality/2026-10-06-m2-runtime-caller-closure.md .task-evidence/t_481b1474` → pass; executed `git diff --check -- docs/spec.md docs/test-plan.md docs/README.md docs/quality/repo-docs-goal-bootstrap.md TODO.md goals.json` → pass; executed `git diff --check -- integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart integration_test/support/m2_metadata.dart test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart test/tooling/support/m2_fake_harness.dart test/tooling/support/m2_diagnostic_writer.dart test/tooling/support/m2_observer_cases.dart test/tooling/support/m2_receipt_admission_cases.dart test/tooling/support/m2_bootstrap_probe.dart.template scripts/check_m2_default_refusal.py docs/quality/2026-10-06-m2-default-refusal.md` → pass; executed `git diff --check -- integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart .task-evidence/t_53f0d91e; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)` → pass; executed `git diff --check -- test/tooling/m2_receipt_admission_test.dart .task-evidence/t_40dcd771` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/check_integrity.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/citations-initial.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/citations.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command-failed-1.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command-initial.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch_sources.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_02e4e461/update_ledger.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/check_contract.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/checkout-before.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger-before.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/selection-comparison.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/snapshot-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/source-snapshot.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/todo-render-delta.patch` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/todo-task-delta.patch` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/update_ledger.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/validation.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/verify-before-ledger.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_620a6d33/verify-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/check_integrity.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/ledger.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/snapshot-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/source-snapshot-initial.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/source-snapshot.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/update_ledger.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/validation.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/verify-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_c799c475/check_preflight.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_c799c475/git-before.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_c799c475/ledger-before.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_c799c475/selection-comparison.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_c799c475/snapshot-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_c799c475/source-snapshot.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_c799c475/validation.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/check_integrity.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/citations.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/fetch-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/fetch_citations.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/ledger.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/snapshot-command.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/source-snapshot.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/update_ledger.py` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/validation.json` → pass; executed `git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/verify-command.json` → pass; executed `git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-cpu-envelope-proof.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-issuer-evidence-contract.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-refusal-continuation-preflight.md` → pass; executed `git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-synthetic-isolation-contract.md` → pass; executed `git show --check --format=oneline 685b39e4cc161b1827ba7f52bc4d99d12ec82d9a` → pass; executed `git show --check --format=oneline ff45432a3ef1436cb87b799a2c69a696bc6a65e1` → pass; executed `git show --format= --check 3cd0896a1af03e0f33bb39ed4cf626de93610274 (native review505; source-only integrity, not product acceptance)` → pass; executed `git show --format= --check ca76e700f60a184336f765e2b40350f4e25671d5` → pass; executed `npm run test -- --no-pub --reporter=expanded test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart test/core/hermes/hermes_api_test.dart test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_load_owner_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-npm.log)` → pass; executed `npx --no-install playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --workers=1 --retries=0 --output=browser-output; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (browser; compiled deterministic only, M2 remains unverified)` → pass; executed `python -c 'import runpy; r=runpy.run_path(".task-evidence/t_ccec142b/check_admission.py", run_name="repo_docs_readonly")["verify"](); print({k:r[k] for k in ("result", "source_files", "citations", "links", "m2")})'` → pass; executed `python .task-evidence/t_53f0d91e/closure.py; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)` → pass; executed `python .task-evidence/t_bd91fa65/check.py; receipt: .task-evidence/t_bd91fa65/validation.json (exit 0; offline-document-integrity-only; M2 unverified)` → pass; executed `python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate <repo>` → fail; executed `python scripts/check_m2_default_refusal.py` → pass; executed `python3 -c "import ast; from pathlib import Path; [ast.parse(Path('.task-evidence/t_909a35ba', name).read_text()) for name in ('check_preflight.py', 'update_ledger.py')]; print('Python syntax PASS')"` → pass; executed `python3 -c 'import runpy; n=runpy.run_path('"'"'.task-evidence/t_8ce3dc30/check_integrity.py'"'"',run_name='"'"'review'"'"'); n['"'"'verify'"'"'].__globals__['"'"'save'"'"']=lambda *a: None; n['"'"'verify'"'"']()'` → pass; executed `python3 .task-evidence/t_02e4e461/check_integrity.py snapshot` → pass; executed `python3 .task-evidence/t_02e4e461/check_integrity.py verify` → pass; executed `python3 .task-evidence/t_02e4e461/fetch_sources.py` → pass; executed `python3 .task-evidence/t_06c58314/check_trace.py snapshot` → pass; executed `python3 .task-evidence/t_06c58314/check_trace.py verify` → pass; executed `python3 .task-evidence/t_321431fe/check_review.py snapshot (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)` → pass; executed `python3 .task-evidence/t_321431fe/check_review.py verify (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)` → pass; executed `python3 .task-evidence/t_40dcd771/check.py verify` → pass; executed `python3 .task-evidence/t_40dcd771/preserve_ceiling.py` → pass; executed `python3 .task-evidence/t_481b1474/check_integrity.py snapshot` → pass; executed `python3 .task-evidence/t_481b1474/check_integrity.py verify` → pass; executed `python3 .task-evidence/t_481b1474/run_checks.py` → pass; executed `python3 .task-evidence/t_620a6d33/check_contract.py snapshot` → pass; executed `python3 .task-evidence/t_620a6d33/check_contract.py verify` → pass; executed `python3 .task-evidence/t_7e4e424a/check_provenance.py snapshot` → pass; executed `python3 .task-evidence/t_7e4e424a/check_provenance.py verify` → pass; executed `python3 .task-evidence/t_8ce3dc30/check_integrity.py snapshot` → pass; executed `python3 .task-evidence/t_8ce3dc30/check_integrity.py verify` → pass; executed `python3 .task-evidence/t_8ce3dc30/check_integrity.py verify (initial attempt; verify-command.json runs[0])` → fail; executed `python3 .task-evidence/t_909a35ba/check_preflight.py closure` → pass; executed `python3 .task-evidence/t_909a35ba/check_preflight.py probe` → pass; executed `python3 .task-evidence/t_909a35ba/check_preflight.py snapshot` → pass; executed `python3 .task-evidence/t_909a35ba/check_preflight.py verify` → pass; executed `python3 .task-evidence/t_bcab1f7e/check_contract.py negative` → pass; executed `python3 .task-evidence/t_bcab1f7e/check_contract.py snapshot` → pass; executed `python3 .task-evidence/t_bcab1f7e/check_contract.py verify` → pass; executed `python3 .task-evidence/t_c799c475/check_preflight.py snapshot` → pass; executed `python3 .task-evidence/t_c799c475/check_preflight.py verify` → pass; executed `python3 .task-evidence/t_d2b9b4db/check_integrity.py snapshot` → pass; executed `python3 .task-evidence/t_d2b9b4db/check_integrity.py verify` → pass; executed `python3 .task-evidence/t_d2b9b4db/fetch_citations.py` → pass; executed `python3 .task-evidence/t_d6c8aa4f/check_contract.py snapshot (offline proposed-contract checks only; M2 unverified)` → pass; executed `python3 .task-evidence/t_d6c8aa4f/check_contract.py verify (offline proposed-contract checks only; M2 unverified)` → pass; executed `t_15da6893 analyze: cwd=<repo>/.task-evidence/t_15da6893/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_15da6893/analyze.json/log` → pass; executed `t_15da6893 format-apply: cwd=<repo>; dart format test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/format-apply.json/log` → pass; executed `t_15da6893 format-verified: cwd=<repo>; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/format-verified.json/log` → pass; executed `t_15da6893 native review 444: cwd=<repo>/.task-evidence/t_15da6893/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_15da6893/review-444-analyze.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable` → pass; executed `t_15da6893 native review 444: cwd=<repo>/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/review-444-tests.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable` → pass; executed `t_15da6893 native review 444: cwd=<repo>; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/review-444-format.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable` → pass; executed `t_15da6893 native review 444: cwd=<repo>; python -c 'from pathlib import Path; p=Path('"'"'.task-evidence/t_15da6893/verify_scope.py'"'"'); exec(compile(p.read_text().replace('"'"'import-closure.json'"'"','"'"'review-444-import-closure.json'"'"'), str(p), '"'"'exec'"'"'))'; receipt=.task-evidence/t_15da6893/review-444-scope.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable` → pass; executed `t_15da6893 native review 444: cwd=<repo>; python .task-evidence/t_15da6893/review_444_verify.py; receipt=.task-evidence/t_15da6893/review-444-integrity-check.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable` → pass; executed `t_15da6893 nearest: cwd=<repo>/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/nearest.json/log` → pass; executed `t_15da6893 oracle-fixed: cwd=<repo>/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/oracle-fixed.json/log` → pass; executed `t_15da6893 oracle: cwd=<repo>/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/oracle.json/log` → fail; executed `t_15da6893 scope: cwd=<repo>; python .task-evidence/t_15da6893/verify_scope.py; receipt=.task-evidence/t_15da6893/scope.json/log` → pass; executed `t_59ea67ba analyze: cwd=<repo>/.task-evidence/t_59ea67ba/mirror; flutter analyze --no-pub` → pass; executed `t_59ea67ba channel-hydration: cwd=<repo>/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'terminal hydration failure preserves durable retry across recreation' --concurrency=1 --reporter expanded` → pass; executed `t_59ea67ba channel-lease: cwd=<repo>/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'active run lease is durable before its event stream finishes' --concurrency=1 --reporter expanded` → pass; executed `t_59ea67ba channel-process: cwd=<repo>/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'process recreation' --concurrency=1 --reporter expanded` → pass; executed `t_59ea67ba format-verified: cwd=<repo>; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart` → pass; executed `t_59ea67ba nearest: cwd=<repo>/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded` → pass; executed `t_59ea67ba oracle-final: cwd=<repo>/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded` → pass; executed `t_59ea67ba scope: cwd=<repo>; python3 .task-evidence/t_59ea67ba/verify_scope.py` → pass; executed `t_b00feca2 analyze: cwd=<repo>/.task-evidence/t_b00feca2/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_b00feca2/analyze.json/log` → pass; executed `t_b00feca2 format-apply: cwd=<repo>; dart format test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_b00feca2/format-apply.json/log` → pass; executed `t_b00feca2 format-verified: cwd=<repo>; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_b00feca2/format-verified.json/log` → pass; executed `t_b00feca2 native review 440: cwd=<repo>/.task-evidence/t_b00feca2/mirror; argv=["flutter", "analyze", "--no-pub"]; receipt=.task-evidence/t_b00feca2/review-440-analyze.json/log; deterministic only, Android/live qualification NOT_CHECKED` → pass; executed `t_b00feca2 native review 440: cwd=<repo>/.task-evidence/t_b00feca2/mirror; argv=["flutter", "test", "--no-pub", "test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart", "test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart", "test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart", "test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart", "--concurrency=1", "--reporter", "expanded"]; receipt=.task-evidence/t_b00feca2/review-440-tests.json/log; deterministic only, Android/live qualification NOT_CHECKED` → pass; executed `t_b00feca2 native review 440: cwd=<repo>; argv=["dart", "format", "--output=none", "--set-exit-if-changed", "test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart"]; receipt=.task-evidence/t_b00feca2/review-440-format.json/log; deterministic only, Android/live qualification NOT_CHECKED` → pass; executed `t_b00feca2 native review 440: cwd=<repo>; argv=["python", "-c", "from pathlib import Path; p=Path('.task-evidence/t_b00feca2/verify_scope.py'); exec(compile(p.read_text().replace('import-closure.json','review-440-import-closure.json'), str(p), 'exec'))"]; receipt=.task-evidence/t_b00feca2/review-440-scope.json/log; deterministic only, Android/live qualification NOT_CHECKED` → pass; executed `t_b00feca2 nearest: cwd=<repo>/.task-evidence/t_b00feca2/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_b00feca2/nearest.json/log` → pass; executed `t_b00feca2 oracle: cwd=<repo>/.task-evidence/t_b00feca2/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_b00feca2/oracle.json/log` → pass; executed `t_b00feca2 scope: cwd=<repo>; python .task-evidence/t_b00feca2/verify_scope.py; receipt=.task-evidence/t_b00feca2/scope.json/log` → pass; executed `t_df29f3c6 analyze: cwd=<repo>/.task-evidence/t_df29f3c6/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_df29f3c6/analyze.json/log` → pass; executed `t_df29f3c6 format-final: cwd=<repo>; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/format-final.json/log` → pass; executed `t_df29f3c6 format-verified: cwd=<repo>; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/format-verified.json/log` → pass; executed `t_df29f3c6 integrity: cwd=<repo>; python .task-evidence/t_df29f3c6/final_integrity.py; receipt=.task-evidence/t_df29f3c6/integrity.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 ledger-ceiling-check: cwd=<repo>; python .task-evidence/t_df29f3c6/restore_ceiling.py; receipt=.task-evidence/t_df29f3c6/ledger-ceiling-check.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 ledger: cwd=<repo>; python .task-evidence/t_df29f3c6/update_ledger.py; receipt=.task-evidence/t_df29f3c6/ledger.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable` → fail; executed `t_df29f3c6 review-451-analyze: cwd=<repo>/.task-evidence/t_df29f3c6/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_df29f3c6/review-451-analyze.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 review-451-format: cwd=<repo>; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/review-451-format.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 review-451-integrity-final: cwd=<repo>; python .task-evidence/t_df29f3c6/review_451_verify.py; receipt=.task-evidence/t_df29f3c6/review-451-integrity-final.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 review-451-integrity: cwd=<repo>; python .task-evidence/t_df29f3c6/review_451_verify.py; receipt=.task-evidence/t_df29f3c6/review-451-integrity.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable` → fail; executed `t_df29f3c6 review-451-scope: cwd=<repo>; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/review-451-scope.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 review-451-tests: cwd=<repo>/.task-evidence/t_df29f3c6/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_df29f3c6/review-451-tests.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 scope-final: cwd=<repo>; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/scope-final.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable` → pass; executed `t_df29f3c6 scope: cwd=<repo>; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/scope.json/log` → pass; executed `t_df29f3c6 tests: cwd=<repo>/.task-evidence/t_df29f3c6/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_df29f3c6/tests.json/log` → pass; inspection `.task-evidence/t_41606eec/validation.json (13 authored fingerprints match; retained 44 tooling passes, 60 negative and four positive consumers; source refusal only, independent approval and installed/Android/live M2 unverified)` → pass; inspection `.task-evidence/t_4e4a4f7d/review-414.json (approved bounded history-admission repair; matching combined log records 539 passes; read-only review_integrity.py verifies six selected files, 441 mirror Dart files and retained logs; Android, live counts and integrated M2 remain unverified)` → pass; inspection `.task-evidence/t_53f0d91e/report.md#native-review-correction (c141d8d7; three authored branch blobs, 186 closure files and five packaging inputs match refreshed receipt; retained suite records 24 passes after six RED controls; independent final approval and Android/live qualification unverified)` → pass; inspection `.task-evidence/t_ccec142b/reviewer-round-1.md (approved source-only delivery brief; 13 fingerprints, 30 citations, four links and eleven synthetic refusal controls rechecked; APK/storage/continuity and integrated M2 unverified)` → pass; inspection `ROADMAP.md#m2--leave-and-return-without-losing-ownership` → pass; inspection `docs/quality/2026-10-06-m2-android-preflight.md` → pass; inspection `docs/quality/2026-10-06-m2-android-preflight.md#bounded-write-and-delivery-contract` → pass; inspection `docs/quality/2026-10-06-m2-continuity-baseline.md` → pass; inspection `docs/quality/2026-10-06-m2-coordinator-admission-trace.md; 25 refreshed source/report fingerprints match; source-only preparation; independent final approval unverified` → pass; inspection `docs/quality/2026-10-06-m2-counting-contract.md` → pass; inspection `docs/quality/2026-10-06-m2-forbidden-recovery-oracle.md (428 lib/test fingerprints match; retained oracle and nearest receipts record 3 and 60 passes; bootstrap-wide denial, independent final approval and Android/live counts unverified)` → pass; inspection `docs/quality/2026-10-06-m2-history-identity.md (15 production/test/runbook fingerprints and 25 command logs match; report fingerprint differs; 48 focused, 432 nearest and 63 caller passes retained; final approval and Android/live counts unverified)` → pass; inspection `docs/quality/2026-10-06-m2-issuer-evidence-contract.md (18 retained source fingerprints, document digest and local closure match; proposed F01-F10 unavailable, NOT_ADMITTED; source-only delivery, installed/Android/counting M2 unverified)` → pass; inspection `docs/quality/2026-10-06-m2-manifest-assessment-contract.md (17 retained fingerprints match; document integrity only; F01/F02 and M2 unverified)` → pass; inspection `docs/quality/2026-10-06-m2-recovery-read-admission.md (30 selected fingerprints and five log hashes match; 16 characterization and one recreation passes; three defects remain; same-card review and Android/live qualification unverified)` → pass | DOC-M2-INODE-POLICY-EVIDENCE, M2-DEVICE-QUALIFICATION |
 
 <!-- goals:coverage:end -->
@@ -109,7 +112,657 @@ needs its own exact capability, ownership and qualification evidence.
 
 ## Now / Next
 
-- [ ] **CONNECTION-CRON-ADMISSION** — Goal: CONNECTION-PATHS. Section: Now.
+- [ ] **DOC-M4-INVENTORY-EVIDENCE** — Goal: M4. Section: Now. Map one Tools inventory journey to current-source evidence.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
+  Scope: Existing Tools/channel/widget/browser checks and sanitized receipt only; exclude new contracts, mutations and personal targets.
+  Acceptance: Identify source-bound keyboard/search/owner-denial checks and the smallest remaining named-platform verification scenario.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **DOC-DIAGNOSTICS-CONTRACT** — Goal: DIAGNOSTICS-RECOVERY. Section: Now. Trace one redacted log/diagnostic read.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [DIAGNOSTICS-RECOVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing diagnostics and contracts; exclude restore, file copying, secret exports and generic config commands.
+  Acceptance: Name allowed fields, limits, redaction and exact grant, or absent contract. Keep atomic backup/import and fixes separately gated.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **DOC-DESKTOP-DELIVERY-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Now. Inventory one Linux desktop install/update receipt gap.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing menu/install/verifier/runbook/CI evidence; no installs, updates, signing, service restarts or publication.
+  Acceptance: Identify source/artifact/target-bound activation, health and rollback proof or exact gaps; do not equate cross-compilation with runtime support.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+### P4 — Extended experiences and physical qualification
+
+- [ ] **DOC-SLASH-CATALOG-CONTRACT** — Goal: SLASH-CATALOG. Section: Now. Compare the current curated commands with an authoritative catalog.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [SLASH-CATALOG](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing composer commands and read-only catalog/contracts; no shell dispatch or speculative command routes.
+  Acceptance: Identify one supported missing completion/action, its exact authorization and regression oracle, or an unavailable catalog.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **DOC-OFFICE-REFERENCE** — Goal: OFFICE. Section: Now. Compare one Office contact/session activation interaction.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [OFFICE](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing 2D Office and Desktop read-only source; exclude 3D/account dependencies and new host operations.
+  Acceptance: Name reference action, current deviation, exact owner/capability/focus oracle and one bounded implementation slice preserving 2D accessibility.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **DOC-PERSONA-EVIDENCE** — Goal: PERSONA. Section: Now. Verify persona whitespace and completion receipts.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing profile decoder/editor, actual-router tests and receipts; no live saves or duplicate accepted repairs.
+  Acceptance: Match current-source hashes to same-card read/save/conflict/cancel receipts; run or add the missing app-level oracle if no matching receipt exists.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **PARITY-LIVE-WORKFLOW** — Goal: M1. Complete and verify the daily-use journey
+  on the owner-selected disposable local QA Agent/profile. Payoff: real generation,
+  correlated approval, authoritative Stop and exact restoration in one workflow.
+  Sources: [workflow matrix](docs/plans/2026-10-03-desktop-daily-workflow.md)
+  and [Wing ownership and limits](docs/plans/2026-10-03-desktop-daily-workflow.md#owner-update--wing-implementation-and-qa).
+  Scope: isolated QA setup through supported unmodified Agent operations, existing
+  production Wing channel/UI, minimal reproduced fixes with regression tests and
+  sanitized operation/readback receipts. Keep personal runtime/app state and system
+  packages unchanged. Preserve `t_f098a32e` and `t_38174cb7` without redispatching them.
+  No personal credential discovery/copying, provider substitution, Agent patch,
+  arbitrary host command, external side effect or release.
+  Acceptance: connect, explicit profile/model, actual output, correlated approval,
+  authoritative Stop, native close/relaunch, exact restored identity/history and one deliberate
+  resumed send to that same owner. Automatic pair restoration remains unsupported;
+  explicitly qualify reselection separately, without claiming pair persistence.
+  Prove one submission per deliberate send and zero recovery mutations. Fixtures,
+  isolated UI controls and test totals do not complete this milestone.
+  Limits: at most three short QA generations with separately authorized test access.
+  No unapproved metered spending or purchase. Use harmless QA-workspace test actions
+  by default. Skip unsupported operations and further inference after the usage
+  limit. Report the exact gap and continue independent work without fake success.
+  Current slice: the [live preparation receipt](docs/quality/live-desktop-daily-workflow.md)
+  delivers read-only authorization/preflight and six tested mutation-budget guards.
+  The prepared production Chat driver refuses before network access. A supported
+  provider-call contract must cover retries and continuations before the production
+  two-process live GTK journey and canonical readback can be qualified.
+  The [internal runner](docs/quality/live-two-process-orchestration.md) already has
+  synthetic lifecycle/teardown evidence. The completed
+  [display branch](docs/quality/live-display-isolation.md) adds tested X protocol
+  authorization; those helper/test changes are not integrated into the shared tree.
+  Carry its exact source through integration before credential-bearing execution.
+  The [provider-call assessment](docs/quality/live-provider-call-ceiling.md) completes
+  offline contract tracing and executable refusal on its isolated branch. The
+  inspected unmodified Agent interfaces do not enforce three physical attempts
+  across retries, continuations and auxiliary work. Keep inference disabled until
+  a supported authoritative contract covers that closure. Do not repeat preflight,
+  orchestration, display admission or budget tracing as new live proof.
+  Credential-free native smoke is queued separately below; submission counts are
+  not the inference ceiling.
+  QA authentication alone cannot enable the driver. The existing
+  [authentication question](BLOCKERS.md#blk-20261007-w04--separate-disposable-qa-authentication-for-live-desktop)
+  affects actual-Agent checks only; budget/orchestration work proceeds independently.
+  Dependencies: supported QA authentication, exact operation grants and native
+  prerequisites. Target-strategy question [BLK-20261006-W01](BLOCKERS.md#blk-20261006-w01--agent-target-for-the-live-desktop-workflow-qualification)
+  is answered, not proof of a provisioned or authenticated target.
+  Ownership: Wing performs implementation and QA. Ask only for authentication or
+  permissions Wing cannot complete safely, or spending beyond the approved limit.
+  No execution lease is assigned here. Recorded paused job `6f218a559ed2` is unchanged.
+  Section: Now. Remaining: live qualification and canonical-main integration/delivery
+  remain subject to required checks and remote protection. Native fixture restoration
+  and completed worker cards do not prove them. Follow the
+  [vertical-slice contract](docs/product/autogoal-workflows.md#vertical-slice-contract).
+
+
+- [ ] **CONNECTION-LINK-REMOVAL** — Goal: CONNECTION-PATHS. Remove Wing Link
+  from all product connection/setup, profile/catalog and management paths, including
+  explicit legacy support. No optional legacy mode remains in the removal target.
+  Roadmap stage 1: [connection foundation](ROADMAP.md#1-finish-the-connection-foundation).
+  Preserve the existing active removal owner; complete saved-endpoint API retirement,
+  then remaining consumers/fixtures and packaging handoff. Do not spend another
+  occurrence on broad parity discovery or README polishing instead of this outcome.
+  Payoff: connect directly without a second service, pairing, wing-cli or Link token.
+  Scope: enrollment, Local platform flow, profile/catalog callers, Connections and
+  nearest production-control tests. Retire explicit pairing/handoff payloads and
+  routes, Local/Termux bootstrap, dormant builders/directory adapters and legacy
+  credential/contact APIs after the active enrollment slice. Reuse current Agent
+  APIs and Linux discovery; do not expand or replace the management service.
+  Unsupported operations must explain unavailable Agent support, not invoke a shell.
+  Acceptance: fresh/saved Local, SSH and Remote use zero Link requests or setup
+  prerequisites. Profile/model choice does not fetch the Link catalog. Cancelling
+  replacement setup and reconnect preserve exact host/profile/session and no replay.
+  Old pairing input fails safely with direct reconnection guidance; missing Agent
+  credentials require explicit reauthentication, not legacy Link recovery. Preserve
+  stored Agent access and raw user records. No Link construction/process/fallback
+  remains, even for previously paired installations.
+  Linux offers default Hermes-home inspection and a folder chooser; Android offers
+  guided same-phone Agent setup, with installation and auth readiness distinguished.
+  Sources: [2026-08-10_193813-wing-next-do-test-roadmap](docs/plans/2026-08-10_193813-wing-next-do-test-roadmap.md) (historical planning context)
+  [wing-link-remote-management](docs/plans/wing-link-remote-management.md) (superseded planning context)
+  [2026-08-05-wing-link-local-runtime](docs/superpowers/plans/2026-08-05-wing-link-local-runtime.md) (superseded planning context)
+  [2026-08-22-android-pairing-ux](docs/superpowers/plans/2026-08-22-android-pairing-ux.md) (superseded planning context)
+  [2026-08-30-android-termux-local-agent](docs/superpowers/plans/2026-08-30-android-termux-local-agent.md) (superseded planning context);
+   [deprecation](docs/adr/product.md#wing-link-deprecation),
+  [complete removal plan](docs/adr/product.md#complete-removal-including-legacy),
+  [forward roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  Graph evidence: fresh partial core AST, WingLinkClient at wing_link_client.dart:198
+  and LocalWingLinkHost at local_wing_link_host.dart:53; callers/packaging corroborated
+  by source, not semantic graph. See the plan for inventory and coverage limits.
+  [CONN-2](docs/product/prd.md#connection-path-requirements),
+  [verification](docs/test-plan.md#connection-path-verification).
+  Dependencies: none. Section: Now. Ownership: in progress under the existing
+  removal owner; coordinate Local layout/l10n, discovery and browser-matrix inputs.
+  Historical candidate continuation (superseded; preserved receipt, not current
+  next action): [Profiles Agent-only removal](docs/quality/profiles-agent-only-follow-through.md)
+  implements the bounded Profiles consumer slice on `agent/wing/t_e002406c`, not
+  the canonical checkout or the whole goal. Capture its four owned Dart inputs,
+  including the reviewed correction at `e54522c7c58b1bab2bedc2bcc77194b98f66d33b`.
+  Cancel and successful mutations no longer recover pending Link credentials in
+  that isolated widget candidate; native review approved the bounded slice.
+  Integration remains with the existing owner: retire excluded fallback expectations
+  and repair the captured fixture/import closure without borrowing moving inputs.
+  Smallest next check: the pending-recovery probe and focused Profiles/editor targets
+  on the frozen combined candidate, then full analysis. Retain the existing branch
+  pass and analyzer failures as separate evidence; preserve all leases.
+  MT-RERUN-TRAIN owns broader combined-tree gates; no duplicate removal task.
+  Historical frontier (superseded): Profiles and Connections are delivered at f2d8b8b9; automatic
+  saved Link credential recovery is delivered at 312b9292. Active enrollment card
+  t_22e074db keeps its original bounded contract and lease. After its review/delivery,
+  continue the complete-removal plan on this same parent; no duplicate worker.
+  Checks: public-control enrollment/router/local-setup/saved-connection regressions,
+  retained Agent security tests, analysis and affected integrated web/native guards.
+  Delivered offline outcome: original card t_587682e1 produced retirement commit
+  bce4ec5fb9109d29520b81260f13bad93c6f2cb7; native independent review run 309
+  approved that exact source. Coordinator integrated and verified origin/main at
+  963b9b5bd2233d83506655ec354438a0be0b97d7. All 186 owned blobs/modes/deletions
+  match the reviewed commit; only newer canonical TODO/goals context differs.
+  Client/service trees, installers, bootstrap asset, Linux Go bundling and service
+  release/package dependencies are removed together. Agent behavior, secure storage
+  and inert legacy raw records remain preserved. No installed service was touched.
+  Executed retirement evidence: full Flutter 3757 passed/8 skipped, Chromium 47 passed/1 live skip,
+  Node 118 and Python 109 passed, analysis/web build/audit passed; independent review
+  exercised 207 Flutter tests and the tooling suites. Integration-specific retirement/
+  archive checks passed 48 tests; goals validation and diff whitespace passed.
+  The interrupted earlier suite remains a failure, not reused passing evidence.
+  Remaining combined parent acceptance: named Linux native chooser/setup and Android/
+  Termux direct setup/migration qualification, not another source-removal batch.
+  Reuse existing CONNECTION-SETUP-AUTH-MATRIX and native/device tasks; preserve their
+  leases and live-operation exclusions. Packaging retirement is already delivered;
+  do not dispatch another deletion/guard card. Keep this parent in_progress until
+  its stated named-target acceptance is evidenced. See
+  [the acceptance map](docs/quality/link-delivery-retirement.md).
+
+- [ ] **CONNECTION-OFFICIAL-DESKTOP-PORT** — Goal: CONNECTION-PATHS.
+  Re-trace welcome, Local, SSH and Remote against official `apps/desktop`, then
+  implement the smallest evidenced production connection correction.
+  Payoff: stop implementing behavior from a disqualified product reference.
+  Scope: official Desktop source and nearest tests, Wing channel caller and
+  production entry; pin the inspected revision and keep upstream read-only.
+  Acceptance: trace actual connection/auth/transport and lifecycle contracts,
+  including headless serve/JSON-RPC versus Wing's existing REST/SSE path. Do not
+  assume compatibility or invent a new backend. Apply one evidence-backed Wing
+  correction with production-control regressions and compact/wide visual checks.
+  Unsupported operations remain explicit; preserve profile identity, strict host
+  trust, direct Agent authority and public-only key copy. No Agent patches,
+  personal-runtime changes or unapproved deployment/spending.
+  Sources: [2026-10-03-desktop-daily-workflow](docs/plans/2026-10-03-desktop-daily-workflow.md) (current planning context)
+  [2026-10-03-desktop-port-first-wave](docs/plans/2026-10-03-desktop-port-first-wave.md) (historical planning context)
+  [2026-09-04-conduit-adaptation-roadmap](docs/superpowers/plans/2026-09-04-conduit-adaptation-roadmap.md) (historical planning context);
+   [accepted connection requirements](docs/product/prd.md#connection-path-requirements),
+  [official reference correction](docs/quality/official-desktop-reference.md),
+  official `apps/desktop/AGENTS.md`, `src/AGENTS.md` and `DESIGN.md`.
+  Dependencies: none.
+  Section: Now.
+  Ownership: unclaimed; coordinate with existing CONNECTION-LINK-REMOVAL and
+  CONNECTION-SAVED-WORKFLOWS owners before writing.
+  Plan authority: [all-plan reference policy](docs/plans/README.md).
+  Official knowledge input: [bounded source findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Trace one send/stream/input/Stop/disconnect/resume slice through request leases, explicit connection/profile/durable/runtime identities, timeout/abort and replay ordering. Inspect production helpers behind warm/cold resume and expired-approval tests before adding the smallest regression-backed correction. Pane reactivity and accessible error recovery are behavior acceptance, not naming-only refactors.
+
+- [ ] **CONNECTION-SAVED-WORKFLOWS** — Goal: CONNECTION-PATHS. Complete and
+  prove owner-safe Local/Remote entry and saved-connection workflows.
+  Payoff: a connection choice leads to working setup or authenticated endpoint
+  access, not a label-only screen.
+  Sources: [2026-07-16-multi-gateway-unified-chats](docs/superpowers/plans/2026-07-16-multi-gateway-unified-chats.md) (historical planning context)
+  [2026-09-04-resource-consistency](docs/superpowers/plans/2026-09-04-resource-consistency.md) (historical planning context);
+  [CONN-2/3/5/6](docs/product/prd.md#connection-path-requirements),
+  [enrollment](docs/product/enrollment.md),
+  [verification matrix](docs/test-plan.md#connection-path-verification).
+  Scope: existing setup/enrollment, saved-host controls and owner-fenced channel
+  integration. Add the smallest fixes exposed by production-path regressions.
+  Apply the owner correction: direct Agent use requires no Wing Link installation,
+  pairing or management credential. Preserve Agent authorization and inert legacy records.
+  Exclude new SSH/OAuth authority, remote installs and personal runtime changes.
+  Acceptance: existing-install/setup-needed, cancellation, auth/storage failure,
+  explicit retry, name/edit/test/remove and two-host profile/session collisions
+  pass through public controls. Late old results cannot redirect the replacement.
+  A fresh compiled fixture journey reports saved versus connected readiness.
+  Unsupported OAuth is explained. Native/live checks remain separately attributed.
+  Dependencies: CONNECTION-PRIMARY-ENTRY. Section: Now.
+  Ownership: existing connection workflow owner; verify current tracker/lease before dispatch.
+  Partial delivery: `t_90ae659f` qualifies saved-host rename/remove owner safety;
+  see the [source-bound receipt](docs/quality/saved-connection-owner-safety.md).
+  The full workflow acceptance remains open, not completed by this slice.
+  The [first-run receipt](docs/quality/direct-first-run.md) and
+  [native fixture receipt](docs/quality/direct-first-run-native.md) qualify direct
+  Chat/enrollment entry before optional setup/pairing, not live authentication or
+  main delivery. The [saved editor receipt](docs/quality/saved-endpoint-edit.md)
+  adds bounded widget/Chromium edit/Test proof. Preserve the existing workflow
+  owner and M1-SAVED-ENDPOINT-EDIT-NATIVE; do not repeat their delivered subsets.
+  See [current verification](docs/test-plan.md#connection-path-verification).
+
+- [ ] **LANDING-FIRST-REPLY** — Goal: LANDING-ONBOARDING. Give existing Hermes
+  users an honest connection-first entry from the public landing page.
+  Section: Now.
+  Sources: [full landing plan](docs/plans/2026-10-12-wing-landing-onboarding.md),
+  [landing onboarding outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
+  [README re-review continuation](docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence),
+  [remaining review findings](docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow),
+  `site/index.html`, `site/styles.css`, `README.md`, `docs/getting-started.md`,
+  `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`.
+  Scope: primary Connect my Agent action, native/web choice, exact maintained
+  guide anchors, enabled authenticated API and Wing-capability prerequisites,
+  browser HTTPS/CORS explanation, first-reply success signal and compact recovery.
+  Correct preview/illustration promises. Preserve existing setup-document owners;
+  no runtime changes, Wing Link, credential collection, backend or automatic send.
+  First correct the linked documentation: README explicitly separates Preview UI,
+  Connect existing Agent and Build native client, with client acquisition before
+  connection/use. Rewrite getting-started as prerequisites/actions/success/recovery;
+  move internal worktree, synthetic-store and delivery/QA narration to existing
+  evidence owners. Preserve accepted README fixes, anchors and useful limits.
+  Keep Set up your first chat primary and preview secondary; burn DEMO DATA /
+  SIMULATED SESSION into shared showcase exports at the generator, replacing
+  LIVE RUN and cross-device live implications. Publish a concise user-facing
+  platform verification matrix with current-source evidence and SSH UI/fixture/live
+  distinctions beside setup. Add a bounded optional repository-summary workflow
+  after the no-tools first-reply smoke; approvals/background reliability stay gated.
+  Simplify QA wording without converting not-verified into unsupported/unavailable;
+  historical undelivered receipts are not current-main availability evidence.
+  Acceptance: readiness proxy improves from 0 to 4; candidate browser checks prove
+  correct CTA/guide destinations and understandable prerequisites at compact and
+  desktop widths; core entry works without JavaScript. Preserve source-only/alpha
+  disclosure. Content coverage does not qualify live first reply or usability.
+  Documentation acceptance: each starting path is independently followable;
+  tutorial steps require no internal engineering vocabulary; UI labels and links
+  match current source. Add a focused ordering/anchor regression during implementation;
+  classify obsolete README/Termux text assertions without restoring retired setup
+  or dropping security/authority coverage. Editorial 7.5/10 is not a measured score.
+  Standalone shared images visibly retain demo provenance; platform cells link
+  exact target/source evidence; optional tool use is explicit and permission/cost
+  bounded. Preserve known incoming anchors without speculative alias expansion.
+  Dependencies: none for offline landing work.
+  Qualification ownership: authenticated qualification stays with
+  CONNECTION-SETUP-AUTH-MATRIX; do not duplicate its worker.
+  Ownership: wing; no worker claimed by this planning pass. Next action: implement
+  the bounded README sequencing and tutorial correction, then landing copy/connection
+  and showcase truthfulness with focused regressions. This plan changes no public
+  tutorial or image yet; broader visual composition stays with LANDING-PRODUCT-PROOF.
+
+- [ ] **DOC-M4-SCHEDULE-INVENTORY-EVIDENCE** — Goal: M4. Section: Next. Attribute one scheduled-job inventory failure journey.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Map Schedules owner-change and denied-read outcomes to matching widget/browser receipts or one missing oracle. Preserve Tools qualification and read-only inventory.
+  Dependencies: DOC-M4-INVENTORY-EVIDENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-DIAGNOSTICS-BACKUP-CONTRACT** — Goal: DIAGNOSTICS-RECOVERY. Section: Next. Trace atomic backup/import separately from diagnostics reads.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [DIAGNOSTICS-RECOVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name a fixed typed restore operation and validation/rollback limits, or its absence. No backup, restore, private-file reads or secret exports.
+  Dependencies: DOC-DIAGNOSTICS-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-DESKTOP-UNINSTALL-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Next. Map one Linux uninstall and retained-state evidence gap.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify named-target uninstall proof and documented data-retention limits, or the missing procedure. No installs, service changes or deletion.
+  Dependencies: DOC-DESKTOP-DELIVERY-EVIDENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-SLASH-DENIAL-EVIDENCE** — Goal: SLASH-CATALOG. Section: Next. Map one unavailable slash action and its recovery.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [SLASH-CATALOG](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify unsupported-action disclosure and zero-dispatch proof or a missing check. No new commands, shell dispatch or speculative routes.
+  Dependencies: DOC-SLASH-CATALOG-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-OFFICE-ACCESSIBLE-EQUIVALENT** — Goal: OFFICE. Section: Next. Map keyboard focus for existing 2D Office activation.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [OFFICE](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify source-bound keyboard activation and owner-change checks or a missing oracle. No 3D dependency, account work or new host operation.
+  Dependencies: DOC-OFFICE-REFERENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-PERSONA-CONFLICT-EVIDENCE** — Goal: PERSONA. Section: Next. Attribute persona conflict recovery separately from whitespace fidelity.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify exact owner/revision, rejected-save messaging and preserved draft proof or missing oracle. No live saves or duplicate accepted repairs.
+  Dependencies: DOC-PERSONA-EVIDENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **M1-MOBILE-AWAY-STATUS** — Goal: M1. Keep Agent-owned work understandable after Android background/return.
+  Payoff: leave Wing and return to the correct conversation and authoritative job outcome without duplicate work.
+  Sources: [2026-09-04-provenance-and-notifications](docs/superpowers/plans/2026-09-04-provenance-and-notifications.md) (historical planning context);
+   [user-demand acceptance](docs/product/prd.md#user-demand-emphasis), [design](docs/spec.md#away-and-return-status-design), [matrix](docs/test-plan.md#away-and-return-status-verification), production Chat lifecycle and existing transcript/restart fixtures.
+  Scope: reuse existing channel, resume/recovery and unread-completion controls; qualify the missing compact Android interactions in isolated Waydroid and repair reproduced Wing defects with regressions. Begin by comparing existing receipts to current source; do not repeat an unchanged completed proof. No new job store, transport, Agent changes, live inference, paired-app replacement or notification infrastructure.
+  Acceptance: while Wing is backgrounded, deterministic Agent work changes from running to completed/failed; production return restores exact host/profile/session/run and canonical history/status. Disconnect shows unknown, explicit Retry reconciles; approval-needed uses current exact grants; late old-owner results are rejected. Assert zero incidental send/create/approval/Stop calls. Record source/APK, Android target, commands and request counts; compact/enlarged-text controls remain usable. Waydroid does not satisfy physical M2 process-death or live-provider proof.
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next. Ownership: unassigned; preserve existing connection and recovery owners. No worker dispatched by this entry.
+
+- [ ] **M1-NOTIFICATION-CONTRACT** — Goal: M1. Resolve the smallest supported notification path after reliable status.
+  Payoff: determine whether completion/attention alerts can be implemented without a second Agent backend or credential leakage.
+  Sources: [accepted order](docs/product/prd.md#user-demand-emphasis), [existing proposal](docs/product/notification-contract-proposal.md), official Agent/Desktop source and nearest tests.
+  Scope: one bounded source/capability assessment of current enrollment/routing/revocation and platform delivery support. Reuse existing proposals; identify exact supported operations, grants and privacy boundaries, or explain unavailable contracts. Do not invent endpoints, choose a paid relay, collect credentials, install push SDKs, activate delivery or modify Agent.
+  Acceptance: save an operation-to-source/test map distinguishing shipped API, source-only support and unavailable behavior. Identify one smallest implementable alert path and its permission-denial, generic lock-screen, deduplication and exact-owner tap tests, or name the exact missing authoritative contract. Keep foreground status usable without notifications. Record architecture choices as Proposed; provider/relay consent and real platform delivery remain separate future decisions and checks. This closes assessment only, not notification implementation or M1.
+  Dependencies: M1-MOBILE-AWAY-STATUS. Section: Next. Ownership: unassigned; verify existing proposal/board ownership before execution. No worker dispatched by this entry.
+
+
+- [ ] **MT-RERUN-TRAIN** — Goal: INTEGRATION. Section: Next. Rerun canonical integration gates
+  on a newly captured combined tree, not the repaired historical candidate.
+  Payoff: detect interactions among delivered predecessor slices.
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [2026-08-17-audit-remediation](docs/superpowers/plans/2026-08-17-audit-remediation.md) (historical planning context);
+   [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
+  and [required checks](CONTRIBUTING.md#required-checks).
+  Scope: existing integration owner's source-bound format, analyzer, full Flutter
+  and audit gates. Retired service Go checks are no longer applicable after
+  963b9b5b; current required checks remain authoritative. Record exact source
+  identity, commands and terminal outcomes.
+  The browser phase is indexed separately below; no canonical gate is waived.
+  Acceptance: passing applicable non-browser gates on one captured input, with
+  failures repaired by their existing owners and checks rerun. No merges,
+  publication, installs or platform claims are authorized by this index.
+  Dependencies: MT-APP-SHELL-STATUS-BAR (done). Ownership: existing integration
+  owner only; this entry creates no board lane and must not be independently claimed.
+
+- [ ] **MT-VERIFY-BROWSER-GATES** — Goal: INTEGRATION. Section: Next. Prove the same combined
+  source's compiled browser journeys and exact request counts.
+  Payoff: close the historical browser gap without treating unit passes as UI evidence.
+  Sources: [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
+  and [browser command](CONTRIBUTING.md#required-checks).
+  Scope: the existing integration owner's browser phase after MT-RERUN-TRAIN;
+  build the deterministic target and run the canonical browser suite. Repair
+  exposed Wing regressions through existing ownership; exclude live backends,
+  device changes, native claims, publication and upstream edits.
+  Acceptance: source-bound completed build and browser logs, passing journeys,
+  exact mutation/no-incidental-mutation assertions and no hidden waived failures.
+  If source changes after the first phase, repeat affected gates on that source.
+  Dependencies: MT-RERUN-TRAIN; Next. Ownership: existing integration owner only.
+
+- [ ] **SECURITY-RETAINED-RELEASE-AUDIT** — Goal: SECURITY.
+  Qualify retained root dependencies and release audit after retirement closure.
+  Payoff: preserve the release security bar after deleting an embedded dependency tree.
+  Sources: [retained dependency verification](docs/test-plan.md#acceptance-records-and-gaps),
+  [required checks](CONTRIBUTING.md#required-checks) and
+  [temporary risk decision](BLOCKERS.md#blk-20261007-006--remaining-npm-audit-highs-with-no-published-fix).
+  Scope: root manifest/lock and retained release dependency inputs on Node.js 22.
+  Reuse the predecessor's unchanged passing receipts; investigate only remaining
+  findings or changed inputs. No installer recreation, installs, service actions,
+  forced overrides, audit suppression, upstream edits or publication.
+  Acceptance: record exact candidate/toolchain identity and root audit exit/result;
+  distinguish removed embedded findings from current retained findings. Map any
+  remaining advisory to its consumer and compatible fix or the existing temporary
+  risk decision. Removal and prior acceptance never substitute for a passing audit.
+  Dependencies: VERIFY-OMNIROUTE-NODE22-CLOSURE. Section: Next.
+  Ownership: existing security/remediation owner; verify tracker/lease before dispatch.
+
+### P2 — Remaining supported feature parity and accessibility
+
+- [ ] **VERIFY-LIVE-WORKFLOW-RECOVERY** — Goal: M1.
+  Keep the qualified exact live session usable after reconnect and route return.
+  Payoff: distinguish canonical recovery from cached UI and prevent duplicate work.
+  Sources: [daily workflow acceptance](docs/plans/2026-10-03-desktop-daily-workflow.md#acceptance-matrix)
+  and [supported continuation](docs/quality/native-resumed-send.md#remaining-qualification-and-delivery).
+  Scope: the predecessor's isolated QA target, production channel/Chat and nearest
+  recovery tests; repair reproduced Wing defects only. Exclude new inference,
+  Agent changes, personal credentials/state, shared gateway restarts and release.
+  Acceptance: after the predecessor's completed/Stopped runs and resumed send,
+  explicitly reconnect and leave/return to Chat. Read back the same profile/session,
+  canonical history and terminal outcomes. Record zero added sends, creates, model
+  writes, approval responses or Stop requests. Failed reads allow explicit retry
+  without replay; delayed old-owner reads cannot settle the current session.
+  Run bounded native/live read-only checks and nearest deterministic regressions.
+  Dependencies: PARITY-LIVE-WORKFLOW. Section: Next. Not eligible before it passes.
+  Ownership: unclaimed in this index; check tracker leases before execution.
+
+- [ ] **VERIFY-OMNIROUTE-NODE22-CLOSURE** — Goal: SECURITY. Section: Next. Verify retired OmniRoute paths and retained dependencies on Node.js 22.
+  Payoff: qualify the committed removal without rebuilding the deleted installer.
+  Sources: [retirement design](docs/spec.md#security-compatibility-and-delivery),
+  [verification plan](docs/test-plan.md#acceptance-records-and-gaps),
+  [historical review](docs/quality/omniroute-install-review.md) and
+  [supported toolchain](CONTRIBUTING.md#setup). Baseline: committed retirement
+  `92beb1dcddbf2be638ac7819f3a636ec25ba75e2`; capture later candidate inputs separately
+  from the canonical goal ledger. The ledger title retains the predecessor scope.
+  Scope: root manifest/lock, existing retirement checks, retained generic catalog
+  and audit decoding. Exclude recreated installer assets, external installations,
+  credentials, service actions, live inference, upstream edits and audit suppression.
+  Acceptance: on Node.js 22 run `npm audit --audit-level=high` and
+  `node --test test/tooling/omniroute_retirement_test.mjs`; run focused Go retirement
+  checks and `flutter test test/features/profiles/profile_catalog_test.dart` on the
+  same candidate. Prove former CLI actions and discovery/setup contracts unavailable,
+  bundled assets absent, generic catalog and historical audit decoding retained.
+  Record exact commands, exits and input hashes. Missing or failing checks stay
+  unverified; source removal alone does not close SECURITY or release acceptance.
+  Dependencies: FIX-NPM-AUDIT is ledger-done, not proof the old embedded audit passed.
+  Ownership: retain the existing remediation owner's routing; reconcile scheduled
+  card t_a466ece0 against removed inputs before execution. No card or lease change
+  is authorized here. Queued in Next, not dispatched by this documentation pass.
+
+- [ ] **FILES-TERMINAL-BROWSE** — Goal: PARITY. Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
+  Sources: [FILES-1, FILES-2 and FILES-4](docs/product/prd.md#terminal-working-directory-files), owner-confirmed terminal working directory.
+  Scope: [source tracing is complete](docs/analysis/terminal-files-feasibility.md); implement the read-only Files surface through qualified authenticated `hermes serve` routes. Qualify actual file authentication, authoritative session/profile root and server-enforced canonical containment before enabling access. List/read-text lack session parameters; local default-cwd and non-SSH execution backends need explicit qualification. Messaging-API-only connections remain unsupported. No Wing Link requirement, Agent edits, arbitrary shell, host-wide browser, file writes or prompt-based retrieval.
+  Acceptance: folders/files and read-only bounded text previews; exact connection/profile/session root; keyboard/touch access; loading/empty/denied/unsupported/retry states; context-change stale-result rejection; traversal/symlink denial; no incidental mutation or content logs. Linux and Android device checks remain separately recorded.
+  Dependencies: none. Section: Next. Preserve the current leading connection milestone. Ownership: unassigned.
+
+- [ ] **FILES-TERMINAL-DOWNLOAD** — Goal: PARITY. Download an individual selected workspace file to the device running Wing.
+  Sources: [FILES-3 and FILES-4](docs/product/prd.md#terminal-working-directory-files) and [existing raw-download contract](docs/analysis/terminal-files-feasibility.md#existing-contracts-and-official-consumers). Use the qualified owning `serve` connection and authenticated headers, not preview text or a token-bearing URL. Save-picker and byte-readback qualification remain open on both platforms.
+  Scope: reuse browse owner/root authorization; explicit Linux Save As and Android document-save picker, bounded/cancellable transfer, sanitized filename and destination handling. No upload, edit/delete, executable preview, recursive folder download or silent overwrite.
+  Acceptance: read back saved bytes against the selected source; cancellation/denial/disconnection/owner-switch leave no claimed successful save; progress and explicit retry; test text and binary downloads and hostile filenames; native Linux and Android save receipts, not download-start-only claims.
+  Dependencies: FILES-TERMINAL-BROWSE. Section: Next. Ownership: unassigned.
+
+### Queue rules
+
+These distinct slices preserve two unfinished tasks per incomplete goal.
+They are queued, not ready while their predecessor is unfinished.
+Missing contracts remain unavailable; preparation does not authorize activation.
+Do not start duplicate work or repeat completed proofs with unchanged inputs.
+
+
+These tasks cover previously grouped or implicit gaps. They do not replace
+existing cards or grant privileged implementation authority. A missing contract
+defers only that operation. Verification tasks must record executed results
+before their goals can become `met`.
+
+### P0 — Desktop welcome and direct connection
+
+- [ ] **PARITY-MAESTRO-ANDROID-DEVICE** — Goal: PARITY. Execute the repaired
+  approval/Stop/reconnect and deferred attachment-owner-race journeys in the
+  owner-selected Waydroid Android environment, then qualify remaining mapped flows.
+  Payoff: prove mobile control outcomes rather than substitute widget counters.
+  Sources: [fixture receipt](docs/quality/android-approval-attachment-fixture.md),
+  [matrix](docs/product/hermes-desktop-feature-matrix.md) and
+  [runbook](docs/runbooks/desktop-feature-qualification.md).
+  Scope: existing QA wrapper/fixtures and nearest regressions; add missing assertions
+  and the smallest exposed Wing fixes. Exclude live inference, Agent edits, personal
+  app resets, authentication bypass and privileged service/network changes.
+  Acceptance: successful current ADB authentication, reviewed disposable target and
+  `.qa` package, source/build/flow fingerprints, actual Maestro launch and per-flow
+  exits. Prove three sends, two decisions, one Stop and unchanged recovery counters;
+  prove late attachment rejection across both session owners and a usable next pick.
+  Qualify the retained earlier-history tail separately. Include fresh welcome,
+  keyboard Back/cancel, sanitized denial, explicit retry and saved-owner relaunch
+  against the exact disposable Android artifact. The
+  [Linux welcome recovery](docs/quality/desktop-welcome-recovery.md) does not qualify Android.
+  Record other mapped journeys
+  as pass/fail/unsupported/not-run, without closing positive gaps through unavailable
+  states. Run relevant format/analyze/tests for changed Dart.
+  Default applied: use Waydroid now, with the isolated `.qa` app. Prepare normal
+  authenticated ADB connectivity and missing user-space tools within this target;
+  preserve host trust, shared services and the paired app. Empty ADB inventory is
+  engineering setup, not a request for the owner to supply a phone. Waydroid
+  receipts do not close physical-device M2 acceptance. No privileged service
+  repair, authentication bypass or unrelated device adoption is authorized.
+  Dependencies: none. Section: Next. Ownership: unclaimed in this index; check tracker.
+
+- [ ] **PARITY-NATIVE-LINUX** — Goal: PARITY. Execute and extend native Linux
+  counterparts for the mapped Android outcomes. Payoff: qualify the actual Flutter
+  desktop target without pretending Maestro provides a GTK driver.
+  Map native scenarios to the same HD-* rows and separate delivered subsets from
+  unsupported operations. Do not close a row through a containing screen-tour file.
+  Sources: [matrix](docs/product/hermes-desktop-feature-matrix.md),
+  [native suite](integration_test/linux_maestro_flows_test.dart),
+  [runbook](docs/runbooks/desktop-feature-qualification.md).
+  Scope: owned Xvfb display/state, native fixtures and bounded missing counterpart
+  scenarios. Add regression-driven in-scope fixes, no personal runtime changes.
+  Acceptance: actual native launches, per-scenario exits and matching source/build
+  receipts. Exercise wide/compact behavior, cancellation, ownership and no replay.
+  Keep browser, unit/widget and live-provider results separate. Unsupported features
+  remain gaps even when their unavailable-state assertion passes.
+  Prerequisite resolution: [BLK-20261005-003](BLOCKERS.md#blk-20261005-003--install-linux-desktop-build-packages-sudo)
+  records a demonstrated user-space build path, not installed system dependencies.
+  Recheck compatibility and use an owned prefix as described in the
+  [native runbook](docs/quality/native-relaunch-workflow.md#safe-user-space-prerequisites-and-reproduction).
+  Keep system packages unchanged. This resolves the sudo prerequisite only;
+  the mapped feature checks still need their own execution evidence.
+  Dependencies: none. Section: Next. Ownership: unassigned, check live tracker.
+
+- [ ] **PARITY-OFFICIAL-MATRIX** — Goal: PARITY.
+  Replace the withdrawn feature mapping with official-source feature groups and
+  per-platform acceptance. Retain Wing receipts as behavior evidence only.
+  Scope: official Desktop source/tests, feature-matrix JSON/Markdown and existing
+  task mappings. Preserve task IDs, leases and historical test results.
+  Acceptance: every official feature group has a pinned real source, supported/
+  unsupported/unverified Wing outcome and Linux/Android verification path. No
+  old source paths or totals are transferred without reinspection. Runtime cells
+  advance only from named-target execution; no blanket parity certification.
+  Sources: [2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix](docs/plans/2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix.md) (historical planning context)
+  [2026-09-02_162056-hermes-wing-rehabilitation-audit](docs/plans/2026-09-02_162056-hermes-wing-rehabilitation-audit.md) (historical planning context)
+  [2026-08-30-hermes-desktop-parity](docs/superpowers/plans/2026-08-30-hermes-desktop-parity.md) (historical planning context);
+   [withdrawn matrix](docs/product/hermes-desktop-feature-matrix.md),
+  [official reference](docs/quality/official-desktop-reference.md).
+  Knowledge mapping: [official bootstrap/pane/ownership/replay/Stop findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Map only semantically traced outcomes; mark controller/plugin imports and deeper settings/IPC/rollback/Projects/tool/slash/accessibility gaps as unverified. Inspected upstream tests and graph edges do not advance runtime cells.
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next. Ownership: unclaimed.
+
+- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE** — Goal: CHAT-FIDELITY. Section: Next. Keep recovered
+  tool categories and current approval actions keyboard-operable in native Linux.
+  Payoff: prove the supported transcript outside browser/widget-only qualification.
+  Sources: [reconnect limits](docs/quality/chat-transcript-reconnect.md#limits-and-handoff)
+  and [accessibility decision](docs/adr/client.md#decision).
+  Scope: existing native integration harness, timeline/channel and deterministic
+  fixture; add focused native scenarios and regressions for reproduced Wing defects.
+  Exclude live inference/tools, Agent edits, system installs, new APIs, audio,
+  personal state and screen-reader support claims without matching evidence.
+  Acceptance: native GTK keyboard disclosure and current-owner approval work after
+  canonical reconnect and compact/wide return. Retired actions disappear; tool
+  content stays redacted; recovery adds no sends, decisions, creates or Stop.
+  Run owned native scenarios and nearest widgets with exact request/source receipts.
+  Dependencies: VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY; ordered successor in Next.
+  Current evidence: [native approval recovery](docs/quality/native-transcript-recovery.md)
+  already qualifies four reconnect/remount/approval cases at 100/200% text.
+  Coordinate the remaining acceptance with that completed slice; do not duplicate
+  its scenarios or infer process-restart qualification.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART** — Goal: CHAT-FIDELITY. Section: Next.
+  Restore canonical tool ordering and retire approval actions after native restart.
+  Payoff: prove process recovery separately from mounted native interaction.
+  Sources: [accessibility limits](docs/quality/chat-transcript-accessibility.md#evidence-boundary)
+  and [native restart pattern](docs/quality/native-relaunch-workflow.md).
+  Scope: extend the isolated Linux fixture, integration target and owned launcher;
+  repair reproduced Wing defects and add nearest regressions. Exclude upstream
+  changes, live inference, credentials, system installs and shadow disclosure state.
+  Acceptance: two distinct native processes restore exact-owner canonical history.
+  Tool categories remain ordered and keyboard-reachable; retired approvals stay absent.
+  Include the [mobile reference scenarios](docs/test-plan.md#mobile-reference-scenarios):
+  grouped errors and live tools retain canonical ordering after recovery. Expired
+  activity must not become a successful terminal outcome. Reuse the existing fixture.
+  Restart adds zero sends, creates, model writes, approval decisions or Stop requests.
+  Record source fingerprints, exact requests, process IDs and owned-process teardown.
+  Dependencies: VERIFY-CHAT-TRANSCRIPT-NATIVE; ordered successor in Next.
+  Ownership: unclaimed in this index; verify current tracker leases before execution.
+
+- [ ] **VERIFY-PROFILE-FOOTER-NATIVE** — Goal: PARITY-COMPOSITION.
+  Keep the delivered passive footer reachable and current in an isolated Linux app.
+  Payoff: qualify profile context and management navigation on the desktop target.
+  Sources: [footer contract and limits](docs/quality/profile-footer-implementation.md)
+  and [client decision](docs/adr/client.md#decision).
+  Scope: production shell/footer, native QA harness and smallest exposed Wing
+  presentation repairs. Excludes new profile switching/editing, APIs, live inference,
+  credentials, system installs and physical/screen-reader support claims.
+  Acceptance: native Tab/Shift+Tab and Enter/Space reach Manage profiles after
+  collapse and compact/wide return at enlarged text. Current-owner replacement
+  updates the redacted label; obsolete notifications do not restore old context.
+  Explicit navigation leaves profile/session identity unchanged; passive rendering
+  adds no domain reads or mutations. Retain source/platform/focus/effect receipts
+  and run nearest regressions plus analysis.
+  Dependencies: VERIFY-GLOBAL-SESSION-MODAL-NATIVE (done). Section: Next.
+  Ownership: unclaimed in this index; check tracker leases before execution.
+
+- [ ] **VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY** — Goal: PARITY-COMPOSITION.
+  Keep native profile context current through management-route return and reconnect.
+  Payoff: preserve the passive footer's owner boundary while feature routes change.
+  Sources: [footer scope](docs/quality/profile-footer-implementation.md)
+  and [native panel limits](docs/quality/global-session-modal-native.md#boundaries).
+  Scope: production shell/footer and Profiles route with deterministic channel
+  overrides, Linux native QA harness and nearest regressions. Repair exposed Wing
+  defects only. Exclude edit/switch feature expansion, new APIs, live inference,
+  secrets, system installs, physical input and screen-reader support claims.
+  Acceptance: keyboard-open Manage profiles, return to Chat and reconnect the
+  current channel. The current redacted label and reachable control survive at
+  compact/wide widths and enlarged text. Delayed retired-owner notifications do
+  not change the replacement context. Passive footer work adds no reads or writes;
+  explicit route reads are counted separately. Preserve exact profile/session
+  identity and record input, focus, request and owned-process teardown evidence.
+  Run bounded Linux integration and nearest regression checks plus analysis.
+  Dependencies: VERIFY-PROFILE-FOOTER-NATIVE. Section: Next. Not eligible before it passes.
+  Ownership: unclaimed in this index; check tracker leases before execution.
+
+- [ ] **WING-TASK-408** — Goal: PARITY-COMPOSITION. Keep Chat alive while Settings
+  and Profiles overlays open and close in the compiled application.
+  Payoff: users inspect settings or profiles without losing their draft or stream.
+  Scope: `ChatWorkspaceOverlay`, production router/shell callers and deterministic
+  browser/native integration tests. Reuse implemented overlays and widget evidence;
+  fix only reproduced navigation, focus or retained-workspace defects.
+  Acceptance: shell and chat-local entries open the intended modal at compact and
+  wide widths. Close, Escape and Back return to the exact retained chat and focus.
+  Draft, transcript and current stream survive; no implicit connection/profile
+  mutation or extra prompt occurs. Browser Back/Forward, direct deep links and
+  owner replacement cannot resurrect stale routes or controls. Verify 200% text
+  and keyboard access in compiled Chromium and an isolated Linux app journey.
+  Record browser history and native evidence separately. Android remains unqualified.
+  Sources: [2026-07-17-settings-information-architecture](docs/superpowers/plans/2026-07-17-settings-information-architecture.md) (historical planning context);
+   [implemented overlay and evidence limits](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
+  [port fidelity scope](docs/product/hermes-desktop-parity.md#current-delivery-assessment).
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next.
+  Ownership: unclaimed; coordinate router/shell and profile-footer owners before edits.
+
+### Terminal working-directory files (planned)
+
+- [ ] **CONNECTION-CRON-ADMISSION** — Goal: CONNECTION-PATHS. Section: Next.
   Repair and verify safe main-only admission without modifying Hermes Agent.
   Payoff: the existing cron can admit one port writer instead of repeating refusals.
   Sources: [2026-10-03-desktop-port-goal](docs/plans/2026-10-03-desktop-port-goal.md) (current planning context);
@@ -182,124 +835,6 @@ active workers and coordinate exact source ownership before dispatch.
 
 
 
-- [ ] **CONNECTION-OFFICIAL-DESKTOP-PORT** — Goal: CONNECTION-PATHS.
-  Re-trace welcome, Local, SSH and Remote against official `apps/desktop`, then
-  implement the smallest evidenced production connection correction.
-  Payoff: stop implementing behavior from a disqualified product reference.
-  Scope: official Desktop source and nearest tests, Wing channel caller and
-  production entry; pin the inspected revision and keep upstream read-only.
-  Acceptance: trace actual connection/auth/transport and lifecycle contracts,
-  including headless serve/JSON-RPC versus Wing's existing REST/SSE path. Do not
-  assume compatibility or invent a new backend. Apply one evidence-backed Wing
-  correction with production-control regressions and compact/wide visual checks.
-  Unsupported operations remain explicit; preserve profile identity, strict host
-  trust, direct Agent authority and public-only key copy. No Agent patches,
-  personal-runtime changes or unapproved deployment/spending.
-  Sources: [2026-10-03-desktop-daily-workflow](docs/plans/2026-10-03-desktop-daily-workflow.md) (current planning context)
-  [2026-10-03-desktop-port-first-wave](docs/plans/2026-10-03-desktop-port-first-wave.md) (historical planning context)
-  [2026-09-04-conduit-adaptation-roadmap](docs/superpowers/plans/2026-09-04-conduit-adaptation-roadmap.md) (historical planning context);
-   [official reference correction](docs/quality/official-desktop-reference.md),
-  official `apps/desktop/AGENTS.md`, `src/AGENTS.md` and `DESIGN.md`.
-  Dependencies: none. Section: Now. Ownership: unclaimed; coordinate with existing
-  CONNECTION-LINK-REMOVAL and CONNECTION-SAVED-WORKFLOWS owners before writing.
-  Plan authority: [all-plan reference policy](docs/plans/README.md).
-  Official knowledge input: [bounded source findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Trace one send/stream/input/Stop/disconnect/resume slice through request leases, explicit connection/profile/durable/runtime identities, timeout/abort and replay ordering. Inspect production helpers behind warm/cold resume and expired-approval tests before adding the smallest regression-backed correction. Pane reactivity and accessible error recovery are behavior acceptance, not naming-only refactors.
-
-- [ ] **PARITY-OFFICIAL-MATRIX** — Goal: PARITY.
-  Replace the withdrawn feature mapping with official-source feature groups and
-  per-platform acceptance. Retain Wing receipts as behavior evidence only.
-  Scope: official Desktop source/tests, feature-matrix JSON/Markdown and existing
-  task mappings. Preserve task IDs, leases and historical test results.
-  Acceptance: every official feature group has a pinned real source, supported/
-  unsupported/unverified Wing outcome and Linux/Android verification path. No
-  old source paths or totals are transferred without reinspection. Runtime cells
-  advance only from named-target execution; no blanket parity certification.
-  Sources: [2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix](docs/plans/2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix.md) (historical planning context)
-  [2026-09-02_162056-hermes-wing-rehabilitation-audit](docs/plans/2026-09-02_162056-hermes-wing-rehabilitation-audit.md) (historical planning context)
-  [2026-08-30-hermes-desktop-parity](docs/superpowers/plans/2026-08-30-hermes-desktop-parity.md) (historical planning context);
-   [withdrawn matrix](docs/product/hermes-desktop-feature-matrix.md),
-  [official reference](docs/quality/official-desktop-reference.md).
-  Knowledge mapping: [official bootstrap/pane/ownership/replay/Stop findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Map only semantically traced outcomes; mark controller/plugin imports and deeper settings/IPC/rollback/Projects/tool/slash/accessibility gaps as unverified. Inspected upstream tests and graph edges do not advance runtime cells.
-  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next. Ownership: unclaimed.
-
-- [ ] **CONNECTION-LINK-REMOVAL** — Goal: CONNECTION-PATHS. Remove Wing Link
-  from all product connection/setup, profile/catalog and management paths, including
-  explicit legacy support. No optional legacy mode remains in the removal target.
-  Roadmap stage 1: [connection foundation](ROADMAP.md#1-finish-the-connection-foundation).
-  Preserve the existing active removal owner; complete saved-endpoint API retirement,
-  then remaining consumers/fixtures and packaging handoff. Do not spend another
-  occurrence on broad parity discovery or README polishing instead of this outcome.
-  Payoff: connect directly without a second service, pairing, wing-cli or Link token.
-  Scope: enrollment, Local platform flow, profile/catalog callers, Connections and
-  nearest production-control tests. Retire explicit pairing/handoff payloads and
-  routes, Local/Termux bootstrap, dormant builders/directory adapters and legacy
-  credential/contact APIs after the active enrollment slice. Reuse current Agent
-  APIs and Linux discovery; do not expand or replace the management service.
-  Unsupported operations must explain unavailable Agent support, not invoke a shell.
-  Acceptance: fresh/saved Local, SSH and Remote use zero Link requests or setup
-  prerequisites. Profile/model choice does not fetch the Link catalog. Cancelling
-  replacement setup and reconnect preserve exact host/profile/session and no replay.
-  Old pairing input fails safely with direct reconnection guidance; missing Agent
-  credentials require explicit reauthentication, not legacy Link recovery. Preserve
-  stored Agent access and raw user records. No Link construction/process/fallback
-  remains, even for previously paired installations.
-  Linux offers default Hermes-home inspection and a folder chooser; Android offers
-  guided same-phone Agent setup, with installation and auth readiness distinguished.
-  Sources: [2026-08-10_193813-wing-next-do-test-roadmap](docs/plans/2026-08-10_193813-wing-next-do-test-roadmap.md) (historical planning context)
-  [wing-link-remote-management](docs/plans/wing-link-remote-management.md) (superseded planning context)
-  [2026-08-05-wing-link-local-runtime](docs/superpowers/plans/2026-08-05-wing-link-local-runtime.md) (superseded planning context)
-  [2026-08-22-android-pairing-ux](docs/superpowers/plans/2026-08-22-android-pairing-ux.md) (superseded planning context)
-  [2026-08-30-android-termux-local-agent](docs/superpowers/plans/2026-08-30-android-termux-local-agent.md) (superseded planning context);
-   [deprecation](docs/adr/product.md#wing-link-deprecation),
-  [complete removal plan](docs/adr/product.md#complete-removal-including-legacy),
-  [forward roadmap](ROADMAP.md#flutter-port-execution-roadmap),
-  Graph evidence: fresh partial core AST, WingLinkClient at wing_link_client.dart:198
-  and LocalWingLinkHost at local_wing_link_host.dart:53; callers/packaging corroborated
-  by source, not semantic graph. See the plan for inventory and coverage limits.
-  [CONN-2](docs/product/prd.md#connection-path-requirements),
-  [verification](docs/test-plan.md#connection-path-verification).
-  Dependencies: none. Section: Now. Ownership: in progress under the existing
-  removal owner; coordinate Local layout/l10n, discovery and browser-matrix inputs.
-  Historical candidate continuation (superseded; preserved receipt, not current
-  next action): [Profiles Agent-only removal](docs/quality/profiles-agent-only-follow-through.md)
-  implements the bounded Profiles consumer slice on `agent/wing/t_e002406c`, not
-  the canonical checkout or the whole goal. Capture its four owned Dart inputs,
-  including the reviewed correction at `e54522c7c58b1bab2bedc2bcc77194b98f66d33b`.
-  Cancel and successful mutations no longer recover pending Link credentials in
-  that isolated widget candidate; native review approved the bounded slice.
-  Integration remains with the existing owner: retire excluded fallback expectations
-  and repair the captured fixture/import closure without borrowing moving inputs.
-  Smallest next check: the pending-recovery probe and focused Profiles/editor targets
-  on the frozen combined candidate, then full analysis. Retain the existing branch
-  pass and analyzer failures as separate evidence; preserve all leases.
-  MT-RERUN-TRAIN owns broader combined-tree gates; no duplicate removal task.
-  Historical frontier (superseded): Profiles and Connections are delivered at f2d8b8b9; automatic
-  saved Link credential recovery is delivered at 312b9292. Active enrollment card
-  t_22e074db keeps its original bounded contract and lease. After its review/delivery,
-  continue the complete-removal plan on this same parent; no duplicate worker.
-  Checks: public-control enrollment/router/local-setup/saved-connection regressions,
-  retained Agent security tests, analysis and affected integrated web/native guards.
-  Delivered offline outcome: original card t_587682e1 produced retirement commit
-  bce4ec5fb9109d29520b81260f13bad93c6f2cb7; native independent review run 309
-  approved that exact source. Coordinator integrated and verified origin/main at
-  963b9b5bd2233d83506655ec354438a0be0b97d7. All 186 owned blobs/modes/deletions
-  match the reviewed commit; only newer canonical TODO/goals context differs.
-  Client/service trees, installers, bootstrap asset, Linux Go bundling and service
-  release/package dependencies are removed together. Agent behavior, secure storage
-  and inert legacy raw records remain preserved. No installed service was touched.
-  Acceptance: full Flutter 3757 passed/8 skipped, Chromium 47 passed/1 live skip,
-  Node 118 and Python 109 passed, analysis/web build/audit passed; independent review
-  exercised 207 Flutter tests and the tooling suites. Integration-specific retirement/
-  archive checks passed 48 tests; goals validation and diff whitespace passed.
-  The interrupted earlier suite remains a failure, not reused passing evidence.
-  Remaining combined parent acceptance: named Linux native chooser/setup and Android/
-  Termux direct setup/migration qualification, not another source-removal batch.
-  Reuse existing CONNECTION-SETUP-AUTH-MATRIX and native/device tasks; preserve their
-  leases and live-operation exclusions. Packaging retirement is already delivered;
-  do not dispatch another deletion/guard card. Keep this parent in_progress until
-  its stated named-target acceptance is evidenced. See
-  [the acceptance map](docs/quality/link-delivery-retirement.md).
-
 - [ ] **CONNECTION-LINK-RETIREMENT** — Goal: CONNECTION-PATHS. Retire legacy
   Wing Link packaging, installers and compatibility dependencies after replacement.
   Payoff: a standalone Wing client with Agent-only/native setup, not a second backend.
@@ -328,7 +863,7 @@ active workers and coordinate exact source ownership before dispatch.
   Audit each remaining legacy goal/task for replacement rather than marking it met
   because its code was removed. Reconcile agent guides only within authorized scope.
   Sources: [deprecation](docs/adr/product.md#wing-link-deprecation),
-  [runtime boundary](docs/adr/runtime-and-delivery.md#management-and-compatibility),
+  [runtime boundary](docs/adr/runtime-and-delivery.md#agent-only-delivery),
   [complete removal plan](docs/adr/product.md#complete-removal-including-legacy).
   Graph evidence: fresh partial client/host AST plus source-inspected Linux CMake,
   release-alpha and platform-smoke jobs; packaging/service semantic graph unverified.
@@ -419,8 +954,8 @@ active workers and coordinate exact source ownership before dispatch.
   Dependencies: CONNECTION-LINK-REMOVAL. Section: Next. Ownership: unclaimed.
 
 
-Priority order: P0 → P1 → P2 → P3 → P4. Dependencies and live ownership
-override position within a group. P0 continues with remaining direct connection work.
+Queue order: bounded easy-first work, then the remaining strategic queue.
+Real dependencies and existing ownership override effort estimates.
 The [welcome recovery](docs/quality/desktop-welcome-recovery.md) has bounded Linux GTK
 and Chromium evidence. Android, physical keychain, live authentication and
 protected-main delivery remain open. Unsupported operations
@@ -435,172 +970,24 @@ code, not a production channel. Each slice must reuse verified behavior where
 possible and preserve the existing messaging API path. No task authorizes Agent
 patches, personal credential discovery, service restarts or provider spending.
 
-- [ ] **WING-TASK-405** — Goal: CONNECTION-PATHS. Connect to an explicitly selected,
-  already-running local `hermes serve` through production controls.
-  Payoff: expose the official Desktop backend without treating REST/SSE and
-  JSON-RPC credentials or capabilities as interchangeable.
-  Scope: existing web-read client, endpoint/channel selection, secure credential
-  acquisition and nearest production connection tests. Trace actual official
-  authentication before promoting any qualification-only code. No automatic
-  process launch, remote authentication expansion, CLI fallback or Wing Link.
-  Acceptance: connect and read profile/session/history for the captured owner;
-  prove authentication denial, unsupported capability, cancellation and explicit
-  retry through public controls. Late results cannot replace another connection.
-  Record the exact qualified auth/operation contract. Keep unsupported surfaces
-  unavailable rather than enabling mutations through a broad authorization flag.
-  Run focused client/widget tests, analyzer and an isolated Linux app journey
-  against a deterministic authenticated backend. Live Agent authentication and
-  Android remain separate NOT_CHECKED outcomes until exercised.
-  Sources: [official source findings](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
-  [transport qualification](docs/adr/client.md#transport-qualification),
-  [direct connection requirements](docs/product/prd.md#connection-path-requirements).
-  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next.
-  Ownership: unclaimed; coordinate connection and Link-removal owners before edits.
-
-- [ ] **WING-TASK-406** — Goal: CONNECTION-PATHS. Send, stream, answer a correlated
-  approval and request Stop through the qualified production `serve` connection.
-  Payoff: a successful connection leads to usable chat, not a read-only test panel.
-  Scope: production HermesChannel adapter and chat composition using the existing
-  lifecycle models. Preserve connection/profile/stored/runtime session identity.
-  No general RPC bridge, secret logging, new Agent contracts or automatic sends.
-  Acceptance: one explicit Send reaches the captured owner and streams ordered
-  transcript/tool events. An approval response targets only its current request;
-  `request.cancel` retires it. Stop targets the captured session and distinguishes
-  requested, uncertain and authoritative terminal outcomes. Denial, timeout,
-  cancellation and owner replacement retain actionable recovery without replay.
-  Add transport and production-control regressions, then exercise the complete
-  workflow in the isolated Linux app with deterministic backend request counts.
-  Fixtures do not qualify live inference, spending or Android behavior.
-  Sources: [lifecycle findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences),
-  [transport boundaries](docs/adr/client.md#transport-qualification).
-  Current implementation input: `8866604b` adds idle `request.cancel` handling
-  in the internal lifecycle adapter, profile-bound queue display/answer admission
-  and settlement regressions. This is not production wiring or a current executed
-  pass. Smallest next check: run
-  `flutter test --no-pub --concurrency=1 test/core/hermes/client/hermes_web_lifecycle_test.dart`
-  on the assembled candidate, then add the production-control withdrawal journey
-  with zero stale approval responses. Carry adapter, channel, fixture, regression,
-  localization and dependency inputs with their own baseline manifest. Canonical
-  `goals.json` remains ledger authority; branch-ledger byte equality is not an
-  implementation prerequisite. Sources: [withdrawal verification](docs/test-plan.md#idle-approval-withdrawal-regression).
-  Dependencies: WING-TASK-405. Section: Next.
-  Ownership: unclaimed; preserve PARITY-LIVE-WORKFLOW and existing chat owners.
-
-- [ ] **WING-TASK-407** — Goal: CONNECTION-PATHS. Restore the same production
-  `serve` conversation after socket loss and an isolated app restart.
-  Payoff: connection recovery restores canonical work without duplicating a prompt.
-  Scope: the new production adapter's replay/history barrier, recovery storage and
-  public Retry. This is distinct from CONNECTION-OWNER-RECONNECT's REST/SSE slice.
-  Acceptance: monotonic events and canonical history reconcile before new input;
-  stored/runtime session identities remain explicit. Duplicate, stale and wrong-owner
-  events cannot alter the selected conversation. Unknown submit or Stop outcomes
-  remain uncertain until authoritative recovery. Reconnect/relaunch makes zero
-  prompt, approval or Stop replays. A later deliberate Send occurs exactly once.
-  Add adapter regressions and an isolated two-process Linux fixture journey with
-  denied-read recovery and exact request counts. Report detached-run limitations,
-  live Agent and Android gaps separately; do not promise background durability.
-  Sources: [replay and resume findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences),
-  [transport qualification](docs/adr/client.md#transport-qualification).
-  Dependencies: WING-TASK-406. Section: Next.
-  Ownership: unclaimed; coordinate recovery and integration owners before edits.
-
-- [ ] **WING-TASK-408** — Goal: PARITY-COMPOSITION. Keep Chat alive while Settings
-  and Profiles overlays open and close in the compiled application.
-  Payoff: users inspect settings or profiles without losing their draft or stream.
-  Scope: `ChatWorkspaceOverlay`, production router/shell callers and deterministic
-  browser/native integration tests. Reuse implemented overlays and widget evidence;
-  fix only reproduced navigation, focus or retained-workspace defects.
-  Acceptance: shell and chat-local entries open the intended modal at compact and
-  wide widths. Close, Escape and Back return to the exact retained chat and focus.
-  Draft, transcript and current stream survive; no implicit connection/profile
-  mutation or extra prompt occurs. Browser Back/Forward, direct deep links and
-  owner replacement cannot resurrect stale routes or controls. Verify 200% text
-  and keyboard access in compiled Chromium and an isolated Linux app journey.
-  Record browser history and native evidence separately. Android remains unqualified.
-  Sources: [2026-07-17-settings-information-architecture](docs/superpowers/plans/2026-07-17-settings-information-architecture.md) (historical planning context);
-   [implemented overlay and evidence limits](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
-  [port fidelity scope](docs/product/hermes-desktop-parity.md#current-delivery-assessment).
-  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next.
-  Ownership: unclaimed; coordinate router/shell and profile-footer owners before edits.
-
-### Terminal working-directory files (planned)
-
-- [ ] **FILES-TERMINAL-BROWSE** — Goal: PARITY. Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
-  Sources: [FILES-1, FILES-2 and FILES-4](docs/product/prd.md#terminal-working-directory-files), owner-confirmed terminal working directory.
-  Scope: [source tracing is complete](docs/analysis/terminal-files-feasibility.md); implement the read-only Files surface through qualified authenticated `hermes serve` routes. Qualify actual file authentication, authoritative session/profile root and server-enforced canonical containment before enabling access. List/read-text lack session parameters; local default-cwd and non-SSH execution backends need explicit qualification. Messaging-API-only connections remain unsupported. No Wing Link requirement, Agent edits, arbitrary shell, host-wide browser, file writes or prompt-based retrieval.
-  Acceptance: folders/files and read-only bounded text previews; exact connection/profile/session root; keyboard/touch access; loading/empty/denied/unsupported/retry states; context-change stale-result rejection; traversal/symlink denial; no incidental mutation or content logs. Linux and Android device checks remain separately recorded.
-  Dependencies: none. Section: Next. Preserve the current leading connection milestone. Ownership: unassigned.
-
-- [ ] **FILES-TERMINAL-DOWNLOAD** — Goal: PARITY. Download an individual selected workspace file to the device running Wing.
-  Sources: [FILES-3 and FILES-4](docs/product/prd.md#terminal-working-directory-files) and [existing raw-download contract](docs/analysis/terminal-files-feasibility.md#existing-contracts-and-official-consumers). Use the qualified owning `serve` connection and authenticated headers, not preview text or a token-bearing URL. Save-picker and byte-readback qualification remain open on both platforms.
-  Scope: reuse browse owner/root authorization; explicit Linux Save As and Android document-save picker, bounded/cancellable transfer, sanitized filename and destination handling. No upload, edit/delete, executable preview, recursive folder download or silent overwrite.
-  Acceptance: read back saved bytes against the selected source; cancellation/denial/disconnection/owner-switch leave no claimed successful save; progress and explicit retry; test text and binary downloads and hostile filenames; native Linux and Android save receipts, not download-start-only claims.
-  Dependencies: FILES-TERMINAL-BROWSE. Section: Next. Ownership: unassigned.
-
-### Queue rules
-
-These distinct slices preserve two unfinished tasks per incomplete goal.
-They are queued, not ready while their predecessor is unfinished.
-Missing contracts remain unavailable; preparation does not authorize activation.
-Do not start duplicate work or repeat completed proofs with unchanged inputs.
-
-
-These tasks cover previously grouped or implicit gaps. They do not replace
-existing cards or grant privileged implementation authority. A missing contract
-defers only that operation. Verification tasks must record executed results
-before their goals can become `met`.
-
-### P0 — Desktop welcome and direct connection
-
-- [ ] **BACKEND-SSH-KEY-NATIVE** — Goal: REMOTE-BACKENDS. Qualify full-app
-  managed-key SSH on native Linux and Android against the approved host.
-  Payoff: prove actual app authentication and device reachability, not terminal login.
-  Scope: production managed form, isolated app state and named-platform execution.
-  Acceptance: independently record host trust, SSH/Agent authentication,
-  profile/model/history loading, disconnect and explicit reconnect without replay.
-  Exercise denied/changed keys and cancellation. Include generated-key secure
-  storage denial, public-only native clipboard, deliberate saved-key reuse and
-  unchanged key identity across real process restart. Retain existing generation limits;
-  do not infer permission for provider spending or personal-runtime mutations.
-  Sources: [native qualification](docs/test-plan.md#ssh-private-key-qualification).
-  Dependencies: BACKEND-SSH-KEY-AUTH. Section: Next.
-  Ownership: unclaimed; both platform results remain NOT_CHECKED. Reuse the new
-  `scripts/run_managed_ssh_key_native.sh` and integration test rather than rebuild
-  the harness. Seven Python preparation tests pass in its isolated QA venv.
-  Native execution and the real operating-system chooser remain separate checks.
-
-
-- [ ] **CONNECTION-SAVED-WORKFLOWS** — Goal: CONNECTION-PATHS. Complete and
-  prove owner-safe Local/Remote entry and saved-connection workflows.
-  Payoff: a connection choice leads to working setup or authenticated endpoint
-  access, not a label-only screen.
-  Sources: [2026-07-16-multi-gateway-unified-chats](docs/superpowers/plans/2026-07-16-multi-gateway-unified-chats.md) (historical planning context)
-  [2026-09-04-resource-consistency](docs/superpowers/plans/2026-09-04-resource-consistency.md) (historical planning context);
-  [CONN-2/3/5/6](docs/product/prd.md#connection-path-requirements),
-  [enrollment](docs/product/enrollment.md),
-  [verification matrix](docs/test-plan.md#connection-path-verification).
-  Scope: existing setup/enrollment, saved-host controls and owner-fenced channel
-  integration. Add the smallest fixes exposed by production-path regressions.
-  Apply the owner correction: direct Agent use requires no Wing Link installation,
-  pairing or management credential. Preserve optional management authorization.
-  Exclude new SSH/OAuth authority, remote installs and personal runtime changes.
-  Acceptance: existing-install/setup-needed, cancellation, auth/storage failure,
-  explicit retry, name/edit/test/remove and two-host profile/session collisions
-  pass through public controls. Late old results cannot redirect the replacement.
-  A fresh compiled fixture journey reports saved versus connected readiness.
-  Unsupported OAuth is explained. Native/live checks remain separately attributed.
-  Dependencies: CONNECTION-PRIMARY-ENTRY. Section: Now.
-  Ownership: existing connection workflow owner; verify current tracker/lease before dispatch.
-  Partial delivery: `t_90ae659f` qualifies saved-host rename/remove owner safety;
-  see the [source-bound receipt](docs/quality/saved-connection-owner-safety.md).
-  The full workflow acceptance remains open, not completed by this slice.
-  The [first-run receipt](docs/quality/direct-first-run.md) and
-  [native fixture receipt](docs/quality/direct-first-run-native.md) qualify direct
-  Chat/enrollment entry before optional setup/pairing, not live authentication or
-  main delivery. The [saved editor receipt](docs/quality/saved-endpoint-edit.md)
-  adds bounded widget/Chromium edit/Test proof. Preserve the existing workflow
-  owner and M1-SAVED-ENDPOINT-EDIT-NATIVE; do not repeat their delivered subsets.
-  See [current verification](docs/test-plan.md#connection-path-verification).
+- [ ] **CONNECTION-OWNER-RECONNECT** — Goal: CONNECTION-PATHS. Restore the same
+  saved host/profile/session after disconnect without replaying mutations.
+  Payoff: connection recovery retains conversation ownership rather than creating
+  a replacement.
+  Sources: [2026-10-03-study-follow-through](docs/plans/2026-10-03-study-follow-through.md) (current planning context)
+  [2026-09-04-chat-continuity](docs/superpowers/plans/2026-09-04-chat-continuity.md) (historical planning context);
+   [CONN-5/6](docs/product/prd.md#connection-path-requirements)
+  and [recovery checks](docs/test-plan.md#connection-path-verification).
+  Scope: existing Agent channel reconciliation, saved selection and nearest
+  production-path tests. This follows initial saved-host workflows, not new
+  connection authority. Exclude managed SSH, OAuth, installs and live providers.
+  Acceptance: deterministic disconnect/reconnect and delayed old-owner results
+  retain the exact host/profile/session and canonical history; public retry does
+  not duplicate sends, approvals or Stop. Add minimal fixes and freshly compiled
+  browser coverage, plus focused widgets, format and analysis. Native/live support
+  requires separate evidence.
+  Dependencies: CONNECTION-SAVED-WORKFLOWS.
+  Section: Next. Ownership: unclaimed backlog only; no board dispatch in this card.
 
 - [ ] **CONNECTION-SETUP-AUTH-MATRIX** — Goal: CONNECTION-PATHS. Finish the
   remaining CONNECTION-SAVED-WORKFLOWS matrix: Local existing-install/setup-needed
@@ -680,8 +1067,9 @@ before their goals can become `met`.
   [Remote receipt](docs/quality/remote-connection-retry.md).
   Sources: [CONN-2/3/5/6](docs/product/prd.md#connection-path-requirements),
   [saved-host limits](docs/quality/saved-connection-owner-safety.md#acceptance-mapping),
-  [forward roadmap](ROADMAP.md#flutter-port-execution-roadmap)
-  and [accepted restart gates](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview).
+  [forward roadmap](ROADMAP.md#flutter-port-execution-roadmap).
+  Historical restart acceptance remains in its plan; it is not a prerequisite
+  for the current product authentication matrix.
   Graph evidence: partial; no current repository graph. Existing source-bound
   matrix receipts establish delivered subsets, not installed dispatcher admission.
   Acceptance: public-control widget regressions and a freshly compiled Chromium
@@ -693,259 +1081,30 @@ before their goals can become `met`.
   flow, not the phone/computer/pairing chooser. Where managed SSH or an Agent
   operation is unsupported, explain that limit without forcing host management.
   Prove zero Wing Link requests for Agent-only connect and recovery, including
-  absent or failed management access. Existing optional pairing retains its checks.
+  absent or failed management access. Legacy raw records stay inert and preserved.
   See the [accepted decision](docs/adr/product.md#decision) and
   [Agent-only verification](docs/test-plan.md#connection-path-verification).
   Ownership: successor to the existing connection workflow owner; check tracker
   and predecessor ownership before dispatch, without duplicating active work.
 
-- [ ] **CONNECTION-OWNER-RECONNECT** — Goal: CONNECTION-PATHS. Restore the same
-  saved host/profile/session after disconnect without replaying mutations.
-  Payoff: connection recovery retains conversation ownership rather than creating
-  a replacement.
-  Sources: [2026-10-03-study-follow-through](docs/plans/2026-10-03-study-follow-through.md) (current planning context)
-  [2026-09-04-chat-continuity](docs/superpowers/plans/2026-09-04-chat-continuity.md) (historical planning context);
-   [CONN-5/6](docs/product/prd.md#connection-path-requirements)
-  and [recovery checks](docs/test-plan.md#connection-path-verification).
-  Scope: existing Agent channel reconciliation, saved selection and nearest
-  production-path tests. This follows initial saved-host workflows, not new
-  connection authority. Exclude managed SSH, OAuth, installs and live providers.
-  Acceptance: deterministic disconnect/reconnect and delayed old-owner results
-  retain the exact host/profile/session and canonical history; public retry does
-  not duplicate sends, approvals or Stop. Add minimal fixes and freshly compiled
-  browser coverage, plus focused widgets, format and analysis. Native/live support
-  requires separate evidence.
-  Dependencies: CONNECTION-SAVED-WORKFLOWS.
-  Section: Next. Ownership: unclaimed backlog only; no board dispatch in this card.
-
-- [ ] **BACKEND-SSH-CONNECT** — Goal: REMOTE-BACKENDS. Complete and qualify the
-  existing native Dart SSH forwarding to an already-configured authenticated Agent.
-  Payoff: replace manual tunnel setup on the admitted native target without
-  importing Desktop's remote shell bridge. Retain the existing task ID and review
-  dependency; source presence does not close that review.
-  Sources: [CONN-4](docs/product/prd.md#connection-path-requirements),
-  [native design boundary](docs/adr/client.md#decision),
-  [connection design](docs/spec.md#connection-path-design).
-  Scope: existing `lib/core/hermes/ssh/` adapter and app-scoped controller,
-  explicit host trust, permitted credential acquisition, typed inputs, bounded
-  network work/deadlines and UI integration. No new OpenSSH subprocess is needed.
-  No arbitrary SSH command, credential in argv/URL, Agent patch, remote install,
-  gateway restart or new Wing Link compatibility authority.
-  Forward directly to Agent without requiring Wing Link installation, pairing or
-  credentials. Unsupported native targets remain explicit; never simulate a tunnel.
-  Acceptance: deterministic tests cover input rejection, unknown/changed host
-  keys, authentication failure, repeated Connect, collision, timeout, cancellation
-  and stale transport results. A controlled native SSH target supplies actual
-  full-app connection evidence. Fixture-only results do not qualify native SSH. Unsupported platforms
-  retain external-tunnel access. Format, analysis and relevant tests pass.
-  Dependencies: DOC-BACKEND-CONTRACT. Section: Next.
-  Ownership: unclaimed in this index. Verify live tracker/continuation leases.
-  Current implementation: native Dart forwarding and password-form integration
-  now exist. Reuse `lib/core/hermes/ssh/` and the app-scoped controller rather than
-  rebuild the adapter. Native full-app qualification and durable
-  SSH relaunch remain open. Key UI now has passing production-control regressions;
-  BACKEND-SSH-KEY-NATIVE owns the remaining platform qualification. This task is not closed by terminal SSH or widget-only evidence.
-
-- [ ] **DOC-BACKEND-DISCONNECT-CONTRACT** — Goal: REMOTE-BACKENDS. Implement
-  owner-safe managed SSH disconnect and reconnect. Existing task ID retained.
-  Payoff: tunnel interruption cannot lose session identity or replay mutations.
-  Sources: [CONN-4/5/6](docs/product/prd.md#connection-path-requirements),
-  [recovery matrix](docs/test-plan.md#connection-path-verification).
-  Scope: reviewed forwarding lifecycle, channel reconciliation and nearest tests.
-  Clean up only the owned child. Keep remote service/run Stop separate from
-  tunnel teardown. Exclude remote shell, bootstrap, Agent edits and secret copying.
-  Acceptance: disconnect, unexpected child exit, host switches and replaced local
-  ports retain exact durable host/profile/session identity. Old completions cannot
-  tear down replacements. Recovery performs zero implicit sends/approvals/Stop.
-  Prove deterministic races, then the bounded native interruption/recovery journey.
-  Dependencies: BACKEND-SSH-CONNECT. Section: Next.
-  Ownership: unclaimed in this index. Verify tracker/continuation leases first.
-
-- [ ] **DOC-BACKEND-CONTRACT** — Goal: REMOTE-BACKENDS. Define and review the
-  bounded native SSH-forwarding contract using the completed Desktop research.
-  Payoff: review the implemented forwarding boundary without repeating research
-  or treating unreviewed source as an approved native contract.
-  Sources: [source comparison](docs/product/desktop-connection-paths.md),
-  [native boundary](docs/adr/client.md#decision),
-  [connection design](docs/spec.md#connection-path-design).
-  Scope: one fixed forwarding operation to an already-configured Agent. Review
-  the existing Dart TCP adapter, typed network bounds, credential acquisition,
-  explicit host-key trust, loopback binding, deadlines, durable host identity, ephemeral port mapping,
-  cancellation/cleanup and supported-platform/removal conditions.
-  Acceptance: reviewed contract and failure oracles preserve direct Agent traffic,
-  separate Wing Link credentials, no shell and immutable Agent source. Resolve
-  local key selection against existing path restrictions rather than assuming an
-  exception. The current key reader's size bounds and picker cancellation fences
-  remain acceptance in BACKEND-SSH-KEY-AUTH. See the
-  [source comparison](docs/quality/graphify-wing-recomparison.md).
-  Keep remote bootstrap and Docker/WSL contracts separate.
-  Do not repeat the completed Desktop trace or substitute another investigation
-  chain. This is the sole open contract task for REMOTE-BACKENDS.
-  Dependencies: none for this contract slice. Section: Next.
+- [ ] **DOC-PARITY-TAB-CONTRACT** — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
+  tabs with keyboard switching and explicit close/Stop recovery.
+  Payoff: preserve distinct conversations without losing drafts or stopping another run.
+  Sources: [PARITY-TABS](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary).
+  Scope: existing shell/chat composition, channel ownership contracts and nearest
+  widget/browser fixtures. Trace official contribution pane-tree, focused-session ownership and close/keyboard callers, then
+  implement the smallest supported presentation. Keep Agent session/run state
+  authoritative. Exclude upstream edits, arbitrary IPC and live provider spending.
+  Acceptance: two host/profile/session-owned tabs retain their own draft and
+  selection through keyboard switching. Close targets only the intended run and
+  preserves uncertainty until authoritative Stop/readback resolves it. Other tabs
+  remain unchanged. Unsupported Stop stays explicit. Prove through widget and
+  freshly compiled fixture journeys. Document deliberate Desktop deviations.
+  Dependencies: none for this shared-client slice. Existing authority and
+  named-target consent still apply. Sources: the
+  [pinned comparison](docs/quality/graphify-wing-recomparison.md).
+  Official source leads: [pane composition and identity findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Imports alone do not establish keyboard/close behavior. Preserve per-pane drafts, reject stale owner events, release request leases on failure and keep expired input inoperable through switch/disconnect/resume. Qualify supported transport behavior without claiming JSON-RPC adoption.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
-### P1 — Daily use, recovery and core Desktop composition
-
-- [ ] **M1-MOBILE-AWAY-STATUS** — Goal: M1. Keep Agent-owned work understandable after Android background/return.
-  Payoff: leave Wing and return to the correct conversation and authoritative job outcome without duplicate work.
-  Sources: [2026-09-04-provenance-and-notifications](docs/superpowers/plans/2026-09-04-provenance-and-notifications.md) (historical planning context);
-   [user-demand acceptance](docs/product/prd.md#user-demand-emphasis), [design](docs/spec.md#away-and-return-status-design), [matrix](docs/test-plan.md#away-and-return-status-verification), production Chat lifecycle and existing transcript/restart fixtures.
-  Scope: reuse existing channel, resume/recovery and unread-completion controls; qualify the missing compact Android interactions in isolated Waydroid and repair reproduced Wing defects with regressions. Begin by comparing existing receipts to current source; do not repeat an unchanged completed proof. No new job store, transport, Agent changes, live inference, paired-app replacement or notification infrastructure.
-  Acceptance: while Wing is backgrounded, deterministic Agent work changes from running to completed/failed; production return restores exact host/profile/session/run and canonical history/status. Disconnect shows unknown, explicit Retry reconciles; approval-needed uses current exact grants; late old-owner results are rejected. Assert zero incidental send/create/approval/Stop calls. Record source/APK, Android target, commands and request counts; compact/enlarged-text controls remain usable. Waydroid does not satisfy physical M2 process-death or live-provider proof.
-  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next. Ownership: unassigned; preserve existing connection and recovery owners. No worker dispatched by this entry.
-
-- [ ] **M1-NOTIFICATION-CONTRACT** — Goal: M1. Resolve the smallest supported notification path after reliable status.
-  Payoff: determine whether completion/attention alerts can be implemented without a second Agent backend or credential leakage.
-  Sources: [accepted order](docs/product/prd.md#user-demand-emphasis), [existing proposal](docs/product/notification-contract-proposal.md), official Agent/Desktop source and nearest tests.
-  Scope: one bounded source/capability assessment of current enrollment/routing/revocation and platform delivery support. Reuse existing proposals; identify exact supported operations, grants and privacy boundaries, or explain unavailable contracts. Do not invent endpoints, choose a paid relay, collect credentials, install push SDKs, activate delivery or modify Agent.
-  Acceptance: save an operation-to-source/test map distinguishing shipped API, source-only support and unavailable behavior. Identify one smallest implementable alert path and its permission-denial, generic lock-screen, deduplication and exact-owner tap tests, or name the exact missing authoritative contract. Keep foreground status usable without notifications. Record architecture choices as Proposed; provider/relay consent and real platform delivery remain separate future decisions and checks. This closes assessment only, not notification implementation or M1.
-  Dependencies: M1-MOBILE-AWAY-STATUS. Section: Next. Ownership: unassigned; verify existing proposal/board ownership before execution. No worker dispatched by this entry.
-
-
-- [ ] **PARITY-LIVE-WORKFLOW** — Goal: M1. Complete and verify the daily-use journey
-  on the owner-selected disposable local QA Agent/profile. Payoff: real generation,
-  correlated approval, authoritative Stop and exact restoration in one workflow.
-  Sources: [workflow matrix](docs/plans/2026-10-03-desktop-daily-workflow.md)
-  and [Wing ownership and limits](docs/plans/2026-10-03-desktop-daily-workflow.md#owner-update--wing-implementation-and-qa).
-  Scope: isolated QA setup through supported unmodified Agent operations, existing
-  production Wing channel/UI, minimal reproduced fixes with regression tests and
-  sanitized operation/readback receipts. Keep personal runtime/app state and system
-  packages unchanged. Preserve `t_f098a32e` and `t_38174cb7` without redispatching them.
-  No personal credential discovery/copying, provider substitution, Agent patch,
-  arbitrary host command, external side effect or release.
-  Acceptance: connect, explicit profile/model, actual output, correlated approval,
-  authoritative Stop, native close/relaunch, exact restored identity/history and one deliberate
-  resumed send to that same owner. Automatic pair restoration remains unsupported;
-  explicitly qualify reselection separately, without claiming pair persistence.
-  Prove one submission per deliberate send and zero recovery mutations. Fixtures,
-  isolated UI controls and test totals do not complete this milestone.
-  Limits: at most three short QA generations with separately authorized test access.
-  No unapproved metered spending or purchase. Use harmless QA-workspace test actions
-  by default. Skip unsupported operations and further inference after the usage
-  limit. Report the exact gap and continue independent work without fake success.
-  Current slice: the [live preparation receipt](docs/quality/live-desktop-daily-workflow.md)
-  delivers read-only authorization/preflight and six tested mutation-budget guards.
-  The prepared production Chat driver refuses before network access. A supported
-  provider-call contract must cover retries and continuations before the production
-  two-process live GTK journey and canonical readback can be qualified.
-  The [internal runner](docs/quality/live-two-process-orchestration.md) already has
-  synthetic lifecycle/teardown evidence. The completed
-  [display branch](docs/quality/live-display-isolation.md) adds tested X protocol
-  authorization; those helper/test changes are not integrated into the shared tree.
-  Carry its exact source through integration before credential-bearing execution.
-  The [provider-call assessment](docs/quality/live-provider-call-ceiling.md) completes
-  offline contract tracing and executable refusal on its isolated branch. The
-  inspected unmodified Agent interfaces do not enforce three physical attempts
-  across retries, continuations and auxiliary work. Keep inference disabled until
-  a supported authoritative contract covers that closure. Do not repeat preflight,
-  orchestration, display admission or budget tracing as new live proof.
-  Credential-free native smoke is queued separately below; submission counts are
-  not the inference ceiling.
-  QA authentication alone cannot enable the driver. The existing
-  [authentication question](BLOCKERS.md#blk-20261007-w04--separate-disposable-qa-authentication-for-live-desktop)
-  affects actual-Agent checks only; budget/orchestration work proceeds independently.
-  Dependencies: supported QA authentication, exact operation grants and native
-  prerequisites. Target-strategy question [BLK-20261006-W01](BLOCKERS.md#blk-20261006-w01--agent-target-for-the-live-desktop-workflow-qualification)
-  is answered, not proof of a provisioned or authenticated target.
-  Ownership: Wing performs implementation and QA. Ask only for authentication or
-  permissions Wing cannot complete safely, or spending beyond the approved limit.
-  No execution lease is assigned here. Recorded paused job `6f218a559ed2` is unchanged.
-  Section: Now. Remaining: live qualification and canonical-main integration/delivery
-  remain subject to required checks and remote protection. Native fixture restoration
-  and completed worker cards do not prove them. Follow the
-  [vertical-slice contract](docs/product/autogoal-workflows.md#vertical-slice-contract).
-
-
-- [ ] **VERIFY-LIVE-WORKFLOW-RECOVERY** — Goal: M1.
-  Keep the qualified exact live session usable after reconnect and route return.
-  Payoff: distinguish canonical recovery from cached UI and prevent duplicate work.
-  Sources: [daily workflow acceptance](docs/plans/2026-10-03-desktop-daily-workflow.md#acceptance-matrix)
-  and [supported continuation](docs/quality/native-resumed-send.md#remaining-qualification-and-delivery).
-  Scope: the predecessor's isolated QA target, production channel/Chat and nearest
-  recovery tests; repair reproduced Wing defects only. Exclude new inference,
-  Agent changes, personal credentials/state, shared gateway restarts and release.
-  Acceptance: after the predecessor's completed/Stopped runs and resumed send,
-  explicitly reconnect and leave/return to Chat. Read back the same profile/session,
-  canonical history and terminal outcomes. Record zero added sends, creates, model
-  writes, approval responses or Stop requests. Failed reads allow explicit retry
-  without replay; delayed old-owner reads cannot settle the current session.
-  Run bounded native/live read-only checks and nearest deterministic regressions.
-  Dependencies: PARITY-LIVE-WORKFLOW. Section: Next. Not eligible before it passes.
-  Ownership: unclaimed in this index; check tracker leases before execution.
-
-- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE** — Goal: CHAT-FIDELITY. Section: Next. Keep recovered
-  tool categories and current approval actions keyboard-operable in native Linux.
-  Payoff: prove the supported transcript outside browser/widget-only qualification.
-  Sources: [reconnect limits](docs/quality/chat-transcript-reconnect.md#limits-and-handoff)
-  and [accessibility decision](docs/adr/client.md#decision).
-  Scope: existing native integration harness, timeline/channel and deterministic
-  fixture; add focused native scenarios and regressions for reproduced Wing defects.
-  Exclude live inference/tools, Agent edits, system installs, new APIs, audio,
-  personal state and screen-reader support claims without matching evidence.
-  Acceptance: native GTK keyboard disclosure and current-owner approval work after
-  canonical reconnect and compact/wide return. Retired actions disappear; tool
-  content stays redacted; recovery adds no sends, decisions, creates or Stop.
-  Run owned native scenarios and nearest widgets with exact request/source receipts.
-  Dependencies: VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY; ordered successor in Next.
-  Current evidence: [native approval recovery](docs/quality/native-transcript-recovery.md)
-  already qualifies four reconnect/remount/approval cases at 100/200% text.
-  Coordinate the remaining acceptance with that completed slice; do not duplicate
-  its scenarios or infer process-restart qualification.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
-- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART** — Goal: CHAT-FIDELITY. Section: Next.
-  Restore canonical tool ordering and retire approval actions after native restart.
-  Payoff: prove process recovery separately from mounted native interaction.
-  Sources: [accessibility limits](docs/quality/chat-transcript-accessibility.md#evidence-boundary)
-  and [native restart pattern](docs/quality/native-relaunch-workflow.md).
-  Scope: extend the isolated Linux fixture, integration target and owned launcher;
-  repair reproduced Wing defects and add nearest regressions. Exclude upstream
-  changes, live inference, credentials, system installs and shadow disclosure state.
-  Acceptance: two distinct native processes restore exact-owner canonical history.
-  Tool categories remain ordered and keyboard-reachable; retired approvals stay absent.
-  Include the [mobile reference scenarios](docs/test-plan.md#mobile-reference-scenarios):
-  grouped errors and live tools retain canonical ordering after recovery. Expired
-  activity must not become a successful terminal outcome. Reuse the existing fixture.
-  Restart adds zero sends, creates, model writes, approval decisions or Stop requests.
-  Record source fingerprints, exact requests, process IDs and owned-process teardown.
-  Dependencies: VERIFY-CHAT-TRANSCRIPT-NATIVE; ordered successor in Next.
-  Ownership: unclaimed in this index; verify current tracker leases before execution.
-
-- [ ] **VERIFY-PROFILE-FOOTER-NATIVE** — Goal: PARITY-COMPOSITION.
-  Keep the delivered passive footer reachable and current in an isolated Linux app.
-  Payoff: qualify profile context and management navigation on the desktop target.
-  Sources: [footer contract and limits](docs/quality/profile-footer-implementation.md)
-  and [client decision](docs/adr/client.md#decision).
-  Scope: production shell/footer, native QA harness and smallest exposed Wing
-  presentation repairs. Excludes new profile switching/editing, APIs, live inference,
-  credentials, system installs and physical/screen-reader support claims.
-  Acceptance: native Tab/Shift+Tab and Enter/Space reach Manage profiles after
-  collapse and compact/wide return at enlarged text. Current-owner replacement
-  updates the redacted label; obsolete notifications do not restore old context.
-  Explicit navigation leaves profile/session identity unchanged; passive rendering
-  adds no domain reads or mutations. Retain source/platform/focus/effect receipts
-  and run nearest regressions plus analysis.
-  Dependencies: VERIFY-GLOBAL-SESSION-MODAL-NATIVE (done). Section: Now.
-  Ownership: unclaimed in this index; check tracker leases before execution.
-
-- [ ] **VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY** — Goal: PARITY-COMPOSITION.
-  Keep native profile context current through management-route return and reconnect.
-  Payoff: preserve the passive footer's owner boundary while feature routes change.
-  Sources: [footer scope](docs/quality/profile-footer-implementation.md)
-  and [native panel limits](docs/quality/global-session-modal-native.md#boundaries).
-  Scope: production shell/footer and Profiles route with deterministic channel
-  overrides, Linux native QA harness and nearest regressions. Repair exposed Wing
-  defects only. Exclude edit/switch feature expansion, new APIs, live inference,
-  secrets, system installs, physical input and screen-reader support claims.
-  Acceptance: keyboard-open Manage profiles, return to Chat and reconnect the
-  current channel. The current redacted label and reachable control survive at
-  compact/wide widths and enlarged text. Delayed retired-owner notifications do
-  not change the replacement context. Passive footer work adds no reads or writes;
-  explicit route reads are counted separately. Preserve exact profile/session
-  identity and record input, focus, request and owned-process teardown evidence.
-  Run bounded Linux integration and nearest regression checks plus analysis.
-  Dependencies: VERIFY-PROFILE-FOOTER-NATIVE. Section: Next. Not eligible before it passes.
-  Ownership: unclaimed in this index; check tracker leases before execution.
 
 - [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Goal: PARITY-TABS. Section: Next. Implement and
   qualify reconnect for two distinct session-owned conversation tabs.
@@ -975,46 +1134,10 @@ before their goals can become `met`.
   Dependencies: DOC-SHELL-PERSISTENCE-EVIDENCE; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-SLASH-DENIAL-EVIDENCE** — Goal: SLASH-CATALOG. Section: Next. Map one unavailable slash action and its recovery.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [SLASH-CATALOG](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify unsupported-action disclosure and zero-dispatch proof or a missing check. No new commands, shell dispatch or speculative routes.
-  Dependencies: DOC-SLASH-CATALOG-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-PARITY-TAB-CONTRACT** — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
-  tabs with keyboard switching and explicit close/Stop recovery.
-  Payoff: preserve distinct conversations without losing drafts or stopping another run.
-  Sources: [PARITY-TABS](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary).
-  Scope: existing shell/chat composition, channel ownership contracts and nearest
-  widget/browser fixtures. Trace official contribution pane-tree, focused-session ownership and close/keyboard callers, then
-  implement the smallest supported presentation. Keep Agent session/run state
-  authoritative. Exclude upstream edits, arbitrary IPC and live provider spending.
-  Acceptance: two host/profile/session-owned tabs retain their own draft and
-  selection through keyboard switching. Close targets only the intended run and
-  preserves uncertainty until authoritative Stop/readback resolves it. Other tabs
-  remain unchanged. Unsupported Stop stays explicit. Prove through widget and
-  freshly compiled fixture journeys. Document deliberate Desktop deviations.
-  Dependencies: none for this shared-client slice. Existing authority and
-  named-target consent still apply. Sources: the
-  [pinned comparison](docs/quality/graphify-wing-recomparison.md).
-  Official source leads: [pane composition and identity findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Imports alone do not establish keyboard/close behavior. Preserve per-pane drafts, reject stale owner events, release request leases on failure and keep expired input inoperable through switch/disconnect/resume. Qualify supported transport behavior without claiming JSON-RPC adoption.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
-- [ ] **DOC-SLASH-CATALOG-CONTRACT** — Goal: SLASH-CATALOG. Section: Next. Compare the current curated commands with an authoritative catalog.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [SLASH-CATALOG](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Existing composer commands and read-only catalog/contracts; no shell dispatch or speculative command routes.
-  Acceptance: Identify one supported missing completion/action, its exact authorization and regression oracle, or an unavailable catalog.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
 - [ ] **DOC-SHELL-PERSISTENCE-EVIDENCE** — Goal: SHELL-PERSISTENCE. Section: Next. Prove sidebar preference restoration after app relaunch.
   Payoff: prove the implemented local preference survives a real process restart.
-  Sources: [SHELL-PERSISTENCE](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary)
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [SHELL-PERSISTENCE](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary)
   and [implemented preference slice](docs/quality/graphify-shell-persistence.md).
   Scope: add or run a two-process Linux harness with task-owned persistent
   preferences, plus the nearest regressions. Repair the local shell preference
@@ -1024,102 +1147,79 @@ before their goals can become `met`.
   app process, launch a second against the same isolated storage, and observe
   the 64px sidebar without replayed sends or mutations. Retain exact source,
   target, commands and exit results. Fresh provider scopes alone are not proof.
-  Dependencies: none. PORT-SHELL-PERSISTED-STATE is complete; do not reimplement
+  Dependencies: none.
+  Implementation context: PORT-SHELL-PERSISTED-STATE is complete; do not reimplement
   its provider or treat the historical full-suite pass as native relaunch evidence.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
-- [ ] **VERIFY-OMNIROUTE-NODE22-CLOSURE** — Goal: SECURITY. Section: Next. Verify retired OmniRoute paths and retained dependencies on Node.js 22.
-  Payoff: qualify the committed removal without rebuilding the deleted installer.
-  Sources: [retirement design](docs/spec.md#security-compatibility-and-delivery),
-  [verification plan](docs/test-plan.md#acceptance-records-and-gaps),
-  [historical review](docs/quality/omniroute-install-review.md) and
-  [supported toolchain](CONTRIBUTING.md#setup). Baseline: committed retirement
-  `92beb1dcddbf2be638ac7819f3a636ec25ba75e2`; capture later candidate inputs separately
-  from the canonical goal ledger. The ledger title retains the predecessor scope.
-  Scope: root manifest/lock, existing retirement checks, retained generic catalog
-  and audit decoding. Exclude recreated installer assets, external installations,
-  credentials, service actions, live inference, upstream edits and audit suppression.
-  Acceptance: on Node.js 22 run `npm audit --audit-level=high` and
-  `node --test test/tooling/omniroute_retirement_test.mjs`; run focused Go retirement
-  checks and `flutter test test/features/profiles/profile_catalog_test.dart` on the
-  same candidate. Prove former CLI actions and discovery/setup contracts unavailable,
-  bundled assets absent, generic catalog and historical audit decoding retained.
-  Record exact commands, exits and input hashes. Missing or failing checks stay
-  unverified; source removal alone does not close SECURITY or release acceptance.
-  Dependencies: FIX-NPM-AUDIT is ledger-done, not proof the old embedded audit passed.
-  Ownership: retain the existing remediation owner's routing; reconcile scheduled
-  card t_a466ece0 against removed inputs before execution. No card or lease change
-  is authorized here. Queued in Next, not dispatched by this documentation pass.
+- [ ] **WING-TASK-405** — Goal: CONNECTION-PATHS. Connect to an explicitly selected,
+  already-running local `hermes serve` through production controls.
+  Payoff: expose the official Desktop backend without treating REST/SSE and
+  JSON-RPC credentials or capabilities as interchangeable.
+  Scope: existing web-read client, endpoint/channel selection, secure credential
+  acquisition and nearest production connection tests. Trace actual official
+  authentication before promoting any qualification-only code. No automatic
+  process launch, remote authentication expansion, CLI fallback or Wing Link.
+  Acceptance: connect and read profile/session/history for the captured owner;
+  prove authentication denial, unsupported capability, cancellation and explicit
+  retry through public controls. Late results cannot replace another connection.
+  Record the exact qualified auth/operation contract. Keep unsupported surfaces
+  unavailable rather than enabling mutations through a broad authorization flag.
+  Run focused client/widget tests, analyzer and an isolated Linux app journey
+  against a deterministic authenticated backend. Live Agent authentication and
+  Android remain separate NOT_CHECKED outcomes until exercised.
+  Sources: [official source findings](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
+  [transport qualification](docs/adr/client.md#transport-qualification),
+  [direct connection requirements](docs/product/prd.md#connection-path-requirements).
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next.
+  Ownership: unclaimed; coordinate connection and Link-removal owners before edits.
 
-- [ ] **SECURITY-RETAINED-RELEASE-AUDIT** — Goal: SECURITY.
-  Qualify retained root dependencies and release audit after retirement closure.
-  Payoff: preserve the release security bar after deleting an embedded dependency tree.
-  Sources: [retained dependency verification](docs/test-plan.md#acceptance-records-and-gaps),
-  [required checks](CONTRIBUTING.md#required-checks) and
-  [temporary risk decision](BLOCKERS.md#blk-20261007-006--remaining-npm-audit-highs-with-no-published-fix).
-  Scope: root manifest/lock and retained release dependency inputs on Node.js 22.
-  Reuse the predecessor's unchanged passing receipts; investigate only remaining
-  findings or changed inputs. No installer recreation, installs, service actions,
-  forced overrides, audit suppression, upstream edits or publication.
-  Acceptance: record exact candidate/toolchain identity and root audit exit/result;
-  distinguish removed embedded findings from current retained findings. Map any
-  remaining advisory to its consumer and compatible fix or the existing temporary
-  risk decision. Removal and prior acceptance never substitute for a passing audit.
-  Dependencies: VERIFY-OMNIROUTE-NODE22-CLOSURE. Section: Next.
-  Ownership: existing security/remediation owner; verify tracker/lease before dispatch.
+- [ ] **WING-TASK-406** — Goal: CONNECTION-PATHS. Send, stream, answer a correlated
+  approval and request Stop through the qualified production `serve` connection.
+  Payoff: a successful connection leads to usable chat, not a read-only test panel.
+  Scope: production HermesChannel adapter and chat composition using the existing
+  lifecycle models. Preserve connection/profile/stored/runtime session identity.
+  No general RPC bridge, secret logging, new Agent contracts or automatic sends.
+  Acceptance: one explicit Send reaches the captured owner and streams ordered
+  transcript/tool events. An approval response targets only its current request;
+  `request.cancel` retires it. Stop targets the captured session and distinguishes
+  requested, uncertain and authoritative terminal outcomes. Denial, timeout,
+  cancellation and owner replacement retain actionable recovery without replay.
+  Add transport and production-control regressions, then exercise the complete
+  workflow in the isolated Linux app with deterministic backend request counts.
+  Fixtures do not qualify live inference, spending or Android behavior.
+  Sources: [lifecycle findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences),
+  [transport boundaries](docs/adr/client.md#transport-qualification).
+  Current implementation input: `8866604b` adds idle `request.cancel` handling
+  in the internal lifecycle adapter, profile-bound queue display/answer admission
+  and settlement regressions. This is not production wiring or a current executed
+  pass. Smallest next check: run
+  `flutter test --no-pub --concurrency=1 test/core/hermes/client/hermes_web_lifecycle_test.dart`
+  on the assembled candidate, then add the production-control withdrawal journey
+  with zero stale approval responses. Carry adapter, channel, fixture, regression,
+  localization and dependency inputs with their own baseline manifest. Canonical
+  `goals.json` remains ledger authority; branch-ledger byte equality is not an
+  implementation prerequisite. Sources: [withdrawal verification](docs/test-plan.md#idle-approval-withdrawal-regression).
+  Dependencies: WING-TASK-405. Section: Next.
+  Ownership: unclaimed; preserve PARITY-LIVE-WORKFLOW and existing chat owners.
 
-### P2 — Remaining supported feature parity and accessibility
-
-- [ ] **PARITY-MAESTRO-ANDROID-DEVICE** — Goal: PARITY. Execute the repaired
-  approval/Stop/reconnect and deferred attachment-owner-race journeys in the
-  owner-selected Waydroid Android environment, then qualify remaining mapped flows.
-  Payoff: prove mobile control outcomes rather than substitute widget counters.
-  Sources: [fixture receipt](docs/quality/android-approval-attachment-fixture.md),
-  [matrix](docs/product/hermes-desktop-feature-matrix.md) and
-  [runbook](docs/runbooks/desktop-feature-qualification.md).
-  Scope: existing QA wrapper/fixtures and nearest regressions; add missing assertions
-  and the smallest exposed Wing fixes. Exclude live inference, Agent edits, personal
-  app resets, authentication bypass and privileged service/network changes.
-  Acceptance: successful current ADB authentication, reviewed disposable target and
-  `.qa` package, source/build/flow fingerprints, actual Maestro launch and per-flow
-  exits. Prove three sends, two decisions, one Stop and unchanged recovery counters;
-  prove late attachment rejection across both session owners and a usable next pick.
-  Qualify the retained earlier-history tail separately. Include fresh welcome,
-  keyboard Back/cancel, sanitized denial, explicit retry and saved-owner relaunch
-  against the exact disposable Android artifact. The
-  [Linux welcome recovery](docs/quality/desktop-welcome-recovery.md) does not qualify Android.
-  Record other mapped journeys
-  as pass/fail/unsupported/not-run, without closing positive gaps through unavailable
-  states. Run relevant format/analyze/tests for changed Dart.
-  Default applied: use Waydroid now, with the isolated `.qa` app. Prepare normal
-  authenticated ADB connectivity and missing user-space tools within this target;
-  preserve host trust, shared services and the paired app. Empty ADB inventory is
-  engineering setup, not a request for the owner to supply a phone. Waydroid
-  receipts do not close physical-device M2 acceptance. No privileged service
-  repair, authentication bypass or unrelated device adoption is authorized.
-  Dependencies: none. Section: Now. Ownership: unclaimed in this index; check tracker.
-
-- [ ] **PARITY-NATIVE-LINUX** — Goal: PARITY. Execute and extend native Linux
-  counterparts for the mapped Android outcomes. Payoff: qualify the actual Flutter
-  desktop target without pretending Maestro provides a GTK driver.
-  Map native scenarios to the same HD-* rows and separate delivered subsets from
-  unsupported operations. Do not close a row through a containing screen-tour file.
-  Sources: [matrix](docs/product/hermes-desktop-feature-matrix.md),
-  [native suite](integration_test/linux_maestro_flows_test.dart),
-  [runbook](docs/runbooks/desktop-feature-qualification.md).
-  Scope: owned Xvfb display/state, native fixtures and bounded missing counterpart
-  scenarios. Add regression-driven in-scope fixes, no personal runtime changes.
-  Acceptance: actual native launches, per-scenario exits and matching source/build
-  receipts. Exercise wide/compact behavior, cancellation, ownership and no replay.
-  Keep browser, unit/widget and live-provider results separate. Unsupported features
-  remain gaps even when their unavailable-state assertion passes.
-  Prerequisite resolution: [BLK-20261005-003](BLOCKERS.md#blk-20261005-003--install-linux-desktop-build-packages-sudo)
-  records a demonstrated user-space build path, not installed system dependencies.
-  Recheck compatibility and use an owned prefix as described in the
-  [native runbook](docs/quality/native-relaunch-workflow.md#safe-user-space-prerequisites-and-reproduction).
-  Keep system packages unchanged. This resolves the sudo prerequisite only;
-  the mapped feature checks still need their own execution evidence.
-  Dependencies: none. Section: Next. Ownership: unassigned, check live tracker.
+- [ ] **WING-TASK-407** — Goal: CONNECTION-PATHS. Restore the same production
+  `serve` conversation after socket loss and an isolated app restart.
+  Payoff: connection recovery restores canonical work without duplicating a prompt.
+  Scope: the new production adapter's replay/history barrier, recovery storage and
+  public Retry. This is distinct from CONNECTION-OWNER-RECONNECT's REST/SSE slice.
+  Acceptance: monotonic events and canonical history reconcile before new input;
+  stored/runtime session identities remain explicit. Duplicate, stale and wrong-owner
+  events cannot alter the selected conversation. Unknown submit or Stop outcomes
+  remain uncertain until authoritative recovery. Reconnect/relaunch makes zero
+  prompt, approval or Stop replays. A later deliberate Send occurs exactly once.
+  Add adapter regressions and an isolated two-process Linux fixture journey with
+  denied-read recovery and exact request counts. Report detached-run limitations,
+  live Agent and Android gaps separately; do not promise background durability.
+  Sources: [replay and resume findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences),
+  [transport qualification](docs/adr/client.md#transport-qualification).
+  Dependencies: WING-TASK-406. Section: Next.
+  Ownership: unclaimed; coordinate recovery and integration owners before edits.
 
 - [ ] **DOC-M3-CONTRACT-CHECKPOINT** — Goal: M3. Section: Next. Map the supported enrollment
   and new-profile setup journey to its isolated qualification checks. Payoff:
@@ -1135,40 +1235,6 @@ before their goals can become `met`.
   Dependencies: none for source inspection; implementation needs verified contract
   and ownership. Ownership: unclaimed in this index; verify tracker first.
 
-- [ ] **DOC-M4-CONTRACT-CHECKPOINT** — Goal: M4-DISCOVER. Section: Next.
-  Inspect one profile-scoped discovery catalog read before proposing UI or writes.
-  Payoff: advance accepted discovery without freezing existing inventories.
-  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
-  Scope: read-only authoritative handler/test and Wing caller/regression trace;
-  exclude installs, MCP mutation, generic commands and shadow inventories.
-  Acceptance: supported bounded schema, exact grant/profile gate and failure
-  behavior, or an evidenced unavailable operation. Remaining M4 operations stay
-  individually gated.
-  Dependencies: none for inspection. Ownership: unclaimed in
-  this index; verify tracker and reference instructions before deep upstream study.
-
-- [ ] **DOC-M5-ANDROID-FIXTURE** — Goal: M5. Section: Next. Repair only the two reproduced fixture
-  selectors/navigation failures.
-  Sources: [Android discovery receipt](docs/quality/2026-10-03-android-qualification-discovery.md).
-  Payoff: reach existing transcript-copy and setup accessibility exits.
-  Scope: existing Maestro fixture flows, deterministic QA harness and scoped
-  regressions; exclude product redesign, personal apps, provider calls and installs.
-  Acceptance: both flows reach their intended exits on a named owned Android QA
-  target, with clipboard/readback and share-sheet dismissal receipts; report
-  TalkBack as unverified unless actually exercised.
-  Dependencies: owned target and
-  exclusive build access for execution; static fixture repair can proceed first.
-  Ownership: unclaimed in this index; verify tracker first.
-
-- [ ] **DOC-M3-ROLLBACK-EVIDENCE** — Goal: M3. Section: Next. Attribute one failed new-profile setup rollback.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Find source-bound cleanup and preserved existing-profile identity in existing Go tests/receipts, or name the missing proof. No profile creation.
-  Dependencies: DOC-M3-CONTRACT-CHECKPOINT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
 - [ ] **DOC-M3-PROJECT-ASSIGNMENT-CONTRACT** — Goal: M3-PROJECT. Section: Next. Trace primary-folder assignment separately from creation.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M3-PROJECT](docs/product/prd.md#core-journeys).
@@ -1179,102 +1245,6 @@ before their goals can become `met`.
   binding, stale-owner rejection and no implicit create/send/global selection.
   Record the supported contract or precise absence. No assignment or Chat mutation.
   Dependencies: DOC-M3-PROJECT-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M3-PROVIDER-REMOVAL-CONTRACT** — Goal: M3-PROVIDER. Section: Next. Trace credential removal separately from replacement.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M3-PROVIDER](docs/adr/api-and-state.md#required-agent-owned-mutation-contract).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name expected revision, secret-safe errors and unknown-outcome reconciliation, or the absent operation. No credential access or writes.
-  Dependencies: DOC-M3-PROVIDER-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M4-SCHEDULE-INVENTORY-EVIDENCE** — Goal: M4. Section: Next. Attribute one scheduled-job inventory failure journey.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Map Schedules owner-change and denied-read outcomes to matching widget/browser receipts or one missing oracle. Preserve Tools qualification and read-only inventory.
-  Dependencies: DOC-M4-INVENTORY-EVIDENCE; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M4-DISCOVERY-SELECTION-CONTRACT** — Goal: M4-DISCOVER. Section: Next. Trace catalog selection separately from search.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-DISCOVER](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: distinguish local selection from installation. Assess one exact
-  profile-targeted install contract, consent/effects, authoritative result/readback
-  and failure/no-replay oracle, or its evidenced absence. Catalog availability
-  grants no install authority. No installation or shadow catalog.
-  Dependencies: DOC-M4-CONTRACT-CHECKPOINT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M5-LARGE-TEXT-EVIDENCE** — Goal: M5. Section: Next. Attribute one 200-percent-text message-action journey.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M5](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify source-bound keyboard focus and reachable copy/export controls or a missing deterministic oracle. Do not label this TalkBack or device qualification.
-  Dependencies: DOC-M5-ANDROID-FIXTURE; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE** — Goal: ARTIFACTS. Section: Next. Map hostile-content rejection for one permitted artifact type.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify inert preview and denial/cancel oracles or an absent allowed retrieval contract. Folder grants confer no artifact rights; no content requests.
-  Dependencies: DOC-ARTIFACT-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M4-KANBAN-PAGINATION-EVIDENCE** — Goal: M4-KANBAN. Section: Next. Map stale-owner pagination for a board read.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Specify bounded pagination and revocation/owner-change expected outcomes or absent authoritative pagination. No writes or shadow cards.
-  Dependencies: DOC-M4-KANBAN-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M4-MCP-CONFIG-CONTRACT** — Goal: M4-MCP. Section: Next. Trace one MCP configuration read separately from toolset toggling.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name profile identity, output redaction, bounds and exact grant, or the absent read. No MCP installation, config write or arbitrary commands.
-  Dependencies: DOC-M4-MCP-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M4-MEMORY-CAPACITY-CONTRACT** — Goal: M4-MEMORY. Section: Next. Trace memory capacity/provider reads separately from entry reads.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-MEMORY](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Distinguish entry inventory from capacity/provider reporting and exact authorization, or absent operations. No memory writes or shadow state.
-  Dependencies: DOC-M4-MEMORY-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M4-HOST-LIFECYCLE-EVIDENCE** — Goal: M4-PLATFORMS. Section: Next. Attribute one Wing Link host-lifecycle approval boundary.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-PLATFORMS](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: separate messaging-platform administration from retained legacy
-  host restart approval, health and rollback receipts. These are historical/retirement
-  checks, not replacement acceptance or permission to expand Link. Coordinate with
-  CONNECTION-LINK-RETIREMENT; name missing proof without service actions.
-  Dependencies: DOC-M4-PLATFORM-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-M4-SCHEDULE-DELIVERY-CONTRACT** — Goal: M4-SCHEDULES. Section: Next. Trace one schedule-delivery configuration operation.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name exact job/profile identity, revision and write-only credential requirements or the absent operation. No job execution, delivery or credentials.
-  Dependencies: DOC-M4-SCHEDULE-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
 - [ ] **DOC-M3-PROJECT-CONTRACT** — Goal: M3-PROJECT. Section: Next. Trace one authoritative Project creation operation.
@@ -1304,29 +1274,130 @@ before their goals can become `met`.
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
-- [ ] **DOC-M4-INVENTORY-EVIDENCE** — Goal: M4. Section: Next. Map one Tools inventory journey to current-source evidence.
+- [ ] **DOC-M3-PROVIDER-REMOVAL-CONTRACT** — Goal: M3-PROVIDER. Section: Next. Trace credential removal separately from replacement.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3-PROVIDER](docs/adr/api-and-state.md#required-agent-owned-mutation-contract).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name expected revision, secret-safe errors and unknown-outcome reconciliation, or the absent operation. No credential access or writes.
+  Dependencies: DOC-M3-PROVIDER-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-M3-ROLLBACK-EVIDENCE** — Goal: M3. Section: Next. Attribute one failed new-profile setup rollback.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Find source-bound cleanup and preserved existing-profile identity in existing Go tests/receipts, or name the missing proof. No profile creation.
+  Dependencies: DOC-M3-CONTRACT-CHECKPOINT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-ARTIFACT-CONTRACT** — Goal: ARTIFACTS. Section: Next. Trace one bounded Agent artifact retrieval operation.
   Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
-  Scope: Existing Tools/channel/widget/browser checks and sanitized receipt only; exclude new contracts, mutations and personal targets.
-  Acceptance: Identify source-bound keyboard/search/owner-denial checks and the smallest remaining named-platform verification scenario.
+  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Current media/export and read-only artifact contracts; exclude host-file enumeration, unsafe rendering and artifact requests.
+  Acceptance: Specify identity/authentication/MIME/size/content bounds and inert preview oracle or absent operation. Folder grants must not imply artifact access.
   Dependencies: none for this bounded evidence/contract slice. Any later runtime
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+### P3 — Integrated delivery, diagnostics and contracts
+
+- [ ] **DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE** — Goal: ARTIFACTS. Section: Next. Map hostile-content rejection for one permitted artifact type.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify inert preview and denial/cancel oracles or an absent allowed retrieval contract. Folder grants confer no artifact rights; no content requests.
+  Dependencies: DOC-ARTIFACT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-M4-CONTRACT-CHECKPOINT** — Goal: M4-DISCOVER. Section: Next.
+  Inspect one profile-scoped discovery catalog read before proposing UI or writes.
+  Payoff: advance accepted discovery without freezing existing inventories.
+  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
+  Scope: read-only authoritative handler/test and Wing caller/regression trace;
+  exclude installs, MCP mutation, generic commands and shadow inventories.
+  Acceptance: supported bounded schema, exact grant/profile gate and failure
+  behavior, or an evidenced unavailable operation. Remaining M4 operations stay
+  individually gated.
+  Dependencies: none for inspection. Ownership: unclaimed in
+  this index; verify tracker and reference instructions before deep upstream study.
+
+- [ ] **DOC-M4-DISCOVERY-SELECTION-CONTRACT** — Goal: M4-DISCOVER. Section: Next. Trace catalog selection separately from search.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-DISCOVER](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: distinguish local selection from installation. Assess one exact
+  profile-targeted install contract, consent/effects, authoritative result/readback
+  and failure/no-replay oracle, or its evidenced absence. Catalog availability
+  grants no install authority. No installation or shadow catalog.
+  Dependencies: DOC-M4-CONTRACT-CHECKPOINT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-M4-HOST-LIFECYCLE-EVIDENCE** — Goal: M4-PLATFORMS. Section: Next. Attribute one Wing Link host-lifecycle approval boundary.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-PLATFORMS](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: separate messaging-platform administration from retained legacy
+  host restart approval, health and rollback receipts. These are historical/retirement
+  checks, not replacement acceptance or permission to expand Link. Coordinate with
+  CONNECTION-LINK-RETIREMENT; name missing proof without service actions.
+  Dependencies: DOC-M4-PLATFORM-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-M4-KANBAN-CONTRACT** — Goal: M4-KANBAN. Section: Next. Trace one bounded Project board read.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Read-only models/contracts/test trace; exclude tracker mutation, shadow cards and directory file access.
+  Acceptance: Identify board/Project ownership, pagination/bounds and exact authorization or missing contract; specify one next read-only slice.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **DOC-M4-KANBAN-PAGINATION-EVIDENCE** — Goal: M4-KANBAN. Section: Next. Map stale-owner pagination for a board read.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Specify bounded pagination and revocation/owner-change expected outcomes or absent authoritative pagination. No writes or shadow cards.
+  Dependencies: DOC-M4-KANBAN-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-M4-MCP-CONFIG-CONTRACT** — Goal: M4-MCP. Section: Next. Trace one MCP configuration read separately from toolset toggling.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name profile identity, output redaction, bounds and exact grant, or the absent read. No MCP installation, config write or arbitrary commands.
+  Dependencies: DOC-M4-MCP-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-M4-MCP-CONTRACT** — Goal: M4-MCP. Section: Next. Trace one toolset enable/disable contract.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Tools inventory/callers and read-only Agent source/tests; exclude MCP installation, secrets and arbitrary commands.
+  Acceptance: Identify exact profile/toolset identity, grant and conflict behavior or precise absent operation; discovery alone must not authorize writes.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+- [ ] **DOC-M4-MEMORY-CAPACITY-CONTRACT** — Goal: M4-MEMORY. Section: Next. Trace memory capacity/provider reads separately from entry reads.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-MEMORY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Distinguish entry inventory from capacity/provider reporting and exact authorization, or absent operations. No memory writes or shadow state.
+  Dependencies: DOC-M4-MEMORY-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
 - [ ] **DOC-M4-MEMORY-CONTRACT** — Goal: M4-MEMORY. Section: Next. Trace one bounded profile-memory read.
   Payoff: advance the named accepted outcome without duplicating existing repairs.
   Sources: [M4-MEMORY](docs/product/hermes-desktop-parity.md#statuses).
   Scope: Read-only contracts/test/caller trace; exclude memory persistence and shadow state.
   Acceptance: Record the supported schema, grant, profile identity and bounds or precise absent operation; identify one next read slice.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
-- [ ] **DOC-M4-SCHEDULE-CONTRACT** — Goal: M4-SCHEDULES. Section: Next. Trace one schedule pause/resume operation.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Existing Schedules/channel and authoritative contracts; exclude job execution, delivery credentials and generic CLI.
-  Acceptance: Record exact operation/grant/revision/idempotency semantics or the gap; preserve the existing read-only inventory.
   Dependencies: none for this bounded evidence/contract slice. Any later runtime
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
@@ -1340,76 +1411,45 @@ before their goals can become `met`.
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
-- [ ] **DOC-M4-MCP-CONTRACT** — Goal: M4-MCP. Section: Next. Trace one toolset enable/disable contract.
+- [ ] **DOC-M4-SCHEDULE-CONTRACT** — Goal: M4-SCHEDULES. Section: Next. Trace one schedule pause/resume operation.
   Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Tools inventory/callers and read-only Agent source/tests; exclude MCP installation, secrets and arbitrary commands.
-  Acceptance: Identify exact profile/toolset identity, grant and conflict behavior or precise absent operation; discovery alone must not authorize writes.
+  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing Schedules/channel and authoritative contracts; exclude job execution, delivery credentials and generic CLI.
+  Acceptance: Record exact operation/grant/revision/idempotency semantics or the gap; preserve the existing read-only inventory.
   Dependencies: none for this bounded evidence/contract slice. Any later runtime
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
-- [ ] **DOC-M4-KANBAN-CONTRACT** — Goal: M4-KANBAN. Section: Next. Trace one bounded Project board read.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Read-only models/contracts/test trace; exclude tracker mutation, shadow cards and directory file access.
-  Acceptance: Identify board/Project ownership, pagination/bounds and exact authorization or missing contract; specify one next read-only slice.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+- [ ] **DOC-M4-SCHEDULE-DELIVERY-CONTRACT** — Goal: M4-SCHEDULES. Section: Next. Trace one schedule-delivery configuration operation.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name exact job/profile identity, revision and write-only credential requirements or the absent operation. No job execution, delivery or credentials.
+  Dependencies: DOC-M4-SCHEDULE-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-ARTIFACT-CONTRACT** — Goal: ARTIFACTS. Section: Next. Trace one bounded Agent artifact retrieval operation.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Current media/export and read-only artifact contracts; exclude host-file enumeration, unsafe rendering and artifact requests.
-  Acceptance: Specify identity/authentication/MIME/size/content bounds and inert preview oracle or absent operation. Folder grants must not imply artifact access.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+- [ ] **DOC-M5-ANDROID-FIXTURE** — Goal: M5. Section: Next. Repair only the two reproduced fixture
+  selectors/navigation failures.
+  Sources: [Android discovery receipt](docs/quality/2026-10-03-android-qualification-discovery.md).
+  Payoff: reach existing transcript-copy and setup accessibility exits.
+  Scope: existing Maestro fixture flows, deterministic QA harness and scoped
+  regressions; exclude product redesign, personal apps, provider calls and installs.
+  Acceptance: both flows reach their intended exits on a named owned Android QA
+  target, with clipboard/readback and share-sheet dismissal receipts; report
+  TalkBack as unverified unless actually exercised.
+  Dependencies: owned target and
+  exclusive build access for execution; static fixture repair can proceed first.
+  Ownership: unclaimed in this index; verify tracker first.
 
-### P3 — Integrated delivery, diagnostics and contracts
-
-- [ ] **MT-RERUN-TRAIN** — Goal: INTEGRATION. Section: Next. Rerun canonical integration gates
-  on a newly captured combined tree, not the repaired historical candidate.
-  Payoff: detect interactions among delivered predecessor slices.
-  Sources: [2026-08-17-audit-remediation](docs/superpowers/plans/2026-08-17-audit-remediation.md) (historical planning context);
-   [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
-  and [required checks](CONTRIBUTING.md#required-checks).
-  Scope: existing integration owner's source-bound format, analyzer, full Flutter,
-  Go and audit gates. Record exact source identity, commands and terminal outcomes.
-  The browser phase is indexed separately below; no canonical gate is waived.
-  Acceptance: passing applicable non-browser gates on one captured input, with
-  failures repaired by their existing owners and checks rerun. No merges,
-  publication, installs or platform claims are authorized by this index.
-  Dependencies: MT-APP-SHELL-STATUS-BAR (done). Ownership: existing integration
-  owner only; this entry creates no board lane and must not be independently claimed.
-
-- [ ] **MT-VERIFY-BROWSER-GATES** — Goal: INTEGRATION. Section: Next. Prove the same combined
-  source's compiled browser journeys and exact request counts.
-  Payoff: close the historical browser gap without treating unit passes as UI evidence.
-  Sources: [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
-  and [browser command](CONTRIBUTING.md#required-checks).
-  Scope: the existing integration owner's browser phase after MT-RERUN-TRAIN;
-  build the deterministic target and run the canonical browser suite. Repair
-  exposed Wing regressions through existing ownership; exclude live backends,
-  device changes, native claims, publication and upstream edits.
-  Acceptance: source-bound completed build and browser logs, passing journeys,
-  exact mutation/no-incidental-mutation assertions and no hidden waived failures.
-  If source changes after the first phase, repeat affected gates on that source.
-  Dependencies: MT-RERUN-TRAIN; Next. Ownership: existing integration owner only.
-
-- [ ] **DOC-NATIVE-DESIGN-REVIEW** — Goal: NATIVE-INTEGRATION. Section: Next.
-  Sources: [2026-10-03-desktop-local-integration-design](docs/plans/2026-10-03-desktop-local-integration-design.md) (proposal planning context);
-   [existing design](docs/plans/2026-10-03-desktop-local-integration-design.md).
-  Review the existing design
-  against living ADRs and exact installed-Agent contracts. Payoff: narrow the first
-  local operation without copying privileged Desktop IPC.
-  Scope: design/evidence
-  only; no operation activation, upstream edits, arbitrary paths or shell access.
-  Acceptance: list proposed versus already-authorized operations, fixed argument
-  shapes, identity, secret acquisition, failure/recovery and removal criteria.
-  Dependencies: none for source review; privileged implementation needs a separate
-  security/design decision. Ownership: existing design lane; verify current lease.
+- [ ] **DOC-M5-LARGE-TEXT-EVIDENCE** — Goal: M5. Section: Next. Attribute one 200-percent-text message-action journey.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M5](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify source-bound keyboard focus and reachable copy/export controls or a missing deterministic oracle. Do not label this TalkBack or device qualification.
+  Dependencies: DOC-M5-ANDROID-FIXTURE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
 - [ ] **DOC-M6-CHECKER-NODE22** — Goal: M6. Section: Next. Prove the delivered offline
   candidate comparator on the documented Node.js 22 baseline.
@@ -1428,24 +1468,6 @@ before their goals can become `met`.
   Dependencies: DOC-M6-OFFLINE-CHECKER (done). Ownership: unclaimed in this index;
   check existing tracker ownership before execution.
 
-- [ ] **DOC-API-DEVICE-SELF-CONFORMANCE** — Goal: API-CONFORMANCE. Section: Next. Verify
-  GET and DELETE `/v2/devices/self` against the code-first snapshot.
-  Payoff: extend discovery-only conformance to one exact authorization boundary.
-  Sources: [2026-08-24-wing-link-hardening](docs/superpowers/plans/2026-08-24-wing-link-hardening.md) (historical planning context);
-   [OpenAPI snapshot](docs/api/wing-link.openapi.yaml),
-  [handlers](wing_link/internal/app/serve.go) and
-  [nearest tests](wing_link/internal/app/serve_test.go).
-  Scope: one management-route family, existing tooling, in-process disposable
-  recorder fixtures and documentation corrections. Exclude live listeners,
-  personal credentials, peer administration, API redesign and new dependencies.
-  Acceptance: execute schema-to-handler checks for self-read/revoke, exact grants,
-  pending/revoked authority and method/protocol errors. Reject an isolated incorrect
-  schema copy; keep generated credentials and fixture bodies out of receipts.
-  Record exact commands, source hashes and limits. Other families, full OpenAPI
-  standards validation, TLS and live transport remain unverified.
-  Dependencies: DOC-API-CONFORMANCE (done). Ownership: unclaimed in this index;
-  verify tracker ownership before execution.
-
 - [ ] **DOC-M6-INTEGRATED-RECEIPT-GAP** — Goal: M6. Section: Next. Map one same-artifact install-to-recovery receipt gap.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M6](ROADMAP.md#m6--deliver-an-integrated-qualified-alpha).
@@ -1458,106 +1480,51 @@ before their goals can become `met`.
   Dependencies: DOC-M6-CHECKER-NODE22; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-API-PROTOCOL-ERROR-EVIDENCE** — Goal: API-CONFORMANCE. Section: Next. Map profile-list protocol error precedence.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [API-CONFORMANCE](docs/api/wing-link.openapi.yaml).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Compare code-first schema and existing dispatch tests for omitted, supported and unsupported generations with method/auth errors. Record conformance proof or the exact unexecuted check; no sockets.
-  Dependencies: DOC-API-DEVICE-SELF-CONFORMANCE; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+- [ ] **BACKEND-SSH-CONNECT** — Goal: REMOTE-BACKENDS. Complete and qualify the
+  existing native Dart SSH forwarding to an already-configured authenticated Agent.
+  Payoff: replace manual tunnel setup on the admitted native target without
+  importing Desktop's remote shell bridge. Retain the existing task ID and review
+  dependency; source presence does not close that review.
+  Sources: [CONN-4](docs/product/prd.md#connection-path-requirements),
+  [native design boundary](docs/adr/client.md#decision),
+  [connection design](docs/spec.md#connection-path-design).
+  Scope: existing `lib/core/hermes/ssh/` adapter and app-scoped controller,
+  explicit host trust, permitted credential acquisition, typed inputs, bounded
+  network work/deadlines and UI integration. No new OpenSSH subprocess is needed.
+  No arbitrary SSH command, credential in argv/URL, Agent patch, remote install,
+  gateway restart or new Wing Link compatibility authority.
+  Forward directly to Agent without requiring Wing Link installation, pairing or
+  credentials. Unsupported native targets remain explicit; never simulate a tunnel.
+  Acceptance: deterministic tests cover input rejection, unknown/changed host
+  keys, authentication failure, repeated Connect, collision, timeout, cancellation
+  and stale transport results. A controlled native SSH target supplies actual
+  full-app connection evidence. Fixture-only results do not qualify native SSH. Unsupported platforms
+  retain external-tunnel access. Format, analysis and relevant tests pass.
+  Dependencies: DOC-BACKEND-CONTRACT. Section: Next.
+  Ownership: unclaimed in this index. Verify live tracker/continuation leases.
+  Current implementation: native Dart forwarding and password-form integration
+  now exist. Reuse `lib/core/hermes/ssh/` and the app-scoped controller rather than
+  rebuild the adapter. Native full-app qualification and durable
+  SSH relaunch remain open. Key UI now has passing production-control regressions;
+  BACKEND-SSH-KEY-NATIVE owns the remaining platform qualification. This task is not closed by terminal SSH or widget-only evidence.
 
-- [ ] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [NATIVE-INTEGRATION](docs/adr/client.md#decision).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: After operation review, specify cancellation, unknown-outcome and removal criteria against living ADRs. Preparation supplies no native activation rights.
-  Dependencies: DOC-NATIVE-DESIGN-REVIEW; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+- [ ] **BACKEND-SSH-KEY-NATIVE** — Goal: REMOTE-BACKENDS. Qualify full-app
+  managed-key SSH on native Linux and Android against the approved host.
+  Payoff: prove actual app authentication and device reachability, not terminal login.
+  Scope: production managed form, isolated app state and named-platform execution.
+  Acceptance: independently record host trust, SSH/Agent authentication,
+  profile/model/history loading, disconnect and explicit reconnect without replay.
+  Exercise denied/changed keys and cancellation. Include generated-key secure
+  storage denial, public-only native clipboard, deliberate saved-key reuse and
+  unchanged key identity across real process restart. Retain existing generation limits;
+  do not infer permission for provider spending or personal-runtime mutations.
+  Sources: [native qualification](docs/test-plan.md#ssh-private-key-qualification).
+  Dependencies: BACKEND-SSH-KEY-AUTH. Section: Next.
+  Ownership: unclaimed; both platform results remain NOT_CHECKED. Reuse the new
+  `scripts/run_managed_ssh_key_native.sh` and integration test rather than rebuild
+  the harness. Seven Python preparation tests pass in its isolated QA venv.
+  Native execution and the real operating-system chooser remain separate checks.
 
-- [ ] **DOC-DESKTOP-UNINSTALL-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Next. Map one Linux uninstall and retained-state evidence gap.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify named-target uninstall proof and documented data-retention limits, or the missing procedure. No installs, service changes or deletion.
-  Dependencies: DOC-DESKTOP-DELIVERY-EVIDENCE; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-DIAGNOSTICS-BACKUP-CONTRACT** — Goal: DIAGNOSTICS-RECOVERY. Section: Next. Trace atomic backup/import separately from diagnostics reads.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [DIAGNOSTICS-RECOVERY](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name a fixed typed restore operation and validation/rollback limits, or its absence. No backup, restore, private-file reads or secret exports.
-  Dependencies: DOC-DIAGNOSTICS-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-DIAGNOSTICS-CONTRACT** — Goal: DIAGNOSTICS-RECOVERY. Section: Next. Trace one redacted log/diagnostic read.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [DIAGNOSTICS-RECOVERY](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Existing diagnostics and contracts; exclude restore, file copying, secret exports and generic config commands.
-  Acceptance: Name allowed fields, limits, redaction and exact grant, or absent contract. Keep atomic backup/import and fixes separately gated.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
-- [ ] **DOC-DESKTOP-DELIVERY-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Next. Inventory one Linux desktop install/update receipt gap.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Existing menu/install/verifier/runbook/CI evidence; no installs, updates, signing, service restarts or publication.
-  Acceptance: Identify source/artifact/target-bound activation, health and rollback proof or exact gaps; do not equate cross-compilation with runtime support.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
-### P4 — Extended experiences and physical qualification
-
-- [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Goal: ACCOUNT. Section: Next. Map account expiry and logout separately from acquisition.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name exact fail-closed expiry/revocation proof or unavailable authority. No provisioning, wallet use or secret acquisition.
-  Dependencies: DOC-ACCOUNT-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-OFFICE-ACCESSIBLE-EQUIVALENT** — Goal: OFFICE. Section: Next. Map keyboard focus for existing 2D Office activation.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [OFFICE](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify source-bound keyboard activation and owner-change checks or a missing oracle. No 3D dependency, account work or new host operation.
-  Dependencies: DOC-OFFICE-REFERENCE; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-PERSONA-CONFLICT-EVIDENCE** — Goal: PERSONA. Section: Next. Attribute persona conflict recovery separately from whitespace fidelity.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify exact owner/revision, rejected-save messaging and preserved draft proof or missing oracle. No live saves or duplicate accepted repairs.
-  Dependencies: DOC-PERSONA-EVIDENCE; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE** — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [VOICE](docs/product/prd.md#core-journeys).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name target/engine, pending-configuration cancellation and no-late-audio expected outcomes from existing TTS tests/runbooks. Preparation is not physical or acoustic qualification.
-  Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
-- [ ] **DOC-PERSONA-EVIDENCE** — Goal: PERSONA. Section: Next. Verify persona whitespace and completion receipts.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Existing profile decoder/editor, actual-router tests and receipts; no live saves or duplicate accepted repairs.
-  Acceptance: Match current-source hashes to same-card read/save/conflict/cancel receipts; run or add the missing app-level oracle if no matching receipt exists.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
 - [ ] **DOC-ACCOUNT-CONTRACT** — Goal: ACCOUNT. Section: Next. Trace one provider OAuth acquisition contract.
   Payoff: advance the named accepted outcome without duplicating existing repairs.
@@ -1568,14 +1535,85 @@ before their goals can become `met`.
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
-- [ ] **DOC-OFFICE-REFERENCE** — Goal: OFFICE. Section: Next. Compare one Office contact/session activation interaction.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [OFFICE](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Existing 2D Office and Desktop read-only source; exclude 3D/account dependencies and new host operations.
-  Acceptance: Name reference action, current deviation, exact owner/capability/focus oracle and one bounded implementation slice preserving 2D accessibility.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
+- [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Goal: ACCOUNT. Section: Next. Map account expiry and logout separately from acquisition.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name exact fail-closed expiry/revocation proof or unavailable authority. No provisioning, wallet use or secret acquisition.
+  Dependencies: DOC-ACCOUNT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-BACKEND-CONTRACT** — Goal: REMOTE-BACKENDS. Define and review the
+  bounded native SSH-forwarding contract using the completed Desktop research.
+  Payoff: review the implemented forwarding boundary without repeating research
+  or treating unreviewed source as an approved native contract.
+  Sources: [source comparison](docs/product/desktop-connection-paths.md),
+  [native boundary](docs/adr/client.md#decision),
+  [connection design](docs/spec.md#connection-path-design).
+  Scope: one fixed forwarding operation to an already-configured Agent. Review
+  the existing Dart TCP adapter, typed network bounds, credential acquisition,
+  explicit host-key trust, loopback binding, deadlines, durable host identity, ephemeral port mapping,
+  cancellation/cleanup and supported-platform/removal conditions.
+  Acceptance: reviewed contract and failure oracles preserve direct Agent traffic,
+  separate Wing Link credentials, no shell and immutable Agent source. Resolve
+  local key selection against existing path restrictions rather than assuming an
+  exception. The current key reader's size bounds and picker cancellation fences
+  remain acceptance in BACKEND-SSH-KEY-AUTH. See the
+  [source comparison](docs/quality/graphify-wing-recomparison.md).
+  Keep remote bootstrap and Docker/WSL contracts separate.
+  Do not repeat the completed Desktop trace or substitute another investigation
+  chain. This is the sole open contract task for REMOTE-BACKENDS.
+  Dependencies: none for this contract slice. Section: Next.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+### P1 — Daily use, recovery and core Desktop composition
+
+- [ ] **DOC-BACKEND-DISCONNECT-CONTRACT** — Goal: REMOTE-BACKENDS. Implement
+  owner-safe managed SSH disconnect and reconnect. Existing task ID retained.
+  Payoff: tunnel interruption cannot lose session identity or replay mutations.
+  Sources: [CONN-4/5/6](docs/product/prd.md#connection-path-requirements),
+  [recovery matrix](docs/test-plan.md#connection-path-verification).
+  Scope: reviewed forwarding lifecycle, channel reconciliation and nearest tests.
+  Clean up only the owned child. Keep remote service/run Stop separate from
+  tunnel teardown. Exclude remote shell, bootstrap, Agent edits and secret copying.
+  Acceptance: disconnect, unexpected child exit, host switches and replaced local
+  ports retain exact durable host/profile/session identity. Old completions cannot
+  tear down replacements. Recovery performs zero implicit sends/approvals/Stop.
+  Prove deterministic races, then the bounded native interruption/recovery journey.
+  Dependencies: BACKEND-SSH-CONNECT. Section: Next.
+  Ownership: unclaimed in this index. Verify tracker/continuation leases first.
+
+- [ ] **DOC-NATIVE-DESIGN-REVIEW** — Goal: NATIVE-INTEGRATION. Section: Next.
+  Sources: [2026-10-03-desktop-local-integration-design](docs/plans/2026-10-03-desktop-local-integration-design.md) (proposal planning context);
+   [existing design](docs/plans/2026-10-03-desktop-local-integration-design.md).
+  Review the existing design
+  against living ADRs and exact installed-Agent contracts. Payoff: narrow the first
+  local operation without copying privileged Desktop IPC.
+  Scope: design/evidence
+  only; no operation activation, upstream edits, arbitrary paths or shell access.
+  Acceptance: list proposed versus already-authorized operations, fixed argument
+  shapes, identity, secret acquisition, failure/recovery and removal criteria.
+  Dependencies: none for source review; privileged implementation needs a separate
+  security/design decision. Ownership: existing design lane; verify current lease.
+
+- [ ] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [NATIVE-INTEGRATION](docs/adr/client.md#decision).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: After operation review, specify cancellation, unknown-outcome and removal criteria against living ADRs. Preparation supplies no native activation rights.
+  Dependencies: DOC-NATIVE-DESIGN-REVIEW; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+- [ ] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE** — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [VOICE](docs/product/prd.md#core-journeys).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name target/engine, pending-configuration cancellation and no-late-audio expected outcomes from existing TTS tests/runbooks. Preparation is not physical or acoustic qualification.
+  Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
 - [ ] **DOC-VOICE-QUALIFICATION** — Goal: VOICE. Section: Next.
   Prepare one current-source physical capture → reviewed transcript → explicit
@@ -1592,51 +1630,27 @@ before their goals can become `met`.
   without recording audio. Ownership: unclaimed; verify tracker before execution.
 
 
-- [ ] **LANDING-FIRST-REPLY** — Goal: LANDING-ONBOARDING. Give existing Hermes
-  users an honest connection-first entry from the public landing page.
-  Section: Now.
-  Sources: [full landing plan](docs/plans/2026-10-12-wing-landing-onboarding.md),
-  [landing onboarding outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
-  [README re-review continuation](docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence),
-  [remaining review findings](docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow),
-  `site/index.html`, `site/styles.css`, `README.md`, `docs/getting-started.md`,
-  `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`.
-  Scope: primary Connect my Agent action, native/web choice, exact maintained
-  guide anchors, enabled authenticated API and Wing-capability prerequisites,
-  browser HTTPS/CORS explanation, first-reply success signal and compact recovery.
-  Correct preview/illustration promises. Preserve existing setup-document owners;
-  no runtime changes, Wing Link, credential collection, backend or automatic send.
-  First correct the linked documentation: README explicitly separates Preview UI,
-  Connect existing Agent and Build native client, with client acquisition before
-  connection/use. Rewrite getting-started as prerequisites/actions/success/recovery;
-  move internal worktree, synthetic-store and delivery/QA narration to existing
-  evidence owners. Preserve accepted README fixes, anchors and useful limits.
-  Keep Set up your first chat primary and preview secondary; burn DEMO DATA /
-  SIMULATED SESSION into shared showcase exports at the generator, replacing
-  LIVE RUN and cross-device live implications. Publish a concise user-facing
-  platform verification matrix with current-source evidence and SSH UI/fixture/live
-  distinctions beside setup. Add a bounded optional repository-summary workflow
-  after the no-tools first-reply smoke; approvals/background reliability stay gated.
-  Simplify QA wording without converting not-verified into unsupported/unavailable;
-  historical undelivered receipts are not current-main availability evidence.
-  Acceptance: readiness proxy improves from 0 to 4; candidate browser checks prove
-  correct CTA/guide destinations and understandable prerequisites at compact and
-  desktop widths; core entry works without JavaScript. Preserve source-only/alpha
-  disclosure. Content coverage does not qualify live first reply or usability.
-  Documentation acceptance: each starting path is independently followable;
-  tutorial steps require no internal engineering vocabulary; UI labels and links
-  match current source. Add a focused ordering/anchor regression during implementation;
-  classify obsolete README/Termux text assertions without restoring retired setup
-  or dropping security/authority coverage. Editorial 7.5/10 is not a measured score.
-  Standalone shared images visibly retain demo provenance; platform cells link
-  exact target/source evidence; optional tool use is explicit and permission/cost
-  bounded. Preserve known incoming anchors without speculative alias expansion.
-  Dependencies: none for offline landing work. Authenticated qualification stays
-  with CONNECTION-SETUP-AUTH-MATRIX; do not duplicate its worker.
-  Ownership: wing; no worker claimed by this planning pass. Next action: implement
-  the bounded README sequencing and tutorial correction, then landing copy/connection
-  and showcase truthfulness with focused regressions. This plan changes no public
-  tutorial or image yet; broader visual composition stays with LANDING-PRODUCT-PROOF.
+- [ ] **LANDING-PAGES-QUALITY** — Goal: LANDING-ONBOARDING. Deliver landing changes
+  with artifact-bound accessibility, performance and subpath regression coverage.
+  Section: Next.
+  Sources: [accepted landing outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
+  [Pages quality plan](docs/plans/2026-10-12-wing-landing-onboarding.md#delivery-slices-and-acceptance),
+  `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`,
+  `test/tooling/pages_workflow_contract_test.dart`, `scripts/generate_readme_assets.mjs`.
+  Scope: extend existing candidate artifact checks, relevant workflow inputs,
+  link/CTA/image/provenance metadata, keyboard/zoom/motion/accessibility and controlled
+  performance budgets; preserve landing root and nested production app initialization.
+  Public readback must distinguish exact artifact freshness from old cached content.
+  No publication in planning, privileged fork/PR deployment or new hosting/backend.
+  Acceptance: focused source contracts and assembled-artifact Pages smoke pass;
+  no console/same-origin HTTP errors; meaningful checks cover new setup paths;
+  performance results identify device/throttle/cache conditions and are not promoted
+  to field Core Web Vitals; staging/deploy permissions and scoped base href remain
+  intact. Document previous-artifact forward recovery without destructive history.
+  Dependencies: none for offline pipeline/guard work; coordinate with the landing
+  implementer when copy/assets change. Live first reply uses existing qualified QA.
+  Ownership: wing; no worker claimed. Next action: add focused artifact regression
+  and safe workflow input/quality coverage, not another broad repository audit.
 
 - [ ] **LANDING-PRODUCT-PROOF** — Goal: LANDING-ONBOARDING. Make Wing's value and
   real product interaction clear through a coherent responsive product page.
@@ -1663,29 +1677,50 @@ before their goals can become `met`.
   Ownership: wing; no worker claimed. Next action: choose/record the composition
   before visual implementation; use genuine current, redacted fixture assets.
 
-- [ ] **LANDING-PAGES-QUALITY** — Goal: LANDING-ONBOARDING. Deliver landing changes
-  with artifact-bound accessibility, performance and subpath regression coverage.
-  Section: Now.
-  Sources: [accepted landing outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
-  [Pages quality plan](docs/plans/2026-10-12-wing-landing-onboarding.md#delivery-slices-and-acceptance),
-  `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`,
-  `test/tooling/pages_workflow_contract_test.dart`, `scripts/generate_readme_assets.mjs`.
-  Scope: extend existing candidate artifact checks, relevant workflow inputs,
-  link/CTA/image/provenance metadata, keyboard/zoom/motion/accessibility and controlled
-  performance budgets; preserve landing root and nested production app initialization.
-  Public readback must distinguish exact artifact freshness from old cached content.
-  No publication in planning, privileged fork/PR deployment or new hosting/backend.
-  Acceptance: focused source contracts and assembled-artifact Pages smoke pass;
-  no console/same-origin HTTP errors; meaningful checks cover new setup paths;
-  performance results identify device/throttle/cache conditions and are not promoted
-  to field Core Web Vitals; staging/deploy permissions and scoped base href remain
-  intact. Document previous-artifact forward recovery without destructive history.
-  Dependencies: none for offline pipeline/guard work; coordinate with the landing
-  implementer when copy/assets change. Live first reply uses existing qualified QA.
-  Ownership: wing; no worker claimed. Next action: add focused artifact regression
-  and safe workflow input/quality coverage, not another broad repository audit.
-
 ## Needs decision
+
+- [ ] **DOC-API-DEVICE-SELF-CONFORMANCE** — Goal: API-CONFORMANCE. Section: Needs decision. Verify
+  GET and DELETE `/v2/devices/self` against the code-first snapshot.
+  Payoff: extend discovery-only conformance to one exact authorization boundary.
+  Sources: [2026-08-24-wing-link-hardening](docs/superpowers/plans/2026-08-24-wing-link-hardening.md) (historical planning context);
+   [OpenAPI snapshot](docs/api/wing-link.openapi.yaml),
+  [retirement boundary](docs/adr/product.md#complete-removal-including-legacy).
+  Historical inputs: `wing_link/internal/app/serve.go` and
+  `wing_link/internal/app/serve_test.go` were removed at 963b9b5b; use immutable
+  Git history for the archived contract, not nonexistent current handlers.
+  Scope: one management-route family, existing tooling, in-process disposable
+  recorder fixtures and documentation corrections. Exclude live listeners,
+  personal credentials, peer administration, API redesign and new dependencies.
+  Acceptance: execute schema-to-handler checks for self-read/revoke, exact grants,
+  pending/revoked authority and method/protocol errors. Reject an isolated incorrect
+  schema copy; keep generated credentials and fixture bodies out of receipts.
+  Record exact commands, source hashes and limits. Other families, full OpenAPI
+  standards validation, TLS and live transport remain unverified.
+  Dependencies: DOC-API-CONFORMANCE (done). Ownership: unclaimed in this index;
+  verify tracker ownership before execution.
+
+  Source status: this acceptance targets the retired Wing Link service, not
+  a current Wing-owned API. Original criteria and dependencies are retained as
+  unresolved historical intent, not authorization to recreate management.
+  Open question: retire/supersede this legacy proof, or supply an explicitly
+  accepted surviving contract? Default: deferred; no new API or acceptance.
+
+- [ ] **DOC-API-PROTOCOL-ERROR-EVIDENCE** — Goal: API-CONFORMANCE. Section: Needs decision. Map profile-list protocol error precedence.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [API-CONFORMANCE](docs/api/wing-link.openapi.yaml),
+  [retirement boundary](docs/adr/product.md#complete-removal-including-legacy).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Compare code-first schema and existing dispatch tests for omitted, supported and unsupported generations with method/auth errors. Record conformance proof or the exact unexecuted check; no sockets.
+  Dependencies: DOC-API-DEVICE-SELF-CONFORMANCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+  Source status: this acceptance targets the retired Wing Link service, not
+  a current Wing-owned API. Original criteria and dependencies are retained as
+  unresolved historical intent, not authorization to recreate management.
+  Open question: retire/supersede this legacy proof, or supply an explicitly
+  accepted surviving contract? Default: deferred; no new API or acceptance.
+
 
 - [ ] **DOC-M2-INODE-POLICY-EVIDENCE** — Goal: M2. Assess the additional scratch
   inode-policy prerequisite. Payoff: preserve the separate admission obligation

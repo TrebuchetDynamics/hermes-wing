@@ -4819,3 +4819,45 @@ Full ASD-STE100 dictionary compliance was not verified. Historical installer
 receipt bytes remain unchanged except for the explicit scope notice.
 No new owner question is needed; the scheduled predecessor's removed inputs are
 an engineering-routing issue for its existing owner, not new authorization.
+
+
+## Recovered completion index for ledger-only historical records
+
+These records reconstruct the existing done entries from immutable ledger commit
+`5f2bed91`. Original full task prose was not found in the live/archive history;
+this is an explicit index reconstruction, not invented original acceptance or a new
+completion decision. Prior archived unchecked boxes remain historical snapshots,
+not current task state. Consult the ledger and source-bound evidence for today.
+
+- [x] **CONNECTION-LOCAL-SETUP-RECOVERY** — Goal: CONNECTION-PATHS. Qualify optional Local existing-install and setup-needed consent cancellation and explicit retry through compiled public controls
+  Sources: [existing ledger](goals.json), [CONNECTION-PATHS intent](docs/product/prd.md#connection-path-requirements);
+  immutable task status/title/dependencies at Git commit `5f2bed91`.
+  Scope: historical completed outcome described by that unchanged ledger title.
+  Acceptance: original task-specific prose was not recoverable; no replacement
+  criteria, approval or current-platform qualification is asserted by this index.
+  Dependencies: none (unchanged historical ledger).
+  Ownership: completed historical record; no live owner or worker created.
+  Checks: historical goal evidence remains verbatim in the ledger; no feature
+  checks were executed or newly marked passed in this documentation repair.
+
+- [x] **CONNECTION-REMOTE-AUTH-EXPLANATION** — Goal: CONNECTION-PATHS. Explain token-only Remote authentication and unsupported browser OAuth through public entry and recovery controls
+  Sources: [existing ledger](goals.json), [CONNECTION-PATHS intent](docs/product/prd.md#connection-path-requirements);
+  immutable task status/title/dependencies at Git commit `5f2bed91`.
+  Scope: historical completed outcome described by that unchanged ledger title.
+  Acceptance: original task-specific prose was not recoverable; no replacement
+  criteria, approval or current-platform qualification is asserted by this index.
+  Dependencies: none (unchanged historical ledger).
+  Ownership: completed historical record; no live owner or worker created.
+  Checks: historical goal evidence remains verbatim in the ledger; no feature
+  checks were executed or newly marked passed in this documentation repair.
+
+- [x] **M1-STATUS-ACCESSIBILITY** — Goal: M1. Repair native daily-workflow connection/profile status readability at compact width and enlarged text with keyboard-accessible full values
+  Sources: [existing ledger](goals.json), [M1 intent](docs/product/prd.md#leading-acceptance-outcome);
+  immutable task status/title/dependencies at Git commit `5f2bed91`.
+  Scope: historical completed outcome described by that unchanged ledger title.
+  Acceptance: original task-specific prose was not recoverable; no replacement
+  criteria, approval or current-platform qualification is asserted by this index.
+  Dependencies: none (unchanged historical ledger).
+  Ownership: completed historical record; no live owner or worker created.
+  Checks: historical goal evidence remains verbatim in the ledger; no feature
+  checks were executed or newly marked passed in this documentation repair.

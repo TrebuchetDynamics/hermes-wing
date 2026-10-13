@@ -4,6 +4,445 @@
       "depends_on": [],
       "evidence": [
         {
+          "kind": "inspection",
+          "ref": "ROADMAP.md#m4--discover-and-administer-supported-agent-work",
+          "result": "pass"
+        }
+      ],
+      "id": "M4",
+      "priority": 0,
+      "source": "ROADMAP.md#m4--discover-and-administer-supported-agent-work",
+      "status": "partial",
+      "tasks": [
+        "DOC-M4-INVENTORY-EVIDENCE",
+        "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE"
+      ],
+      "title": "Qualify supported inventory and administration operation by operation"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "DIAGNOSTICS-RECOVERY",
+      "priority": 1,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
+        "DOC-DIAGNOSTICS-CONTRACT"
+      ],
+      "title": "Provide safe backup/import, logs and config diagnosis/recovery"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "DESKTOP-DELIVERY",
+      "priority": 2,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-DESKTOP-DELIVERY-EVIDENCE",
+        "DOC-DESKTOP-UNINSTALL-EVIDENCE"
+      ],
+      "title": "Qualify desktop windows, install and signed update/recovery"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/format.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "dart format test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze-final.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze.log",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'fork|session mutation ownership'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history' 2>&1 | tee .task-evidence/t_8866900e/channel-selection.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'session mutation ownership|deleteSession'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'session mutation ownership'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name deleteSession",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller' 2>&1 | tee .task-evidence/t_8866900e/channel-open.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --name 'deletes a session over DELETE|rejects an unconfirmed delete response'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --plain-name 'forks a session over POST'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session'",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session' 2>&1 | tee .task-evidence/t_8866900e/filtering.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart 2>&1 | tee .task-evidence/t_36a391f7/journey.log (initial run; retained as journey-initial.log)",
+          "result": "fail"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey-initial.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart 2>&1 | tee .task-evidence/t_8866900e/settlement-owner.log",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --check -- goals.json TODO.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/session-delete-journey.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/session-fork-journey.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/session-rename-journey.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null docs/quality/session-search-resume-journey.md",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git diff-tree --check f84e8ebde582e626669492856464a31b44de1d4b^ f84e8ebde582e626669492856464a31b44de1d4b",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git show --format= --check 222be4ee4068a00aa553a1dceddc52b21a52ffed",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "git show --format= --check agent/wing/t_36a391f7",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate .",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "SESSIONS",
+      "priority": 3,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "met",
+      "tasks": [
+        "DOC-SESSION-ACTIONS-EVIDENCE",
+        "DOC-SESSION-DELETE-EVIDENCE",
+        "DOC-SESSION-FORK-JOURNEY",
+        "DOC-SESSION-SEARCH-RESUME-QUALIFICATION"
+      ],
+      "title": "Qualify exact session search/resume/fork/rename/delete"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "SLASH-CATALOG",
+      "priority": 3,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-SLASH-CATALOG-CONTRACT",
+        "DOC-SLASH-DENIAL-EVIDENCE"
+      ],
+      "title": "Match supported full Desktop slash commands and completion"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "OFFICE",
+      "priority": 4,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "partial",
+      "tasks": [
+        "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
+        "DOC-OFFICE-REFERENCE"
+      ],
+      "title": "Match Office interactions with an accessible non-spatial path"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        }
+      ],
+      "id": "PERSONA",
+      "priority": 5,
+      "source": "docs/product/hermes-desktop-parity.md#statuses",
+      "status": "unverified",
+      "tasks": [
+        "DOC-PERSONA-CONFLICT-EVIDENCE",
+        "DOC-PERSONA-EVIDENCE"
+      ],
+      "title": "Qualify standalone and embedded profile persona fidelity"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
+          "kind": "executed",
+          "ref": "flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (build)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (build)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (nearest)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (nearest)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (widgets)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (widgets)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=.task-evidence/t_1c1e6f37/browser-verified-final; receipt: .task-evidence/t_1c1e6f37/verified-commands.json and global-browser-verified-final-results.json",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (browser)",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
+          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (browser)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_1c1e6f37/final-hashes.json (current app_shell.dart differs; 19 other lib/test/playwright fingerprints match; see docs/runbooks/global-session-access.md#current-snapshot-limit)",
+          "result": "fail"
+        },
+        {
+          "kind": "inspection",
+          "ref": ".task-evidence/t_d06ef06d/source-inputs.json (later messaging, history parsing/models and channel regression edits differ from nine of 521 inputs; review-snapshot acceptance preserved; see docs/runbooks/global-session-access.md#current-snapshot-limit)",
+          "result": "fail"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/runbooks/desktop-shell-reference-fidelity.md#evidence-and-exact-checks (four current source hashes match; 57-widget and two-browser passing logs inspected; remaining input attribution unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/runbooks/desktop-shell-reference-fidelity.md#independent-review-p1-correction (four final source hashes match; focus-fix logs record 57 widget and two Chromium passes; full input attribution and independent verdict remain unverified)",
+          "result": "pass"
+        }
+      ],
+      "id": "GLOBAL-LOADED-SESSIONS",
+      "priority": 10,
+      "source": "docs/runbooks/global-session-access.md#verification",
+      "status": "met",
+      "tasks": [
+        "DOC-GLOBAL-SESSIONS-CURRENT-CHECK",
+        "PARITY-GLOBAL-SESSIONS"
+      ],
+      "title": "Open/create loaded sessions from feature routes without incidental reads"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
           "kind": "executed",
           "ref": "cd <home>/.hermes/cache/scratch/t_cd815647/base && flutter pub get",
           "result": "pass"
@@ -80,7 +519,7 @@
         }
       ],
       "id": "INTEGRATION",
-      "priority": 1,
+      "priority": 101,
       "source": "docs/quality/merge-train-shell-status-bar.md",
       "status": "partial",
       "tasks": [
@@ -2170,7 +2609,7 @@
         }
       ],
       "id": "M1",
-      "priority": 1,
+      "priority": 101,
       "source": "docs/product/prd.md#leading-acceptance-outcome",
       "status": "partial",
       "tasks": [
@@ -2519,7 +2958,7 @@
         }
       ],
       "id": "SECURITY",
-      "priority": 1,
+      "priority": 101,
       "source": "docs/product/prd.md#product-rules",
       "status": "partial",
       "tasks": [
@@ -3211,7 +3650,7 @@
         }
       ],
       "id": "CHAT-FIDELITY",
-      "priority": 2,
+      "priority": 102,
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "partial",
       "tasks": [
@@ -3413,7 +3852,7 @@
         }
       ],
       "id": "PARITY",
-      "priority": 2,
+      "priority": 102,
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "partial",
       "tasks": [
@@ -3884,7 +4323,7 @@
         }
       ],
       "id": "PARITY-COMPOSITION",
-      "priority": 2,
+      "priority": 102,
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "partial",
       "tasks": [
@@ -4604,7 +5043,7 @@
         }
       ],
       "id": "CONNECTION-PATHS",
-      "priority": 3,
+      "priority": 103,
       "source": "docs/product/prd.md#connection-path-requirements",
       "status": "partial",
       "tasks": [
@@ -4653,7 +5092,7 @@
         }
       ],
       "id": "PARITY-TABS",
-      "priority": 3,
+      "priority": 103,
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "unmet",
       "tasks": [
@@ -4661,252 +5100,6 @@
         "DOC-PARITY-TAB-RECONNECT-CONTRACT"
       ],
       "title": "Provide owner-safe multi-conversation tabs and close/Stop behavior"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "executed",
-          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/format.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "dart format test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter analyze",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze-final.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter analyze 2>&1 | tee .task-evidence/t_8866900e/analyze.log",
-          "result": "fail"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'fork|session mutation ownership'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'latest session selection|stale session history' 2>&1 | tee .task-evidence/t_8866900e/channel-selection.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --name 'session mutation ownership|deleteSession'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'session mutation ownership'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_api_channel_test.dart --plain-name deleteSession",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/channel/hermes_session_caller_admission_test.dart --name 'open caller' 2>&1 | tee .task-evidence/t_8866900e/channel-open.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --name 'deletes a session over DELETE|rejects an unconfirmed delete response'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/core/hermes/hermes_api_test.dart --plain-name 'forks a session over POST'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session'",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart --name 'session search|session source filter|header selects an older session' 2>&1 | tee .task-evidence/t_8866900e/filtering.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart 2>&1 | tee .task-evidence/t_36a391f7/journey.log (initial run; retained as journey-initial.log)",
-          "result": "fail"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey-initial.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart 2>&1 | tee .task-evidence/t_8866900e/journey.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_settlement_owner_test.dart 2>&1 | tee .task-evidence/t_8866900e/settlement-owner.log",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --check -- goals.json TODO.md",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null docs/quality/session-delete-journey.md",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null docs/quality/session-fork-journey.md",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null docs/quality/session-rename-journey.md",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null docs/quality/session-search-resume-journey.md",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_delete_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_fork_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_rename_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff --no-index --check /dev/null test/features/hermes_chat/screens/hermes_chat_session_search_resume_journey_test.dart",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git diff-tree --check f84e8ebde582e626669492856464a31b44de1d4b^ f84e8ebde582e626669492856464a31b44de1d4b",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git show --format= --check 222be4ee4068a00aa553a1dceddc52b21a52ffed",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "git show --format= --check agent/wing/t_36a391f7",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "python <home>/.hermes/shared-skills/repo-docs/scripts/goals.py validate .",
-          "result": "pass"
-        },
-        {
-          "kind": "inspection",
-          "ref": "docs/product/hermes-desktop-parity.md#statuses",
-          "result": "pass"
-        }
-      ],
-      "id": "SESSIONS",
-      "priority": 3,
-      "source": "docs/product/hermes-desktop-parity.md#statuses",
-      "status": "met",
-      "tasks": [
-        "DOC-SESSION-ACTIONS-EVIDENCE",
-        "DOC-SESSION-DELETE-EVIDENCE",
-        "DOC-SESSION-FORK-JOURNEY",
-        "DOC-SESSION-SEARCH-RESUME-QUALIFICATION"
-      ],
-      "title": "Qualify exact session search/resume/fork/rename/delete"
     },
     {
       "depends_on": [],
@@ -4968,7 +5161,7 @@
         }
       ],
       "id": "SHELL-PERSISTENCE",
-      "priority": 3,
+      "priority": 103,
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "unverified",
       "tasks": [
@@ -4983,50 +5176,12 @@
       "evidence": [
         {
           "kind": "inspection",
-          "ref": "docs/product/hermes-desktop-parity.md#statuses",
-          "result": "pass"
-        }
-      ],
-      "id": "SLASH-CATALOG",
-      "priority": 3,
-      "source": "docs/product/hermes-desktop-parity.md#statuses",
-      "status": "partial",
-      "tasks": [
-        "DOC-SLASH-CATALOG-CONTRACT",
-        "DOC-SLASH-DENIAL-EVIDENCE"
-      ],
-      "title": "Match supported full Desktop slash commands and completion"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "inspection",
-          "ref": "docs/product/hermes-desktop-parity.md#statuses",
-          "result": "pass"
-        }
-      ],
-      "id": "DESKTOP-DELIVERY",
-      "priority": 4,
-      "source": "docs/product/hermes-desktop-parity.md#statuses",
-      "status": "partial",
-      "tasks": [
-        "DOC-DESKTOP-DELIVERY-EVIDENCE",
-        "DOC-DESKTOP-UNINSTALL-EVIDENCE"
-      ],
-      "title": "Qualify desktop windows, install and signed update/recovery"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "inspection",
           "ref": "ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace",
           "result": "pass"
         }
       ],
       "id": "M3",
-      "priority": 4,
+      "priority": 104,
       "source": "ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace",
       "status": "partial",
       "tasks": [
@@ -5045,7 +5200,7 @@
         }
       ],
       "id": "M3-PROJECT",
-      "priority": 4,
+      "priority": 104,
       "source": "docs/product/prd.md#core-journeys",
       "status": "unmet",
       "tasks": [
@@ -5064,7 +5219,7 @@
         }
       ],
       "id": "M3-PROVIDER",
-      "priority": 4,
+      "priority": 104,
       "source": "docs/adr/api-and-state.md#required-agent-owned-mutation-contract",
       "status": "unmet",
       "tasks": [
@@ -5083,7 +5238,7 @@
         }
       ],
       "id": "ARTIFACTS",
-      "priority": 5,
+      "priority": 105,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "partial",
       "tasks": [
@@ -5097,31 +5252,12 @@
       "evidence": [
         {
           "kind": "inspection",
-          "ref": "ROADMAP.md#m4--discover-and-administer-supported-agent-work",
-          "result": "pass"
-        }
-      ],
-      "id": "M4",
-      "priority": 5,
-      "source": "ROADMAP.md#m4--discover-and-administer-supported-agent-work",
-      "status": "partial",
-      "tasks": [
-        "DOC-M4-INVENTORY-EVIDENCE",
-        "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE"
-      ],
-      "title": "Qualify supported inventory and administration operation by operation"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
         }
       ],
       "id": "M4-DISCOVER",
-      "priority": 5,
+      "priority": 105,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "unmet",
       "tasks": [
@@ -5140,7 +5276,7 @@
         }
       ],
       "id": "M4-KANBAN",
-      "priority": 5,
+      "priority": 105,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "unmet",
       "tasks": [
@@ -5159,7 +5295,7 @@
         }
       ],
       "id": "M4-MCP",
-      "priority": 5,
+      "priority": 105,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "partial",
       "tasks": [
@@ -5178,7 +5314,7 @@
         }
       ],
       "id": "M4-MEMORY",
-      "priority": 5,
+      "priority": 105,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "unmet",
       "tasks": [
@@ -5197,7 +5333,7 @@
         }
       ],
       "id": "M4-PLATFORMS",
-      "priority": 5,
+      "priority": 105,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "unmet",
       "tasks": [
@@ -5216,7 +5352,7 @@
         }
       ],
       "id": "M4-SCHEDULES",
-      "priority": 5,
+      "priority": 105,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "partial",
       "tasks": [
@@ -5235,7 +5371,7 @@
         }
       ],
       "id": "M5",
-      "priority": 5,
+      "priority": 105,
       "source": "ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction",
       "status": "partial",
       "tasks": [
@@ -5243,25 +5379,6 @@
         "DOC-M5-LARGE-TEXT-EVIDENCE"
       ],
       "title": "Qualify native output and accessible interaction"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "inspection",
-          "ref": "docs/product/hermes-desktop-parity.md#statuses",
-          "result": "pass"
-        }
-      ],
-      "id": "DIAGNOSTICS-RECOVERY",
-      "priority": 6,
-      "source": "docs/product/hermes-desktop-parity.md#statuses",
-      "status": "partial",
-      "tasks": [
-        "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
-        "DOC-DIAGNOSTICS-CONTRACT"
-      ],
-      "title": "Provide safe backup/import, logs and config diagnosis/recovery"
     },
     {
       "depends_on": [],
@@ -5298,7 +5415,7 @@
         }
       ],
       "id": "M6",
-      "priority": 6,
+      "priority": 106,
       "source": "ROADMAP.md#m6--deliver-an-integrated-qualified-alpha",
       "status": "unverified",
       "tasks": [
@@ -5319,46 +5436,8 @@
           "result": "pass"
         }
       ],
-      "id": "OFFICE",
-      "priority": 6,
-      "source": "docs/product/hermes-desktop-parity.md#statuses",
-      "status": "partial",
-      "tasks": [
-        "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
-        "DOC-OFFICE-REFERENCE"
-      ],
-      "title": "Match Office interactions with an accessible non-spatial path"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "inspection",
-          "ref": "docs/product/hermes-desktop-parity.md#statuses",
-          "result": "pass"
-        }
-      ],
-      "id": "PERSONA",
-      "priority": 6,
-      "source": "docs/product/hermes-desktop-parity.md#statuses",
-      "status": "unverified",
-      "tasks": [
-        "DOC-PERSONA-CONFLICT-EVIDENCE",
-        "DOC-PERSONA-EVIDENCE"
-      ],
-      "title": "Qualify standalone and embedded profile persona fidelity"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "inspection",
-          "ref": "docs/product/hermes-desktop-parity.md#statuses",
-          "result": "pass"
-        }
-      ],
       "id": "ACCOUNT",
-      "priority": 7,
+      "priority": 107,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "unmet",
       "tasks": [
@@ -5382,7 +5461,7 @@
         }
       ],
       "id": "API-CONFORMANCE",
-      "priority": 7,
+      "priority": 107,
       "source": "docs/api/wing-link.openapi.yaml",
       "status": "unverified",
       "tasks": [
@@ -5402,7 +5481,7 @@
         }
       ],
       "id": "NATIVE-INTEGRATION",
-      "priority": 7,
+      "priority": 107,
       "source": "docs/adr/client.md#decision",
       "status": "unverified",
       "tasks": [
@@ -5456,7 +5535,7 @@
         }
       ],
       "id": "REMOTE-BACKENDS",
-      "priority": 7,
+      "priority": 107,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
       "status": "unmet",
       "tasks": [
@@ -5478,7 +5557,7 @@
         }
       ],
       "id": "VOICE",
-      "priority": 8,
+      "priority": 108,
       "source": "docs/product/prd.md#core-journeys",
       "status": "unverified",
       "tasks": [
@@ -5486,85 +5565,6 @@
         "DOC-VOICE-QUALIFICATION"
       ],
       "title": "Qualify actual physical capture, speech and acoustic behavior"
-    },
-    {
-      "depends_on": [],
-      "evidence": [
-        {
-          "kind": "executed",
-          "ref": "flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (build)",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (build)",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (nearest)",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --no-pub test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (nearest)",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (widgets)",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "flutter test --no-pub test/shared/widgets/app_shell_global_session_access_test.dart --concurrency=1 --reporter=json; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (widgets)",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=.task-evidence/t_1c1e6f37/browser-verified-final; receipt: .task-evidence/t_1c1e6f37/verified-commands.json and global-browser-verified-final-results.json",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/mirror; receipt: .task-evidence/t_d06ef06d/commands.json (browser)",
-          "result": "pass"
-        },
-        {
-          "kind": "executed",
-          "ref": "npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --retries=0 --workers=1 --output=browser-output; cwd: .task-evidence/t_d06ef06d/review-run/mirror; receipt: .task-evidence/t_d06ef06d/review-run/commands.json (browser)",
-          "result": "pass"
-        },
-        {
-          "kind": "inspection",
-          "ref": ".task-evidence/t_1c1e6f37/final-hashes.json (current app_shell.dart differs; 19 other lib/test/playwright fingerprints match; see docs/runbooks/global-session-access.md#current-snapshot-limit)",
-          "result": "fail"
-        },
-        {
-          "kind": "inspection",
-          "ref": ".task-evidence/t_d06ef06d/source-inputs.json (later messaging, history parsing/models and channel regression edits differ from nine of 521 inputs; review-snapshot acceptance preserved; see docs/runbooks/global-session-access.md#current-snapshot-limit)",
-          "result": "fail"
-        },
-        {
-          "kind": "inspection",
-          "ref": "docs/runbooks/desktop-shell-reference-fidelity.md#evidence-and-exact-checks (four current source hashes match; 57-widget and two-browser passing logs inspected; remaining input attribution unverified)",
-          "result": "pass"
-        },
-        {
-          "kind": "inspection",
-          "ref": "docs/runbooks/desktop-shell-reference-fidelity.md#independent-review-p1-correction (four final source hashes match; focus-fix logs record 57 widget and two Chromium passes; full input attribution and independent verdict remain unverified)",
-          "result": "pass"
-        }
-      ],
-      "id": "GLOBAL-LOADED-SESSIONS",
-      "priority": 10,
-      "source": "docs/runbooks/global-session-access.md#verification",
-      "status": "met",
-      "tasks": [
-        "DOC-GLOBAL-SESSIONS-CURRENT-CHECK",
-        "PARITY-GLOBAL-SESSIONS"
-      ],
-      "title": "Open/create loaded sessions from feature routes without incidental reads"
     },
     {
       "depends_on": [],
@@ -5586,7 +5586,7 @@
         }
       ],
       "id": "LANDING-ONBOARDING",
-      "priority": 10,
+      "priority": 110,
       "source": "docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome",
       "status": "unmet",
       "tasks": [
@@ -6614,7 +6614,7 @@
         }
       ],
       "id": "M2",
-      "priority": 90,
+      "priority": 190,
       "source": "ROADMAP.md#m2--leave-and-return-without-losing-ownership",
       "status": "unverified",
       "tasks": [
@@ -6654,16 +6654,7 @@
       "title": "Recover Android owner/history after background and process death"
     }
   ],
-  "primary_milestone": "CONNECTION-PATHS",
   "tasks": [
-    {
-      "depends_on": [],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-CRON-ADMISSION",
-      "section": "Now",
-      "status": "open",
-      "title": "Repair and verify hermes-toolset-only full-lifecycle main-only writer admission"
-    },
     {
       "depends_on": [],
       "goal": "CONNECTION-PATHS",
@@ -6692,19 +6683,51 @@
     },
     {
       "depends_on": [],
-      "goal": "LANDING-ONBOARDING",
-      "id": "LANDING-FIRST-REPLY",
+      "goal": "DESKTOP-DELIVERY",
+      "id": "DOC-DESKTOP-DELIVERY-EVIDENCE",
       "section": "Now",
       "status": "open",
-      "title": "Provide connection-first landing entry and exact API readiness guidance"
+      "title": "Inventory one Linux desktop install/update receipt gap"
     },
     {
       "depends_on": [],
-      "goal": "LANDING-ONBOARDING",
-      "id": "LANDING-PAGES-QUALITY",
+      "goal": "DIAGNOSTICS-RECOVERY",
+      "id": "DOC-DIAGNOSTICS-CONTRACT",
       "section": "Now",
       "status": "open",
-      "title": "Extend artifact-bound Pages quality and delivery regressions"
+      "title": "Trace one redacted log/diagnostic read"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4",
+      "id": "DOC-M4-INVENTORY-EVIDENCE",
+      "section": "Now",
+      "status": "in_progress",
+      "title": "Map one Tools inventory journey to current-source evidence"
+    },
+    {
+      "depends_on": [],
+      "goal": "OFFICE",
+      "id": "DOC-OFFICE-REFERENCE",
+      "section": "Now",
+      "status": "open",
+      "title": "Compare one Office contact/session activation interaction"
+    },
+    {
+      "depends_on": [],
+      "goal": "PERSONA",
+      "id": "DOC-PERSONA-EVIDENCE",
+      "section": "Now",
+      "status": "open",
+      "title": "Verify persona whitespace and completion receipts"
+    },
+    {
+      "depends_on": [],
+      "goal": "SLASH-CATALOG",
+      "id": "DOC-SLASH-CATALOG-CONTRACT",
+      "section": "Now",
+      "status": "open",
+      "title": "Compare the current curated commands with an authoritative catalog"
     },
     {
       "depends_on": [],
@@ -6713,24 +6736,6 @@
       "section": "Now",
       "status": "in_progress",
       "title": "Qualify actual generation, approval, Stop and restoration together"
-    },
-    {
-      "depends_on": [],
-      "goal": "PARITY",
-      "id": "PARITY-MAESTRO-ANDROID-DEVICE",
-      "section": "Now",
-      "status": "open",
-      "title": "Execute repaired approvals/Stop/reconnect and attachment-owner-race flows on the enrolled disposable Android target, then qualify remaining mapped features"
-    },
-    {
-      "depends_on": [
-        "VERIFY-GLOBAL-SESSION-MODAL-NATIVE"
-      ],
-      "goal": "PARITY-COMPOSITION",
-      "id": "VERIFY-PROFILE-FOOTER-NATIVE",
-      "section": "Now",
-      "status": "open",
-      "title": "Keep the passive profile footer keyboard-reachable and owner-current through native Linux adaptive return"
     },
     {
       "depends_on": [
@@ -6751,6 +6756,14 @@
       "section": "Next",
       "status": "open",
       "title": "Exercise full Wing managed-key SSH and recovery on native Linux and Android against the approved host"
+    },
+    {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-CRON-ADMISSION",
+      "section": "Next",
+      "status": "open",
+      "title": "Repair and verify hermes-toolset-only full-lifecycle main-only writer admission"
     },
     {
       "depends_on": [
@@ -6811,26 +6824,6 @@
       "title": "Map account expiry and logout separately from acquisition"
     },
     {
-      "depends_on": [
-        "DOC-API-CONFORMANCE"
-      ],
-      "goal": "API-CONFORMANCE",
-      "id": "DOC-API-DEVICE-SELF-CONFORMANCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Verify device-self read/revoke schema and authorization against handlers"
-    },
-    {
-      "depends_on": [
-        "DOC-API-DEVICE-SELF-CONFORMANCE"
-      ],
-      "goal": "API-CONFORMANCE",
-      "id": "DOC-API-PROTOCOL-ERROR-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Map profile-list protocol error precedence"
-    },
-    {
       "depends_on": [],
       "goal": "ARTIFACTS",
       "id": "DOC-ARTIFACT-CONTRACT",
@@ -6867,14 +6860,6 @@
       "title": "Implement owner-safe managed SSH disconnect and reconnect"
     },
     {
-      "depends_on": [],
-      "goal": "DESKTOP-DELIVERY",
-      "id": "DOC-DESKTOP-DELIVERY-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Inventory one Linux desktop install/update receipt gap"
-    },
-    {
       "depends_on": [
         "DOC-DESKTOP-DELIVERY-EVIDENCE"
       ],
@@ -6893,14 +6878,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace atomic backup/import separately from diagnostics reads"
-    },
-    {
-      "depends_on": [],
-      "goal": "DIAGNOSTICS-RECOVERY",
-      "id": "DOC-DIAGNOSTICS-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one redacted log/diagnostic read"
     },
     {
       "depends_on": [],
@@ -6983,14 +6960,6 @@
       "section": "Next",
       "status": "open",
       "title": "Attribute one Wing Link host-lifecycle approval boundary"
-    },
-    {
-      "depends_on": [],
-      "goal": "M4",
-      "id": "DOC-M4-INVENTORY-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Map one Tools inventory journey to current-source evidence"
     },
     {
       "depends_on": [],
@@ -7150,14 +7119,6 @@
     },
     {
       "depends_on": [],
-      "goal": "OFFICE",
-      "id": "DOC-OFFICE-REFERENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Compare one Office contact/session activation interaction"
-    },
-    {
-      "depends_on": [],
       "goal": "PARITY-TABS",
       "id": "DOC-PARITY-TAB-CONTRACT",
       "section": "Next",
@@ -7185,14 +7146,6 @@
       "title": "Attribute persona conflict recovery separately from whitespace fidelity"
     },
     {
-      "depends_on": [],
-      "goal": "PERSONA",
-      "id": "DOC-PERSONA-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Verify persona whitespace and completion receipts"
-    },
-    {
       "depends_on": [
         "DOC-SHELL-PERSISTENCE-EVIDENCE"
       ],
@@ -7209,14 +7162,6 @@
       "section": "Next",
       "status": "open",
       "title": "Prove sidebar preference restoration after app relaunch"
-    },
-    {
-      "depends_on": [],
-      "goal": "SLASH-CATALOG",
-      "id": "DOC-SLASH-CATALOG-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Compare the current curated commands with an authoritative catalog"
     },
     {
       "depends_on": [
@@ -7265,6 +7210,14 @@
       "title": "Download a selected terminal working-directory file to the Wing device with verified bytes"
     },
     {
+      "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PAGES-QUALITY",
+      "section": "Next",
+      "status": "open",
+      "title": "Extend artifact-bound Pages quality and delivery regressions"
+    },
+    {
       "depends_on": [
         "LANDING-FIRST-REPLY"
       ],
@@ -7295,7 +7248,9 @@
       "title": "Resolve the smallest supported notification contract after reliable return and status"
     },
     {
-      "depends_on": [],
+      "depends_on": [
+        "MT-APP-SHELL-STATUS-BAR"
+      ],
       "goal": "INTEGRATION",
       "id": "MT-RERUN-TRAIN",
       "section": "Next",
@@ -7311,6 +7266,14 @@
       "section": "Next",
       "status": "open",
       "title": "Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITY-MAESTRO-ANDROID-DEVICE",
+      "section": "Next",
+      "status": "open",
+      "title": "Execute repaired approvals/Stop/reconnect and attachment-owner-race flows on the enrolled disposable Android target, then qualify remaining mapped features"
     },
     {
       "depends_on": [],
@@ -7382,6 +7345,16 @@
     },
     {
       "depends_on": [
+        "VERIFY-GLOBAL-SESSION-MODAL-NATIVE"
+      ],
+      "goal": "PARITY-COMPOSITION",
+      "id": "VERIFY-PROFILE-FOOTER-NATIVE",
+      "section": "Next",
+      "status": "open",
+      "title": "Keep the passive profile footer keyboard-reachable and owner-current through native Linux adaptive return"
+    },
+    {
+      "depends_on": [
         "VERIFY-PROFILE-FOOTER-NATIVE"
       ],
       "goal": "PARITY-COMPOSITION",
@@ -7429,6 +7402,26 @@
       "section": "Next",
       "status": "open",
       "title": "Keep Chat alive through compiled Settings and Profiles overlay navigation and recovery"
+    },
+    {
+      "depends_on": [
+        "DOC-API-CONFORMANCE"
+      ],
+      "goal": "API-CONFORMANCE",
+      "id": "DOC-API-DEVICE-SELF-CONFORMANCE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Verify device-self read/revoke schema and authorization against handlers"
+    },
+    {
+      "depends_on": [
+        "DOC-API-DEVICE-SELF-CONFORMANCE"
+      ],
+      "goal": "API-CONFORMANCE",
+      "id": "DOC-API-PROTOCOL-ERROR-EVIDENCE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Map profile-list protocol error precedence"
     },
     {
       "depends_on": [
@@ -7986,6 +7979,14 @@
       "section": "Done",
       "status": "done",
       "title": "Clear the npm audit high/critical findings that fail CI (sharp, proxy-addr, source-map-js, smol-toml...): npm audit fix within declared ranges, keep lockfiles consistent, re-run npm audit --audit-level=high and the web E2E"
+    },
+    {
+      "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-FIRST-REPLY",
+      "section": "Done",
+      "status": "done",
+      "title": "Provide connection-first landing entry and exact API readiness guidance"
     },
     {
       "depends_on": [

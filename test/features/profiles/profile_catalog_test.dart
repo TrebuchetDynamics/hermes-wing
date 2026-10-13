@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/models/hermes_model_options.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
+
 import 'package:wing/features/profiles/widgets/catalog_autocomplete_field.dart';
 import 'package:wing/features/profiles/widgets/profile_editor_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -97,59 +95,6 @@ void main() {
     expect(options.providers.first.models.last, 'model-399');
     expect(options.selectableProviders, isEmpty);
   });
-
-  test(
-    'Wing Link catalog uses an exact capability and explicit profile',
-    () async {
-      final calls = <String>[];
-      var supported = true;
-      final client = WingLinkClient(
-        origin: Uri.parse('https://host.example'),
-        token: 'fixture-control',
-        get: (uri, headers) async {
-          calls.add(uri.path);
-          expect(headers['Authorization'], 'Bearer fixture-control');
-          return jsonEncode(
-            uri.path == '/meta'
-                ? {
-                    'protocol_generation': 2,
-                    'minimum_protocol_generation': 1,
-                    'supported_protocol_generations': [1, 2],
-                    'version': 'test',
-                    'host_fingerprint': 'sha256/test',
-                    'capabilities': supported
-                        ? ['profiles.model-options.read']
-                        : <String>[],
-                  }
-                : {
-                    'providers': [
-                      {
-                        'slug': 'new',
-                        'models': ['new-model'],
-                      },
-                    ],
-                  },
-          );
-        },
-      );
-      expect(
-        (await client.getProfileModelOptions('default')).providers.single.slug,
-        'new',
-      );
-      expect(calls, ['/meta', '/v1/profiles/default/model-options']);
-      supported = false;
-      calls.clear();
-      await expectLater(
-        client.getProfileModelOptions('default'),
-        throwsA(isA<WingLinkException>()),
-      );
-      expect(calls, ['/meta']);
-      await expectLater(
-        client.getProfileModelOptions('../other'),
-        throwsArgumentError,
-      );
-    },
-  );
 
   testWidgets(
     'autocomplete searches beyond the visible rows and selects by keyboard',

@@ -2,7 +2,54 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+List<String> _linkConsumers(Directory root) => root
+    .listSync(recursive: true)
+    .whereType<File>()
+    .where((file) => file.path.endsWith('.dart'))
+    .where((file) => !file.path.startsWith('${root.path}/core/wing_link/'))
+    .where(
+      (file) => RegExp(
+        r'wing_link/|wing_link\w*\.dart|\bWingLink\w*|\bwingLinkClient\w*',
+      ).hasMatch(file.readAsStringSync()),
+    )
+    .map((file) => file.path)
+    .toList();
+
 void main() {
+  test('complete client outside retained core uses Agent authority only', () {
+    expect(_linkConsumers(Directory('lib')), isEmpty);
+  });
+
+  test('client guard rejects Link consumers outside the exact retained core', () {
+    final root = Directory.systemTemp.createTempSync('agent-authority-');
+    addTearDown(() => root.deleteSync(recursive: true));
+    File('${root.path}/core/wing_link/client.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('WingLinkClient()');
+    expect(_linkConsumers(root), isEmpty);
+    for (final entry in {
+      'app/caller.dart':
+          "import 'package:wing/core/wing_link/wing_link_client.dart';",
+      'router/export.dart': "export '../core/wing_link/wing_link_client.dart';",
+      'shared/conditional.dart':
+          "import 'stub.dart' if (dart.library.io) '../core/wing_link/wing_link_transport.dart';",
+      'core/hermes/caller.dart': 'WingLinkClient ()',
+      'features/profiles/caller.dart': 'WingLinkProfile profile;',
+      'main_fixture.dart': 'wingLinkClientBuilder()',
+      'core/wing_link_extra/caller.dart': 'WingLinkTransport()',
+    }.entries) {
+      final file = File('${root.path}/${entry.key}')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(entry.value);
+      expect(_linkConsumers(root), [file.path], reason: entry.key);
+      file.deleteSync();
+    }
+    File('${root.path}/core/hermes/storage.dart').writeAsStringSync(
+      "final legacyKey = 'wing.hermes.profile_wing_link_token.';",
+    );
+    expect(_linkConsumers(root), isEmpty);
+  });
+
   test('public profile and provider controls use Agent authority only', () {
     final profiles = File(
       'lib/features/profiles/screens/profiles_screen.dart',

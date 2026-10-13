@@ -7,6 +7,59 @@ int _approvalExpiry({Duration offset = const Duration(minutes: 5)}) =>
     DateTime.now().add(offset).millisecondsSinceEpoch ~/ 1000;
 
 void main() {
+  test(
+    'Wing Link catalog uses an exact capability and explicit profile',
+    () async {
+      final calls = <String>[];
+      var supported = true;
+      final client = WingLinkClient(
+        origin: Uri.parse('https://host.example'),
+        token: 'fixture-control',
+        get: (uri, headers) async {
+          calls.add(uri.path);
+          expect(headers['Authorization'], 'Bearer fixture-control');
+          return jsonEncode(
+            uri.path == '/meta'
+                ? {
+                    'protocol_generation': 2,
+                    'minimum_protocol_generation': 1,
+                    'supported_protocol_generations': [1, 2],
+                    'version': 'test',
+                    'host_fingerprint': 'sha256/test',
+                    'capabilities': supported
+                        ? ['profiles.model-options.read']
+                        : <String>[],
+                  }
+                : {
+                    'providers': [
+                      {
+                        'slug': 'new',
+                        'models': ['new-model'],
+                      },
+                    ],
+                  },
+          );
+        },
+      );
+      expect(
+        (await client.getProfileModelOptions('default')).providers.single.slug,
+        'new',
+      );
+      expect(calls, ['/meta', '/v1/profiles/default/model-options']);
+      supported = false;
+      calls.clear();
+      await expectLater(
+        client.getProfileModelOptions('default'),
+        throwsA(isA<WingLinkException>()),
+      );
+      expect(calls, ['/meta']);
+      await expectLater(
+        client.getProfileModelOptions('../other'),
+        throwsArgumentError,
+      );
+    },
+  );
+
   test('negotiates current and previous Wing Link generations', () async {
     late Map<String, String> requestedHeaders;
     final client = WingLinkClient(

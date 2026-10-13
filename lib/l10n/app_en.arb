@@ -180,7 +180,6 @@
   "agentGatewayRunning": "Gateway running",
   "agentGatewayOff": "Gateway off",
   "agentGatewayUnknown": "Gateway state unknown",
-  "managedByWingLink": "Managed by Wing Link",
   "profileEnrolled": "Enrolled",
   "profileNotEnrolled": "Not enrolled",
   "agentNoModel": "No model selected",
@@ -190,15 +189,6 @@
   "chatWithAgent": "Chat",
   "profileChatUnavailable": "Management only — this Hermes endpoint does not advertise profile chat context.",
   "profileBrowseFoldersAction": "Browse folders",
-  "directoryBrowserTitle": "Approved folders",
-  "directoryBrowserLoading": "Loading approved folders",
-  "directoryBrowserEmptyTitle": "No approved folders",
-  "directoryBrowserEmptyBody": "Approve a root on the host with: wing-link directories grant PATH",
-  "directoryBrowserError": "Approved folders are unavailable. Refresh the host grants and try again.",
-  "directoryBrowserUnavailable": "Folder browsing is unavailable for this Wing Link device. Update Wing Link or pair again with directory access.",
-  "directoryBrowserBackAction": "Back",
-  "directoryBrowserLoadMoreAction": "Load more",
-  "directoryBrowserProjectUnavailable": "Folder browsing is available, but Project creation remains unavailable until Hermes Agent advertises a compatible Project API.",
   "chatWithNamedAgent": "Chat with {name}",
   "@chatWithNamedAgent": {
     "placeholders": {
@@ -237,7 +227,7 @@
   "gatewayConnectionRecoveryBody": "Choose another saved gateway above, or return to Chat to reconnect.",
   "chatSavedEndpointsLoading": "Loading saved Hermes gateways",
   "chatSavedEndpointEdit": "Edit saved Agent connection",
-  "chatSavedEndpointEditBody": "Edit this saved connection only. Saving does not connect or change the active conversation. A changed Agent URL drops its Wing Link association.",
+  "chatSavedEndpointEditBody": "Edit this saved connection only. Saving does not connect or change the active conversation. A changed Agent URL requires its own Agent credential.",
   "chatSavedEndpointReplacementKey": "Replacement Agent credential",
   "chatSavedEndpointKeyHelp": "Leave blank to keep the saved credential only while the URL is unchanged. A changed URL needs its own credential. Saved credentials are never shown here.",
   "chatSavedEndpointRemoveKey": "Remove saved Agent credential",
@@ -439,29 +429,10 @@
   "gatewayChatDisconnectFailed": "Chat could not disconnect. Try again.",
   "gatewayChatConnected": "Chat connected",
   "gatewayChatConnectAction": "Connect chat",
-  "gatewayManagementIndependent": "Wing Link manages this host independently of chat. Disconnecting chat keeps your saved connection and does not stop Hermes Agent.",
   "gatewaySavedConnectionHelp": "Connect chat to use this saved Agent connection. Disconnecting keeps it saved and does not stop Hermes Agent on the host.",
-  "gatewayTrustDetails": "Identity & permissions",
-  "gatewayTrustTitle": "Wing Link trust",
-  "gatewayTrustLoading": "Checking pinned host identity and device grants…",
-  "gatewayTrustUnavailable": "Wing Link trust status is unavailable. Verify the host is online and the saved identity has not changed.",
-  "gatewayTrustFingerprint": "Host fingerprint",
-  "gatewayTrustProtocol": "Protocol",
-  "gatewayTrustDevice": "This device",
-  "gatewayTrustScopes": "Granted scopes",
-  "gatewayTrustHostInstructions": "Trust changes require the host console: wing-link devices list · wing-link approvals list",
-  "gatewayTrustRevokeAction": "Revoke this device",
-  "gatewayTrustRevoking": "Revoking this device’s Wing Link access",
-  "gatewayTrustRevokeTitle": "Revoke this device?",
-  "gatewayTrustRevokeBody": "This removes only this device's Wing Link credential. Reconnecting requires a new host pairing flow.",
-  "gatewayTrustRevoked": "This device was revoked. Pair it again from the host to restore management access.",
-  "gatewayTrustChangedIdentity": "The host fingerprint changed. Wing Link access is blocked; review the fingerprint at the host and pair again explicitly.",
-  "gatewayTrustUpgradeRequired": "This Wing Link protocol is outside the supported compatibility window. Upgrade Hermes Wing before reconnecting.",
-  "gatewayTrustCredentialExpired": "This device credential is expired or revoked. Create a new pairing flow at the host.",
-  "gatewayTrustApprovalPending": "Host confirmation is pending. Run wing-link approvals list on the host, review the request, then retry with the same operation.",
   "gatewayStatusSubtitle": "Host connection and service health.",
   "gatewayStatusHelp": "View status from the selected gateway.",
-  "gatewayStatusConnectionRequiredBody": "Select a saved host and choose Connect chat to load Agent status. Wing Link management is available separately.",
+  "gatewayStatusConnectionRequiredBody": "Select a saved Agent connection and choose Connect chat to load Agent status.",
   "gatewayStatusConnectionErrorBody": "Gateway status could not be loaded from Hermes.",
   "gatewayStatusUnavailableBody": "This gateway did not advertise detailed health status.",
   "gatewayStatusLoadFailedBody": "Detailed gateway status could not be loaded from Hermes.",
@@ -959,7 +930,7 @@
   "settingsGatewaysSection": "Gateways",
   "settingsNoSavedGateways": "No saved Hermes gateways",
   "settingsConnectAnotherGateway": "Connect another gateway",
-  "settingsScanPairingQr": "Scan a Hermes pairing QR code",
+  "settingsScanPairingQr": "Connect directly to Hermes Agent.",
   "settingsCredentialsNote": "Credentials stay in secure storage; values hidden",
   "settingsVoiceSummary": "Voice input, spoken replies, and sounds",
   "settingsVoiceSection": "Voice",
@@ -1003,150 +974,12 @@
   },
   "enrollIntro": "Connect directly to an existing Hermes Agent using Local, SSH, or Remote.",
   "enrollOptionalSetupAction": "Local setup",
-  "enrollPairHeading": "I have a QR code or pairing link",
-  "enrollPairHelp": "Use the connection string from wing-link pair. You’ll review the host before connecting. Links are single-use and expire after five minutes.",
-  "enrollSetupHeading": "Set up a Hermes host",
   "enrollPhoneHelp": "Manual on-phone Hermes Agent setup in Termux. Installation and readiness are not verified by Wing.",
-  "enrollComputerAction": "Use another computer",
-  "enrollComputerHelp": "Set up Wing Link on a Linux host and connect over your VPN.",
   "enrollBackToOptions": "Connection options",
-  "enrollComputerRequirements": "On the Linux host, connect to the same NetBird or Tailscale network. You’ll need Git, curl, Go 1.26+, and a systemd user session.",
-  "enrollComputerInstallTitle": "Set up Wing Link and pair",
-  "enrollComputerInstallBody": "New host: install Wing Link and Hermes Agent, then start pairing.",
-  "enrollComputerModelTitle": "Configure a provider and model",
-  "enrollComputerModelBody": "Open a new terminal after installation. If Hermes is already configured, skip this step. Otherwise complete Hermes setup on the computer before chatting:",
-  "enrollComputerReady": "Open pairing in Wing",
-  "enrollPairChoiceHelp": "Connect an existing host using its QR code or connection string.",
   "enrollLinuxHelp": "Inspect Hermes-home directory metadata and connect directly to Agent. Prepare and start Agent separately; discovery does not prove readiness.",
-  "enrollStepProgress": "Step {step} of {total}",
-  "enrollComputerExisting": "Wing Link already installed",
-  "enrollComputerExistingHelp": "Installed host: refresh setup, then start pairing.",
-  "enrollModelSetupFinished": "My provider and model are configured",
-  "enrollExternalStepNotice": "When the pairing code appears, leave the terminal open and continue here.",
-  "enrollCopyCommand": "Copy command",
-  "enrollCommandCopied": "Command copied. Run it on the Hermes host.",
-  "enrollEnterLink": "Enter connection string instead",
-  "enrollConnectionString": "Pairing connection string",
-  "enrollLinkInputHelp": "Paste the complete pairing link here. It is cleared when submitted.",
-  "enrollReviewLink": "Review connection",
-  "enrollClipboardUnavailable": "Clipboard access failed. Use Enter connection string instead and paste into the field, or scan a QR.",
-  "enrollScannerUnavailable": "The scanner could not open. Try again, choose a QR image, or paste the pairing link.",
-  "enrollImageUnavailable": "The QR image could not be read. Try a clear image containing one pairing QR, or paste the link.",
-  "enrollCredentialsSaved": "Pairing credentials securely saved",
-  "enrollAgentConnected": "The selected Hermes profile is connected",
-  "enrollConnectingSaved": "Connecting the saved profile…",
-  "enrollSavedNotConnected": "Profile saved; live connection is not confirmed",
-  "enrollModelConfigured": "Agent reports a configured model for this profile",
-  "enrollModelMissing": "Agent reports that a model needs configuration",
-  "enrollModelUnknown": "Model readiness is not reported for this profile",
-  "enrollReadinessHelp": "A configured model does not prove provider access or a successful reply. Configure the provider on the host if needed, then check again or open Chat to send your first message.",
-  "enrollCheckReadiness": "Check connection and model again",
-  "enrollPhaseExchange": "Exchanging the reviewed pairing code…",
-  "enrollPhaseManagement": "Verifying Wing Link identity and access…",
-  "enrollPhaseAgent": "Verifying direct Hermes Agent access…",
-  "enrollPhaseSave": "Saving credentials in secure storage…",
-  "enrollPhaseAcknowledge": "Confirming this device with Wing Link…",
-  "enrollFailureNetwork": "The connection could not reach the host. Keep the pairing terminal open and check the VPN on both devices.",
-  "enrollFailureTimeout": "The host did not respond in time. Check that it is awake and reachable, then create a fresh pairing link.",
-  "enrollFailureTls": "The secure connection could not be verified. Compare the host identity locally and pair again. Browser clients require a normally trusted HTTPS certificate.",
-  "enrollFailureRejected": "The host rejected this handoff or credential. Create a fresh pairing link on the host and review its permissions.",
-  "enrollFailureUnsupported": "This host does not expose a compatible pairing operation. Update Wing Link on the host, or use manual Agent connection.",
-  "enrollFailureInvalid": "The host returned pairing details that did not match the reviewed connection. Verify the host locally and create a fresh pairing link.",
-  "enrollFailureStorage": "Wing could not finish saving the connection securely. Check device storage and secure-storage access before creating a fresh pairing link. Do not copy credentials into ordinary settings.",
-  "enrollFailureManagement": "Wing Link could not be verified. Check its service and host identity locally before creating a fresh pairing link.",
-  "enrollFailureAgent": "Wing Link responded, but direct Hermes Agent access failed. Check the Agent listener and VPN; Wing Link does not forward chat traffic.",
-  "enrollFailureAcknowledge": "Device registration could not be confirmed. Keep the host available and pair again. Any pending saved credentials remain protected for recovery.",
-  "enrollFreshPairingHelp": "Run wing-link pair on the host for a new handoff. On this phone, return to Termux. For another computer, use its terminal.",
-  "enrollBrowserPairingHelp": "In a browser, the host must use normally trusted HTTPS. For a self-signed Wing Link host, use the native Wing app to review and pin its identity.",
-
-  "@enrollStepProgress": {"placeholders": {"step": {"type": "int"}, "total": {"type": "int"}}},
   "enrollTitle": "Connect to Hermes",
   "enrollLegacyHandoffTitle": "Pairing links are no longer supported",
   "enrollLegacyHandoffBody": "This old link or shared text was discarded. Connect directly to Hermes Agent using Local, SSH or Remote. On Android, use SSH, Remote or the on-phone Termux guide. Existing saved connections are unchanged.",
-  "enrollInvalidLinkTitle": "Pairing link couldn’t be opened",
-  "enrollInvalidLinkBody": "Use the complete connection string from wing-link pair. An Agent URL alone belongs in manual connection.",
-  "enrollClipboardEmpty": "The clipboard does not contain a pairing link.",
-  "enrollCleartextDialogTitle": "Pair over plain HTTP?",
-  "enrollCleartextDialogBody": "The endpoint {host} uses plain HTTP. Continue only on a trusted NetBird or Tailscale network, another trusted VPN, or an isolated LAN. Prefer HTTPS for remote Hermes endpoints.",
-  "@enrollCleartextDialogBody": {
-    "placeholders": {
-      "host": {
-        "type": "String"
-      }
-    }
-  },
-  "enrollContinueAction": "Continue",
-  "enrollScanPrompt": "Where will Hermes run?",
-  "enrollVerifying": "Verifying pairing code…",
-  "enrollConnectedProfiles": "{count, plural, =1{1 profile paired} other{{count} profiles paired}}",
-  "@enrollConnectedProfiles": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "enrollConnectedWingLinkBody": "Your pairing is saved. Choose Set up a profile to create a new profile with a provider, model, and credential through Wing Link. Sensitive changes still require approval on the host. Existing profiles remain available in Profiles.",
-  "enrollConnectedBody": "Pairing is saved. Check the live connection and model status below before starting a conversation.",
-  "enrollViewProfilesAction": "View profiles",
-  "enrollOpenChatAction": "Open chat",
-  "enrollFailed": "Pairing failed.",
-  "enrollInspectionFailedTitle": "The pairing host could not be verified",
-  "enrollInspectionFailedBody": "Keep the pairing terminal open. Verify the host and network, then create a fresh pairing link.",
-  "enrollExchangeFailedTitle": "Pairing couldn’t be completed",
-  "enrollExchangeFailedBody": "The connection was not completed. Check the host and VPN, then run wing-link pair again. Wing will verify and securely save the new connection before reporting success.",
-  "enrollCloseAction": "Close",
-  "enrollExpiredTitle": "This pairing link expired",
-  "enrollExpiredBody": "Run wing-link pair again, then open the new link or scan its QR.",
-  "enrollPasteAnotherLink": "Paste another link",
-  "enrollScanAnotherQr": "Scan another QR",
-  "enrollPasteLink": "Paste pairing link",
-  "enrollReadingClipboard": "Reading pairing link from clipboard",
-  "enrollSameDeviceHelper": "If the link is on this phone, tap it or share it to Hermes Wing.",
-  "enrollOpeningScanner": "Opening scanner…",
-  "enrollScanQr": "Scan QR from another screen",
-  "enrollImportQrImage": "Choose QR image",
-  "enrollManualConnectAction": "Connect one profile manually",
-  "enrollManualConnectWarning": "Advanced: requires an Agent URL and credential. Connects one profile without Wing Link host management.",
-  "enrollGrantQuestion": "{count, plural, =1{Connect 1 Hermes profile from {label}?} other{Connect {count} Hermes profiles from {label}?}}",
-  "@enrollGrantQuestion": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "enrollConnectProfilesAction": "{count, plural, =1{Connect 1 profile} other{Connect {count} profiles}}",
-  "@enrollConnectProfilesAction": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "enrollHermesAgentLabel": "Hermes Agent",
-  "enrollWingLinkLabel": "Wing Link",
-  "enrollProfilesLabel": "Profiles",
-  "enrollEndpointLabel": "Endpoint",
-  "enrollDeviceLabel": "Device label",
-  "enrollUnlabeled": "(unlabeled)",
-  "enrollRequestedAccess": "Requested access",
-  "enrollScopesNone": "none",
-  "enrollExpiresLabel": "Expires",
-  "enrollExpiryUnknown": "unknown",
-  "enrollCleartextNotice": "This endpoint uses plain HTTP. Only continue on a trusted network.",
-  "enrollOriginMismatch": "This pairing server reports a different address ({origin}) than the link you opened. Hermes Wing will connect to the link address shown above. Only continue if you trust it.",
-  "@enrollOriginMismatch": {
-    "placeholders": {
-      "origin": {
-        "type": "String"
-      }
-    }
-  },
-  "enrollConnectAction": "Connect",
   "closeAction": "Close",
   "routeNotFoundTitle": "Page not found",
   "routeNotFound": "Hermes Wing does not have a screen for {path}.",
@@ -1283,7 +1116,7 @@
   },
   "chatConnectionContinueAction": "Continue",
   "chatConnectionDisconnectTitle": "Disconnect from Hermes?",
-  "chatConnectionDisconnectBody": "Disconnect chat from {target}? Your saved connection stays on this device, so you can reconnect. Hermes Agent and Wing Link keep running on the host.",
+  "chatConnectionDisconnectBody": "Disconnect chat from {target}? Your saved connection stays on this device, so you can reconnect. Hermes Agent keeps running on the host.",
   "@chatConnectionDisconnectBody": {
     "placeholders": {
       "target": {
@@ -1537,7 +1370,7 @@
   "chatErrorConnectIncompatibleTitle": "Hermes returned an unsupported response.",
   "chatErrorConnectIncompatibleBody": "Update Hermes Wing or Hermes Agent, verify the address points to Hermes Agent, then reconnect.",
   "chatErrorConnectTlsTitle": "Secure connection to Hermes failed.",
-  "chatErrorConnectTlsBody": "Check the HTTPS certificate or pinned host identity. Re-pair explicitly if the trusted identity changed.",
+  "chatErrorConnectTlsBody": "Check the HTTPS certificate or trusted host identity. If the identity changed, verify it through a trusted administrator before reconnecting.",
   "chatErrorConnectTimeoutTitle": "Hermes did not respond in time.",
   "chatErrorConnectTimeoutBody": "Check that Hermes Agent is running and reachable, then try again.",
   "chatErrorConnectUnreachableTitle": "Hermes endpoint is unreachable.",
@@ -1545,7 +1378,7 @@
   "chatErrorConnectGenericTitle": "Could not connect to Hermes.",
   "chatErrorConnectGenericBody": "Check the endpoint and try again.",
   "chatLayoutConnectTitle": "Add Hermes",
-  "chatLayoutConnectBody": "Connect directly to Hermes Agent. Choose how this device can reach it; Wing Link host management stays separate.",
+  "chatLayoutConnectBody": "Connect directly to Hermes Agent. Choose how this device can reach it.",
   "chatLayoutConnectionModeLabel": "How will Wing reach Hermes?",
   "chatLayoutConnectionModeLocalLabel": "Local",
   "chatLayoutConnectionPrimaryRemoteLabel": "Remote",
@@ -1554,7 +1387,7 @@
   "chatLayoutConnectionModeSshLabel": "SSH",
   "chatLayoutConnectionModeLocalBody": "Use a local Agent URL, or install Hermes on this device when local setup is available.",
   "chatLayoutConnectionModeRemoteBody": "Use an HTTPS Agent URL. Wing currently uses HTTPS/SSE; authenticated WebSocket support waits for an exact Hermes contract.",
-  "chatLayoutRemoteAuthExplanation": "Connect directly to a Hermes Agent endpoint with its Agent access token. Wing Link pairing is not required. A Wing Link token or provider API key is not an Agent access token.\n\nBrowser OAuth sign-in is not supported in Wing. An OAuth-only server cannot currently connect through this flow. If access is denied, check the endpoint and its Agent token with the server administrator, then retry explicitly or cancel. A denial does not identify the server's sign-in method.",
+  "chatLayoutRemoteAuthExplanation": "Connect directly to a Hermes Agent endpoint with its Agent access token. A host-management token or provider API key is not an Agent access token.\n\nBrowser OAuth sign-in is not supported in Wing. An OAuth-only server cannot currently connect through this flow. If access is denied, check the endpoint and its Agent token with the server administrator, then retry explicitly or cancel. A denial does not identify the server's sign-in method.",
   "chatLayoutConnectionModeVpnBody": "Use the Agent URL reachable through your trusted encrypted NetBird or Tailscale network, or another trusted VPN. Prefer HTTPS; non-local HTTP requires explicit confirmation. Wing does not treat network location as authorization.",
   "chatLayoutConnectionModeSshBody": "Start a fixed, trusted SSH tunnel outside Wing, then enter its local Agent URL. Wing never runs arbitrary SSH commands or stores SSH keys.",
   "chatLayoutConnectionModeLocalUrlHelper": "Enter the local Agent URL. This device usually uses http://127.0.0.1:8642.",
@@ -1563,7 +1396,7 @@
   "chatLayoutConnectionModeSshUrlHelper": "Start the fixed tunnel outside Wing, then enter the local Agent URL it exposes.",
   "chatLayoutVpsConnectionTitle": "Hermes Agent connection",
   "chatLayoutVpsConnectionBody": "Use an HTTPS or trusted private-network URL. Never expose an unauthenticated Hermes port to the internet.",
-  "chatLayoutScanQrAction": "Scan wing-cli QR code",
+  "chatLayoutScanQrAction": "Pairing links are no longer supported",
   "chatLayoutServerUrlLabel": "Hermes Agent URL",
   "chatLayoutServerUrlHint": "https://hermes.example.com",
   "chatLayoutServerUrlHelper": "Enter the Agent URL without /v1. For a trusted local or SSH tunnel, a loopback HTTP URL may be used.",
@@ -1575,8 +1408,8 @@
   "chatLayoutVpsNameHint": "My Hermes connection",
   "chatLayoutVpsNameHelper": "A private label shown only on this device.",
   "chatLayoutTokenStorageBody": "Saving a connection uses secure device storage. Connecting alone does not confirm that your token was saved.",
-  "chatLayoutCredentialBoundaryTitle": "Two separate connections",
-  "chatLayoutCredentialBoundaryBody": "This token is only for Hermes Agent chat. Wing Link pairing, when available, uses a separate management credential and never carries chat traffic.",
+  "chatLayoutCredentialBoundaryTitle": "Agent credential only",
+  "chatLayoutCredentialBoundaryBody": "This token is only for Hermes Agent access. SSH authentication and provider credentials are separate.",
   "chatLayoutConnectingAction": "Connecting…",
   "chatLayoutConnectAction": "Add Hermes",
   "chatLayoutDevShortcutsTitle": "Connecting to a local Agent?",
@@ -2314,21 +2147,5 @@
   "schedulesLoading": "Loading schedules",
   "localSetupAction": "Use this computer (Local)",
   "termuxCopyFailedMessage": "The setup command could not be copied. Select the command and copy it manually.",
-  "enrollInstallOnPhoneAction": "Use this phone (Termux)",
-  "enrollSetupProfileAction": "Set up a profile",
-  "enrollConnectedWingLinkLocalBody": "Pairing is saved on this phone. Keep Termux running. Choose Set up a profile to configure a new profile in Wing through Wing Link; approve sensitive changes locally in Termux.",
-  "enrollConnectedLocalBody": "Pairing is saved on this phone. Keep Termux running. To configure the existing profile, run hermes setup in Termux, then check the connection again.",
-  "profileApprovalRequired": "Approve this request locally on the Wing Link host, then retry the unchanged request. Run wing-link approvals list, then wing-link approvals approve {approvalId}.",
-  "@profileApprovalRequired": {
-    "placeholders": {
-      "approvalId": {
-        "type": "String"
-      }
-    }
-  },
-  "profileDeletionApprovalExpired": "The local approval expired. Confirm deletion again to start a new request.",
-  "profileRetryApprovedDeletion": "Retry approved deletion",
-  "profileRetryApprovedSetup": "Retry approved setup",
-  "profileCancelSetup": "Cancel setup",
-  "profileApprovalExpired": "The local approval expired. Enter the credential again to start a new request."
+  "enrollInstallOnPhoneAction": "Use this phone (Termux)"
 }

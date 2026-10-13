@@ -6848,16 +6848,6 @@
       "title": "Map one Linux uninstall and retained-state evidence gap"
     },
     {
-      "depends_on": [
-        "DOC-DIAGNOSTICS-CONTRACT"
-      ],
-      "goal": "DIAGNOSTICS-RECOVERY",
-      "id": "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
-      "section": "Next",
-      "status": "in_progress",
-      "title": "Trace atomic backup/import separately from diagnostics reads"
-    },
-    {
       "depends_on": [],
       "goal": "M3",
       "id": "DOC-M3-CONTRACT-CHECKPOINT",
@@ -7536,6 +7526,16 @@
       "section": "Done",
       "status": "done",
       "title": "Inventory one Linux desktop install/update receipt gap"
+    },
+    {
+      "depends_on": [
+        "DOC-DIAGNOSTICS-CONTRACT"
+      ],
+      "goal": "DIAGNOSTICS-RECOVERY",
+      "id": "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace atomic backup/import separately from diagnostics reads"
     },
     {
       "depends_on": [],

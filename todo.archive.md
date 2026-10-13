@@ -5036,3 +5036,22 @@ Source section: Now / Next
   Acceptance: Map Schedules owner-change and denied-read outcomes to matching widget/browser receipts or one missing oracle. Preserve Tools qualification and read-only inventory.
   Dependencies: DOC-M4-INVENTORY-EVIDENCE is complete and archived; this predecessor is satisfied.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-DIAGNOSTICS-BACKUP-CONTRACT** — Goal: DIAGNOSTICS-RECOVERY. Section: Next. Trace atomic backup/import separately from diagnostics reads.
+  Completed: [source-bound contract trace](docs/quality/diagnostics-backup-contract.md),
+  independently approved at 1b58d0a88dd70bf949f8e54e1deaca0b04faba7b and integrated
+  at 18878fdb. Twelve Linux diagnostics fixtures passed; 29 source fingerprints,
+  eight tracked links and whitespace were checked. This closes only the read-only
+  trace; archive-wide atomic rollback and native/live recovery remain unqualified.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [DIAGNOSTICS-RECOVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name a fixed typed restore operation and validation/rollback limits, or its absence. No backup, restore, private-file reads or secret exports.
+  Dependencies: DOC-DIAGNOSTICS-CONTRACT is complete and archived; this predecessor is satisfied.
+  Ownership: original isolated worker completed; independent review approved; coordinator closed the trace.

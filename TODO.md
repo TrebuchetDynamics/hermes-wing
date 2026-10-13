@@ -307,15 +307,6 @@ needs its own exact capability, ownership and qualification evidence.
   owner and M1-SAVED-ENDPOINT-EDIT-NATIVE; do not repeat their delivered subsets.
   See [current verification](docs/test-plan.md#connection-path-verification).
 
-- [ ] **DOC-DIAGNOSTICS-BACKUP-CONTRACT** — Goal: DIAGNOSTICS-RECOVERY. Section: Next. Trace atomic backup/import separately from diagnostics reads.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [DIAGNOSTICS-RECOVERY](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name a fixed typed restore operation and validation/rollback limits, or its absence. No backup, restore, private-file reads or secret exports.
-  Dependencies: DOC-DIAGNOSTICS-CONTRACT is complete and archived; this predecessor is satisfied.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
 - [ ] **DOC-DESKTOP-UNINSTALL-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Next. Map one Linux uninstall and retained-state evidence gap.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).

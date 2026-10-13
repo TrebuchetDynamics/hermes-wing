@@ -339,6 +339,11 @@
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/office-contact-session-reference.md",
+          "result": "pass"
         }
       ],
       "id": "OFFICE",
@@ -357,6 +362,11 @@
         {
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/persona-completion-evidence.md",
           "result": "pass"
         }
       ],
@@ -6693,22 +6703,6 @@
     },
     {
       "depends_on": [],
-      "goal": "OFFICE",
-      "id": "DOC-OFFICE-REFERENCE",
-      "section": "Now",
-      "status": "open",
-      "title": "Compare one Office contact/session activation interaction"
-    },
-    {
-      "depends_on": [],
-      "goal": "PERSONA",
-      "id": "DOC-PERSONA-EVIDENCE",
-      "section": "Now",
-      "status": "open",
-      "title": "Verify persona whitespace and completion receipts"
-    },
-    {
-      "depends_on": [],
       "goal": "M1",
       "id": "PARITY-LIVE-WORKFLOW",
       "section": "Now",
@@ -7862,6 +7856,14 @@
     },
     {
       "depends_on": [],
+      "goal": "OFFICE",
+      "id": "DOC-OFFICE-REFERENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Compare one Office contact/session activation interaction"
+    },
+    {
+      "depends_on": [],
       "goal": "PARITY-COMPOSITION",
       "id": "DOC-PARITY-COMPOSITION",
       "section": "Done",
@@ -7895,6 +7897,14 @@
       "section": "Done",
       "status": "done",
       "title": "Compare grouped-recents ownership separately from profile-footer composition"
+    },
+    {
+      "depends_on": [],
+      "goal": "PERSONA",
+      "id": "DOC-PERSONA-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Verify persona whitespace and completion receipts"
     },
     {
       "depends_on": [],

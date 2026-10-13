@@ -4986,3 +4986,39 @@ Source section: Now / Next
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
 <!-- end verified slash catalog receipt -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-OFFICE-REFERENCE** — Goal: OFFICE. Section: Done. Compare one Office contact/session activation interaction.
+  Completion: [source-bound comparison](docs/quality/office-contact-session-reference.md), commit `72df6b664689733bb78dd612bfe8d83848be8c12`; independent native review approved; 60 focused fake-channel tests passed. OFFICE remains partial; actual-Chat keyboard/focus/recovery and native/live qualification are not established.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [OFFICE](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing 2D Office and Desktop read-only source; exclude 3D/account dependencies and new host operations.
+  Acceptance: Name reference action, current deviation, exact owner/capability/focus oracle and one bounded implementation slice preserving 2D accessibility.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+<!-- end verified Office reference receipt -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-PERSONA-EVIDENCE** — Goal: PERSONA. Section: Now. Verify persona whitespace and completion receipts.
+  Completion: Source-bound receipt at `419bcc5d`, independently approved on the original card; 92 persona and 27 decoder/client tests passed on its isolated snapshot. See [persona evidence](docs/quality/persona-completion-evidence.md). PERSONA live/native/full-reference qualification remains open.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing profile decoder/editor, actual-router tests and receipts; no live saves or duplicate accepted repairs.
+  Acceptance: Match current-source hashes to same-card read/save/conflict/cancel receipts; run or add the missing app-level oracle if no matching receipt exists.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+<!-- end verified persona evidence receipt -->

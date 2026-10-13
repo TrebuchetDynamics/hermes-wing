@@ -620,9 +620,17 @@ before their goals can become `met`.
   code needed no fix. Independent review passed analysis and 20 focused Flutter
   tests; coordinator integration tooling union passed 109 Python tests using the
   cached isolated asyncssh environment after the bare interpreter lacked asyncssh.
-  Real authentication, physical keychain, actual OS chooser/window sizing and
-  Android/Termux onboarding remain NOT_CHECKED. This qualifies only the declared
-  Linux fixture subset, not this parent or either retirement parent.
+  Real authentication, physical keychain and actual OS chooser/window sizing
+  remain NOT_CHECKED. Android manual preparation and retained saved-owner recovery
+  fixture/runner delivered at origin/main ae64b0f5c1a6f2dd39096d233dcf6ba5caefe45d
+  after independent native review. Reused exact-source review evidence: 40 Dart
+  and 5 Python tests, analysis, formatting, shell syntax and diff checks passed;
+  fresh coordinator integration union passed 52 Flutter tests with an unchanged
+  dependency lock. See [Android direct setup evidence](docs/quality/android-direct-setup-enrollment.md).
+  Native Android execution, actual Termux installation, live authentication,
+  physical keystore and assistive-technology output remain NOT_CHECKED. These
+  deliveries qualify their declared fixture subsets, not this parent or either
+  retirement parent; do not reimplement or repeat the delivered harness.
   Do not dispatch duplicate routing work. CONNECTION-REMOTE-AUTH-EXPLANATION is
   also done: [public guidance and recovery](docs/quality/remote-auth-explanation.md)
   have focused widget and native Linux fixture evidence. Reuse those checks;

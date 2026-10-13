@@ -2,6 +2,88 @@
 
 > Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
 
+## Agent core and admin consumer qualification — t_d515858f
+
+This continuation qualifies the previously omitted Agent core, Profiles, Providers
+and Gateway consumers. It does not close `CONNECTION-LINK-REMOVAL` or
+`CONNECTION-PATHS`, retire packaging/services or establish live support.
+
+Original pre-edit `pass_workspace.py` admission returned `worker_start_admitted`
+for manifest `pass-ad8211c70d370455-afc29ca5a545473e8ca01fa8f916dd3a.json`, SHA256
+`1c9cb89374faf39edb5fc6bcbb5024fea262d1a169f795e6744ebea002d0fd7f`, in the
+card's matching isolated workspace. Clean detached base:
+`89d06d397c25ee2f4163250c8a240c8d73166d12`. Original tool history establishes
+admission before tests and edits; a later receipt cannot substitute for it.
+
+### Result and acceptance evidence
+
+The exact unmodified named union passed: **1219 passes, eight skipped**, with
+1m52s reported test time. There were no failing assertions to classify or repair.
+Decision: record the successful qualification here rather than invent a production
+fix, remove safeguards or change passing fixtures. Only this document changes;
+callers, source, tests, fixtures, configuration, exports, localization, dependencies
+and user stores remain unchanged.
+
+- [Legacy endpoint preservation](../../test/core/hermes/setup/legacy_endpoint_preservation_test.dart)
+  covers inert raw records, credential separation, unchanged records on passive
+  load, failed saves, scoped explicit deletion and changed-origin non-inheritance.
+  Missing Agent credentials cannot adopt retained management credentials.
+- [Secure endpoint storage](../../test/core/hermes/setup/secure_hermes_endpoint_store_test.dart)
+  retains write-only secure persistence, failed-commit preservation and explicit
+  removal cleanup. Historical key recognition remains a privacy safeguard, not
+  a live client or migration that erases raw records.
+- [Profiles](../../test/features/profiles/profiles_screen_test.dart) retains direct
+  authenticated Agent requests, absent/denied/write-only capability rejection,
+  selected-owner identity, keyboard/large-text behavior and recovery. Its adjacent
+  editor and ownership tests cover revisions, conflicts, disposal, stale responses,
+  explicit retries and no mutation replay.
+- [Providers](../../test/features/providers/providers_screen_test.dart) and its
+  credential/model-picker ownership tests exercise direct inventory and exact
+  capability lifetime; [Gateway ownership](../../test/features/gateway/gateway_health_ownership_test.dart)
+  and adjacent loader/client tests fence stale health reads and replacement owners.
+- [Domain authority guard](../../test/tooling/hermes_domain_authority_contract_test.dart)
+  passes the complete `lib/` scan outside exactly retained `core/wing_link/`, with
+  negative controls for imports, exports, conditional imports and construction.
+  Retained service checks remain intact. This is source/fixture evidence of no
+  removed-client fallback, not a new live network observation.
+
+The eight skipped cases are the opt-in
+[real SSH loopback tests](../../test/core/hermes/ssh/managed_ssh_loopback_test.dart):
+`MANAGED_SSH_FIXTURE` was unset. They are **NOT_CHECKED**, not passes; no fixture,
+personal host, provider or SSH credential was acquired for this offline batch.
+
+### Executed checks and candidate identity
+
+Linux host: Flutter 3.44.2 / Dart 3.12.2. Analysis passed with no issues (7.6s
+reported analyzer time). No package upgrades occurred; lockfiles remain unchanged:
+`pubspec.lock` SHA256 `f089602c321af4a65d6f1dc70b6adef724079bedc8e4f1d0496f7b8e22641c89`,
+`package-lock.json` SHA256 `f32c4b4d226bf6cef1a1f66733d4c2e065e0656d1223e89f17ceb68f42429b63`.
+
+```bash
+timeout 20m flutter test --concurrency=1 test/core/hermes test/features/profiles test/features/providers test/features/gateway test/tooling/hermes_domain_authority_contract_test.dart
+timeout 5m flutter analyze
+git diff --check
+```
+
+The mandatory finish gate repeats the named union, analysis, whitespace and scoped
+new-section local-link checks before committing exactly this receipt. No Dart file
+changed, so changed-file formatting is not applicable. Private initial/final logs,
+finish receipt and the 537-file tracked `lib/`, `test/`, dependency and analysis
+input manifest are retained under workspace `.dart_tool/t_d515858f/`. Manifest
+SHA256: `7980104249f318a8aa49502554df6fc2cc5cb146b30a6a475299e7abc372c3cf`.
+This document is not a test input. The exact task ref/commit and final exits belong
+to the native card handoff. Total execution/review time and monetary cost are unknown.
+
+Implemented: qualification receipt only; no demonstrated defect or source change.
+Qualified: the named Linux-hosted deterministic Flutter consumers, excluding the
+eight opt-in SSH cases. Delivered: local task candidate pending independent native
+review and coordinator integration; no integration, push or publication by this
+worker. The unchanged predecessor entry/Chromium receipts are preserved, not
+replayed. Physical Android/Termux, native SSH/Local discovery, live authenticated
+Agent/provider behavior, packaging/service retirement and full release remain
+**NOT_CHECKED**. The coordinator owns the existing retirement/qualification next
+slice; parent and milestone remain open.
+
 ## Integrated Agent-only consumer regression closure — t_2f66df41
 
 This section supersedes the partial combined-suite evidence below, not its

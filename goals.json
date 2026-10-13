@@ -45,6 +45,11 @@
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/linux-desktop-delivery-evidence.md",
+          "result": "pass"
         }
       ],
       "id": "DESKTOP-DELIVERY",
@@ -6683,14 +6688,6 @@
     },
     {
       "depends_on": [],
-      "goal": "DESKTOP-DELIVERY",
-      "id": "DOC-DESKTOP-DELIVERY-EVIDENCE",
-      "section": "Now",
-      "status": "open",
-      "title": "Inventory one Linux desktop install/update receipt gap"
-    },
-    {
-      "depends_on": [],
       "goal": "OFFICE",
       "id": "DOC-OFFICE-REFERENCE",
       "section": "Now",
@@ -7534,6 +7531,14 @@
       "section": "Done",
       "status": "done",
       "title": "Compare one reasoning/tool transcript disclosure interaction"
+    },
+    {
+      "depends_on": [],
+      "goal": "DESKTOP-DELIVERY",
+      "id": "DOC-DESKTOP-DELIVERY-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Inventory one Linux desktop install/update receipt gap"
     },
     {
       "depends_on": [],

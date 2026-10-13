@@ -4947,3 +4947,21 @@ Source section: Now / Next
   Dependencies: none for this bounded evidence/contract slice. Any later runtime
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-DESKTOP-DELIVERY-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Done. Inventory one Linux desktop install/update receipt gap.
+  Completion: Reviewed receipt `f77ac3d518129294efe42ab5c1cd82f36e45ac6c` maps installed activation, health and rollback gaps; native independent review approved. [Evidence](docs/quality/linux-desktop-delivery-evidence.md). Offline checks: 12 Flutter source-contract tests, 109 Node tests, shell syntax and 13 local links passed. Installed/native/live and Node 22 qualification remain absent; DESKTOP-DELIVERY stays partial.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing menu/install/verifier/runbook/CI evidence; no installs, updates, signing, service restarts or publication.
+  Acceptance: Identify source/artifact/target-bound activation, health and rollback proof or exact gaps; do not equate cross-compilation with runtime support.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+<!-- end verified Linux delivery receipt -->

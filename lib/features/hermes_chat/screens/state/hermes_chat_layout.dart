@@ -56,6 +56,21 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final colors = theme.colorScheme;
     final strings = AppLocalizations.of(context);
 
+    final checkOwner = _composerOwnerGeneration;
+    Widget connectionCheck() => ConnectionCheckPanel(
+      key: ValueKey(('connection-check', checkOwner, _connectionMode)),
+      url: _connectionForm.baseUrl,
+      token: _connectionForm.apiKey,
+      enabled: !connecting,
+      ownsIntent: () =>
+          mounted &&
+          checkOwner == _composerOwnerGeneration &&
+          identical(channel, ref.read(hermesChannelProvider)),
+      clientBuilder: ref.read(hermesEndpointTestClientProvider),
+      confirmCleartext: _confirmCleartextCredentialUse,
+      browserOrigin: kIsWeb ? Uri.base.origin : null,
+    );
+
     Future<void> connectLocal() async {
       // The phone guide must never submit a saved/late-hydrated Remote origin
       // behind its fixed loopback display. Keep the existing attempt owner.
@@ -364,6 +379,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             ),
                             const SizedBox(height: 20),
                             const SizedBox(height: 12),
+                            connectionCheck(),
+                            const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -630,6 +647,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             ),
                           ),
                           const SizedBox(height: 20),
+                          connectionCheck(),
+                          const SizedBox(height: 12),
                           Container(
                             key: const ValueKey('hermes-credential-boundary'),
                             padding: const EdgeInsets.all(12),

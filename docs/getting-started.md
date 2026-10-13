@@ -113,6 +113,15 @@ Discovery alone does not prove installation, authentication or model readiness.
 Enter the running Agent's loopback endpoint and separate masked Agent API token.
 Web Local cannot inspect host folders; loopback refers to the browser's device.
 
+Local and Remote forms offer **Test connection**, an explicit read-only capability
+discovery check. It does not save credentials, activate Chat, send a prompt or
+prove generation. Edit or cancel discards late results; retry is deliberate.
+Browser setup shows Wing's exact origin for the Agent CORS allowlist. A browser
+network failure may hide CORS, TLS or mixed-content errors and does not establish
+that the token is wrong. Named-profile gateways may require `/p/<profile>` in the
+Agent base URL; do not append `/v1`. Wing cannot read Agent secrets or reveal vault
+entries, and autofill in one browser does not authenticate another browser.
+
 With a saved connection, choose **Add Hermes** from Chat to open the shared
 Local / SSH / Remote form. **Help** explains how to obtain connection information;
 **Copy instructions** copies public guidance, not connection values or secrets.

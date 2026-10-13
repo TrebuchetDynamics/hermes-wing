@@ -94,6 +94,96 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @connectionCheckAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get connectionCheckAction;
+
+  /// No description provided for @connectionCheckCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel test'**
+  String get connectionCheckCancel;
+
+  /// No description provided for @connectionCheckBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'Tests authenticated discovery only. It does not save a credential, open Chat, send a message or prove model generation.'**
+  String get connectionCheckBoundary;
+
+  /// No description provided for @connectionCheckVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery verified. Choose Add Hermes to connect and save; send your first message deliberately in Chat.'**
+  String get connectionCheckVerified;
+
+  /// No description provided for @connectionCheckUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery verified, but this Agent did not advertise a supported, authorized chat transport. Chat remains unavailable.'**
+  String get connectionCheckUnsupported;
+
+  /// No description provided for @connectionCheckDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication rejected. Use the Agent API token for this exact endpoint and profile, not a provider key. Check access permissions before testing again.'**
+  String get connectionCheckDenied;
+
+  /// No description provided for @connectionCheckInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the full Agent HTTP(S) endpoint, including its profile prefix when required. Do not put credentials, queries or fragments in the URL.'**
+  String get connectionCheckInvalid;
+
+  /// No description provided for @connectionCheckIncompatible.
+  ///
+  /// In en, this message translates to:
+  /// **'The response is not a compatible Hermes Agent discovery document. A healthy port or OpenAI chat endpoint alone is not enough.'**
+  String get connectionCheckIncompatible;
+
+  /// No description provided for @connectionCheckNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery could not be verified. Check the running Agent, URL and network, then test again deliberately.'**
+  String get connectionCheckNetwork;
+
+  /// No description provided for @connectionCheckBrowserNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'The browser could not verify discovery. Network, certificate, mixed-content or CORS restrictions may hide the cause. This does not prove your token is wrong.'**
+  String get connectionCheckBrowserNetwork;
+
+  /// No description provided for @connectionCheckTls.
+  ///
+  /// In en, this message translates to:
+  /// **'The secure connection could not be verified. Fix the certificate or trusted endpoint; do not disable certificate checks.'**
+  String get connectionCheckTls;
+
+  /// No description provided for @connectionCheckTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery timed out. Check Agent availability and retry deliberately; nothing was saved or sent.'**
+  String get connectionCheckTimeout;
+
+  /// No description provided for @connectionBrowserOrigin.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing browser origin: {origin}'**
+  String connectionBrowserOrigin(String origin);
+
+  /// No description provided for @connectionBrowserOriginHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow this exact origin in Agent\'s API_SERVER_CORS_ORIGINS. localhost and 127.0.0.1 are different origins. Configuration changes may require an administrator-controlled restart; Wing does not apply them.'**
+  String get connectionBrowserOriginHelp;
+
+  /// No description provided for @connectionSetupChecklist.
+  ///
+  /// In en, this message translates to:
+  /// **'Before connecting: start the authenticated Agent API, obtain its exact endpoint and profile-bound API token, then test below. For a shared gateway, a named profile may use /p/<profile>; do not append /v1. Wing cannot read Agent secrets or reveal a Hermes vault entry. A vault fills only its connected browser, not every browser window.'**
+  String get connectionSetupChecklist;
+
   /// No description provided for @chatConnectionSaveUnconfirmed.
   ///
   /// In en, this message translates to:

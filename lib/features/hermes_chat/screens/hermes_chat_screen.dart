@@ -34,6 +34,7 @@ import '../widgets/chat_profile_picker.dart';
 import '../widgets/managed_ssh_connection_panel.dart';
 import '../widgets/platform_local_connection_panel.dart';
 import '../widgets/connection_information_help_dialog.dart';
+import '../widgets/connection_check_panel.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/tips/wing_tip_card.dart';
 import '../../../shared/tips/wing_tips.dart';

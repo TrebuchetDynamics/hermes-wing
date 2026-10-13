@@ -436,6 +436,15 @@ Android, screen readers and protected-main delivery remain unqualified.
 CONNECTION-TWO-HOST-RECOVERY is done for this bounded slice, not the full
 connection setup/authentication matrix.
 
+The [Android direct setup harness](quality/android-direct-setup-enrollment.md)
+extends production WingApp/router controls with manual Termux preparation,
+documentation failure/retry, replacement Back/cancel, sanitized direct denial and
+secure-write failure/retry preserving the exact saved owner and inert legacy data.
+Its widget checks are Android-targeted fixtures, not native qualification. Native
+execution requires an independently approved disposable target and the bounded
+QA-only launcher; emulator availability alone does not authorize installation.
+Actual Termux install/start, live authentication and physical keystore remain open.
+
 The [optional Local setup receipt](quality/local-setup-recovery.md) records 22
 focused tests and four compiled Chromium keyboard journeys using synthetic typed
 host operations. Retained browser results confirm all four journeys passed at

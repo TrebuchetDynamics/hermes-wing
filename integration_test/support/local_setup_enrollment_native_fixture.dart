@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,7 @@ import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/router/providers/app_router.dart';
 
 import 'direct_first_run_native_fixture.dart';
+import 'android_direct_setup_enrollment_fixture.dart';
 
 Finder localControl(String name) => find.byKey(ValueKey(name));
 
@@ -87,18 +89,30 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
   WidgetTester tester, {
   required Future<void> Function(String) capture,
 }) async {
-  final folders = (await tester.runAsync(
-    () => Directory.systemTemp.createTemp('wing-local-metadata-'),
-  ))!;
-  addTearDown(() => folders.delete(recursive: true));
-  final home = _ObservedHomeDiscovery(tester, folders.path);
-  final data = DirectFirstRunNativeFixture()..deniedBootstrapStatus = 401;
+  final android = defaultTargetPlatform == TargetPlatform.android;
+  final folders = android
+      ? null
+      : (await tester.runAsync(
+          () => Directory.systemTemp.createTemp('wing-local-metadata-'),
+        ))!;
+  if (folders != null) addTearDown(() => folders.delete(recursive: true));
+  final home = folders == null
+      ? null
+      : _ObservedHomeDiscovery(tester, folders.path);
+  var documentationCalls = 0;
+  final data = android
+      ? AndroidDirectSetupEnrollmentFixture()
+      : DirectFirstRunNativeFixture();
+  data.deniedBootstrapStatus = 401;
+  final origin = android
+      ? AndroidDirectSetupEnrollmentFixture.loopback
+      : DirectFirstRunNativeFixture.origin;
   const gateway = 'saved-local-owner';
   const bundle = 'wing.hermes.endpoint_bundle.v1';
   const legacySlot = 'wing.hermes.profile_wing_link_token.$gateway';
   final rawRow = <String, Object?>{
     'id': gateway,
-    'baseUrl': DirectFirstRunNativeFixture.origin,
+    'baseUrl': origin,
     'wingLinkOrigin': 'https://control.example.invalid',
     'wingLinkToken': 'synthetic-inert-control',
     'wingLinkPendingCredentialId': 'synthetic-pending',
@@ -132,10 +146,20 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
 
   final container = ProviderContainer(
     overrides: [
-      platformLocalHomeDiscoveryProvider.overrideWithValue(home),
+      if (home != null)
+        platformLocalHomeDiscoveryProvider.overrideWithValue(home),
       platformLocalDirectoryPickerProvider.overrideWithValue(() async {
         pickerCalls++;
-        return pickerCalls == 1 ? null : '${folders.path}/selected';
+        return pickerCalls == 1 ? null : '${folders!.path}/selected';
+      }),
+      platformLocalDocumentationLauncherProvider.overrideWithValue((uri) async {
+        expect(uri.scheme, 'https');
+        expect(uri.host, anyOf('github.com', 'hermes-agent.nousresearch.com'));
+        documentationCalls++;
+        if (documentationCalls == 1) {
+          throw StateError('private-response-documentation');
+        }
+        return documentationCalls > 2;
       }),
       hermesChannelProvider.overrideWith((_) => channel),
       hermesEndpointStoreProvider.overrideWithValue(store),
@@ -161,8 +185,11 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
   Future<void> preserved({bool unchanged = true}) async {
     final saved = (await store.loadProfiles()).single;
     expect(saved.id, gateway);
-    expect(saved.baseUrl, DirectFirstRunNativeFixture.origin);
-    expect(saved.apiKey, isNull);
+    expect(saved.baseUrl, origin);
+    expect(
+      saved.apiKey,
+      android && !unchanged ? AndroidDirectSetupEnrollmentFixture.token : null,
+    );
     final remembered = (await cache.loadSelection())!;
     expect(remembered.contactId, selection.contactId);
     expect(remembered.sessionId, selection.sessionId);
@@ -198,10 +225,18 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
       await activate('hermes-welcome-optional');
     }
     await activate('hermes-enrollment-local-setup');
-    await home.pending;
+    if (home != null) await home.pending;
     await tester.pumpAndSettle();
     expect(router.state.uri.path, '/setup/local');
-    expect(localControl('platform-local-home-status'), findsOneWidget);
+    if (android) {
+      expect(localControl('platform-local-package-warning'), findsOneWidget);
+      expect(localControl('hermes-api-key-field'), findsNothing);
+      expect(localControl('platform-local-home-status'), findsNothing);
+      await activate('platform-local-existing-agent');
+      await activate('platform-local-started-agent');
+    } else {
+      expect(localControl('platform-local-home-status'), findsOneWidget);
+    }
     expect(localControl('hermes-enrollment-paste-link'), findsNothing);
     expect(localControl('local-hermes-setup-action'), findsNothing);
     expect(
@@ -217,52 +252,80 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
   await activate('hermes-optional-setup');
   await preserved();
   await open();
-  expect(home.lastStatus, LocalHermesHomeStatus.absent);
-  expect(localControl('platform-local-home-path'), findsNothing);
-  expect(channel.state.isConnected, isFalse);
-  await activate('platform-local-choose-home');
-  expect(home.selectedInspections, 0);
-  expect(home.lastStatus, LocalHermesHomeStatus.absent);
-  await preserved();
-  await capture('direct-local');
-  await localActivate(tester, find.byType(BackButton));
-  expect(localControl('hermes-welcome'), findsOneWidget);
-  await preserved();
-  await tester.runAsync(() async {
-    await Directory('${folders.path}/.hermes').create();
-    await Directory('${folders.path}/selected').create();
-  });
-  await open();
-  expect(home.lastStatus, LocalHermesHomeStatus.supported);
-  expect(
-    tester.widget<Text>(localControl('platform-local-home-path')).data,
-    '${folders.path}/.hermes',
-  );
-  expect(channel.state.isConnected, isFalse);
-  await capture('default-home');
-  await activate('platform-local-choose-home');
-  await home.pending;
-  await tester.pumpAndSettle();
-  expect(
-    tester.widget<Text>(localControl('platform-local-home-path')).data,
-    '${folders.path}/selected',
-  );
-  expect(channel.state.isConnected, isFalse);
-  await preserved();
-  await capture('selected-home');
-  await tester.binding.handlePopRoute();
-  await tester.pumpAndSettle();
-  expect(localControl('hermes-welcome'), findsOneWidget);
-  await preserved();
+  if (android) {
+    // Preparation stays manual; failed guide launch has an explicit retry.
+    await activate('platform-local-guide-back');
+    expect(localControl('hermes-api-key-field'), findsNothing);
+    await activate('platform-local-guide-back');
+    await activate('platform-local-agent-docs');
+    expect(localControl('platform-local-docs-error'), findsOneWidget);
+    expect(find.textContaining('private-response'), findsNothing);
+    await activate('platform-local-agent-docs');
+    expect(localControl('platform-local-docs-error'), findsOneWidget);
+    await activate('platform-local-agent-docs');
+    expect(localControl('platform-local-docs-error'), findsNothing);
+    await preserved();
+    await capture('manual-preparation');
+    await localActivate(tester, find.byType(BackButton));
+    expect(localControl('hermes-welcome'), findsOneWidget);
+    await preserved();
+    await open();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(localControl('hermes-welcome'), findsOneWidget);
+    await preserved();
+  } else {
+    expect(home!.lastStatus, LocalHermesHomeStatus.absent);
+    expect(localControl('platform-local-home-path'), findsNothing);
+    expect(channel.state.isConnected, isFalse);
+    await activate('platform-local-choose-home');
+    expect(home.selectedInspections, 0);
+    expect(home.lastStatus, LocalHermesHomeStatus.absent);
+    await preserved();
+    await capture('direct-local');
+    await localActivate(tester, find.byType(BackButton));
+    expect(localControl('hermes-welcome'), findsOneWidget);
+    await preserved();
+    await tester.runAsync(() async {
+      await Directory('${folders!.path}/.hermes').create();
+      await Directory('${folders.path}/selected').create();
+    });
+    await open();
+    expect(home.lastStatus, LocalHermesHomeStatus.supported);
+    expect(
+      tester.widget<Text>(localControl('platform-local-home-path')).data,
+      '${folders!.path}/.hermes',
+    );
+    expect(channel.state.isConnected, isFalse);
+    await capture('default-home');
+    await activate('platform-local-choose-home');
+    await home.pending;
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(localControl('platform-local-home-path')).data,
+      '${folders.path}/selected',
+    );
+    expect(channel.state.isConnected, isFalse);
+    await preserved();
+    await capture('selected-home');
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(localControl('hermes-welcome'), findsOneWidget);
+    await preserved();
+  }
 
   // Authentication/capability denial stays direct; a later explicit retry is
   // another read attempt, never installation, pairing or mutation replay.
   await open();
-  await activate('platform-local-advanced-endpoint');
-  await tester.enterText(
-    localControl('hermes-base-url-field'),
-    DirectFirstRunNativeFixture.origin,
-  );
+  if (android) {
+    await tester.enterText(
+      localControl('hermes-api-key-field'),
+      AndroidDirectSetupEnrollmentFixture.token,
+    );
+  } else {
+    await activate('platform-local-advanced-endpoint');
+    await tester.enterText(localControl('hermes-base-url-field'), origin);
+  }
   data.deniedBootstrapStatus = 401;
   final previousDenials = data.deniedReads.length;
   await activate('hermes-connect-button');
@@ -283,6 +346,14 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
   expect(data.requests.length, deniedRequests);
   await capture('direct-denied');
   data.deniedBootstrapStatus = null;
+  if (android) {
+    storage.failWrites = true;
+    await activate('hermes-connect-button');
+    expect(localControl('hermes-connection-save-error'), findsOneWidget);
+    expect(find.textContaining('private-response'), findsNothing);
+    await preserved();
+    storage.failWrites = false;
+  }
   await activate('hermes-connect-button');
   await tester.pumpAndSettle();
   final contact = appContainer
@@ -303,9 +374,11 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
   );
 
   expect(router.routeInformationProvider.value.uri.path, '/hermes');
-  expect(home.defaultInspections, 3);
-  expect(home.selectedInspections, 1);
-  expect(pickerCalls, 2);
+  if (home != null) {
+    expect(home.defaultInspections, 3);
+    expect(home.selectedInspections, 1);
+  }
+  expect(pickerCalls, android ? 0 : 2);
   expect(channel.state.activeSessionId, selection.sessionId);
   expect(
     appContainer.read(hermesGatewayDirectoryProvider).activeContactId,
@@ -317,10 +390,15 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
   await capture('direct');
   expect(tester.takeException(), isNull);
   final result = <String, Object?>{
-    'inspect': home.defaultInspections + home.selectedInspections,
+    'inspect': home == null
+        ? 0
+        : home.defaultInspections + home.selectedInspections,
     'picker_calls': pickerCalls,
-    'chooser_cancel_preserved': true,
-    'metadata_missing_default_selected': true,
+    'documentation_calls': documentationCalls,
+    'manual_preparation': android,
+    'storage_failure_preserved': android,
+    'chooser_cancel_preserved': !android,
+    'metadata_missing_default_selected': !android,
     'saved_owner_preserved': true,
     'inert_legacy_preserved': true,
     'legacy_reads': storage.legacyReads,
@@ -373,6 +451,7 @@ class _ObservedHomeDiscovery extends LocalHermesHomeDiscovery {
 }
 
 class _ObservedStorage extends FlutterSecureStorage {
+  bool failWrites = false;
   int legacyReads = 0;
   int legacyDeletes = 0;
   int writes = 0;
@@ -422,6 +501,7 @@ class _ObservedStorage extends FlutterSecureStorage {
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
   }) {
+    if (failWrites) throw StateError('private-response-storage');
     writes++;
     return super.write(key: key, value: value);
   }

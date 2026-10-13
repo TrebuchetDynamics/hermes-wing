@@ -27,7 +27,7 @@ void main() {
     for (final diagram in [runtime, runtimeMobile]) {
       expect(diagram, contains('HTTPS'));
       expect(diagram, contains('SSE'));
-      expect(diagram, contains('Wing Link'));
+      expect(diagram, contains('authoritative context'));
       expect(diagram.toLowerCase(), contains('fail closed'));
     }
 
@@ -65,10 +65,15 @@ void main() {
       reason:
           'Move the pointer off transient controls before the settling delay.',
     );
-    expect(readme, contains('Try the web alpha'));
+    expect(readme, contains('[Preview the connection screen]'));
+    expect(readme, contains('interface, not a working assistant.'));
+    expect(readme, contains('authenticated Agent and configured provider.'));
     expect(readme, contains('docs/getting-started.md'));
     expect(readme, contains('showcase-mobile.png'));
-    expect(readme, contains('Hermes remains the source of truth'));
+    expect(readme, contains('runs the assistant,'));
+    expect(readme, contains('conversations, tools, and configuration.'));
+    expect(gettingStarted, contains('Agent remains the source of truth'));
+    expect(readme, isNot(contains('Wing Link')));
     expect(generatorSource, contains('approveOnce.scrollIntoViewIfNeeded()'));
     expect(gettingStarted, contains('Wing connects directly to Hermes Agent.'));
     expect(gettingStarted, contains('Wing Link is not required.'));

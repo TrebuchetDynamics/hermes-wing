@@ -11,14 +11,34 @@ void main() {
       'playwright/tests/screenshots/e2e-screenshots.spec.mjs',
     ).readAsStringSync();
 
-    expect(surfaces, contains('Add gateway or profile'));
-    expect(screenshots, contains('Add gateway or profile'));
+    expect(surfaces, contains('Welcome to Hermes Wing'));
+    expect(screenshots, contains('Welcome to Hermes Wing'));
+    expect(
+      surfaces,
+      contains(
+        'getByRole("button", { name: "Connect to Remote Hermes", exact: true }).click()',
+      ),
+    );
+    expect(surfaces, contains('name: /^Hermes Agent URL/'));
+    expect(
+      surfaces,
+      contains(
+        'getByRole("button", { name: "Paste pairing link" })).toHaveCount(0)',
+      ),
+    );
     expect(surfaces, contains('No Hermes profiles available'));
     expect(surfaces, contains('openConnected(page, "/profiles")'));
     expect(surfaces, contains('Profiles unavailable'));
-    expect(surfaces, contains('Connect one profile manually'));
+    expect(
+      surfaces,
+      contains(
+        'Update Hermes Agent and reconnect this gateway with profile permissions.',
+      ),
+    );
 
     for (final stale in [
+      'Add gateway or profile',
+      'Connect one profile manually',
       'Add gateway or agent',
       'No Hermes agents available',
       'openConnected(page, "/agents")',

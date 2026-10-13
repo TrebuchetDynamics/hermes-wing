@@ -358,6 +358,121 @@ Rejected alternatives: another broad README rewrite would reopen accepted fixes;
 deleting all limitations would conceal risk; another audit task would duplicate a
 known correction. This planning pass changes neither README nor the tutorial.
 
+## Remaining README review: proof, readiness and useful workflow
+
+This continues the same review; preserve its accepted overall direction and keep
+README near its existing length. The supplied scores remain editorial judgments,
+not measured usability. Source/image inspection is at Wing `e0aebfc0`.
+
+### Historical evidence is not current availability
+
+A receipt's "not delivered" statement describes that receipt's revision/time, not
+current main. Before publishing status, compare its tested source/artifact with
+current implementation and delivery evidence. Separate implemented, fixture-tested,
+native-exercised and live-authenticated states. A newer commit proves delivery,
+not a missing live test; an older report proves neither current absence nor current
+qualification. Use "not verified by the evidence reviewed" when that is the limit.
+
+The beginner tutorial stays install → click → credential → success → recovery.
+Keep acceptance history under `docs/quality/`, linked through a separate Testing
+and evidence section in the documentation index rather than inline user steps.
+Do not rewrite historical receipts to make them appear to test current code.
+
+### P1: fix showcase credibility at the producer
+
+The actual tracked `assets/readme/showcase.png` was visually inspected. It shows
+**LIVE RUN**, **The same Hermes session on desktop and mobile**, a small/dense
+desktop view and mobile approval for **Command: echo e2e**. It contains no visible
+simulated-data label. The generator emits those labels in `composeShowcase` and
+`serve_web.mjs` supplies the presentation fixture. The external image embedded in
+the supplied review is not the source of this repository-image observation.
+
+First change the shared generator to burn **DEMO DATA · SIMULATED SESSION** into
+all relevant exported crops, replace LIVE RUN with honest demo wording, and clarify
+that the paired views depict the same fixture scenario, not observed cross-device
+live synchronization. Fix the producer, not just README caption or PNG pixels.
+Then regenerate affected shared assets and inspect them at README/mobile display
+sizes. Preserve real UI captures, reduced motion and fail-on-error checks.
+
+The subsequent product-proof slice should use a recognizable synthetic repository
+summary task, readable tool-result context and phone-first attention—not `echo e2e`
+as the selling point. Keep changes isolated to presentation fixtures; never run
+that illustrative command or expose actual repositories/transcripts. Real end-to-end
+recording remains conditional on authorized live qualification, not fabricated proof.
+
+### P1/P2: better first experience without an invented product demo
+
+For existing Hermes users, make **Set up your first chat** the primary README action
+and the honest connection-screen preview secondary. Lead with the improved product
+image, not a claim that a form demonstrates streaming/tools/approval/recovery.
+A future clearly simulated, read-only demo using shared real UI components remains
+Proposed. If later accepted, isolate its fixture channel, make mutation controls
+inert with clear explanations, collect no credentials and send no Agent/provider
+traffic. Do not add a demo backend, ship the E2E harness as production, or delay
+the real connection path for this optional feature.
+
+### P2: publish a concise user-facing verification matrix
+
+Plan a maintained `docs/product/platform-support.md` user-facing owner, linked by
+README and getting-started instead of making `docs/product/routes.md` the primary
+support answer. This is planned publication, not an empty document created now.
+Keep routes as the internal specification and use existing quality reports as inputs.
+
+Rows: Chat; streaming/tools; approvals/Stop; SSH; voice/notifications; background
+recovery. Platform columns must separate Android, web, Linux and other named native
+targets, not merge native evidence with a browser viewport. Cells use plain states
+such as implemented, tested with simulated responses, live verified, experimental,
+unsupported or not verified by reviewed evidence. Link precise source/artifact,
+target/date and evidence for each claim. Distinguish rendering from authenticated
+operation; never derive live support from route availability, terminal SSH login,
+a historical report's silence, a screenshot or successful compilation.
+
+Place the SSH platform status next to setup instructions: interface implemented,
+fixture connection tested and real full-app authenticated SSH verified are separate
+facts. Browser SSH remains unsupported. Do not promote Linux/Android live readiness
+until matching current-source evidence exists; do not label it broken merely because
+an inspected receipt lacks that proof. Reuse existing live-QA ownership.
+
+### P2: add one optional useful workflow after the smoke prompt
+
+Keep the one-sentence/no-tools prompt as the connectivity milestone. Then offer a
+separate explicit action: ask Agent to summarize a deliberately granted demo Project
+or repository's structure, observe tool activity, and revisit the same conversation.
+Explain scope/permission and provider cost before sending; do not request secrets,
+unrestricted filesystem access or a destructive tool. Show approvals only when
+actually requested and tested; do not promise background completion/restoration
+or notification reliability before named-platform live qualification. A foreground
+return to history is not background/process-death acceptance.
+
+### P3: simpler words, same evidence boundary
+
+Prefer "tested with simulated Agent responses; full live workflow testing is
+incomplete" to "scoped fixture coverage" and "we haven't verified the whole
+chat-to-approval-to-reconnect workflow" to a qualification formula. Say signed
+packages/automatic updates are unavailable only after checking current distribution;
+"not verified" is not synonymous with "does not exist". Keep formal wording in
+quality records. Preserve known incoming anchors; add aliases only for evidenced
+links or deliberate stable navigation, not every former heading.
+
+### Queue ownership and checks
+
+Reuse `LANDING-FIRST-REPLY` for tutorial/order, primary CTA, plain-language limits,
+readable readiness/SSH status and optional post-smoke instructions. Include the
+small generator provenance correction in that first truthfulness pass.
+`LANDING-PRODUCT-PROOF` owns the more compelling task/crop/composition and share
+assets. `LANDING-PAGES-QUALITY` retains artifact-level checks. No new tasks,
+focus/status/dependency changes, workers or timer are introduced.
+
+Acceptance: every standalone image carries legible simulation provenance; generator
+and presentation fixtures remain deterministic/redacted; claimed support has exact
+platform/source-bound evidence; no internal receipt chronology appears in tutorial
+steps; optional tools are deliberate and bounded. Add focused provenance/matrix/link
+regressions during implementation. Regeneration via `npm run readme:assets` plus
+browser/visual recapture is future verification, not performed by this planning
+pass. The already recorded stale README/Termux text assertions remain failures to
+reconcile without deleting security coverage. No overall visual/accessibility PASS
+or real authenticated Android/desktop/SSH outcome is claimed from this inspection.
+
 ## Verification configuration and limits
 
 A cheap numeric proxy is **onboarding readiness points**: on-page API enablement,

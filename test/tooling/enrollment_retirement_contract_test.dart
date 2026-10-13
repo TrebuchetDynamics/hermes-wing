@@ -3,6 +3,55 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('all assembled production consumers stay Agent-only', () {
+    expect(_managementConsumers(Directory('lib')), isEmpty);
+  });
+
+  test('management guard rejects directives and runtime client references', () {
+    final root = Directory.systemTemp.createTempSync('management-consumers-');
+    addTearDown(() => root.deleteSync(recursive: true));
+    final storage = File(
+      '${root.path}/core/hermes/setup/secure_hermes_endpoint_store.dart',
+    )..createSync(recursive: true);
+    const retention = '''
+const tokenSlot = 'wing.hermes.profile_wing_link_token.';
+const row = <String, Object?>{};
+final retained = {'wingLinkOrigin': row['wingLinkOrigin'],
+  'wingLinkToken': row['wingLinkToken'], 'wingLinkDeviceId': row['wingLinkDeviceId']};
+String _wingLinkTokenKey(String id) => '\$tokenSlot\$id';
+''';
+    storage.writeAsStringSync(retention);
+    final retainedClient = File('${root.path}/core/wing_link/client.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('WingLinkClient()');
+    expect(_managementConsumers(root), isEmpty);
+    for (final source in [
+      "import 'wing_link_client.dart';",
+      "export 'wing_link_transport.dart';",
+      "import '../../core/wing_link/wing_link_client.dart';",
+      "export '../core/wing_link/models/wing_link_device.dart';",
+      "import 'package:wing/core/wing_link/wing_link_client.dart' as link;",
+      "export 'package:wing/core/wing_link/wing_link_client.dart';",
+      "import 'stub.dart' if (dart.library.io) 'core/wing_link/wing_link_client.dart';",
+      "export 'stub.dart' if (dart.library.io) 'package:wing/core/wing_link/wing_link_client.dart';",
+      'final client = WingLinkClient();',
+      'final client = link.WingLinkClient.named();',
+      'final client = wingLinkClientBuilder();',
+      'WingLinkClient? client;',
+    ]) {
+      storage.writeAsStringSync('$retention\n$source');
+      expect(_managementConsumers(root), [storage.path], reason: source);
+    }
+    storage.writeAsStringSync(retention);
+    // A similarly named feature directory is not the retained implementation.
+    final consumer = File('${root.path}/features/core/wing_link/caller.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync(retainedClient.readAsStringSync());
+    expect(_managementConsumers(root), [consumer.path]);
+    consumer.deleteSync();
+    expect(_managementConsumers(root), isEmpty);
+  });
+
   test('Linux transport journey stays Agent-only with SSE coverage', () {
     final source = File(
       'integration_test/linux_transport_boundary_test.dart',
@@ -745,6 +794,21 @@ exit 0
     expect(provider, contains('MethodChannelHermesConnectIntentSource()'));
   });
 }
+
+List<String> _managementConsumers(Directory root) => root
+    .listSync(recursive: true)
+    .whereType<File>()
+    .where((file) => file.path.endsWith('.dart'))
+    .where((file) => !file.path.startsWith('${root.path}/core/wing_link/'))
+    .where((file) {
+      final source = file.readAsStringSync();
+      return RegExp(
+            r'''\b(?:import|export)\s+[^;]*['"][^'"]*wing_link[^'"]*['"]''',
+          ).hasMatch(source) ||
+          RegExp(r'\b(?:WingLink\w*|wingLinkClient\w*)\b').hasMatch(source);
+    })
+    .map((file) => file.path)
+    .toList();
 
 List<String> _obsoleteLocalHost(Directory root) => root
     .listSync(recursive: true)

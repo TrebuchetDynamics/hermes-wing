@@ -17,38 +17,55 @@ Do not copy personal credentials or expose an API to a public interface to bypas
 setup. Remote native HTTP requires the existing explicit review and trusted
 encrypted network; browser access requires trusted HTTPS and permitted CORS.
 
-In the current development worktree:
+On Android, the fresh welcome offers three separate choices in this order:
 
-1. On a fresh launch, choose **Get Started** for Local, **Connect via SSH**, or
-   **Connect to Remote Hermes** from the welcome screen. With a saved connection,
-   choose **Add Hermes** from Chat. Older builds use **I have a QR code or pairing link**,
-   then **Connect one profile manually**. None of these direct paths needs pairing.
-2. For Linux Local, review default Hermes-home discovery or choose another folder;
-   this does not start Agent or bind its runtime to that folder. For Android Local,
-   follow **This phone** guidance or skip for an already-running Agent, then enter
-   its separate credential. For Remote, enter the Agent endpoint and credential.
-   **Help** explains how to obtain connection information and offers **Copy instructions**. For native SSH,
-   enter host, SSH port, username, a selected private key or password, Agent port and its separate access
-   token. Verify the host fingerprint before trusting the connection. Wing owns
-   the forward; no external tunnel or CLI QR is needed. This uses the direct
-   Agent channel, not Wing Link.
-3. Select the configured profile/session and supported model, then send one
-   deliberate message. A reply, not saved credentials alone, confirms generation.
+1. **Connect via SSH** — connect to Agent on another computer through Wing's
+   native SSH forward. Enter its host, SSH port, username, selected private key or
+   SSH password, Agent API port and separate Agent access token. Compare the host
+   fingerprint with a trusted administrator before choosing **Trust this connection**;
+   cancel if it differs or you cannot verify it. SSH login alone does not prove
+   Agent readiness.
+2. **Connect to Remote Hermes** — enter the full Agent endpoint, including its
+   configured port/profile path, and its separate credential in the masked field.
+   Obtain these from the host administrator; do not guess a URL or embed a token
+   in it. Remote HTTPS and trusted VPN access use the same direct Agent channel.
+3. **Use this phone (Termux)** — follow **This phone** guidance to prepare Agent
+   yourself, or choose **Agent already running — skip guide**. Then type its
+   separate Agent API token and choose **Add Hermes**. Follow the
+   [direct Termux runbook](runbooks/android-termux-local-agent.md); guide completion
+   is not an installation, readiness check or authenticated connection.
 
-The chooser keeps local setup separate from direct connection. Deprecated pairing
-routes and incoming handoffs discard input and offer direct reconnection guidance;
-they do not parse, inspect or exchange pairing codes. The dormant enrollment
-controller, payload parser and setup/readiness widgets have been removed. Saved
-Agent records and their separate legacy management fields are unchanged.
+Android has no **Get Started** welcome action. On desktop/web, **Get Started**
+opens Local; SSH and Remote remain separate choices. On Linux, review the default
+`~/.hermes` metadata discovery or choose **Choose another Hermes home**. This is
+not a Hermes Project or conversation working directory: it does not start Agent,
+read its files, save/send the chosen path or bind its runtime to that folder.
+Discovery alone does not prove installation, authentication or model readiness.
+Enter the running Agent's loopback endpoint and separate masked Agent API token.
+Web Local cannot inspect host folders; loopback refers to the browser's device.
+
+With a saved connection, choose **Add Hermes** from Chat to open the shared
+Local / SSH / Remote form. **Help** explains how to obtain connection information;
+**Copy instructions** copies public guidance, not connection values or secrets.
+Never copy credentials into URLs or the clipboard. Missing capabilities remain
+unavailable; authentication denial or connection failure requires correction and
+explicit retry or cancel, never a management fallback or automatic mutation replay.
+After connecting, select the configured profile/session and supported model and
+send one deliberate message. A reply, not saved credentials alone, confirms generation.
+
+Deprecated pairing routes and incoming handoffs discard input and offer direct
+reconnection guidance; they do not parse, inspect or exchange pairing codes.
+Saved Agent connections are preserved; this guide does not change user stores.
 The [first-run receipt](quality/direct-first-run.md) records passing
 widget and compiled Chromium checks on Linux, including explicit authentication
-retry without management requests. This pass inspects that evidence; it does not
-rerun those checks. The [native first-run receipt](quality/direct-first-run-native.md)
+retry without management requests. These are historical, source-bound results,
+not fresh qualification of every current chooser. The [native first-run receipt](quality/direct-first-run-native.md)
 also records Linux GTK fixture journeys. The
 [welcome recovery receipt](quality/desktop-welcome-recovery.md) adds keyboard
 Back/cancel, explicit connection retry and saved-owner restoration in a fresh
 Linux process. Its endpoint store is synthetic, not physical keychain proof.
-Main delivery, Android and live authentication remain open.
+Current native discovery, Android phone setup and live authentication remain
+NOT_CHECKED here; documentation checks do not qualify them or prove delivery.
 The managed SSH form offers Private key and Password in this worktree. Choose
 a key file/document explicitly and enter its passphrase when required. Selected
 imported keys are attempt-scoped, not saved. Alternatively, choose **Generate SSH key**,
@@ -81,7 +98,7 @@ In the current development worktree, open **Add Hermes**, then choose
 1. Edit the Agent endpoint or enter an obscured replacement credential.
    Saved credentials are not prefilled. A blank replacement retains the credential
    only when the canonical Agent URL is unchanged. A changed URL never reuses that
-   credential and removes the saved Wing Link association. Supply its credential
+   credential. Supply the new endpoint's credential
    separately if authentication requires one.
 2. Choose **Test** for direct read-only capabilities discovery. Test does not
    save, connect Chat or prove generation. Cancel discards late test feedback;
@@ -173,11 +190,12 @@ Closing Wing does not move Agent onto the phone.
 
 ### Can everything run on the phone instead?
 
-Guided same-phone Android setup is accepted replacement work, not a qualified
-installation or background-hosting path. The current **This phone** guidance can
-lead into direct connection to an already-running Agent. Retained Termux scripts
-still include deprecated management setup and are not the recommended path.
-Do not treat their historical pairing receipts as Agent-only installation proof.
+Choose **Use this phone (Termux)**, the third Android welcome choice, for manual
+**This phone** preparation and direct connection. See the
+[direct Termux runbook](runbooks/android-termux-local-agent.md). Wing cannot inspect
+Termux files, install/configure/start Agent or guarantee background survival.
+Fresh installation and persistent hosting remain unqualified. Retained installers
+and historical pairing receipts are not a fallback or Agent-only installation proof.
 
 ### Can I use the same computer for Wing and Hermes?
 

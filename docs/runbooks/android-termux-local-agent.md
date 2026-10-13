@@ -33,7 +33,9 @@ configuration. Keep the listener on `127.0.0.1:8642`; loopback still requires
 Agent authentication. Do not put credentials in command arguments, URLs or the
 clipboard. Run `hermes gateway` in the foreground and keep Termux open.
 
-Wing cannot inspect Termux's files, configure or start Agent, or prove readiness
+Wing and Termux remain separate app sandboxes. Any local app can probe loopback;
+network location is not authorization. Wing cannot inspect Termux's files,
+configure or start Agent, or prove readiness
 from completion of guidance. Android can suspend or stop the process; persistent
 background operation is not qualified.
 
@@ -47,9 +49,12 @@ authentication denial and transport errors remain in that form; correct the
 Agent setup or token and explicitly retry. Guide completion sends no message
 and saves no credential. Back to guidance or cancel does not replay mutations.
 
+## Historical evidence
+
 The old bootstrap renderer and its copy/pairing controls are removed from this
-entry. Legacy packaging metadata, installers, explicit handoff parsing and Linux
-setup are separate retirement work, not a fallback for this phone flow.
+entry. Legacy packaging metadata and installers remain separate retirement work,
+not a fallback for this phone flow. Incoming legacy handoffs are rejected without
+parsing or exchanging pairing codes.
 [Past physical bootstrap evidence](../quality/termux-entrypoint-physical-2026-09-05.md)
 is historical and does not qualify this replacement. Android-platform widget
 fixtures do not prove physical installation, process survival or live Agent

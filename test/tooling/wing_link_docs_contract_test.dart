@@ -91,10 +91,65 @@ void main() {
       contains('Wing and Termux remain separate app sandboxes'),
     );
     expect(termuxRunbook, contains('127.0.0.1:8642'));
-    expect(termuxRunbook, contains('127.0.0.1:8654'));
-    expect(termuxRunbook, contains('pair again'));
-    expect(termuxRunbook, contains('Tier 2'));
+    expect(termuxRunbook, contains('loopback still requires'));
+    expect(termuxRunbook, contains('Agent authentication'));
+    expect(termuxRunbook, contains('separate app sandboxes'));
+    expect(termuxRunbook, contains('masked Agent token field'));
+    expect(termuxRunbook, contains('explicitly retry'));
+    expect(termuxRunbook, contains('saves no credential'));
+    expect(termuxRunbook, contains('background operation is not qualified'));
+    expect(_currentTermuxSetup(termuxRunbook), isNot(_retiredSetup));
     expect(termuxRunbook, isNot(contains('RUN_COMMAND')));
+  });
+
+  test('current first-connection guide matches the Android welcome', () {
+    expect(_directSteps(_gettingStarted()), _directGuide);
+  });
+
+  test('direct guide guard rejects pairing offers and wrong Android order', () {
+    final steps = _directSteps(_gettingStarted());
+    for (final offer in [
+      '**I have a QR code or pairing link**',
+      '**Connect one profile manually**',
+      'Scan a QR code to pair again.',
+      'Run ./install-wing-link.sh and connect to 127.0.0.1:8654.',
+    ]) {
+      expect('$steps\nChoose $offer', isNot(_directGuide), reason: offer);
+    }
+    expect(
+      steps
+          .replaceFirst('1. **Connect via SSH**', '2. **Connect via SSH**')
+          .replaceFirst(
+            '2. **Connect to Remote Hermes**',
+            '1. **Connect to Remote Hermes**',
+          ),
+      isNot(_directGuide),
+    );
+    expect(
+      steps.replaceFirst(
+        '3. **Use this phone (Termux)**',
+        '1. **Use this phone (Termux)**',
+      ),
+      isNot(_directGuide),
+    );
+  });
+
+  test('guide guards allow history but reject retired Termux setup', () {
+    final guide = _gettingStarted();
+    final runbook = File(
+      'docs/runbooks/android-termux-local-agent.md',
+    ).readAsStringSync();
+    const history =
+        '\nHistorical receipt: Scan a QR code to pair again on 127.0.0.1:8654.\n';
+    expect(_directSteps('$guide$history'), _directGuide);
+    expect(_currentTermuxSetup('$runbook$history'), isNot(_retiredSetup));
+    for (final offer in [
+      'pair again',
+      '127.0.0.1:8654',
+      './install-wing-link.sh',
+    ]) {
+      expect('${_currentTermuxSetup(runbook)}\n$offer', _retiredSetup);
+    }
   });
 
   test('Nostr research is archived outside the core control plane', () {
@@ -107,3 +162,35 @@ void main() {
     expect(research, contains('custom Nostr Relay Link remains deferred'));
   });
 }
+
+String _gettingStarted() => File('docs/getting-started.md').readAsStringSync();
+
+String _directSteps(String guide) => guide
+    .split('## Direct Agent connection\n')[1]
+    .split('## Repair a saved direct connection\n')[0];
+
+String _currentTermuxSetup(String guide) =>
+    guide.split('## Historical evidence\n')[0];
+
+final _retiredSetup = matches(
+  RegExp(
+    r'I have a QR code or pairing link|Connect one profile manually|'
+    r'Scan a QR code|pair again|127\.0\.0\.1:8654|install-wing-link\.sh',
+    caseSensitive: false,
+  ),
+);
+
+final _directGuide = allOf([
+  matches(
+    r'1\. \*\*Connect via SSH\*\*[\s\S]*'
+    r'2\. \*\*Connect to Remote Hermes\*\*[\s\S]*'
+    r'3\. \*\*Use this phone \(Termux\)\*\*',
+  ),
+  contains('Android has no **Get Started** welcome action.'),
+  contains('not a Hermes Project or conversation working directory'),
+  contains('separate masked Agent API token'),
+  matches(r'host\s+fingerprint'),
+  contains('Never copy credentials into URLs or the clipboard.'),
+  contains('explicit retry or cancel'),
+  isNot(_retiredSetup),
+]);

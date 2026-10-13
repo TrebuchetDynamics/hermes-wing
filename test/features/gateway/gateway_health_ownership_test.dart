@@ -511,7 +511,7 @@ void main() {
     },
   );
   testWidgets(
-    'same-host management profile stays eligible but transfers health owner',
+    'shared legacy metadata cannot transfer health authority between endpoints',
     (tester) async {
       final channel = _Channel();
       final directory = directoryFor(
@@ -548,12 +548,16 @@ void main() {
       await _start(tester);
       directory.selectManagementGateway('B');
       await tester.pump();
+      expect(_refresh, findsNothing);
+      expect(_retry, findsNothing);
+      expect(channel.loadDetailedHealthCalls, 1);
+      _finish(channel, 0, true);
+      await tester.pumpAndSettle();
+      expect(_retry, findsNothing);
+      directory.selectManagementGateway('A');
+      await tester.pumpAndSettle();
       expect(_enabled(tester), isTrue);
       await _start(tester);
-      _finish(channel, 0, true);
-      await tester.pump();
-      expect(_enabled(tester), isFalse);
-      expect(_retry, findsNothing);
       _finish(channel, 1, true);
       await tester.pumpAndSettle();
       expect(_retry, findsOneWidget);
@@ -564,6 +568,10 @@ void main() {
       expect(_enabled(tester), isTrue);
       expect(channel.connectCalls.length, connections);
       expect(directory.activeContactId?.gatewayId, 'A');
+      expect(channel.disconnectCalls, 0);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      expect(find.textContaining('synthetic private'), findsNothing);
     },
   );
   for (final grants in [

@@ -46,7 +46,6 @@ class GatewayHostOverview {
     required this.baseUrl,
     required this.availability,
     required this.gatewayIds,
-    required this.managedByWingLink,
   });
 
   final String id;
@@ -54,7 +53,6 @@ class GatewayHostOverview {
   final String baseUrl;
   final GatewayAvailability availability;
   final List<String> gatewayIds;
-  final bool managedByWingLink;
 
   int get profileCount => gatewayIds.length;
 

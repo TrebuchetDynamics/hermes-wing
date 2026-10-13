@@ -162,6 +162,110 @@ Future<HermesGatewayDirectory> _activeTrustDirectory(
 }
 
 void main() {
+  testWidgets(
+    'legacy shared metadata keeps direct endpoint controls independent',
+    (tester) async {
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      final configs = [
+        for (final id in ['default', 'coder'])
+          HermesEndpointConfig(
+            id: id,
+            label: 'Host · $id',
+            baseUrl: 'https://host.example/p/$id',
+            apiKey: 'fixture-agent-$id',
+            wingLinkOrigin: 'https://link.example',
+            wingLinkToken: 'fixture-link-$id',
+            wingLinkPendingCredentialId: 'fixture-pending-$id',
+            wingLinkHostFingerprint: _testFingerprint,
+            wingLinkDeviceId: 'shared-device',
+          ),
+      ];
+      final store = FakeHermesEndpointStore(profiles: configs);
+      final loader = FakeGatewaySummaryLoader({
+        for (final id in ['default', 'coder']) id: gatewaySummary([id]),
+      });
+      final directory = HermesGatewayDirectory(
+        store: store,
+        cache: FakeGatewayContactCache(),
+        loader: loader,
+        activeChannel: channel,
+      );
+      await directory.refresh();
+      await tester.pumpWidget(_testApp(channel, directory: directory));
+      await tester.pumpAndSettle();
+
+      for (final config in configs) {
+        final tile = find.byKey(ValueKey('connection-host-${config.id}'));
+        expect(tile, findsOneWidget);
+        expect(
+          find.descendant(of: tile, matching: find.text(config.label!)),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: tile,
+            matching: find.textContaining(config.baseUrl),
+          ),
+          findsOneWidget,
+        );
+        await tester.ensureVisible(tile);
+        await tester.tap(tile);
+        await tester.pumpAndSettle();
+        expect(directory.managementGatewayId, config.id);
+        expect(directory.activeContactId, isNull);
+        expect(channel.connectCalls, isEmpty);
+
+        final menu = find.byKey(ValueKey('settings-gateway-menu-${config.id}'));
+        await tester.tap(menu);
+        await tester.pumpAndSettle();
+        expect(find.text('Rename'), findsOneWidget);
+        await tester.tap(find.text('Update connection'));
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<TextFormField>(
+                find.byKey(const ValueKey('settings-gateway-base-url-field')),
+              )
+              .controller!
+              .text,
+          config.baseUrl,
+        );
+        expect(
+          tester
+              .widget<TextFormField>(
+                find.byKey(const ValueKey('settings-gateway-api-key-field')),
+              )
+              .controller!
+              .text,
+          isEmpty,
+        );
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        final callsBefore = loader.calls.length;
+        await tester.tap(menu);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Refresh status'));
+        await tester.pumpAndSettle();
+        expect(loader.calls.skip(callsBefore), [config.id]);
+      }
+      expect(await store.loadProfiles(), configs);
+      expect(store.saveCalls, isEmpty);
+      expect(store.saveAllCalls, isEmpty);
+      expect(store.deleteProfileCalls, isEmpty);
+      expect(store.clearCalls, 0);
+      expect(channel.connectCalls, isEmpty);
+      await tester.tap(
+        find.byKey(const ValueKey('gateway-connect-chat-button')),
+      );
+      await tester.pumpAndSettle();
+      expect(directory.activeContactId?.gatewayId, 'coder');
+      expect(directory.activeContactId?.profileId, 'coder');
+      expect(channel.connectCalls.single.baseUrl, configs.last.baseUrl);
+      expect(channel.connectCalls.single.apiKey, configs.last.apiKey);
+    },
+  );
+
   testWidgets('legacy metadata never opens management or erases saved access', (
     tester,
   ) async {
@@ -550,7 +654,7 @@ void main() {
     expect(find.text('Work'), findsOneWidget);
   });
 
-  testWidgets('host disconnect closes its active enrolled profile', (
+  testWidgets('shared legacy metadata never aliases the active chat owner', (
     tester,
   ) async {
     final channel = FakeHermesChannel.disconnected();
@@ -575,6 +679,15 @@ void main() {
     await directory.activateGateway('coder');
     directory.selectManagementGateway('default');
     await tester.pumpWidget(_testApp(channel, directory: directory));
+    await tester.pumpAndSettle();
+    expect(find.text('Chat connected'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('gateway-disconnect-button')),
+      findsNothing,
+    );
+    expect(directory.activeContactId?.gatewayId, 'coder');
+    expect(channel.disconnectCalls, 0);
+    await tester.tap(find.byKey(const ValueKey('connection-host-coder')));
     await tester.pumpAndSettle();
     expect(find.text('Chat connected'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('gateway-disconnect-button')));
@@ -673,7 +786,7 @@ void main() {
   });
 
   testWidgets(
-    'removing a paired host deletes every enrolled profile and no other host',
+    'removing a legacy endpoint preserves its shared-metadata sibling and owner',
     (tester) async {
       final channel = FakeHermesChannel.disconnected();
       addTearDown(channel.dispose);
@@ -738,19 +851,23 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        store.deleteProfileCalls,
-        unorderedEquals(['default-endpoint', 'coder-endpoint']),
-      );
-      expect(channel.disconnectCalls, 1);
-      expect(directory.activeContactId, isNull);
-      expect(directory.hosts, hasLength(2));
+      expect(store.deleteProfileCalls, ['default-endpoint']);
+      expect(channel.disconnectCalls, 0);
+      expect(directory.activeContactId?.gatewayId, 'coder-endpoint');
+      expect(directory.hosts, hasLength(3));
       expect(
         directory.hosts.map((host) => host.id),
-        unorderedEquals(['work-endpoint', 'other-device-endpoint']),
+        unorderedEquals([
+          'coder-endpoint',
+          'work-endpoint',
+          'other-device-endpoint',
+        ]),
       );
       expect(directory.configForGateway('default-endpoint'), isNull);
-      expect(directory.configForGateway('coder-endpoint'), isNull);
+      expect(
+        directory.configForGateway('coder-endpoint')?.baseUrl,
+        'https://home.example/p/coder',
+      );
       expect(
         directory.configForGateway('work-endpoint')?.baseUrl,
         'https://work.example',
@@ -761,16 +878,21 @@ void main() {
       );
       expect(
         (await store.loadProfiles()).map((config) => config.id),
-        unorderedEquals(['work-endpoint', 'other-device-endpoint']),
+        unorderedEquals([
+          'coder-endpoint',
+          'work-endpoint',
+          'other-device-endpoint',
+        ]),
       );
-      expect(find.text('Home'), findsNothing);
+      expect(find.text('Home · default'), findsNothing);
+      expect(find.text('Home · coder'), findsOneWidget);
       expect(find.text('Work'), findsOneWidget);
       expect(find.text('Other device'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'refreshing a paired host checks every enrolled profile and no other host',
+    'refreshing a legacy endpoint checks only the selected saved endpoint',
     (tester) async {
       final channel = FakeHermesChannel.disconnected();
       addTearDown(channel.dispose);
@@ -827,18 +949,18 @@ void main() {
         loader.calls.where((id) => id == 'default-endpoint'),
         hasLength(2),
       );
-      expect(loader.calls.where((id) => id == 'coder-endpoint'), hasLength(2));
+      expect(loader.calls.where((id) => id == 'coder-endpoint'), hasLength(1));
       expect(loader.calls.where((id) => id == 'work-endpoint'), hasLength(1));
       expect(
         loader.calls.where((id) => id == 'other-device-endpoint'),
         hasLength(1),
       );
-      expect(directory.hosts, hasLength(3));
+      expect(directory.hosts, hasLength(4));
       expect(
         directory.hosts
             .firstWhere((host) => host.id == 'default-endpoint')
             .profileCount,
-        2,
+        1,
       );
       expect(channel.connectCalls, isEmpty);
     },

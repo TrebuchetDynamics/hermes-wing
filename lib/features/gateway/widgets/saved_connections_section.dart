@@ -109,16 +109,14 @@ class _GatewaySettingsTile extends StatelessWidget {
             value: 'agents',
             child: Text(strings.settingsManageAgentsAction),
           ),
-          if (!group.managedByWingLink)
-            PopupMenuItem(
-              value: 'rename',
-              child: Text(strings.settingsRenameAction),
-            ),
-          if (!group.managedByWingLink)
-            PopupMenuItem(
-              value: 'connection',
-              child: Text(strings.settingsUpdateConnectionAction),
-            ),
+          PopupMenuItem(
+            value: 'rename',
+            child: Text(strings.settingsRenameAction),
+          ),
+          PopupMenuItem(
+            value: 'connection',
+            child: Text(strings.settingsUpdateConnectionAction),
+          ),
           PopupMenuItem(
             value: 'reconnect',
             child: Text(strings.settingsReconnectAction),

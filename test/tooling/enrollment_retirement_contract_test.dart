@@ -3,6 +3,26 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('saved host controls cannot restore legacy metadata projection', () {
+    for (final path in [
+      'lib/features/hermes_chat/gateways/hermes_gateway_directory.dart',
+      'lib/features/hermes_chat/gateways/gateway_contact.dart',
+      'lib/features/gateway/widgets/saved_connections_section.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+      for (final forbidden in [
+        'managedByWingLink',
+        'wing-link:',
+        '_hostOverview',
+        '_hostLabel',
+        '_agentAuthorityBaseUrl',
+        '_hostAvailability',
+      ]) {
+        expect(source, isNot(contains(forbidden)), reason: '$path: $forbidden');
+      }
+    }
+  });
+
   test(
     'product and fixtures cannot restore dormant gateway enrollment seams',
     () {

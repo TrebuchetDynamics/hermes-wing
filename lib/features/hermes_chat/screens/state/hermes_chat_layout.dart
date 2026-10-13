@@ -51,6 +51,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             _connectionSavePending!.owner == _composerOwnerGeneration);
     final canConnect =
         !connecting && _isValidHermesBaseUrl(_connectionForm.baseUrl.text);
+    final onPhone = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final strings = AppLocalizations.of(context);
@@ -139,11 +140,18 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final mode in const [
-                      HermesConnectionMode.local,
-                      HermesConnectionMode.ssh,
-                      HermesConnectionMode.remote,
-                    ])
+                    for (final mode
+                        in onPhone
+                            ? const [
+                                HermesConnectionMode.ssh,
+                                HermesConnectionMode.remote,
+                                HermesConnectionMode.local,
+                              ]
+                            : const [
+                                HermesConnectionMode.local,
+                                HermesConnectionMode.ssh,
+                                HermesConnectionMode.remote,
+                              ])
                       ChoiceChip(
                         key: ValueKey('hermes-connection-mode-${mode.name}'),
                         selected:
@@ -172,6 +180,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         label: Text(
                           mode == HermesConnectionMode.remote
                               ? strings.chatLayoutConnectionPrimaryRemoteLabel
+                              : mode == HermesConnectionMode.local && onPhone
+                              ? strings.enrollInstallOnPhoneAction
                               : _connectionModeLabel(strings, mode),
                         ),
                       ),

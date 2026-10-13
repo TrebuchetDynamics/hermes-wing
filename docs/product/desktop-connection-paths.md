@@ -145,9 +145,15 @@ removes default computer/QR pairing promotions while retaining explicit legacy
 handoffs and unchanged Local setup. Its Linux-hosted widget checks are not native
 Android, installation or managed-SSH qualification. See [enrollment](enrollment.md).
 
-The existing Add Hermes form groups three primary choices in this order: **Local**, **SSH**
-and **Remote**. Remote contains **Remote HTTPS** and **VPN / NetBird /
+The Add Hermes connection editor uses **SSH**, **Remote**, then
+**Use this phone (Termux)** on native Android, matching welcome's on-phone
+distinction. Linux and web retain **Local**, **SSH**, then **Remote**. The
+Termux choice retains the manual guide and fixed same-phone loopback endpoint;
+it is not computer-local access or an installer. Remote contains **Remote HTTPS** and **VPN / NetBird /
 Tailscale** subchoices. Selecting Remote preserves an already selected VPN mode.
+The [Android editor receipt](../quality/android-connection-editor-order.md)
+records Linux-hosted production-widget regressions at compact/wide widths and
+200% text, not native Android or live SSH/Termux qualification.
 The [connection layout](../../lib/features/hermes_chat/screens/state/hermes_chat_layout.dart)
 and [English copy](../../lib/l10n/app_en.arb) define the presentation.
 The [auth-recovery regression](../../test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart)
@@ -189,7 +195,8 @@ recovery. Optional management failure must not gate a valid Agent connection. Mi
 features, not a reason to require Wing Link.
 
 The required product outcome is three primary entry paths: **Local**, **SSH** and
-**Remote**. Retain VPN connectivity within Remote rather than removing it.
+**Remote**, with the Android adaptation **SSH**, **Remote**, then explicit
+**on-phone Termux**. Retain VPN connectivity within Remote rather than removing it.
 Reuse current setup, enrollment, endpoint storage and channel contracts.
 
 The implemented managed-SSH slice uses native Dart TCP forwarding to an

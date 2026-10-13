@@ -35,11 +35,16 @@ class _MetadataDiscovery extends LocalHermesHomeDiscovery {
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
-  for (final width in [390.0, 1280.0]) {
-    testWidgets('primary paths and cancel retain production owner at $width', (
+  for (final (platform, textScale, width) in [
+    for (final platform in [TargetPlatform.linux, TargetPlatform.android])
+      for (final textScale in [1.0, 2.0])
+        for (final width in [390.0, 1280.0]) (platform, textScale, width),
+  ]) {
+    testWidgets('primary paths retain owner: $platform $width $textScale', (
       tester,
     ) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      debugDefaultTargetPlatformOverride = platform;
+      final android = platform == TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
       tester.view.physicalSize = Size(width, 1000);
       tester.view.devicePixelRatio = 1;
@@ -132,6 +137,12 @@ void main() {
             hermesTextToSpeechServiceProvider.overrideWithValue(null),
           ],
           child: MaterialApp.router(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(textScale)),
+              child: child!,
+            ),
             routerConfig: router,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -148,15 +159,18 @@ void main() {
         matching: find.byType(ChoiceChip),
       );
       expect(tester.widgetList<ChoiceChip>(primary).map((w) => w.key), [
-        const ValueKey('hermes-connection-mode-local'),
+        if (!android) const ValueKey('hermes-connection-mode-local'),
         const ValueKey('hermes-connection-mode-ssh'),
         const ValueKey('hermes-connection-mode-remote'),
+        if (android) const ValueKey('hermes-connection-mode-local'),
       ]);
       expect(
         tester
             .widgetList<ChoiceChip>(primary)
             .map((w) => (w.label as Text).data),
-        ['Local', 'SSH', 'Remote'],
+        android
+            ? ['SSH', 'Remote', 'Use this phone (Termux)']
+            : ['Local', 'SSH', 'Remote'],
       );
       expect(
         (tester.widget<ChoiceChip>(_key('hermes-remote-transport-remote')).label
@@ -208,35 +222,49 @@ void main() {
         findsNothing,
       );
       await _keyboardActivate(tester, 'hermes-connection-mode-local');
-      expect(find.text('Directory found — discovery only'), findsOneWidget);
-      expect(_key('platform-local-choose-home'), findsOneWidget);
-      expect(_key('hermes-open-local-setup'), findsNothing);
-      await tester.ensureVisible(_key('platform-local-advanced-endpoint'));
-      await tester.tap(_key('platform-local-advanced-endpoint'));
-      await tester.pumpAndSettle();
-      final field = tester.widget<TextField>(_key('hermes-base-url-field'));
-      expect(field.controller!.text, 'http://127.0.0.1:8642');
-      expect(channel.state.connectedBaseUrl, 'https://example.invalid');
-      // The form's loopback default does not retarget the active owner.
-      await tester.enterText(
-        _key('hermes-base-url-field'),
-        'https://other.example.invalid',
-      );
-      expect(_key('hermes-primary-connection-modes'), findsOneWidget);
-      unawaited(router.push<void>(AppRoutes.localSetup));
-      await tester.pumpAndSettle();
-      expect(_key('platform-local-home-status'), findsOneWidget);
-      expect(channel.state, same(owner));
-      expect(requests, before);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
       expect(
         tester
-            .widget<TextField>(_key('hermes-base-url-field'))
-            .controller!
-            .text,
-        'https://other.example.invalid',
+            .widget<ChoiceChip>(_key('hermes-connection-mode-local'))
+            .selected,
+        isTrue,
       );
+      if (android) {
+        expect(_key('platform-local-termux-docs'), findsOneWidget);
+        await _keyboardActivate(tester, 'platform-local-skip-guide');
+        expect(find.text('http://127.0.0.1:8642'), findsOneWidget);
+        expect(_key('hermes-base-url-field'), findsNothing);
+        expect(_key('platform-local-choose-home'), findsNothing);
+      } else {
+        expect(find.text('Directory found — discovery only'), findsOneWidget);
+        expect(_key('platform-local-choose-home'), findsOneWidget);
+        expect(_key('hermes-open-local-setup'), findsNothing);
+        await tester.ensureVisible(_key('platform-local-advanced-endpoint'));
+        await tester.tap(_key('platform-local-advanced-endpoint'));
+        await tester.pumpAndSettle();
+        final field = tester.widget<TextField>(_key('hermes-base-url-field'));
+        expect(field.controller!.text, 'http://127.0.0.1:8642');
+        expect(channel.state.connectedBaseUrl, 'https://example.invalid');
+        // The form's loopback default does not retarget the active owner.
+        await tester.enterText(
+          _key('hermes-base-url-field'),
+          'https://other.example.invalid',
+        );
+        expect(_key('hermes-primary-connection-modes'), findsOneWidget);
+        unawaited(router.push<void>(AppRoutes.localSetup));
+        await tester.pumpAndSettle();
+        expect(_key('platform-local-home-status'), findsOneWidget);
+        expect(channel.state, same(owner));
+        expect(requests, before);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<TextField>(_key('hermes-base-url-field'))
+              .controller!
+              .text,
+          'https://other.example.invalid',
+        );
+      }
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.text('Canonical owner history'), findsOneWidget);

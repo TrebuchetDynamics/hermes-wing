@@ -307,6 +307,18 @@ needs its own exact capability, ownership and qualification evidence.
   owner and M1-SAVED-ENDPOINT-EDIT-NATIVE; do not repeat their delivered subsets.
   See [current verification](docs/test-plan.md#connection-path-verification).
 
+- [ ] **VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY** — Goal: DIAGNOSTICS-RECOVERY. Section: Needs decision.
+  Qualify exact advertised atomic restore authority before native recovery.
+  Sources: [accepted continuation](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview),
+  [contract trace](docs/quality/diagnostics-backup-contract.md).
+  Scope: validate an exact advertised Agent recovery operation and its profile,
+  archive, revision, rollback and activation boundaries before implementing a Wing caller.
+  Acceptance: authenticated secret-safe operation identity and all-resource rollback
+  must be established; separately approved native target checks must prove recovery.
+  Dependencies: DOC-DIAGNOSTICS-BACKUP-CONTRACT is complete. Blocked by missing
+  authoritative atomic restore contract and separately approved live recovery access.
+  Do not patch Agent, execute backup/import, expose secrets or replace its authority.
+
 - [ ] **DOC-DESKTOP-UNINSTALL-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Next. Map one Linux uninstall and retained-state evidence gap.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).

@@ -7401,6 +7401,16 @@
     },
     {
       "depends_on": [
+        "DOC-DIAGNOSTICS-BACKUP-CONTRACT"
+      ],
+      "goal": "DIAGNOSTICS-RECOVERY",
+      "id": "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify exact advertised atomic restore authority before native recovery"
+    },
+    {
+      "depends_on": [
         "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE"
       ],
       "goal": "M4",

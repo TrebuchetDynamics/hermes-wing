@@ -3,6 +3,28 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('obsolete Linux revoke/re-pair product journey cannot return', () {
+    expect(
+      File(
+        'integration_test/linux_live_security_recovery_test.dart',
+      ).existsSync(),
+      isFalse,
+    );
+    final runner = File(
+      'scripts/run_linux_live_security_e2e.sh',
+    ).readAsStringSync();
+    for (final forbidden in [
+      'linux_live_security_recovery_test.dart',
+      'WING_LIVE_',
+      'WING_LINK_STATE',
+      'WING_HERMES_HOME',
+      'xvfb-run',
+      'flutter test',
+    ]) {
+      expect(runner, isNot(contains(forbidden)), reason: forbidden);
+    }
+  });
+
   test(
     'Linux Agent features cannot restore retained service prerequisites',
     () {

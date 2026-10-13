@@ -2,6 +2,113 @@
 
 > Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
 
+## Current public browser regression closure — t_ff373dd7
+
+This section supersedes the historical entry/optional-pairing claims below.
+It advances `CONNECTION-LINK-REMOVAL` / `CONNECTION-PATHS`, not their closure.
+Only this receipt and the [six-case browser test](../../playwright/tests/regression/direct-first-run.spec.mjs)
+changed. Production, fixtures, configs, dependencies, Agent references and ledger
+are unchanged; no user state or credential migration is involved.
+
+### Admission and source
+
+The original startup guard ran successfully before any edit or test:
+
+```text
+python3 /home/xel/git/gormes/hermes-toolset/skills/autowork/scripts/pass_workspace.py --manifest /home/xel/.hermes/profiles/wing/autowork/pass-4256d7cb4183e49e-4512f94bcae24ae2b2a17aabe5e5582d.json --manifest-sha256 be6f9e77f1f6080d0c88443ce7001de023d8b8a1a02d3d90c58152ab1198e33c --workspace /home/xel/.hermes/cache/scratch/autowork-passes/4256d7cb4183e49e-4512f94bcae24ae2b2a17aabe5e5582d
+```
+
+Outcome: `worker_start_admitted`; clean detached snapshot at
+`a8f59ecad082f8e6c28eb93b358a521a94b0bef8`. Original tool history, not a later
+replay, establishes admission. Candidate identity is this base plus the owned
+test SHA256 `764116db6ae99da4b60b40f06c5cd21f1358b463cd3199100cf0cc71f9b33b18`.
+Fresh compiled `main.dart.js` SHA256:
+`4a0bf0fead7c5e96fd1f7e005207475b233eac2a93277e41e779f944114ee598`.
+`pubspec.lock` SHA256: `f089602c321af4a65d6f1dc70b6adef724079bedc8e4f1d0496f7b8e22641c89`;
+`package-lock.json`: `f32c4b4d226bf6cef1a1f66733d4c2e065e0656d1223e89f17ceb68f42429b63`.
+The finish gate's exact local commit/ref is recorded in the native card handoff;
+the receipt itself is not a compilation input.
+
+### RED → GREEN and acceptance
+
+Original RED: a fresh release `main_e2e.dart` build followed by the unmodified
+suite failed all six cases at old line 54: no public **Add Hermes** button in the
+empty state. It now renders **Welcome to Hermes Wing**. The obsolete optional
+pairing action is also absent in Chromium, not a hidden control to activate.
+
+Decision: use the delivered public welcome actions, not synthetic connect hooks.
+**Get Started** selects Local, **Connect via SSH** selects SSH, and **Connect to
+Remote Hermes** selects Remote. Tab/Space reaches those actions, chips, form
+fields and explicit submission/retry at both 390 and 1280px (height 1100px).
+Existing contact activation still uses a click; this is not an entirely
+keyboard-only session journey or screen-reader qualification.
+
+The SSH-entry cases explicitly assert **Managed SSH is not available in this
+browser. Use Wing on Android or desktop.**, no URL textbox and no submit button,
+then deliberately select Remote before testing direct authentication. Their
+receipts record `authMode: Remote`; they do not fabricate an SSH tunnel. Local
+uses the browser's manual loopback Agent form, not native Hermes-home discovery.
+Remote retains its nested VPN / NetBird / Tailscale choice.
+
+All six cases retain the simulated 401, redacted private response, exactly one
+denied attempt and no automatic retry during the existing 500ms observation,
+then explicit retry, online contact and exact canonical history for
+`synthetic-restoration-000`. Each records zero Agent mutations, management
+requests and page errors. The existing matrix observer supplies fail-closed
+management denial and broader mutation detection; the original legacy-route
+prefix detector remains. Fixture-reset POSTs use the test request client, not
+product traffic. `/enroll` and its direct form both reject QR, pairing paste,
+use-another-computer and optional-pairing promotion. Two unchanged adjacent
+browser-surfaces entry/enrollment cases also pass.
+
+### Executed commands
+
+Linux: Flutter 3.44.2 / Dart 3.12.2, Node 26.7.0 (not documented Node 22),
+Chrome for Testing 151.0.7922.34. No package/tool upgrades were made. Initial
+Playwright invocation failed before test discovery because this isolated
+snapshot lacked `@playwright/test`; `timeout 5m npm ci --offline --ignore-scripts`
+restored the locked three packages and reported zero vulnerabilities.
+
+```bash
+timeout 8m flutter build web --release -t lib/main_e2e.dart --no-wasm-dry-run
+PORT=18867 HERMES_E2E_PORT=18868 timeout 40m node serve_web.mjs
+node --check playwright/tests/regression/direct-first-run.spec.mjs
+WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=/home/xel/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 12m npx --no-install playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs --workers=1 --output=build/t_ff373dd7/red
+WING_APP_URL=http://127.0.0.1:18867/ CHROME_EXECUTABLE=/home/xel/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 12m npx --no-install playwright test --config=playwright.config.mjs playwright/tests/regression/direct-first-run.spec.mjs playwright/tests/regression/browser-surfaces.spec.mjs --grep 'fresh public|Hermes empty state|enrollment exposes direct' --workers=1 --output=build/t_ff373dd7/green
+timeout 8m flutter test --concurrency=1 test/features/enrollment test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/tooling/hermes_domain_authority_contract_test.dart test/tooling/enrollment_retirement_contract_test.dart test/tooling/link_localization_retirement_contract_test.dart
+timeout 5m flutter analyze
+git diff --check -- playwright/tests/regression/direct-first-run.spec.mjs docs/quality/direct-first-run.md
+```
+
+Results: fresh initial compile 43.0s; existing Cupertino-font warning retained.
+Original RED: six failures, no retries. First repaired run: six passed in 40.3s.
+Final combined browser run: eight passed in 43.5s, no retries. Required Flutter
+suite: 54 passed; analyzer: no issues (6.1s). Node syntax and scoped whitespace
+checks passed. Compact browser contexts, six per-case receipts and results were
+retained under workspace `.pi/t_ff373dd7/` before owned build-output cleanup.
+The finish gate repeats required checks in sequence against the owned candidate.
+These are reported tool durations, not measured total task/review time; monetary
+cost and review duration are unknown. No visual inspection claim is made here.
+
+Additional outside-scope check: the same Flutter command with
+`test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart`
+added returned 64 passes and one failure: **typed TLS failure gives trust recovery
+guidance**, line 220 still expects **Re-pair explicitly**. Unchanged English
+source now requires certificate/identity verification through a trusted
+administrator before reconnecting. No test was weakened or production copy
+changed. Coordinator dependency: reconcile that stale TLS expectation in its
+own admitted slice before claiming the combined broader suite passes.
+
+Implemented: six tests match current public entry and absence of legacy promotion.
+Qualified: deterministic Chromium/Linux and named Flutter tests only. Delivered:
+not integrated or published by this worker; independent native review of the exact
+finish commit is pending. `CONNECTION-LINK-REMOVAL` stays in progress. Native SSH,
+physical Android/Termux, native Local discovery, live authenticated Agent,
+provider generation, packaging/removal, broad release gate and final milestone
+acceptance remain **NOT_CHECKED**. The coordinator owns the next existing
+retirement/qualification slice and the out-of-scope TLS test dependency.
+
+## Historical first-run implementation — t_98b85c1b
 
 Card `t_98b85c1b`, goal task `M1-DIRECT-FIRST-RUN`. This qualifies a bounded
 connection prerequisite, not M1 or the whole connection/authentication matrix.

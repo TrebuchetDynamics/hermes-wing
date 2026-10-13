@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { APP_URL as APP, enableFlutterAccessibility } from '../../support/flutter_semantics.mjs';
+import { observeMatrixPage, assertNoMatrixTraffic } from '../../support/connection_production_matrix_fixture.mjs';
 
 test.describe.configure({ retries: 0 });
 test.setTimeout(180000);
@@ -31,14 +32,14 @@ for (const width of [390, 1280]) {
   for (const mode of ['Local', 'SSH', 'Remote']) {
     test(`fresh public ${mode} Agent-only auth retry at ${width}px`, async ({ page, request }, info) => {
       expect((await request.post(CONTROL)).ok()).toBeTruthy();
-      const reads = [], mutations = [], management = [], errors = [];
-      page.on('pageerror', e => errors.push(e.message));
+      const observed = await observeMatrixPage(page);
+      const reads = [];
       page.on('request', r => {
         const p = new URL(r.url()).pathname;
-        if (/^\/(health|v1\/capabilities|api\/)/.test(p)) {
-          (r.method() === 'GET' ? reads : mutations).push(`${r.method()} ${p}`);
+        if (r.method() === 'GET' && /^\/(health|v1\/capabilities|api\/)/.test(p)) {
+          reads.push(`${r.method()} ${p}`);
         }
-        if (/^\/v1\/(enroll|pair|devices|host|profiles)/.test(p)) management.push(`${r.method()} ${p}`);
+        if (/^\/v1\/(enroll|pair|devices|host|profiles)/.test(p)) observed.management.push(`${r.method()} ${p}`);
       });
       let reject = true, attempts = 0;
       await page.route('**/v1/capabilities', async route => {
@@ -51,14 +52,21 @@ for (const width of [390, 1280]) {
       await page.waitForFunction(() => typeof globalThis.wingE2EReduceMotion === 'function');
       await page.evaluate(() => globalThis.wingE2EReduceMotion());
       await enableFlutterAccessibility(page, { delay: 0 });
-      await expect(page.getByRole('button', { name: 'Add Hermes', exact: true }).last()).toBeVisible();
-      await activate(page, 'button', 'Add Hermes');
+      await expect(page.getByRole('heading', { name: 'Welcome to Hermes Wing', exact: true })).toBeVisible();
+      const entry = mode === 'Local' ? 'Get Started' : mode === 'SSH' ? 'Connect via SSH' : 'Connect to Remote Hermes';
+      await activate(page, 'button', entry);
       await expect(page.getByRole('checkbox', { name: 'Local', exact: true })).toBeVisible();
       expect(reads).toEqual([]);
-      expect(management).toEqual([]);
-      await activate(page, 'checkbox', mode);
+      assertNoMatrixTraffic(observed);
       await expect(page.getByRole('checkbox', { name: mode, exact: true })).toBeChecked();
-      if (mode === 'SSH') await expect(page.getByText(/Wing never runs arbitrary SSH commands or stores SSH keys/)).toBeVisible();
+      if (mode === 'SSH') {
+        await expect(page.getByText('Managed SSH is not available in this browser. Use Wing on Android or desktop.', { exact: true })).toBeVisible();
+        await expect(page.getByRole('textbox', { name: /^Hermes Agent URL/ })).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Add Hermes', exact: true })).toHaveCount(0);
+        // Chromium qualifies explicit direct fallback, not a native SSH tunnel.
+        await activate(page, 'checkbox', 'Remote');
+        await expect(page.getByRole('checkbox', { name: 'Remote', exact: true })).toBeChecked();
+      }
       if (mode === 'Remote') {
         await activate(page, 'checkbox', 'VPN / NetBird / Tailscale');
         await expect(page.getByRole('checkbox', { name: 'Remote', exact: true })).toBeChecked();
@@ -79,25 +87,23 @@ for (const width of [390, 1280]) {
       await expect(page.getByLabel(/Synthetic direct host.*online/)).toBeVisible();
       await page.getByLabel(/Synthetic direct host.*online/).click();
       await expect(page.getByRole('group', { name: /Canonical history for synthetic-restoration-000\.$/ })).toBeVisible();
-      expect(management).toEqual([]);
-      expect(mutations).toEqual([]);
+      assertNoMatrixTraffic(observed);
       // Default enrollment does not promote legacy pairing.
       await page.evaluate(() => { location.hash = '#/enroll'; });
       await expect(page.getByRole('heading', { name: 'Welcome to Hermes Wing', exact: true })).toBeVisible();
-      await activate(page, 'button', 'Connect to Remote Hermes');
-      await expect(page.getByRole('checkbox', { name: 'SSH', exact: true })).toBeVisible();
-      const optional = page.getByRole('button', { name: 'Optional setup and pairing', exact: true });
-      await focus(page, optional);
-      await page.mouse.move(1, 1);
-      await page.waitForTimeout(500);
-      expect(await optional.evaluate(el => el === document.activeElement || el.contains(document.activeElement))).toBeTruthy();
-      await page.screenshot({ path: info.outputPath(`optional-${mode}-${width}.png`) });
-      await activate(page, 'button', 'Optional setup and pairing');
-      await expect(page.getByRole('heading', { name: 'Welcome to Hermes Wing', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Optional setup and pairing', exact: true })).toHaveCount(0);
       await expect(page.getByRole('button', { name: /^I have a QR code or pairing link/ })).toHaveCount(0);
       await expect(page.getByRole('button', { name: /Use another computer/ })).toHaveCount(0);
-      expect(errors).toEqual([]);
-      await writeFile(info.outputPath('receipt.json'), JSON.stringify({ width, mode, reads, mutations, management, attempts, errors, managedSsh: 'not implemented', liveAgent: 'NOT_CHECKED', native: 'NOT_CHECKED' }, null, 2));
+      await expect(page.getByRole('button', { name: 'Paste pairing link', exact: true })).toHaveCount(0);
+      await activate(page, 'button', 'Connect to Remote Hermes');
+      await expect(page.getByRole('checkbox', { name: 'SSH', exact: true })).toBeVisible();
+      await expect(page.getByRole('checkbox', { name: 'Remote', exact: true })).toBeChecked();
+      await expect(page.getByRole('button', { name: 'Optional setup and pairing', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /^I have a QR code or pairing link/ })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /Use another computer/ })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Paste pairing link', exact: true })).toHaveCount(0);
+      assertNoMatrixTraffic(observed);
+      await writeFile(info.outputPath('receipt.json'), JSON.stringify({ width, mode, entry, authMode: mode === 'SSH' ? 'Remote' : mode, reads, ...observed, attempts, managedSsh: 'unavailable in Chromium', localDiscovery: 'NOT_CHECKED', liveAgent: 'NOT_CHECKED', native: 'NOT_CHECKED' }, null, 2));
     });
   }
 }

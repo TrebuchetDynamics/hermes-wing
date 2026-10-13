@@ -363,6 +363,11 @@
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/persona-completion-evidence.md",
+          "result": "pass"
         }
       ],
       "id": "PERSONA",
@@ -6698,14 +6703,6 @@
     },
     {
       "depends_on": [],
-      "goal": "PERSONA",
-      "id": "DOC-PERSONA-EVIDENCE",
-      "section": "Now",
-      "status": "open",
-      "title": "Verify persona whitespace and completion receipts"
-    },
-    {
-      "depends_on": [],
       "goal": "M1",
       "id": "PARITY-LIVE-WORKFLOW",
       "section": "Now",
@@ -7900,6 +7897,14 @@
       "section": "Done",
       "status": "done",
       "title": "Compare grouped-recents ownership separately from profile-footer composition"
+    },
+    {
+      "depends_on": [],
+      "goal": "PERSONA",
+      "id": "DOC-PERSONA-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Verify persona whitespace and completion receipts"
     },
     {
       "depends_on": [],

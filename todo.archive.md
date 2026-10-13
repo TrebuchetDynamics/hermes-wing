@@ -5004,3 +5004,21 @@ Source section: Now / Next
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
 <!-- end verified Office reference receipt -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-PERSONA-EVIDENCE** — Goal: PERSONA. Section: Now. Verify persona whitespace and completion receipts.
+  Completion: Source-bound receipt at `419bcc5d`, independently approved on the original card; 92 persona and 27 decoder/client tests passed on its isolated snapshot. See [persona evidence](docs/quality/persona-completion-evidence.md). PERSONA live/native/full-reference qualification remains open.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [accepted port outcome](ROADMAP.md#flutter-port-execution-roadmap),
+  [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Existing profile decoder/editor, actual-router tests and receipts; no live saves or duplicate accepted repairs.
+  Acceptance: Match current-source hashes to same-card read/save/conflict/cancel receipts; run or add the missing app-level oracle if no matching receipt exists.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+<!-- end verified persona evidence receipt -->

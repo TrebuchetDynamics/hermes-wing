@@ -5022,3 +5022,17 @@ Source section: Now / Next
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
 <!-- end verified persona evidence receipt -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-SCHEDULE-INVENTORY-EVIDENCE** — Goal: M4. Section: Next. Attribute one scheduled-job inventory failure journey.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Map Schedules owner-change and denied-read outcomes to matching widget/browser receipts or one missing oracle. Preserve Tools qualification and read-only inventory.
+  Dependencies: DOC-M4-INVENTORY-EVIDENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.

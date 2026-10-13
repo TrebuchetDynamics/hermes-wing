@@ -7,6 +7,11 @@
           "kind": "inspection",
           "ref": "ROADMAP.md#m4--discover-and-administer-supported-agent-work",
           "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/schedules-inventory-evidence.md",
+          "result": "pass"
         }
       ],
       "id": "M4",
@@ -15,7 +20,8 @@
       "status": "partial",
       "tasks": [
         "DOC-M4-INVENTORY-EVIDENCE",
-        "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE"
+        "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE",
+        "VERIFY-M4-LIVE-INVENTORY"
       ],
       "title": "Qualify supported inventory and administration operation by operation"
     },
@@ -7014,16 +7020,6 @@
       "title": "Trace one schedule-delivery configuration operation"
     },
     {
-      "depends_on": [
-        "DOC-M4-INVENTORY-EVIDENCE"
-      ],
-      "goal": "M4",
-      "id": "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Attribute one scheduled-job inventory failure journey"
-    },
-    {
       "depends_on": [],
       "goal": "M5",
       "id": "DOC-M5-ANDROID-FIXTURE",
@@ -7412,6 +7408,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Owner: run the named-device Android death-to-completion qualification (physical device); agents prepare nothing further until then"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE"
+      ],
+      "goal": "M4",
+      "id": "VERIFY-M4-LIVE-INVENTORY",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify scheduled-job inventory on an authenticated native Agent target"
     },
     {
       "depends_on": [],
@@ -7825,6 +7831,16 @@
       "section": "Done",
       "status": "done",
       "title": "Map one Tools inventory journey to current-source evidence"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-INVENTORY-EVIDENCE"
+      ],
+      "goal": "M4",
+      "id": "DOC-M4-SCHEDULE-INVENTORY-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Attribute one scheduled-job inventory failure journey"
     },
     {
       "depends_on": [],

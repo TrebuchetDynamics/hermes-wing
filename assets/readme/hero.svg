@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="410" viewBox="0 0 1200 410" role="img" aria-labelledby="title desc">
   <title id="title">Control Hermes Agent from your phone</title>
-  <desc id="desc">Hermes Wing keeps conversations, tool activity, and approvals within reach on Android, web, and desktop.</desc>
+  <desc id="desc">DEMO DATA · SIMULATED SESSION. Authored illustration, not a live capture.</desc>
   <rect width="1200" height="410" rx="26" fill="#0c0e12"/>
   <path d="M670 32V378" stroke="#23262e"/>
   <g transform="translate(58 48)">
@@ -13,7 +13,7 @@
   <g transform="translate(708 32)">
     <rect width="438" height="346" rx="20" fill="#13151a" stroke="#30343b"/>
     <circle cx="24" cy="22" r="5" fill="#20e6e6"/>
-    <text x="40" y="15" dominant-baseline="hanging" fill="#c4c8cf" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="1.4">SESSION TRACE · HEALTHY</text>
+    <text x="40" y="15" dominant-baseline="hanging" fill="#c4c8cf" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="1.4">SIMULATED SESSION</text>
     <text x="414" y="15" dominant-baseline="hanging" text-anchor="end" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">ATTACHED</text>
     <path d="M0 44H438" stroke="#30343b"/><path d="M30 76V292" stroke="#30343b" stroke-width="2"/>
     <circle cx="30" cy="86" r="8" fill="#13151a" stroke="#20e6e6" stroke-width="2"/>
@@ -34,7 +34,7 @@
     <text x="390" y="291" dominant-baseline="hanging" text-anchor="end" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700">REPLY STREAMED</text>
   </g>
   <g transform="translate(58 373)">
-    <text x="0" y="0" dominant-baseline="hanging" fill="#5f6672" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.2">ALPHA · ANDROID + WEB + DESKTOP</text>
+    <text x="0" y="0" dominant-baseline="hanging" fill="#cbd1da" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="28">DEMO DATA · SIMULATED SESSION</text>
     <text x="1088" y="0" dominant-baseline="hanging" text-anchor="end" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">YOUR AGENT · WITHIN REACH</text>
   </g>
 </svg>

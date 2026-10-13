@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#070b14" />
     <meta
       name="description"
-      content="Hermes Wing is a mobile-first, cross-platform client for Hermes Agent sessions, streamed runs, approvals, profiles, and voice."
+      content="Connect your existing Hermes Agent from another screen. Hermes Wing is an alpha client; chat needs your own authenticated Agent and configured model."
     />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Hermes Wing — Hermes Agent everywhere" />
@@ -35,7 +35,7 @@
         </a>
         <div class="nav-links">
           <a href="#product">Product</a>
-          <a href="#architecture">How it works</a>
+          <a href="#connect">Connect</a>
           <a href="#status">Status</a>
         </div>
         <div class="nav-actions">
@@ -43,7 +43,7 @@
             class="button button-quiet"
             href="https://github.com/TrebuchetDynamics/hermes-wing"
           >GitHub</a>
-          <a class="button button-small" href="app/">Open web alpha</a>
+          <a class="button button-small" href="#connect">Connect my Agent</a>
         </div>
       </nav>
     </header>
@@ -55,29 +55,91 @@
           <h1 id="hero-title">Your agent.<br /><span>Within reach.</span></h1>
           <p class="hero-lede">
             Follow conversations, inspect tool activity, answer approval requests,
-            and talk to Hermes Agent from your phone or desktop.
+            and use your existing Hermes Agent from another screen.
           </p>
           <div class="hero-actions">
             <a
               class="button button-primary"
-              href="https://github.com/TrebuchetDynamics/hermes-wing#readme"
-            >Get started from source <span aria-hidden="true">→</span></a>
-            <a class="button button-secondary" href="app/">Try the web alpha</a>
+              href="#connect"
+            >Connect my Agent <span aria-hidden="true">→</span></a>
+            <a class="button button-secondary" href="app/">Preview the connection screen</a>
           </div>
           <p class="release-note">
             <strong>Alpha software.</strong> Source builds only—no signed downloads or
-            app-store release yet.
+            app-store release yet. Bring your own authenticated Agent and configured
+            provider/model; credits are not included. Previewing the form needs no credential.
           </p>
         </div>
 
-        <div class="hero-visual" aria-label="Hermes Wing live session trace">
+        <figure class="hero-visual" aria-label="Simulated Hermes Wing session illustration">
           <img
             src="assets/hero.svg"
             width="1200"
             height="410"
-            alt="Hermes Wing healthy session trace with capability negotiation, completed tool activity, and a streamed reply"
+            alt="DEMO DATA · SIMULATED SESSION: authored illustration of capability discovery, tool activity and a reply, not a live capture"
           />
+          <figcaption>DEMO DATA · SIMULATED SESSION — illustration, not a live capture.</figcaption>
+        </figure>
+      </section>
+
+      <section class="section shell" id="connect" aria-labelledby="connect-title">
+        <div class="section-heading">
+          <p class="eyebrow">Bring your own Agent</p>
+          <h2 id="connect-title">From connection to first reply.</h2>
         </div>
+        <ol class="connection-steps">
+          <li>
+            <h3>Open Wing on your chosen screen</h3>
+            <p><a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#build-and-open-the-client">Build a native Android/Linux client</a>,
+              or <a href="app/">open the web alpha</a>. Expect Welcome to Hermes Wing;
+              with an existing connection, use Add Hermes from Chat. Source builds
+              do not install Agent. Browser SSH and OAuth sign-in are unsupported.</p>
+          </li>
+          <li>
+            <h3>Prepare a compatible authenticated API</h3>
+            <p><a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server">Enable the Agent HTTP API</a>
+              and configure a strong Agent access token. A working CLI alone is not enough.
+              Wing reads <code>/v1/capabilities</code> (schema 1): exact session and
+              streaming operations (runs SSE or session chat), required grants and profile context
+              must match. Health or OpenAI-compatible chat alone is not Wing compatibility.
+              Configure the selected profile, provider and model in Agent.</p>
+          </li>
+          <li>
+            <h3>Choose a trusted connection</h3>
+            <p>Native Linux Local uses a prepared loopback Agent; discovery does not
+              start it. Android offers Connect via SSH, Connect to Remote Hermes,
+              then Use this phone (Termux). SSH verifies the host fingerprint and
+              still needs the separate Agent token. Same-phone installation is not
+              fully verified. <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#direct-agent-connection">Follow your native route</a>.</p>
+            <p>Remote browsers need trusted HTTPS and CORS explicitly allowing the
+              Wing website origin (for this hosted alpha, <code>https://trebuchetdynamics.github.io</code>).
+              Loopback refers to the browser's device, not your Agent host. Use the
+              <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#browser">browser guide</a>;
+              never disable certificate checks or open a public port to bypass setup.</p>
+          </li>
+          <li>
+            <h3>Connect deliberately, then send once</h3>
+            <p>Enter the approved endpoint and Agent token only in Wing's connection
+              form, never on this page or in a URL. It is not your provider API key.
+              Select the configured profile/conversation and model. Providers may
+              charge and process conversation data. Send: “Reply with one sentence
+              introducing yourself. Do not use any tools.”</p>
+            <p><strong>First-reply success:</strong> an assistant reply appears in
+              that conversation. Saving a connection or passing a probe alone does
+              not prove generation. <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#start-the-conversation">Complete the first-chat guide</a>.</p>
+          </li>
+        </ol>
+        <h3 id="connection-help">If connection or generation fails</h3>
+        <p>API disabled or unreachable? Check the listener and route from your
+          device with the administrator. Access denied? Confirm the endpoint and
+          Agent token, then retry explicitly or cancel. Browser rejected it? Check
+          HTTPS trust and the exact CORS origin, not a wildcard. Operation unavailable?
+          Ask for the exact supported Agent capability; there is no management fallback.
+          Connected without a reply? Check the configured provider/model and credits.</p>
+        <p><a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#need-help">Troubleshoot safely</a>
+          or <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#repair-a-saved-direct-connection">repair a saved connection</a>.
+          Keep drafts and working connections; Wing does not silently replay requests.
+          Never post credentials, private endpoints or conversations in an issue.</p>
       </section>
 
       <section class="proof-strip" aria-label="Hermes Wing capabilities">
@@ -113,12 +175,13 @@
               width="1200"
               height="760"
               loading="lazy"
-              alt="Hermes Wing showing a completed desktop run and a mobile approval request"
+              alt="DEMO DATA · SIMULATED SESSION: actual Wing UI showing a sample completed desktop run and mobile approval, not live synchronization"
             />
           </picture>
           <figcaption>
-            Deterministic fixture captures show the same Hermes session on
-            desktop and mobile, including a low-risk approval request.
+            DEMO DATA · SIMULATED SESSION. Actual app captures depict the same
+            sample scenario, including an approval request—not live-provider testing
+            or observed cross-device synchronization.
           </figcaption>
         </figure>
       </section>
@@ -167,7 +230,7 @@
                   width="1200"
                   height="340"
                   loading="lazy"
-                  alt="Hermes Wing connection flow: Wing Link setup and pairing, trusted HTTPS, fail-closed capabilities, Hermes sessions, SSE run events, and operator control"
+                  alt="Illustrated direct Agent connection: trusted HTTPS, fail-closed capabilities, Agent sessions, SSE run events and operator control"
                 />
               </picture>
             </figure>
@@ -210,22 +273,24 @@
             <p class="eyebrow">Project status</p>
             <h2 id="status-title">Useful today.<br />Still experimental.</h2>
             <p class="status-copy">
-              Android is the best-tested client. Web and Linux are alpha and
-              text-focused. Other desktop and Apple targets are build-tested, not a
-              supported release line.
+              Android, web and Linux are alpha paths. Simulated tests are not live
+              authentication or inference. Linux Local has native GTK simulated
+              checks; Android same-phone hosting and full-app real SSH remain
+              unverified. Other desktop and Apple runtime support is not verified
+              by the evidence reviewed. Desktop parity is a goal, not a guarantee.
             </p>
             <a
               class="text-link"
-              href="https://github.com/TrebuchetDynamics/hermes-wing#project-status"
+              href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#platform-evidence-and-limits"
             >Read the complete status and limits <span aria-hidden="true">→</span></a>
           </div>
           <div class="platform-table" role="table" aria-label="Platform status">
             <div role="row"><span role="cell">Android</span><span role="cell" class="status alpha">Experimental alpha</span></div>
             <div role="row"><span role="cell">Web</span><span role="cell" class="status alpha">Text-focused alpha</span></div>
             <div role="row"><span role="cell">Linux</span><span role="cell" class="status alpha">Text-focused alpha</span></div>
-            <div role="row"><span role="cell">Windows</span><span role="cell" class="status build">Build-tested</span></div>
-            <div role="row"><span role="cell">iOS</span><span role="cell" class="status build">Simulator build-tested</span></div>
-            <div role="row"><span role="cell">macOS</span><span role="cell" class="status build">Build-tested</span></div>
+            <div role="row"><span role="cell">Windows</span><span role="cell" class="status build">Runtime not verified</span></div>
+            <div role="row"><span role="cell">iOS</span><span role="cell" class="status build">Runtime not verified</span></div>
+            <div role="row"><span role="cell">macOS</span><span role="cell" class="status build">Runtime not verified</span></div>
           </div>
         </div>
       </section>
@@ -236,8 +301,8 @@
         <div class="hero-actions closing-actions">
           <a
             class="button button-primary"
-            href="https://github.com/TrebuchetDynamics/hermes-wing#readme"
-          >Build Hermes Wing <span aria-hidden="true">→</span></a>
+            href="#connect"
+          >Connect my Agent <span aria-hidden="true">→</span></a>
           <a class="button button-secondary" href="app/">Open web alpha</a>
         </div>
       </section>

@@ -145,10 +145,7 @@ async function captureProductFrames(browser) {
     clip: { x: 0, y: 0, width: 390, height: 720 },
     animations: "disabled",
   });
-  await Promise.all([
-    fs.writeFile(mobilePath, mobileBytes),
-    fs.writeFile(path.join(assets, "showcase-mobile.png"), mobileBytes),
-  ]);
+  await fs.writeFile(mobilePath, mobileBytes);
   await mobile.context.close();
 
   return { desktopPath, mobilePath };
@@ -162,6 +159,15 @@ async function composeShowcase(browser, desktopPath, mobilePath) {
   const page = await browser.newPage({
     viewport: { width: 1200, height: 760 },
   });
+  await page.setViewportSize({ width: 390, height: 764 });
+  await page.setContent(`<!doctype html><html lang="en"><style>
+    html,body{margin:0;background:#0c0e12;color:#f4f4f5}
+    p{margin:0;height:44px;display:flex;align-items:center;justify-content:center;font:700 13px Arial,sans-serif}
+    img{display:block;width:390px;height:720px}
+    </style><p>DEMO DATA · SIMULATED SESSION</p>
+    <img alt="Simulated mobile approval scenario" src="data:image/png;base64,${mobileBytes.toString("base64")}"></html>`);
+  await page.screenshot({ path: path.join(assets, "showcase-mobile.png") });
+  await page.setViewportSize({ width: 1200, height: 760 });
   await page.setContent(`<!doctype html>
 <html><head><style>
 *{box-sizing:border-box}html,body{margin:0;width:1200px;height:760px;overflow:hidden}
@@ -181,15 +187,15 @@ h1{position:absolute;left:42px;top:58px;margin:0;font-size:34px;line-height:1.1;
 .proof span:before{content:"";display:inline-block;width:6px;height:6px;margin-right:8px;border-radius:50%;background:#3b82f6}
 .caption{position:absolute;left:42px;bottom:35px;color:#8f96a3;font:13px ui-monospace,monospace;letter-spacing:.25px}
 </style></head><body>
-<div class="eyebrow">CURRENT UI · REPRODUCIBLE PRODUCT CAPTURE</div>
+<div class="eyebrow">DEMO DATA · SIMULATED SESSION</div>
 <h1>Follow the run. Step in from your phone.</h1>
 <div class="meta">ONE FLUTTER CLIENT</div>
 <div class="label desktop-label">DESKTOP · GATEWAY READINESS</div>
 <div class="label mobile-label">MOBILE · APPROVAL</div>
 <div class="frame desktop"><img alt="" src="data:image/png;base64,${desktopBytes.toString("base64")}"></div>
 <div class="frame mobile"><img alt="" src="data:image/png;base64,${mobileBytes.toString("base64")}"></div>
-<div class="proof"><span>LIVE RUN</span><span>TOOL ACTIVITY</span><span>APPROVAL ON MOBILE</span></div>
-<div class="caption">The same Hermes session on desktop and mobile.</div>
+<div class="proof"><span>SIMULATED RUN</span><span>TOOL ACTIVITY</span><span>APPROVAL ON MOBILE</span></div>
+<div class="caption">Two views of the same sample scenario — not live synchronization.</div>
 </body></html>`);
   await page.screenshot({ path: path.join(assets, "showcase.png") });
   await page.close();
@@ -198,7 +204,7 @@ h1{position:absolute;left:42px;top:58px;margin:0;font-size:34px;line-height:1.1;
 function heroSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="410" viewBox="0 0 1200 410" role="img" aria-labelledby="title desc">
   <title id="title">Control Hermes Agent from your phone</title>
-  <desc id="desc">Hermes Wing keeps conversations, tool activity, and approvals within reach on Android, web, and desktop.</desc>
+  <desc id="desc">DEMO DATA · SIMULATED SESSION. Authored illustration, not a live capture.</desc>
   <rect width="1200" height="410" rx="26" fill="#0c0e12"/>
   <path d="M670 32V378" stroke="#23262e"/>
   <g transform="translate(58 48)">
@@ -211,7 +217,7 @@ function heroSvg() {
   <g transform="translate(708 32)">
     <rect width="438" height="346" rx="20" fill="#13151a" stroke="#30343b"/>
     <circle cx="24" cy="22" r="5" fill="#20e6e6"/>
-    <text x="40" y="15" dominant-baseline="hanging" fill="#c4c8cf" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="1.4">SESSION TRACE · HEALTHY</text>
+    <text x="40" y="15" dominant-baseline="hanging" fill="#c4c8cf" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="1.4">SIMULATED SESSION</text>
     <text x="414" y="15" dominant-baseline="hanging" text-anchor="end" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">ATTACHED</text>
     <path d="M0 44H438" stroke="#30343b"/><path d="M30 76V292" stroke="#30343b" stroke-width="2"/>
     <circle cx="30" cy="86" r="8" fill="#13151a" stroke="#20e6e6" stroke-width="2"/>
@@ -232,7 +238,7 @@ function heroSvg() {
     <text x="390" y="291" dominant-baseline="hanging" text-anchor="end" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700">REPLY STREAMED</text>
   </g>
   <g transform="translate(58 373)">
-    <text x="0" y="0" dominant-baseline="hanging" fill="#5f6672" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.2">ALPHA · ANDROID + WEB + DESKTOP</text>
+    <text x="0" y="0" dominant-baseline="hanging" fill="#cbd1da" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="28">DEMO DATA · SIMULATED SESSION</text>
     <text x="1088" y="0" dominant-baseline="hanging" text-anchor="end" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">YOUR AGENT · WITHIN REACH</text>
   </g>
 </svg>\n`;
@@ -241,10 +247,10 @@ function heroSvg() {
 function runtimeFlowSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
   <title id="title">Hermes Wing trusted runtime flow</title>
-  <desc id="desc">Wing Link ends at setup and pairing. Wing then reviews a trusted HTTPS origin, fails closed on missing capabilities, opens a Hermes session, streams SSE events, and leaves approval to the operator.</desc>
+  <desc id="desc">Illustrated direct Agent flow, not an observed live session. Wing reviews HTTPS, checks capabilities, and streams Agent events under operator control.</desc>
   <rect width="1200" height="340" rx="26" fill="#111315"/>
   <text x="52" y="34" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="31">Hermes owns the agent. Wing stays in reach.</text>
-  <text x="52" y="82" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.2">WING LINK: INSTALL + PAIR  ·  HTTPS API: COMMANDS  ·  SSE: RUN EVENTS</text>
+  <text x="52" y="82" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.2">DIRECT AGENT CONNECTION  ·  HTTPS API: COMMANDS  ·  SSE: RUN EVENTS</text>
   <path d="M184 181H1016" stroke="#363b43" stroke-width="4"/>
   <g fill="#3b82f6"><path d="M244 181l-12-8v16z"/><path d="M466 181l-12-8v16z"/><path d="M688 181l-12-8v16z"/><path d="M910 181l-12-8v16z"/></g>
   <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" text-anchor="middle">
@@ -254,17 +260,17 @@ function runtimeFlowSvg() {
     <g transform="translate(810 181)"><circle r="43" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/><path d="M-26 4h14l9-25 14 42 10-25h13" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text y="63" fill="#f4f4f5" font-size="17" font-weight="700">SSE run events</text><text y="86" fill="#8f96a3" font-size="14">runs, tools, usage</text></g>
     <g transform="translate(1032 181)"><circle r="43" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/><path d="M-20 0l13 13 29-31" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round"/><text y="63" fill="#f4f4f5" font-size="17" font-weight="700">Approve or stop</text><text y="86" fill="#8f96a3" font-size="14">operator decides</text></g>
   </g>
-  <text x="52" y="316" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5">Wing Link ends at setup and pairing. Hermes owns profiles, providers, sessions, tools, schedules, and messages.</text>
+  <text x="52" y="316" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5">ILLUSTRATED FLOW · DEMO DATA · SIMULATED SESSION — Hermes owns assistant state.</text>
 </svg>\n`;
 }
 
 function runtimeFlowMobileSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="780" viewBox="0 0 600 780" role="img" aria-labelledby="title desc">
   <title id="title">Hermes Wing trusted runtime flow</title>
-  <desc id="desc">Wing Link ends at setup and pairing. Wing reviews HTTPS, fails closed on missing capabilities, and streams Hermes SSE events under operator control.</desc>
+  <desc id="desc">Illustrated direct Agent flow, not an observed live session. Wing reviews HTTPS, fails closed on missing capabilities and streams Agent events.</desc>
   <rect width="600" height="780" rx="28" fill="#111315"/>
   <text x="40" y="52" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="31">Hermes owns the agent.</text>
-  <text x="40" y="90" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.1">WING LINK: INSTALL + PAIR</text>
+  <text x="40" y="90" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.1">DIRECT AGENT CONNECTION</text>
   <text x="40" y="114" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="1.1">HTTPS COMMANDS · SSE EVENTS</text>
   <path d="M86 172V642" stroke="#363b43" stroke-width="4"/>
   <g fill="#3b82f6"><path d="M86 236l-8-12h16z"/><path d="M86 348l-8-12h16z"/><path d="M86 460l-8-12h16z"/><path d="M86 572l-8-12h16z"/></g>
@@ -275,7 +281,7 @@ function runtimeFlowMobileSvg() {
     <g transform="translate(86 524)"><circle r="40" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/><path d="M-25 4h13l9-24 13 40 10-24h12" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><text x="72" y="-3" fill="#f4f4f5" font-size="23" font-weight="700">SSE run events</text><text x="72" y="28" fill="#8f96a3" font-size="17">runs, tools, and usage</text></g>
     <g transform="translate(86 636)"><circle r="40" fill="#1b1d21" stroke="#3b82f6" stroke-width="2"/><path d="M-19 0l12 12 28-30" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round"/><text x="72" y="-3" fill="#f4f4f5" font-size="23" font-weight="700">Approve or stop</text><text x="72" y="28" fill="#8f96a3" font-size="17">the operator decides</text></g>
   </g>
-  <text x="40" y="734" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5">Wing Link ends at setup and pairing.</text>
+  <text x="40" y="734" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5">ILLUSTRATED FLOW · DEMO DATA · SIMULATED SESSION</text>
   <text x="40" y="756" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5">Hermes remains authoritative for agent state.</text>
 </svg>\n`;
 }

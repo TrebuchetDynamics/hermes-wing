@@ -33,8 +33,21 @@ async function expectLanding(page) {
     page.getByRole("navigation", { name: "Main navigation" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Try the web alpha" }),
+    page.getByRole("link", { name: "Preview the connection screen" }),
   ).toHaveAttribute("href", "app/");
+  for (const link of await page.getByRole("link", { name: "Connect my Agent" }).all()) {
+    await expect(link).toHaveAttribute("href", "#connect");
+  }
+  const connect = page.locator("#connect");
+  await expect(connect.locator(".connection-steps > li")).toHaveCount(4);
+  for (const text of ["Enable the Agent HTTP API", "/v1/capabilities", "CORS", "First-reply success:"]) {
+    await expect(connect).toContainText(text);
+  }
+  await expect(connect.getByRole("link", { name: "browser guide" })).toHaveAttribute("href", /docs\/getting-started\.md#browser$/);
+  await expect(connect.getByRole("link", { name: "Follow your native route" })).toHaveAttribute("href", /docs\/getting-started\.md#direct-agent-connection$/);
+  await expect(connect.getByRole("link", { name: "Troubleshoot safely" })).toHaveAttribute("href", /docs\/getting-started\.md#need-help$/);
+  await expect(page.locator(".hero-visual figcaption")).toContainText("DEMO DATA · SIMULATED SESSION");
+  await expect(page.locator(".product-frame figcaption")).toContainText("not live-provider testing");
   await expect(
     page.getByRole("heading", { name: "Hermes stays in charge." }),
   ).toBeVisible();
@@ -110,7 +123,7 @@ test("landing page remains usable at a compact mobile viewport", async ({
   await expect(
     page
       .getByRole("navigation", { name: "Main navigation" })
-      .getByRole("link", { name: "Open web alpha" }),
+      .getByRole("link", { name: "Connect my Agent" }),
   ).toBeVisible();
   expect(failures).toEqual([]);
 });
@@ -127,3 +140,44 @@ test("nested Flutter web alpha initializes under the app route", async ({
   await expect(page).toHaveTitle("Hermes Wing");
   expect(failures).toEqual([]);
 });
+
+for (const width of [1280, 390]) {
+  test(`connection entry works without JavaScript at ${width}px and 200% text`, async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 900 } });
+    const page = await context.newPage();
+    const failures = collectPageFailures(page);
+    await page.goto(root, { waitUntil: "networkidle" });
+    await expectLanding(page);
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    const cta = page.locator(".hero-actions").first().getByRole("link", { name: "Connect my Agent" });
+    // Pixel-based type must scale too; changing the root rem would miss it.
+    await page.evaluate(() => {
+      const sizes = [...document.querySelectorAll("body, body *")].map(element => [element, parseFloat(getComputedStyle(element).fontSize)]);
+      for (const [element, size] of sizes) element.style.fontSize = `${size * 2}px`;
+    });
+    for (let stop = 0; stop < 20 && !(await cta.evaluate(element => element === document.activeElement)); stop++) {
+      await page.keyboard.press("Tab");
+    }
+    await expect(cta).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(`${root}#connect`);
+    await expect(page.getByRole("heading", { name: "From connection to first reply." })).toBeInViewport();
+    await expect.poll(() => page.evaluate(() =>
+      document.querySelector("#connect-title").getBoundingClientRect().top >=
+      document.querySelector(".site-header").getBoundingClientRect().bottom,
+    )).toBeTruthy();
+    const routeLinks = page.locator("#connect a");
+    await page.keyboard.press("Tab");
+    for (const link of await routeLinks.all()) {
+      await expect(link).toBeFocused();
+      await expect(link).toBeInViewport();
+      await page.keyboard.press("Tab");
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+    expect(failures).toEqual([]);
+    await page.screenshot({ path: test.info().outputPath(`landing-${width}-200.png`), fullPage: true });
+    await context.close();
+  });
+}

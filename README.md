@@ -14,8 +14,8 @@ provider account, or model credits.
 > authenticated Agent and configured provider. Native clients require a source build;
 > public signed distribution and automatic updates remain unqualified.
 
-**[Preview the connection screen](https://trebuchetdynamics.github.io/hermes-wing/app/)** ·
-**[Set up your first chat](docs/getting-started.md)**
+**[Set up your first chat](docs/getting-started.md)** ·
+**[Preview the connection screen](https://trebuchetdynamics.github.io/hermes-wing/app/)**
 
 <p align="center">
   <picture>
@@ -24,7 +24,8 @@ provider account, or model credits.
   </picture>
 </p>
 
-*Actual app screens with sample conversations and simulated responses—not live-provider test evidence.*
+*DEMO DATA · SIMULATED SESSION. Actual app screens depict the same sample scenario,
+not live-provider testing or observed cross-device synchronization.*
 
 <a id="what-can-i-do-with-it"></a>
 <a id="features"></a>
@@ -39,9 +40,9 @@ provider account, or model credits.
 - **Connect directly.** Use a reachable Agent endpoint; native SSH provides a
   separate connection option. Browser SSH is unsupported.
 
-These controls have scoped fixture coverage; the complete authenticated
-Chat → tool activity → approval/Stop → restoration journey is not yet qualified
-together. See [workflow evidence and limits](docs/quality/live-desktop-daily-workflow.md).
+These controls are tested with simulated Agent responses; we haven't verified the
+whole live chat-to-approval-to-reconnect workflow.
+See [workflow evidence and limits](docs/quality/live-desktop-daily-workflow.md).
 
 <a id="new-to-hermes-start-here"></a>
 
@@ -73,13 +74,20 @@ interface, not a working assistant. The hosted preview can lag repository `main`
 
 ### Connect your assistant
 
+First obtain and open Wing: use the [web alpha](https://trebuchetdynamics.github.io/hermes-wing/app/)
+in a browser, or [build a native client](docs/getting-started.md#build-and-open-the-client)
+for Android/Linux. Expect **Welcome to Hermes Wing**, or Chat if you already have
+a saved connection. Building Wing does not prepare Agent.
+
 Before connecting, you need:
 
 - **An enabled, authenticated Hermes Agent HTTP API—not just a working CLI.**
   Follow the [Agent API Server guide](https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server):
   enable the listener, configure a strong Agent API credential, and check reachability
   from Wing. Local defaults use `127.0.0.1:8642`; loopback means the machine running
-  Agent, not your phone. Wing checks advertised capabilities before enabling features.
+  Agent, not your phone. Wing needs compatible `/v1/capabilities` contracts for
+  sessions and a supported streaming transport, with every required grant; a working CLI, health
+  check or OpenAI-compatible chat endpoint alone is not enough.
 - **A trusted route.** For native phone access, SSH forwarding can keep the Agent
   listener on its host loopback; verify SSH host trust and supply the separate Agent
   credential. Direct remote access needs an administrator-approved secure endpoint.
@@ -87,6 +95,14 @@ Before connecting, you need:
   Do not open a public port, disable trust checks, or treat a VPN as authentication.
 - Provider access you are willing to use. **Providers may charge and process your
   conversation data.** Running Agent yourself does not make every AI request local.
+
+### Build a native client
+
+Need a native app instead of the browser? Install Git, Flutter 3.44.2 and your
+target's development tools, then follow [Build and open the client](docs/getting-started.md#build-and-open-the-client).
+**Success:** Wing opens to its welcome screen. Continue with **Connect your
+assistant** above; a successful build is not authentication or generation.
+If the build fails, check the target prerequisites in that guide before connecting.
 
 <a id="connect-your-agent"></a>
 <a id="pair-a-phone-or-another-computer"></a>
@@ -112,6 +128,10 @@ expected reply: its wording depends on your configured assistant and model.
 
 Follow the [complete connection guide](docs/getting-started.md#direct-agent-connection)
 for native Local/SSH setup, saved-connection repair, and authentication limits.
+If there is no reply, use [connection and model recovery](docs/getting-started.md#need-help);
+retry deliberately, never by weakening authentication or certificate checks.
+After this no-tools smoke, try the guide's [optional repository summary](docs/getting-started.md#optional-repository-summary)
+only for a deliberately granted demo Project and with provider costs understood.
 
 <a id="project-status"></a>
 <a id="platforms-and-limits"></a>
@@ -121,7 +141,7 @@ for native Local/SSH setup, saved-connection repair, and authentication limits.
 ## Compatibility and limits
 
 - **Android, web, and Linux are alpha paths.** Windows, macOS, and iOS have limited
-  runtime qualification. Check the [feature/platform status](docs/product/routes.md)
+  runtime qualification. Check the [platform evidence and limits](docs/getting-started.md#platform-evidence-and-limits)
   before relying on a particular operation.
 - **Browser authentication is limited.** The direct flow uses an Agent access token;
   browser OAuth sign-in and browser SSH are unsupported.

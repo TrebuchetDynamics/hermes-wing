@@ -3,6 +3,108 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('public onboarding links resolve to maintained files and anchors', () {
+    final linkPattern = RegExp(r'\]\(([^)]+)\)|href="([^"]+)"');
+    for (final path in [
+      'README.md',
+      'docs/getting-started.md',
+      'site/index.html',
+    ]) {
+      final source = File(path).readAsStringSync();
+      for (final match in linkPattern.allMatches(source)) {
+        var target = match.group(1) ?? match.group(2)!;
+        const repository =
+            'https://github.com/TrebuchetDynamics/hermes-wing/blob/main/';
+        final fromRepository = target.startsWith(repository);
+        if (fromRepository) target = target.substring(repository.length);
+        if (target.startsWith('http') ||
+            (path.startsWith('site/') && !fromRepository)) {
+          continue;
+        }
+        final parts = target.split('#');
+        final file = parts.first.isEmpty
+            ? File(path)
+            : File(
+                fromRepository
+                    ? parts.first
+                    : '${File(path).parent.path}/${parts.first}',
+              );
+        expect(file.existsSync(), isTrue, reason: '$path → $target');
+        if (parts.length == 1) continue;
+        final text = file.readAsStringSync();
+        final anchors = {
+          ...RegExp(
+            r'id="([^"]+)"',
+          ).allMatches(text).map((match) => match.group(1)!),
+          ...RegExp(r'^#{1,6} (.+)$', multiLine: true)
+              .allMatches(text)
+              .map(
+                (match) => match
+                    .group(1)!
+                    .toLowerCase()
+                    .replaceAll(RegExp(r'[^a-z0-9 _-]'), '')
+                    .replaceAll(' ', '-'),
+              ),
+        };
+        expect(anchors, contains(parts[1]), reason: '$path → $target');
+      }
+    }
+  });
+
+  test(
+    'onboarding acquires the client before connection and preserves anchors',
+    () {
+      final readme = File('README.md').readAsStringSync();
+      final guide = File('docs/getting-started.md').readAsStringSync();
+      for (final source in [readme, guide]) {
+        expect(
+          source.contains('Build a native client') ||
+              source.contains('Native Android or Linux'),
+          isTrue,
+        );
+        expect(source, contains('/v1/capabilities'));
+        expect(source, contains('Do not use any tools.'));
+        expect(
+          source.indexOf('Do not use any tools.'),
+          lessThan(source.indexOf('repository summary')),
+        );
+        for (final anchor in [
+          'get-the-client',
+          'getting-started',
+          'connect-your-agent',
+          'pair-a-phone-or-another-computer',
+          'your-first-conversation',
+          'build-the-alpha-from-source',
+          'when-a-connection-needs-attention',
+        ]) {
+          expect(source, contains('id="$anchor"'), reason: anchor);
+        }
+      }
+      final headings = [
+        '## What you need',
+        '## Build and open the client',
+        '## Prepare your Agent',
+        '## Direct Agent connection',
+        '## Start the conversation',
+        '## Need help?',
+        '## Your data and permissions',
+        '## Platform evidence and limits',
+      ];
+      for (var i = 1; i < headings.length; i++) {
+        expect(guide.indexOf(headings[i - 1]), isNonNegative);
+        expect(
+          guide.indexOf(headings[i - 1]),
+          lessThan(guide.indexOf(headings[i])),
+        );
+      }
+      expect(guide, isNot(contains('worktree')));
+      expect(guide, isNot(contains('fake endpoint storage')));
+      expect(guide, contains('Browser SSH and OAuth sign-in are unsupported'));
+      expect(guide, contains('not silently resend prompts'));
+      expect(guide, contains('Native GTK simulated journey'));
+    },
+  );
+
   test('README assets are reproducible and show healthy current states', () {
     final generator = File('scripts/generate_readme_assets.mjs');
     final e2eEntryPoint = File('lib/main_e2e.dart');
@@ -90,7 +192,12 @@ void main() {
       expect(document, isNot(contains('physical Android device receipt')));
       expect(document, isNot(contains('physical-device QA receipt')));
     }
-    expect(landing, contains('low-risk approval request'));
+    expect(landing, contains('sample scenario, including an approval request'));
+    expect(generatorSource, isNot(contains('LIVE RUN')));
+    expect(generatorSource, isNot(contains('Wing Link')));
+    expect(generatorSource, contains('DEMO DATA · SIMULATED SESSION'));
+    expect(hero, contains('DEMO DATA · SIMULATED SESSION'));
+    expect(landing, isNot(contains('live session trace')));
     expect(generatorSource, isNot(contains('erasePendingRunSpinner')));
     expect(generatorSource, contains('wingE2EReduceMotion'));
     expect(e2eSource, contains("@JS('wingE2EReduceMotion')"));

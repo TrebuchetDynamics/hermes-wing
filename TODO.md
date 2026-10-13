@@ -612,6 +612,17 @@ before their goals can become `met`.
   and native fixture composition belong to CONNECTION-LOCAL-ENROLLMENT-NATIVE,
   now done for the production-routing/native fixture slice. See the
   [native enrollment receipt](docs/quality/local-setup-enrollment-native.md).
+  Current direct-only Linux replacement subset delivered at origin/main
+  782ed30d562b0d38a8c5c69ab430ef7d3de644b7 after independent native review.
+  Four GTK logical-size/text-scale journeys prove missing/default/selected home
+  metadata, public Back/cancel preservation, sanitized denial and explicit retry
+  with the retained saved Agent profile/session and inert legacy records. Production
+  code needed no fix. Independent review passed analysis and 20 focused Flutter
+  tests; coordinator integration tooling union passed 109 Python tests using the
+  cached isolated asyncssh environment after the bare interpreter lacked asyncssh.
+  Real authentication, physical keychain, actual OS chooser/window sizing and
+  Android/Termux onboarding remain NOT_CHECKED. This qualifies only the declared
+  Linux fixture subset, not this parent or either retirement parent.
   Do not dispatch duplicate routing work. CONNECTION-REMOTE-AUTH-EXPLANATION is
   also done: [public guidance and recovery](docs/quality/remote-auth-explanation.md)
   have focused widget and native Linux fixture evidence. Reuse those checks;

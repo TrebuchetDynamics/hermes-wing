@@ -24,9 +24,8 @@ flows=(
   scripts/maestro/fixture/settings.yaml
   scripts/maestro/fixture/spellcheck.yaml
   scripts/maestro/fixture/gateway_connection.yaml
-  scripts/maestro/fixture/gateway_trust.yaml
-  scripts/maestro/fixture/trust_errors.yaml
-  scripts/maestro/fixture/pairing.yaml
+  scripts/maestro/fixture/gateway_read_only.yaml
+  scripts/maestro/fixture/legacy_input_rejection.yaml
   scripts/maestro/fixture/local_setup_accessibility.yaml
 )
 

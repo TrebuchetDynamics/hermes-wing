@@ -49,6 +49,22 @@ class FeatureWrapperTest(unittest.TestCase):
         self.assertFalse(self.log.exists())
         self.assertFalse((self.root / "output").exists())
 
+    def test_retired_flows_rejected_before_tools(self):
+        for name in ("gateway_trust", "trust_errors", "pairing", "computer_setup"):
+            with self.subTest(name=name):
+                result = self.run_wrapper(f"scripts/maestro/fixture/{name}.yaml")
+                self.assertEqual(result.returncode, 2)
+                self.assertFalse(self.log.exists())
+
+    def test_current_rejection_and_read_only_flows_dispatch(self):
+        flows = [f"scripts/maestro/fixture/{name}.yaml" for name in
+                 ("legacy_input_rejection", "gateway_read_only")]
+        result = self.run_wrapper(*flows)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        syntax = [line for line in self.log.read_text().splitlines()
+                  if "check-syntax" in line]
+        self.assertEqual(syntax, [f"maestro check-syntax {flow}" for flow in flows])
+
     def test_unreachable_or_unauthorized_target_never_builds_or_installs(self):
         for state in ("offline", "unauthorized", ""):
             with self.subTest(state=state):

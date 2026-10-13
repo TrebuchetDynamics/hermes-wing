@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/policy/hermes_transport_policy.dart';
 
-import '../../integration_test/hermes_features_maestro_main.dart';
 import '../../integration_test/support/maestro/interaction_fixture.dart';
 import '../../integration_test/support/maestro/feature_channel.dart';
 
@@ -27,19 +26,6 @@ void main() {
       expect(completed, isFalse);
       fixture.completePick();
       expect((await pending)!.name, 'fixture-note.txt');
-    },
-  );
-  test(
-    'trust fixture is accepted by the production response decoders',
-    () async {
-      final fixture = FeatureFixture();
-      addTearDown(fixture.channel.dispose);
-      addTearDown(fixture.scale.dispose);
-      final client = fixture.trustClient();
-      expect((await client.getCurrentDevice()).id, 'cred_fixture');
-      expect((await client.getMetadata()).supportedProtocolGenerations, [1, 2]);
-      await client.revokeCurrentDevice();
-      expect(fixture.revoked, isTrue);
     },
   );
 

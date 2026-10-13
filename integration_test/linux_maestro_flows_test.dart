@@ -183,11 +183,11 @@ void main() {
         await launch(tester, width);
 
         await tester.scrollUntilVisible(
-          find.text('Pairing fixture'),
+          find.text('Legacy input rejection fixture'),
           250,
           scrollable: find.byType(Scrollable).first,
         );
-        await tapText(tester, 'Pairing fixture');
+        await tapText(tester, 'Legacy input rejection fixture');
         expect(
           find.text('Pairing links are no longer supported'),
           findsOneWidget,
@@ -203,54 +203,27 @@ void main() {
       },
     );
 
-    testWidgets('Maestro trust errors fail closed width=$width', (
-      tester,
-    ) async {
-      await launch(tester, width);
-      for (final entry in {
-        'Changed host identity': 'The host fingerprint changed.',
-        'Expired device credential':
-            'This device credential is expired or revoked.',
-        'Unsupported protocol': 'outside the supported compatibility window.',
-      }.entries) {
-        await control(tester, entry.key);
-        await tapText(tester, 'Gateway fixture');
-        final error = find.textContaining(entry.value);
-        await tester.scrollUntilVisible(
-          error,
-          250,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(error.hitTestable(), findsOneWidget);
-        expect(find.text('Revoke this device'), findsNothing);
-        await tapText(tester, 'Fixture home');
-      }
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-    });
-
-    testWidgets('Maestro device revocation cancel and confirm width=$width', (
+    testWidgets('Maestro gateway is read-only without management width=$width', (
       tester,
     ) async {
       await launch(tester, width);
       await tapText(tester, 'Gateway fixture');
-      final revoke = find.text('Revoke this device');
-      await tester.scrollUntilVisible(
-        revoke,
-        250,
-        scrollable: find.byType(Scrollable).first,
+      final note = find.text(
+        'Read-only gateway status. Manage services, logs, and messaging platforms on the host.',
       );
-      await tapText(tester, 'Revoke this device');
-      await tapText(tester, 'Cancel');
-      await tapText(tester, 'Fixture controls');
-      expect(find.text('Management revoked: false'), findsOneWidget);
-      await tapText(tester, 'Close controls');
-      await tapText(tester, 'Revoke this device');
-      await tapText(tester, 'Revoke this device');
-      expect(find.textContaining('This device was revoked.'), findsOneWidget);
-      await tapText(tester, 'Fixture controls');
-      expect(find.text('Management revoked: true'), findsOneWidget);
-      await tapText(tester, 'Close controls');
+      await tester.scrollUntilVisible(
+        note,
+        250,
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey('gateway-body-list')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.ensureVisible(note);
+      await tester.pumpAndSettle();
+      expect(note.hitTestable(), findsOneWidget);
+      expect(find.text('Host fingerprint'), findsNothing);
+      expect(find.text('Revoke this device'), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     });

@@ -1,0 +1,19 @@
+appId: com.trebuchetdynamics.hermes.wing.qa
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- setOrientation: PORTRAIT
+- extendedWaitUntil:
+    visible: Maestro fixture
+    timeout: 30000
+- runFlow:
+    file: open.yaml
+    env:
+      SCREEN: Gateway fixture
+- scrollUntilVisible:
+    element:
+      text: Read-only gateway status. Manage services, logs, and messaging platforms on the host.
+    direction: DOWN
+- assertNotVisible: Host fingerprint
+- assertNotVisible: Revoke this device

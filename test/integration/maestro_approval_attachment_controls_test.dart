@@ -65,6 +65,32 @@ Future<void> pumpFixture(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('gateway fixture exposes read-only Agent status, not trust', (
+    tester,
+  ) async {
+    final fixture = await openChat(tester);
+    fixture.router.go('/gateway');
+    await tester.pumpAndSettle();
+    final note = find.text(
+      'Read-only gateway status. Manage services, logs, and messaging platforms on the host.',
+    );
+    await tester.scrollUntilVisible(
+      note,
+      250,
+      scrollable: find.descendant(
+        of: find.byKey(const ValueKey('gateway-body-list')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.ensureVisible(note);
+    await tester.pumpAndSettle();
+    expect(note.hitTestable(), findsOneWidget);
+    expect(find.text('Host fingerprint'), findsNothing);
+    expect(find.text('Revoke this device'), findsNothing);
+    expect(fixture.channel.submittedTurns, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('deferred picker controls prove owner change and completion', (
     tester,
   ) async {

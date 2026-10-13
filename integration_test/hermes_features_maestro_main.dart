@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
-import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/enrollment/providers/hermes_enrollment_provider.dart';
 import 'package:wing/features/enrollment/screens/hermes_enrollment_screen.dart';
 import 'package:wing/features/enrollment/services/hermes_connect_intent_source.dart';
@@ -36,32 +35,19 @@ import '../test/features/hermes_chat/support/fake_hermes_gateway_directory.dart'
 import 'support/maestro/feature_channel.dart';
 import 'support/maestro/interaction_fixture.dart';
 
-const _fingerprint = 'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-
 String _randomFixtureValue() => base64Url.encode(
   List<int>.generate(24, (_) => Random.secure().nextInt(256)),
 );
 
 class _FixtureIntents implements HermesConnectIntentSource {
-  String mode = 'valid';
-  String payload() => mode == 'invalid'
-      ? 'invalid fixture handoff'
-      : Uri(
-          scheme: 'wing',
-          host: 'connect',
-          queryParameters: {
-            'origin': 'https://fixture.example',
-            'code': _randomFixtureValue(),
-          },
-        ).toString();
   @override
   Future<String?> initialPayload() async => null;
   @override
   Future<String?> consumeInitialPayload() async => null;
   @override
-  Future<String?> scanQrCode() async => payload();
+  Future<String?> scanQrCode() async => null;
   @override
-  Future<String?> importQrImage() async => payload();
+  Future<String?> importQrImage() async => null;
   @override
   Stream<String> payloadEvents() => const Stream.empty();
 }
@@ -142,9 +128,6 @@ class FeatureFixture {
       ? NoTransitionPage<void>(key: state.pageKey, child: child)
       : MaterialPage<void>(key: state.pageKey, child: child);
 
-  String trustMode = 'valid';
-  bool revoked = false;
-
   bool diagnosticsClipboardSafe = false;
   bool? microphonePermissionGranted;
 
@@ -210,40 +193,6 @@ class FeatureFixture {
     );
   }
 
-  WingLinkClient trustClient() => WingLinkClient(
-    origin: Uri.parse('https://management.example'),
-    token: _randomFixtureValue(),
-    hostFingerprint: _fingerprint,
-    get: (uri, headers) async {
-      if (trustMode == 'expired') throw const WingLinkHttpException(401);
-      if (trustMode == 'upgrade') throw const WingLinkUpgradeRequired();
-      return jsonEncode(
-        uri.path == '/meta'
-            ? {
-                'protocol_generation': 2,
-                'minimum_protocol_generation': 1,
-                'supported_protocol_generations': [1, 2],
-                'version': 'fixture',
-                'host_fingerprint': trustMode == 'changed'
-                    ? 'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
-                    : _fingerprint,
-                'capabilities': ['device.self.read'],
-              }
-            : {
-                'device_id': 'cred_fixture',
-                'name': 'Fixture device',
-                'scopes': ['health.read', 'profile.read'],
-                'created_at': '2026-01-01T00:00:00Z',
-                'legacy': false,
-              },
-      );
-    },
-    delete: (uri, headers) async {
-      revoked = true;
-      return '';
-    },
-  );
-
   Widget _hub(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Maestro fixture')),
     body: ListView(
@@ -264,7 +213,7 @@ class FeatureFixture {
           'Diagnostics fixture': '/settings/diagnostics',
           'Schedules fixture': '/tasks',
           'Chat fixture': '/hermes',
-          'Pairing fixture': '/enroll',
+          'Legacy input rejection fixture': '/enroll',
           'Local setup fixture': '/setup/local',
         }.entries)
           ListTile(
@@ -307,7 +256,6 @@ class FeatureFixture {
                   'Approval decisions: ${channel.respondToApprovalCalls.length}',
                 ),
 
-                Text('Management revoked: $revoked'),
                 Text('Diagnostics clipboard safe: $diagnosticsClipboardSafe'),
                 Text(
                   'Microphone permission granted: $microphonePermissionGranted',
@@ -384,15 +332,6 @@ class FeatureFixture {
                       .setMode(ThemeMode.dark),
                   'Use large text': () => scale.value = 2,
                   'Use normal text': () => scale.value = 1,
-                  'Changed host identity': () => trustMode = 'changed',
-                  'Expired device credential': () => trustMode = 'expired',
-                  'Unsupported protocol': () => trustMode = 'upgrade',
-                  'Invalid pairing input': () => intents.mode = 'invalid',
-                  'Expired pairing input': () => intents.mode = 'expired',
-                  'Used pairing input': () => intents.mode = 'used',
-                  'Valid pairing input': () => intents.mode = 'valid',
-                  'Prepare fixture paste': () =>
-                      Clipboard.setData(ClipboardData(text: intents.payload())),
                   'Check microphone permission': () async {
                     microphonePermissionGranted =
                         (await const MethodChannelDeviceSpeechRecognitionDiagnosticsProbe()

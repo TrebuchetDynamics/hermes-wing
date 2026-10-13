@@ -10,7 +10,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
 - runFlow:
     file: open.yaml
     env:
-      SCREEN: Pairing fixture
+      SCREEN: Legacy input rejection fixture
 - assertVisible: Pairing links are no longer supported
 - assertNotVisible: Paste pairing link
 - tapOn: Connection options

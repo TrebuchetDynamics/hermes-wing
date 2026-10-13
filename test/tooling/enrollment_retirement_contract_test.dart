@@ -3,6 +3,55 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('all-feature Maestro fixture cannot restore management or pairing', () {
+    final source = File(
+      'integration_test/hermes_features_maestro_main.dart',
+    ).readAsStringSync();
+    for (final forbidden in [
+      'core/wing_link/',
+      'WingLink',
+      'trustClient',
+      'trustMode',
+      'Management revoked:',
+      'Pairing fixture',
+      'Changed host identity',
+      'Expired device credential',
+      'Unsupported protocol',
+      'pairing input',
+      'Prepare fixture paste',
+    ]) {
+      expect(source, isNot(contains(forbidden)), reason: forbidden);
+    }
+    final runner = File(
+      'scripts/run_android_maestro_features.sh',
+    ).readAsStringSync();
+    for (final obsolete in [
+      'pairing.yaml',
+      'gateway_trust.yaml',
+      'trust_errors.yaml',
+      'computer_setup.yaml',
+    ]) {
+      expect(File('scripts/maestro/fixture/$obsolete').existsSync(), isFalse);
+      expect(runner, isNot(contains(obsolete)));
+    }
+    for (final flow in [
+      'legacy_input_rejection.yaml',
+      'gateway_read_only.yaml',
+    ]) {
+      expect(runner, contains(flow));
+      final yaml = File('scripts/maestro/fixture/$flow').readAsStringSync();
+      expect(yaml, isNot(contains('Wing Link')));
+      expect(yaml, isNot(contains('Pairing fixture')));
+    }
+    for (final retained in [
+      'approvals_recovery.yaml',
+      'attachment_picker_race.yaml',
+      'gateway_connection.yaml',
+    ]) {
+      expect(runner, contains(retained));
+    }
+  });
+
   test('saved endpoint public contract is Agent-only', () {
     for (final path in [
       'lib/core/hermes/setup/hermes_endpoint_store.dart',

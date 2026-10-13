@@ -13,7 +13,7 @@ void main() {
       addTearDown(() => FlutterError.onError = previousErrorHandler);
       await fixture.main();
       await tester.pumpAndSettle();
-      final pairing = find.text('Pairing fixture');
+      final pairing = find.text('Legacy input rejection fixture');
       await tester.scrollUntilVisible(
         pairing,
         250,

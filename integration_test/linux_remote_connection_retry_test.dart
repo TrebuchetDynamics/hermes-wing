@@ -199,8 +199,7 @@ void main() {
         expect(store.saveCalls, hasLength(1));
         expect(store.saveCalls.single.baseUrl, origin);
         expect(store.saveCalls.single.apiKey, isNull);
-        expect(store.saveCalls.single.wingLinkOrigin, isNull);
-        expect(store.saveCalls.single.wingLinkToken, isNull);
+
         expect(control('hermes-connection-save-error'), findsNothing);
         await tester.pageBack();
         await tester.pumpAndSettle();

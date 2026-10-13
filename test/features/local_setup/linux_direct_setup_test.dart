@@ -34,8 +34,6 @@ void main() {
           id: 'keep',
           baseUrl: 'https://saved.example.invalid',
           apiKey: 'synthetic-saved-only',
-          wingLinkOrigin: 'https://legacy.example.invalid',
-          wingLinkToken: 'synthetic-management-only',
         );
         final store = FakeHermesEndpointStore(initial: saved);
         final home = SyntheticHome();

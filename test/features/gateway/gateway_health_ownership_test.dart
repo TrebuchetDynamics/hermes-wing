@@ -520,15 +520,11 @@ void main() {
             id: 'A',
             label: 'A',
             baseUrl: 'http://localhost:8642/p/default',
-            wingLinkOrigin: 'https://host.example',
-            wingLinkDeviceId: 'fixture-device',
           ),
           HermesEndpointConfig(
             id: 'B',
             label: 'B',
             baseUrl: 'http://localhost:8642/p/other',
-            wingLinkOrigin: 'https://host.example',
-            wingLinkDeviceId: 'fixture-device',
           ),
         ],
         loader: FakeGatewaySummaryLoader({

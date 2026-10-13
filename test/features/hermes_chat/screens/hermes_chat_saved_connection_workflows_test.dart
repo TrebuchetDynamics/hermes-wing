@@ -45,11 +45,6 @@ class _Store extends FakeHermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
-    String? wingLinkOrigin,
-    String? wingLinkToken,
-    String? wingLinkPendingCredentialId,
-    String? wingLinkHostFingerprint,
-    String? wingLinkDeviceId,
   }) async {
     await rename?.future;
     if (failRename) throw StateError('private platform storage detail');
@@ -58,11 +53,6 @@ class _Store extends FakeHermesEndpointStore {
       apiKey: apiKey,
       label: label,
       profileId: profileId,
-      wingLinkOrigin: wingLinkOrigin,
-      wingLinkToken: wingLinkToken,
-      wingLinkPendingCredentialId: wingLinkPendingCredentialId,
-      wingLinkHostFingerprint: wingLinkHostFingerprint,
-      wingLinkDeviceId: wingLinkDeviceId,
     );
   }
 }

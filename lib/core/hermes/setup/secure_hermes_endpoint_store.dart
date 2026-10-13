@@ -56,6 +56,10 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
 
   @override
   Future<void> saveAll(List<HermesEndpointConfig> profiles) async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawBundle = await _secureStorage.read(key: _bundleSecureStorageKey);
+    final metadataRows = _rawRows(prefs.getString(_profilesPreferenceKey));
+    final previousRows = rawBundle == null ? metadataRows : _rawRows(rawBundle);
     final normalized = <HermesEndpointConfig>[];
     final ids = <String>{};
     final origins = <String>{};
@@ -76,51 +80,35 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           label: profile.label?.trim(),
           baseUrl: baseUrl,
           apiKey: profile.apiKey,
-          wingLinkOrigin: profile.wingLinkOrigin == null
-              ? null
-              : hermesPublicEndpointBaseUrl(profile.wingLinkOrigin!),
-          wingLinkToken: profile.wingLinkToken,
-          wingLinkPendingCredentialId: profile.wingLinkPendingCredentialId,
-          wingLinkHostFingerprint: profile.wingLinkHostFingerprint,
-          wingLinkDeviceId: profile.wingLinkDeviceId,
         ),
       );
     }
     final payload = jsonEncode([
       for (final profile in normalized)
         {
+          ..._legacyFields(previousRows, profile, secure: true),
           'id': profile.id,
           'baseUrl': profile.baseUrl,
           if (profile.label?.isNotEmpty ?? false) 'label': profile.label,
           if (profile.apiKey?.isNotEmpty ?? false) 'apiKey': profile.apiKey,
-          if (profile.wingLinkOrigin?.isNotEmpty ?? false)
-            'wingLinkOrigin': profile.wingLinkOrigin,
-          if (profile.wingLinkToken?.isNotEmpty ?? false)
-            'wingLinkToken': profile.wingLinkToken,
-          if (profile.wingLinkPendingCredentialId?.isNotEmpty ?? false)
-            'wingLinkPendingCredentialId': profile.wingLinkPendingCredentialId,
-          if (profile.wingLinkHostFingerprint?.isNotEmpty ?? false)
-            'wingLinkHostFingerprint': profile.wingLinkHostFingerprint,
-          if (profile.wingLinkDeviceId?.isNotEmpty ?? false)
-            'wingLinkDeviceId': profile.wingLinkDeviceId,
         },
     ]);
-    final prefs = await SharedPreferences.getInstance();
-    final legacyProfiles = await _loadProfiles(prefs);
 
     // This single secure write is the authoritative endpoint-set commit. Do not
     // destroy the currently readable legacy enrollment until this succeeds.
     await _secureStorage.write(key: _bundleSecureStorageKey, value: payload);
 
-    // The modern bundle is now authoritative. Purge rollback-readable legacy
-    // credentials and metadata before publishing compatibility projections.
+    // Retained legacy token slots are inert: never read or copy their bytes.
     final legacyIds = <String>{
-      ...legacyProfiles.map((profile) => profile.id).whereType<String>(),
+      for (final row in [...metadataRows, ...previousRows])
+        if (row['id'] is String) row['id'] as String,
       ...normalized.map((profile) => profile.id).whereType<String>(),
     };
     for (final id in legacyIds) {
       await _secureStorage.delete(key: _apiKeyKey(id));
-      await _secureStorage.delete(key: _wingLinkTokenKey(id));
+      if (!ids.contains(id)) {
+        await _secureStorage.delete(key: _wingLinkTokenKey(id));
+      }
     }
     await _secureStorage.delete(key: _legacyApiKeySecureStorageKey);
     await prefs.remove(_legacyBaseUrlPreferenceKey);
@@ -129,7 +117,7 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     // projection failure cannot expose a partial endpoint bundle to modern
     // readers and must not make a completed secure commit look rolled back.
     try {
-      await _saveProfileMetadata(prefs, normalized);
+      await _saveProfileMetadata(prefs, normalized, metadataRows);
       if (normalized.isEmpty) {
         await prefs.remove(_selectedProfilePreferenceKey);
       } else {
@@ -149,11 +137,6 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
-    String? wingLinkOrigin,
-    String? wingLinkToken,
-    String? wingLinkPendingCredentialId,
-    String? wingLinkHostFingerprint,
-    String? wingLinkDeviceId,
   }) async {
     final normalizedBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
     final profiles = await loadProfiles();
@@ -171,8 +154,7 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
         )) {
       throw StateError('Another saved endpoint already uses this origin.');
     }
-    // A changed Agent identity must never inherit a paired management trust.
-    final sameEndpoint = existing?.baseUrl == normalizedBaseUrl;
+
     final id = profileId?.trim().isNotEmpty ?? false
         ? profileId!.trim()
         : existing?.id ?? hermesEndpointIdForBaseUrl(normalizedBaseUrl);
@@ -181,34 +163,6 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
       label: label?.trim().isEmpty ?? true ? null : label!.trim(),
       baseUrl: normalizedBaseUrl,
       apiKey: apiKey,
-      wingLinkOrigin: wingLinkOrigin == null
-          ? sameEndpoint
-                ? existing?.wingLinkOrigin
-                : null
-          : hermesPublicEndpointBaseUrl(wingLinkOrigin),
-      wingLinkToken:
-          wingLinkToken ?? (sameEndpoint ? existing?.wingLinkToken : null),
-      wingLinkPendingCredentialId: wingLinkPendingCredentialId == null
-          ? sameEndpoint
-                ? existing?.wingLinkPendingCredentialId
-                : null
-          : wingLinkPendingCredentialId.trim().isEmpty
-          ? null
-          : wingLinkPendingCredentialId.trim(),
-      wingLinkHostFingerprint: wingLinkHostFingerprint == null
-          ? sameEndpoint
-                ? existing?.wingLinkHostFingerprint
-                : null
-          : wingLinkHostFingerprint.trim().isEmpty
-          ? null
-          : wingLinkHostFingerprint.trim(),
-      wingLinkDeviceId: wingLinkDeviceId == null
-          ? sameEndpoint
-                ? existing?.wingLinkDeviceId
-                : null
-          : wingLinkDeviceId.trim().isEmpty
-          ? null
-          : wingLinkDeviceId.trim(),
     );
     await saveAll([
       next,
@@ -275,20 +229,13 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
       final publicBaseUrl = hermesPublicEndpointBaseUrl(baseUrl);
       if (publicBaseUrl.isEmpty || !seenBaseUrls.add(publicBaseUrl)) continue;
       final apiKey = await _secureStorage.read(key: _apiKeyKey(id));
-      final wingLinkToken = await _secureStorage.read(
-        key: _wingLinkTokenKey(id),
-      );
+
       profiles.add(
         HermesEndpointConfig(
           id: id,
           label: item['label']?.toString(),
           baseUrl: publicBaseUrl,
           apiKey: apiKey,
-          wingLinkOrigin: item['wingLinkOrigin']?.toString(),
-          wingLinkToken: wingLinkToken,
-          wingLinkPendingCredentialId: item['wingLinkPendingCredentialId']
-              ?.toString(),
-          wingLinkDeviceId: item['wingLinkDeviceId']?.toString(),
         ),
       );
     }
@@ -326,14 +273,6 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
           baseUrl: baseUrl,
           label: item['label']?.toString(),
           apiKey: item['apiKey']?.toString(),
-          wingLinkOrigin: item['wingLinkOrigin'] == null
-              ? null
-              : hermesPublicEndpointBaseUrl(item['wingLinkOrigin']!.toString()),
-          wingLinkToken: item['wingLinkToken']?.toString(),
-          wingLinkPendingCredentialId: item['wingLinkPendingCredentialId']
-              ?.toString(),
-          wingLinkHostFingerprint: item['wingLinkHostFingerprint']?.toString(),
-          wingLinkDeviceId: item['wingLinkDeviceId']?.toString(),
         ),
       );
     }
@@ -343,6 +282,7 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
   Future<void> _saveProfileMetadata(
     SharedPreferences prefs,
     List<HermesEndpointConfig> profiles,
+    List<Map> previousRows,
   ) async {
     if (profiles.isEmpty) {
       await prefs.remove(_profilesPreferenceKey);
@@ -351,25 +291,52 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     final encoded = jsonEncode([
       for (final profile in profiles)
         {
+          ..._legacyFields(previousRows, profile, secure: false),
           'id': profile.id,
           if (profile.label?.trim().isNotEmpty ?? false)
             'label': profile.label!.trim(),
           'baseUrl': profile.baseUrl,
-          if (profile.wingLinkOrigin?.trim().isNotEmpty ?? false)
-            'wingLinkOrigin': hermesPublicEndpointBaseUrl(
-              profile.wingLinkOrigin!,
-            ),
-          if (profile.wingLinkPendingCredentialId?.trim().isNotEmpty ?? false)
-            'wingLinkPendingCredentialId': profile.wingLinkPendingCredentialId!
-                .trim(),
-          if (profile.wingLinkDeviceId?.trim().isNotEmpty ?? false)
-            'wingLinkDeviceId': profile.wingLinkDeviceId!.trim(),
         },
     ]);
     await prefs.setString(_profilesPreferenceKey, encoded);
   }
 
   static String _apiKeyKey(String id) => '$_apiKeySecureStoragePrefix$id';
+  static List<Map> _rawRows(String? raw) {
+    if (raw == null) return const [];
+    final decoded = jsonDecode(raw);
+    if (decoded is! List || decoded.any((row) => row is! Map)) {
+      throw StateError('Stored endpoint records are unreadable.');
+    }
+    return decoded.cast<Map>();
+  }
+
+  // Safety-only historical fields are fenced to the same saved Agent owner.
+  static Map<String, Object?> _legacyFields(
+    List<Map> rows,
+    HermesEndpointConfig profile, {
+    required bool secure,
+  }) {
+    final row = rows
+        .where(
+          (row) =>
+              row['id'] == profile.id &&
+              hermesPublicEndpointBaseUrl(row['baseUrl']?.toString() ?? '') ==
+                  profile.baseUrl,
+        )
+        .firstOrNull;
+    return {
+      for (final key in [
+        'wingLinkOrigin',
+        if (secure) 'wingLinkToken',
+        'wingLinkPendingCredentialId',
+        if (secure) 'wingLinkHostFingerprint',
+        'wingLinkDeviceId',
+      ])
+        if (row?.containsKey(key) ?? false) key: row![key],
+    };
+  }
+
   static String _wingLinkTokenKey(String id) =>
       '$_wingLinkTokenSecureStoragePrefix$id';
 }

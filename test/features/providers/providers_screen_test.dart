@@ -427,7 +427,7 @@ void main() {
     },
   );
 
-  testWidgets('gateway picker shows one host for a paired profile bundle', (
+  testWidgets('gateway picker keeps imported Agent endpoints independent', (
     tester,
   ) async {
     final channel = _GatewaySwitchingProviderChannel();
@@ -438,15 +438,11 @@ void main() {
           id: 'default-endpoint',
           label: 'BlueBlack · default',
           baseUrl: 'https://home.example/p/default',
-          wingLinkOrigin: 'https://control.example:8654',
-          wingLinkDeviceId: 'device-1',
         ),
         HermesEndpointConfig(
           id: 'coder-endpoint',
           label: 'BlueBlack · coder',
           baseUrl: 'https://home.example/p/coder',
-          wingLinkOrigin: 'https://control.example:8654',
-          wingLinkDeviceId: 'device-1',
         ),
       ],
       loader: FakeGatewaySummaryLoader({
@@ -462,9 +458,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('providers-gateway-picker')));
     await tester.pumpAndSettle();
 
-    expect(find.text('BlueBlack'), findsOneWidget);
-    expect(find.text('BlueBlack · default'), findsNothing);
-    expect(find.text('BlueBlack · coder'), findsNothing);
+    expect(find.text('BlueBlack'), findsNothing);
+    expect(find.text('BlueBlack · default'), findsOneWidget);
+    expect(find.text('BlueBlack · coder'), findsOneWidget);
   });
 
   testWidgets(
@@ -515,8 +511,6 @@ void main() {
           id: 'alpha',
           label: 'Alpha',
           baseUrl: 'https://alpha',
-          wingLinkOrigin: 'https://alpha:8654',
-          wingLinkToken: 'wing-link-secret',
         ),
       ],
       loader: FakeGatewaySummaryLoader({
@@ -544,8 +538,6 @@ void main() {
           id: 'alpha',
           label: 'Alpha',
           baseUrl: 'https://alpha',
-          wingLinkOrigin: 'https://alpha:8654',
-          wingLinkToken: 'wing-link-secret',
         ),
       ],
       loader: FakeGatewaySummaryLoader({

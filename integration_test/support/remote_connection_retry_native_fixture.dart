@@ -69,11 +69,6 @@ class RetryNativeStore extends FakeHermesEndpointStore {
     String? apiKey,
     String? label,
     String? profileId,
-    String? wingLinkOrigin,
-    String? wingLinkToken,
-    String? wingLinkPendingCredentialId,
-    String? wingLinkHostFingerprint,
-    String? wingLinkDeviceId,
   }) async {
     attempts++;
     final pending = gate;
@@ -86,11 +81,6 @@ class RetryNativeStore extends FakeHermesEndpointStore {
       apiKey: apiKey,
       label: label,
       profileId: profileId,
-      wingLinkOrigin: wingLinkOrigin,
-      wingLinkToken: wingLinkToken,
-      wingLinkPendingCredentialId: wingLinkPendingCredentialId,
-      wingLinkHostFingerprint: wingLinkHostFingerprint,
-      wingLinkDeviceId: wingLinkDeviceId,
     );
   }
 }

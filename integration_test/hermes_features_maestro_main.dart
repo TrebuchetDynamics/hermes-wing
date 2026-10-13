@@ -36,6 +36,8 @@ import '../test/features/hermes_chat/support/fake_hermes_gateway_directory.dart'
 import 'support/maestro/feature_channel.dart';
 import 'support/maestro/interaction_fixture.dart';
 
+const _fingerprint = 'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
 String _randomFixtureValue() => base64Url.encode(
   List<int>.generate(24, (_) => Random.secure().nextInt(256)),
 );
@@ -64,7 +66,6 @@ class _FixtureIntents implements HermesConnectIntentSource {
   Stream<String> payloadEvents() => const Stream.empty();
 }
 
-const _fingerprint = 'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 int _layoutOverflows = 0;
 
 Future<void> main() async {
@@ -153,11 +154,8 @@ class FeatureFixture {
         HermesEndpointConfig(
           id: 'fixture',
           label: 'Fixture gateway',
+          apiKey: _randomFixtureValue(),
           baseUrl: 'https://fixture.example',
-          wingLinkOrigin: 'https://management.example',
-          wingLinkToken: _randomFixtureValue(),
-          wingLinkHostFingerprint: _fingerprint,
-          wingLinkDeviceId: 'cred_fixture',
         ),
         const HermesEndpointConfig(
           id: 'secondary',
@@ -407,7 +405,7 @@ class FeatureFixture {
                     ))?.text;
                     final credential = directory
                         .configForGateway('fixture')
-                        ?.wingLinkToken;
+                        ?.apiKey;
                     diagnosticsClipboardSafe =
                         text != null &&
                         text.length < 8192 &&

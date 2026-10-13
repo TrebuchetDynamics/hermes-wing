@@ -238,8 +238,7 @@ void main() {
             DirectFirstRunNativeFixture.origin,
           );
           expect(store.saveCalls.single.apiKey, isNull);
-          expect(store.saveCalls.single.wingLinkOrigin, isNull);
-          expect(store.saveCalls.single.wingLinkToken, isNull);
+
           expect(router.routeInformationProvider.value.uri.path, '/hermes');
           expect(control('hermes-welcome'), findsNothing);
           final contact = directory.contacts.single;

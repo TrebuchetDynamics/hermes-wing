@@ -3,6 +3,42 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('saved endpoint public contract is Agent-only', () {
+    for (final path in [
+      'lib/core/hermes/setup/hermes_endpoint_store.dart',
+      'lib/features/hermes_chat/gateways/hermes_gateway_directory.dart',
+      'lib/main_e2e.dart',
+      'lib/main_connection_production_matrix_e2e.dart',
+    ]) {
+      expect(
+        _restoresEndpointManagement(File(path).readAsStringSync()),
+        isFalse,
+        reason: path,
+      );
+    }
+    final storage = File(
+      'lib/core/hermes/setup/secure_hermes_endpoint_store.dart',
+    ).readAsStringSync();
+    expect(storage, isNot(contains('key: _wingLinkTokenKey(id),')));
+    expect(storage, isNot(contains('core/wing_link/')));
+  });
+
+  test(
+    'saved endpoint guard rejects restored management fields and clients',
+    () {
+      for (final source in [
+        'final String? wingLinkToken;',
+        'String? wingLinkOrigin,',
+        'wingLinkDeviceId: device,',
+        'WingLinkClient()',
+        "import 'core/wing_link/wing_link_client.dart';",
+      ]) {
+        expect(_restoresEndpointManagement(source), isTrue, reason: source);
+      }
+      expect(_restoresEndpointManagement('String? apiKey,'), isFalse);
+    },
+  );
+
   test('obsolete Linux revoke/re-pair product journey cannot return', () {
     expect(
       File(
@@ -463,3 +499,6 @@ List<String> _obsoleteClientAuthority(Directory root) => root
     })
     .map((file) => file.path)
     .toList();
+
+bool _restoresEndpointManagement(String source) =>
+    RegExp(r'wingLink|WingLink|core/wing_link/').hasMatch(source);

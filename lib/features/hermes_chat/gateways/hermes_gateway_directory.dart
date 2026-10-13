@@ -531,11 +531,6 @@ class HermesGatewayDirectory extends ChangeNotifier
       apiKey: config.apiKey,
       label: normalizedLabel,
       profileId: gatewayId,
-      wingLinkOrigin: config.wingLinkOrigin,
-      wingLinkToken: config.wingLinkToken,
-      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
-      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
-      wingLinkDeviceId: config.wingLinkDeviceId,
     );
     final displayLabel = normalizedLabel ?? config.baseUrl;
     _configsById[gatewayId] = HermesEndpointConfig(
@@ -543,11 +538,6 @@ class HermesGatewayDirectory extends ChangeNotifier
       label: normalizedLabel,
       baseUrl: config.baseUrl,
       apiKey: config.apiKey,
-      wingLinkOrigin: config.wingLinkOrigin,
-      wingLinkToken: config.wingLinkToken,
-      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
-      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
-      wingLinkDeviceId: config.wingLinkDeviceId,
     );
     _contacts = sortGatewayContacts([
       for (final contact in _contacts)
@@ -596,28 +586,20 @@ class HermesGatewayDirectory extends ChangeNotifier
         ? null
         : apiKey?.trim().isNotEmpty == true
         ? apiKey!.trim()
-        : config.apiKey;
+        : normalizedBaseUrl == config.baseUrl
+        ? config.apiKey
+        : null;
     final replacement = HermesEndpointConfig(
       id: gatewayId,
       label: config.label,
       baseUrl: normalizedBaseUrl,
       apiKey: replacementApiKey,
-      wingLinkOrigin: config.wingLinkOrigin,
-      wingLinkToken: config.wingLinkToken,
-      wingLinkPendingCredentialId: config.wingLinkPendingCredentialId,
-      wingLinkHostFingerprint: config.wingLinkHostFingerprint,
-      wingLinkDeviceId: config.wingLinkDeviceId,
     );
     await _store.save(
       baseUrl: replacement.baseUrl,
       apiKey: replacement.apiKey,
       label: replacement.label,
       profileId: gatewayId,
-      wingLinkOrigin: replacement.wingLinkOrigin,
-      wingLinkToken: replacement.wingLinkToken,
-      wingLinkPendingCredentialId: replacement.wingLinkPendingCredentialId,
-      wingLinkHostFingerprint: replacement.wingLinkHostFingerprint,
-      wingLinkDeviceId: replacement.wingLinkDeviceId,
     );
     _configsById[gatewayId] = replacement;
     final refreshedAt = _now().toUtc();

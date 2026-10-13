@@ -176,8 +176,6 @@ void main() {
               id: 'saved',
               baseUrl: 'https://agent.example/p/owner',
               apiKey: 'fixture-agent',
-              wingLinkOrigin: 'https://legacy.example',
-              wingLinkToken: 'fixture-link',
             ),
           ],
         );

@@ -15,7 +15,6 @@ import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/core/wing_link/wing_link_client.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
-import 'package:wing/features/profiles/widgets/profile_directory_browser_sheet.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_router.dart';
 
@@ -298,7 +297,7 @@ void main() {
   );
 
   testWidgets(
-    'live directory grant, native browse, file exclusion and revocation',
+    'retained directory service grant, file exclusion and revocation',
     (tester) async {
       final issued = manifest('WING_LIVE_LINK_MANIFEST');
       final binary = Platform.environment['WING_LIVE_LINK_BINARY']!;
@@ -319,52 +318,40 @@ void main() {
       });
       final roots = await client.listDirectoryRoots();
       final granted = roots.singleWhere((row) => row.name == 'grant-root');
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => TextButton(
-                onPressed: () => showProfileDirectoryBrowser(
-                  context,
-                  loadRoots: client.listDirectoryRoots,
-                  loadChildren: (handle, offset) => client.listChildDirectories(
-                    handle: handle,
-                    offset: offset,
-                  ),
-                ),
-                child: const Text('Browse approved folders'),
-              ),
-            ),
-          ),
-        ),
+      expect(roots.length, lessThanOrEqualTo(32));
+      final page = await client.listChildDirectories(
+        handle: granted.handle,
+        limit: 1,
       );
-      await tester.tap(find.text('Browse approved folders'));
-      await until(tester, () => find.text('grant-root').evaluate().isNotEmpty);
-      await tester.tap(find.text('grant-root'));
-      await until(
-        tester,
-        () => find.text('child-folder').evaluate().isNotEmpty,
+      expect(page.directories, hasLength(1));
+      final child = page.directories.single;
+      expect(child.name, 'child-folder');
+      expect(page.nextOffset, isNull);
+      expect(
+        page.directories.map((row) => row.name),
+        isNot(contains('private-file.txt')),
       );
-      expect(find.text('private-file.txt'), findsNothing);
       final revoke = await Process.run(binary, ['directories', 'revoke', id]);
       expect(revoke.exitCode, 0);
       revoked = true;
-      await tester.tap(find.text('child-folder'));
-      await until(
-        tester,
-        () => find.text('No approved folders').evaluate().isNotEmpty,
-      );
-      expect(find.text('child-folder'), findsNothing);
+      for (final handle in [granted.handle, child.handle]) {
+        await expectLater(
+          client.listChildDirectories(handle: handle),
+          throwsA(
+            isA<WingLinkHttpException>().having(
+              (error) => error.statusCode,
+              'status',
+              410,
+            ),
+          ),
+        );
+      }
       expect(
         (await client.listDirectoryRoots()).any(
           (row) => row.handle == granted.handle,
         ),
         isFalse,
       );
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
     },
   );
 }

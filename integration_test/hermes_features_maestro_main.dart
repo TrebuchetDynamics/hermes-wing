@@ -18,7 +18,6 @@ import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/shared/widgets/app_shell.dart';
 import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dart';
-import 'package:wing/features/profiles/widgets/profile_directory_browser_sheet.dart';
 import 'package:wing/features/providers/screens/providers_screen.dart';
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/features/tools/screens/tools_screen.dart';
@@ -144,8 +143,6 @@ class FeatureFixture {
 
   String trustMode = 'valid';
   bool revoked = false;
-  bool grantRevoked = false;
-  int directoryPages = 0;
 
   bool diagnosticsClipboardSafe = false;
   bool? microphonePermissionGranted;
@@ -249,36 +246,6 @@ class FeatureFixture {
     },
   );
 
-  Future<void> browse(BuildContext context) => showProfileDirectoryBrowser(
-    context,
-    loadRoots: () async => grantRevoked
-        ? []
-        : const [
-            WingLinkDirectory(
-              handle: 'dirh_rootAAAAAAAAAAAAAAAAAA',
-              name: 'Fixture root',
-            ),
-          ],
-    loadChildren: (handle, offset) async {
-      if (grantRevoked) throw StateError('fixture grant revoked');
-      directoryPages++;
-      if (handle != 'dirh_rootAAAAAAAAAAAAAAAAAA') {
-        return const WingLinkDirectoryPage(directories: []);
-      }
-      return WingLinkDirectoryPage(
-        directories: [
-          WingLinkDirectory(
-            handle: offset == 0
-                ? 'dirh_childAAAAAAAAAAAAAAAAA'
-                : 'dirh_childBBBBBBBBBBBBBBBBB',
-            name: offset == 0 ? 'Fixture folder one' : 'Fixture folder two',
-          ),
-        ],
-        nextOffset: offset == 0 ? 1 : null,
-      );
-    },
-  );
-
   Widget _hub(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Maestro fixture')),
     body: ListView(
@@ -306,10 +273,6 @@ class FeatureFixture {
             title: Text(entry.key),
             onTap: () => context.push(entry.value),
           ),
-        ListTile(
-          title: const Text('Directories fixture'),
-          onTap: () => browse(context),
-        ),
       ],
     ),
   );
@@ -345,7 +308,6 @@ class FeatureFixture {
                 Text(
                   'Approval decisions: ${channel.respondToApprovalCalls.length}',
                 ),
-                Text('Directory pages: $directoryPages'),
 
                 Text('Management revoked: $revoked'),
                 Text('Diagnostics clipboard safe: $diagnosticsClipboardSafe'),
@@ -408,7 +370,6 @@ class FeatureFixture {
                   'Revoke write grants': channel.revokeWrites,
                   'Fail schedule refresh': () => channel.failJobs = true,
                   'Restore schedule refresh': () => channel.failJobs = false,
-                  'Revoke directory grant': () => grantRevoked = true,
                   'Disconnect fixture': () => channel.setOffline(true),
                   'Reconnect fixture': () => channel.setOffline(false),
                   'Enable session pagination': () =>

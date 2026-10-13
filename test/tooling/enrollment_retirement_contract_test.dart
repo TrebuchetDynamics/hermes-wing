@@ -3,6 +3,47 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('product and fixtures cannot restore the retired directory browser', () {
+    final sources = [
+      ...Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.dart')),
+      File('integration_test/linux_live_feature_journeys_test.dart'),
+      File('integration_test/hermes_features_maestro_main.dart'),
+      File('integration_test/linux_feature_regression_test.dart'),
+    ];
+    for (final file in sources) {
+      final source = file.readAsStringSync();
+      for (final forbidden in [
+        'profile_directory_browser_sheet',
+        'showProfileDirectoryBrowser',
+        'DirectoryRootsLoader',
+        'ChildDirectoriesLoader',
+        'Directories fixture',
+        'Directory pages:',
+        'Revoke directory grant',
+      ]) {
+        expect(source, isNot(contains(forbidden)), reason: file.path);
+      }
+    }
+    for (final path in [
+      'scripts/maestro/fixture/local_setup_accessibility.yaml',
+      'scripts/maestro/fixture/soul_directories.yaml',
+    ]) {
+      final source = File(path).readAsStringSync();
+      for (final forbidden in [
+        'Directories fixture',
+        'Fixture root',
+        'Fixture folder',
+        'Directory pages:',
+        'Revoke directory grant',
+      ]) {
+        expect(source, isNot(contains(forbidden)), reason: path);
+      }
+    }
+  });
+
   test('profile editor has no legacy management approval dependency', () {
     final source = File(
       'lib/features/profiles/widgets/profile_editor_sheet.dart',

@@ -32,28 +32,3 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     file: control.yaml
     env:
       ACTION: Use normal text
-- runFlow:
-    file: open.yaml
-    env:
-      SCREEN: Directories fixture
-- assertVisible: Approved folders
-- setOrientation: LANDSCAPE_LEFT
-- assertVisible: Fixture root
-- tapOn: Fixture root
-- assertVisible: Fixture folder one
-- repeat:
-    times: 20
-    commands:
-      - runFlow:
-          when:
-            notVisible:
-              text: '^Back$'
-              focused: true
-          commands:
-            - pressKey: Tab
-- assertVisible:
-    text: '^Back$'
-    focused: true
-- pressKey: Enter
-- assertVisible: Fixture root
-- setOrientation: PORTRAIT

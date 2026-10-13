@@ -40,7 +40,8 @@
       "status": "partial",
       "tasks": [
         "DOC-DIAGNOSTICS-BACKUP-CONTRACT",
-        "DOC-DIAGNOSTICS-CONTRACT"
+        "DOC-DIAGNOSTICS-CONTRACT",
+        "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY"
       ],
       "title": "Provide safe backup/import, logs and config diagnosis/recovery"
     },

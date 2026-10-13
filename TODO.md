@@ -321,7 +321,8 @@ needs its own exact capability, ownership and qualification evidence.
 
 - [ ] **DOC-DESKTOP-UNINSTALL-EVIDENCE** — Goal: DESKTOP-DELIVERY. Section: Next. Map one Linux uninstall and retained-state evidence gap.
   Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [DESKTOP-DELIVERY](docs/product/hermes-desktop-parity.md#statuses).
   Scope: read-only source, nearest tests and sanitized receipt inspection for this
   outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
   Acceptance: Identify named-target uninstall proof and documented data-retention limits, or the missing procedure. No installs, service changes or deletion.

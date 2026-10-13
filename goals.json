@@ -5565,6 +5565,26 @@
       "depends_on": [],
       "evidence": [
         {
+          "kind": "inspection",
+          "ref": "docs/plans/2026-10-12-wing-landing-onboarding.md#located-source-and-delivery",
+          "result": "pass"
+        }
+      ],
+      "id": "LANDING-ONBOARDING",
+      "priority": 10,
+      "source": "docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome",
+      "status": "unmet",
+      "tasks": [
+        "LANDING-FIRST-REPLY",
+        "LANDING-PAGES-QUALITY",
+        "LANDING-PRODUCT-PROOF"
+      ],
+      "title": "Help existing Hermes users reach first reply through a credible accessible product landing page"
+    },
+    {
+      "depends_on": [],
+      "evidence": [
+        {
           "kind": "executed",
           "ran_at": "2026-10-06T03:00:51.218482+00:00",
           "ref": ".task-evidence/t_2d1d55ab/commands.json (channel; exact argv, exit 0 and 23 passes)",
@@ -6657,6 +6677,22 @@
     },
     {
       "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-FIRST-REPLY",
+      "section": "Now",
+      "status": "open",
+      "title": "Provide connection-first landing entry and exact API readiness guidance"
+    },
+    {
+      "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PAGES-QUALITY",
+      "section": "Now",
+      "status": "open",
+      "title": "Extend artifact-bound Pages quality and delivery regressions"
+    },
+    {
+      "depends_on": [],
       "goal": "M1",
       "id": "PARITY-LIVE-WORKFLOW",
       "section": "Now",
@@ -7212,6 +7248,16 @@
       "section": "Next",
       "status": "open",
       "title": "Download a selected terminal working-directory file to the Wing device with verified bytes"
+    },
+    {
+      "depends_on": [
+        "LANDING-FIRST-REPLY"
+      ],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PRODUCT-PROOF",
+      "section": "Next",
+      "status": "open",
+      "title": "Rebuild responsive product proof, hierarchy and truthful sharing"
     },
     {
       "depends_on": [

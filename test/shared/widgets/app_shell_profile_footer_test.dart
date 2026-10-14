@@ -14,6 +14,7 @@ import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_routes.dart';
+import 'package:wing/router/widgets/chat_workspace_overlay.dart';
 import 'package:wing/shared/security/wing_redaction.dart';
 import 'package:wing/shared/widgets/app_shell.dart';
 import 'package:wing/shared/widgets/app_shell_desktop_style.dart';
@@ -84,6 +85,11 @@ Future<GoRouter> pumpFooter(
             AppShell(location: state.uri.path, child: child),
         routes: [
           GoRoute(
+            path: AppRoutes.hermes,
+            builder: (_, _) =>
+                const Scaffold(body: TextField(key: ValueKey('draft'))),
+          ),
+          GoRoute(
             path: AppRoutes.tools,
             builder: (_, _) =>
                 const Scaffold(body: TextField(key: ValueKey('draft'))),
@@ -91,7 +97,7 @@ Future<GoRouter> pumpFooter(
           GoRoute(
             path: AppRoutes.profiles,
             builder: (_, _) => realDestination
-                ? const ProfilesScreen()
+                ? const ChatWorkspaceOverlay(child: ProfilesScreen())
                 : const Scaffold(body: Text('Profiles destination')),
           ),
         ],

@@ -24,6 +24,7 @@ void main() {
       tester.view.physicalSize = size;
     });
     expect(receipt['phases'], hasLength(4));
+    expect(receipt['recovery'], hasLength(4));
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });

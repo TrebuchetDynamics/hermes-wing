@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/shared/widgets/app_shell.dart';
@@ -21,6 +22,7 @@ Future<Map<String, Object?>> runProfileFooterJourney(
 ) async {
   final phases = <Map<String, Object?>>[];
   final traces = <Map<String, Object?>>[];
+  final recovery = <Map<String, Object?>>[];
   for (final scale in [1.0, 2.0]) {
     await resize(const Size(1280, 720));
     // Keep layer capture coordinates aligned with the framework layout viewport.
@@ -172,12 +174,13 @@ Future<Map<String, Object?>> runProfileFooterJourney(
       }
       await trace(key == LogicalKeyboardKey.space ? 'space' : 'enter');
       // The real destination owns its directory; passive phases must never construct it.
+      final loader = FakeGatewaySummaryLoader(const {});
       container.updateOverrides([
         hermesChannelProvider.overrideWithValue(replacement),
         hermesGatewayDirectoryProvider.overrideWith(
           (_) => directoryFor(
             configs: const [],
-            loader: FakeGatewaySummaryLoader(const {}),
+            loader: loader,
             activeChannel: replacement,
           ),
         ),
@@ -192,7 +195,6 @@ Future<Map<String, Object?>> runProfileFooterJourney(
       router.routerDelegate.addListener(onNavigation);
       await tester.sendKeyEvent(key);
       await tester.pumpAndSettle();
-      router.routerDelegate.removeListener(onNavigation);
       expect(router.routeInformationProvider.value.uri.path, '/profiles');
       expect(navigations, 1);
       expect(find.byType(ProfilesScreen), findsOneWidget);
@@ -211,9 +213,84 @@ Future<Map<String, Object?>> runProfileFooterJourney(
         'sends': 0,
         'mutations': 0,
       });
-      router.go('/tools');
+      final returnSize = key == LogicalKeyboardKey.space
+          ? const Size(390, 720)
+          : const Size(1280, 720);
+      await resize(returnSize);
+      tester.view.physicalSize = returnSize;
       await tester.pumpAndSettle();
+      old.change(footer.displayState(name: 'Retired during management return'));
+      await tester.pumpAndSettle();
+      final chat = find.byKey(const ValueKey('chat-workspace-overlay-close'));
+      await navigation.reach(tester, chat);
+      final returnFocused = navigation.flag(tester, chat, focused: true);
+      expect(returnFocused, isTrue);
+      expect(chat.hitTestable(), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/hermes');
+      expect(find.byType(ProfilesScreen), findsNothing);
+      expect(replacement.state, same(owner));
+      // Ordinary go routing recreates this route-local editor; no draft store is added.
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        isEmpty,
+      );
+      final routeReads = loader.calls.length;
+      expect(
+        routeReads,
+        0,
+        reason: 'No configured inventory source or read grant',
+      );
       passiveOverrides();
+      await tester.pumpAndSettle();
+      replacement.change(
+        owner.copyWith(status: HermesConnectionStatus.disconnected),
+      );
+      await tester.pumpAndSettle();
+      if (returnSize.width == 1280) {
+        expect(
+          tester.getSemantics(footer.manage).label,
+          'Manage profiles — Profile: Not loaded',
+        );
+      }
+      old.change(footer.displayState(name: 'Retired while disconnected'));
+      await tester.pumpAndSettle();
+      replacement.change(owner);
+      await tester.pumpAndSettle();
+      old.change(footer.displayState(name: 'Retired after reconnect'));
+      await tester.pumpAndSettle();
+      expect(replacement.state, same(owner));
+      expect(router.routeInformationProvider.value.uri.path, '/hermes');
+      expect(navigations, 1);
+      router.routerDelegate.removeListener(onNavigation);
+      expect(loader.calls.length, routeReads);
+      if (returnSize.width == 390) {
+        expect(sidebar, findsNothing);
+        await resize(const Size(1280, 720));
+        tester.view.physicalSize = const Size(1280, 720);
+        await tester.pumpAndSettle();
+      }
+      expect(tester.getSemantics(footer.manage).label, safeLabel);
+      await trace(
+        key == LogicalKeyboardKey.space ? 'compact-recovery' : 'wide-recovery',
+      );
+      recovery.add({
+        'scale': scale,
+        'return_width': returnSize.width,
+        'return_focused': returnFocused,
+        'route': router.routeInformationProvider.value.uri.path,
+        'profile': replacement.state.selectedProfileId,
+        'session': replacement.state.activeSessionId,
+        'profiles_route_reads': routeReads,
+        'reconnected': replacement.state.isConnected,
+        'retired_notifications': 3,
+        'draft': tester
+            .widget<EditableText>(find.byType(EditableText))
+            .controller
+            .text,
+      });
+      router.go('/tools');
       await tester.pumpAndSettle();
     }
     await toggleSidebar();
@@ -253,5 +330,6 @@ Future<Map<String, Object?>> runProfileFooterJourney(
     'mutations': 0,
     'phases': phases,
     'focus': traces,
+    'recovery': recovery,
   };
 }

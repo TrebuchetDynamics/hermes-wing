@@ -92,6 +92,7 @@ class HermesApiChannel extends ChangeNotifier
   int _serveQualification = 0;
   bool _qualifyingServeChat = false;
   bool _serveSubmissionPending = false;
+  HermesServeLifecycle? _serveStopPending;
   HermesChannelState _state = const HermesChannelState();
   final _activeStreams = <String, StreamSubscription<HermesStreamEvent>>{};
   final _activeStreamCompleters = <String, Completer<void>>{};

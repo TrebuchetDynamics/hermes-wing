@@ -122,7 +122,9 @@ extension _ServeChatExtension on HermesApiChannel {
         serveChat: HermesServeChatState(
           canSubmit: lifecycle.canSubmit && !_serveSubmissionPending,
           running: lifecycle.running,
-          stopRequested: lifecycle.stopRequested,
+          stopRequested:
+              lifecycle.stopRequested ||
+              identical(_serveStopPending, lifecycle),
           needsReconciliation: lifecycle.needsReconciliation,
         ),
         hasUnreconciledRun: lifecycle.needsReconciliation,
@@ -169,15 +171,22 @@ extension _ServeChatExtension on HermesApiChannel {
 
   Future<bool> _stopServeTurn() async {
     final lifecycle = _serveLifecycle;
+    final target = activeTurnInterruptionTarget;
     if (lifecycle == null ||
-        _state.isSelectingProfile ||
-        lifecycle.disconnected ||
-        !lifecycle.running ||
+        target == null ||
+        identical(_serveStopPending, lifecycle) ||
         lifecycle.stopRequested) {
       return false;
     }
+    _serveStopPending = lifecycle;
+    _syncServeChat(lifecycle);
     try {
       await _persistServeRecovery(lifecycle, uncertain: true);
+      if (!identical(lifecycle, _serveLifecycle) ||
+          !target.matches(activeTurnInterruptionTarget) ||
+          lifecycle.stopRequested) {
+        return false;
+      }
       return await lifecycle.interrupt();
     } catch (_) {
       if (identical(lifecycle, _serveLifecycle)) {
@@ -190,6 +199,7 @@ extension _ServeChatExtension on HermesApiChannel {
       }
       return false;
     } finally {
+      if (identical(_serveStopPending, lifecycle)) _serveStopPending = null;
       if (identical(lifecycle, _serveLifecycle)) _syncServeChat(lifecycle);
     }
   }

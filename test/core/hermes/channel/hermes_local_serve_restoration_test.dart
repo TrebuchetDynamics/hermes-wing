@@ -13,7 +13,7 @@ import '../../../../integration_test/support/local_serve_read_fixture.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late LocalServeChatFixture fixture;
-  late SecureHermesServeRecoveryStore store;
+  late _DelayedRecoveryStore store;
   late HermesApiChannel channel;
   setUp(() async {
     HttpOverrides.global = null;
@@ -21,7 +21,7 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
     fixture = LocalServeChatFixture();
     await fixture.start();
-    store = SecureHermesServeRecoveryStore();
+    store = _DelayedRecoveryStore();
     channel = HermesApiChannel(serveRecoveryStore: store);
     await channel.connectLocalServeReads(
       baseUrl: fixture.origin,
@@ -103,6 +103,67 @@ void main() {
     },
   );
 
+  test(
+    'overlapping public Stops reserve one interrupt before saving',
+    () async {
+      await channel.sendText('synthetic concurrent stop');
+      final target = channel.activeTurnInterruptionTarget!;
+      store.hold = Completer<void>();
+      final first = channel.stopTurn(target);
+      final second = channel.stopTurn(target);
+      channel.stopActiveTurn();
+      await store.entered.future;
+      expect(channel.state.serveChat!.stopRequested, true);
+      expect(fixture.count('session.interrupt'), 0);
+      store.hold!.complete();
+      expect(await first, true);
+      expect(await second, false);
+      expect(fixture.count('session.interrupt'), 1);
+      expect(await channel.stopTurn(target), false);
+      expect((await store.load())!.checkpoint.uncertain, true);
+    },
+  );
+
+  test('terminal event during Stop save prevents the interrupt', () async {
+    await channel.sendText('synthetic terminal race');
+    store.hold = Completer<void>();
+    final stop = channel.stopTurn(channel.activeTurnInterruptionTarget!);
+    await store.entered.future;
+    final terminal = Completer<void>();
+    void observeTerminal() {
+      if (channel.state.serveChat?.running == false && !terminal.isCompleted) {
+        terminal.complete();
+      }
+    }
+
+    channel.addListener(observeTerminal);
+    fixture.event('message.complete', {
+      'text': 'synthetic completed',
+      'status': 'complete',
+    }, session: 'demo-session');
+    await terminal.future;
+    channel.removeListener(observeTerminal);
+    store.hold!.complete();
+    expect(await stop, false);
+    expect(fixture.count('session.interrupt'), 0);
+    expect(channel.state.serveChat!.running, false);
+    expect(channel.state.serveChat!.stopRequested, false);
+    expect(channel.state.hasUnreconciledRun, true);
+  });
+
+  test('owner change during Stop save prevents the old interrupt', () async {
+    await channel.sendText('synthetic owner race');
+    store.hold = Completer<void>();
+    final stop = channel.stopTurn(channel.activeTurnInterruptionTarget!);
+    await store.entered.future;
+    await channel.selectProfile('default');
+    store.hold!.complete();
+    expect(await stop, false);
+    expect(fixture.count('session.interrupt'), 0);
+    expect(channel.state.selectedProfileId, 'default');
+    expect(channel.state.serveChat, isNull);
+  });
+
   test('an abandoned connection cannot erase remembered ownership', () async {
     final before = (await store.load())!.checkpoint;
     final requests = fixture.requests.length;
@@ -131,4 +192,18 @@ void main() {
     expect(channel.state.isConnected, false);
     expect(await store.load(), isNull);
   });
+}
+
+class _DelayedRecoveryStore extends SecureHermesServeRecoveryStore {
+  Completer<void>? hold;
+  final entered = Completer<void>();
+
+  @override
+  Future<void> save(HermesServeRecoverySelection selection) async {
+    if (hold != null) {
+      if (!entered.isCompleted) entered.complete();
+      await hold!.future;
+    }
+    await super.save(selection);
+  }
 }

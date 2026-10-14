@@ -36,8 +36,12 @@ Saved runtime IDs/epochs/cursors are observations, not authority on a new socket
 resume establishes fresh ownership and a fresh barrier even if IDs are unchanged.
 
 Send writes an uncertainty fence before issuing its single RPC and disables
-concurrent local submissions while that storage operation is pending. Stop also
-writes the fence before its RPC. Unknown outcomes remain blocked until an
+concurrent local submissions while that storage operation is pending. Stop reserves
+the captured lifecycle synchronously, exposes the pending state to both public
+callers, and writes the fence before its RPC. After storage it revalidates the
+captured owner and running turn; completion or owner replacement suppresses the
+interrupt, and overlapping Stops cannot issue another interrupt.
+Unknown outcomes remain blocked until an
 explicitly idle authoritative resume and settled canonical history are available.
 Missing idle evidence, a running turn, failed history or advancing events do not
 clear uncertainty. Recovery issues no prompt, approval response or interrupt.
@@ -95,6 +99,14 @@ The new channel tests use separate channel instances, denied history, pending
 history, exact non-default ownership, unknown Stop and late-restoration fencing.
 Secure-store tests cover exact roundtrip, bounded malformed-owner/origin rejection
 without deletion, and preservation of unrelated/inert slots.
+
+Round-one independent review reproduced duplicate interrupts from overlapping
+Stops and an interrupt after completion during a delayed secure-store save.
+Rework adds three delayed-save regressions in the existing restoration target:
+overlapping `stopTurn`/`stopActiveTurn`, terminal-during-save, and changed-owner-
+during-save. Before the fix the first two failed; after the shared-path reservation
+and captured-target revalidation all seven restoration tests passed. The rework
+finish receipt reruns the full scoped gate and binds the new review candidate.
 
 The isolated runner freezes Wing sources, SDK and locked packages, copies only
 existing user-space native development dependencies, and launches two different

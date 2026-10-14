@@ -10,7 +10,6 @@ class AppShellPresentation {
 
   List<AppShellDestination> get destinations => [
     _hermesDestination,
-    _officeDestination,
     _agentsDestination,
     _soulDestination,
     _providersDestination,
@@ -24,7 +23,6 @@ class AppShellPresentation {
 
   List<AppShellDestination> get workflowDestinations => [
     _hermesDestination,
-    _officeDestination,
     _schedulesDestination,
   ];
 
@@ -43,12 +41,6 @@ class AppShellPresentation {
     path: AppRoutes.hermes,
     icon: Icons.chat_bubble_outline_rounded,
     label: localizations.hermesDestination,
-  );
-
-  AppShellDestination get _officeDestination => AppShellDestination(
-    path: AppRoutes.office,
-    icon: Icons.apartment_outlined,
-    label: localizations.officeDestination,
   );
 
   AppShellDestination get _agentsDestination => AppShellDestination(

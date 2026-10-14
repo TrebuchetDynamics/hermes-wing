@@ -82,7 +82,8 @@ void main() {
 
       await tester.tap(find.text('More').hitTestable());
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(ListTile, 'Office'), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Office'), findsNothing);
+      expect(find.widgetWithText(ListTile, 'Schedules'), findsOneWidget);
       expect(find.widgetWithText(ListTile, 'Chat'), findsNothing);
     },
   );
@@ -151,7 +152,7 @@ void main() {
 
     for (final label in [
       'Chat',
-      'Office',
+
       'Profiles',
       'Providers',
       'Tools',
@@ -219,7 +220,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('app-shell-menu-button')));
     await tester.pumpAndSettle();
 
-    for (final label in ['Chat', 'Office', 'Profiles', 'Providers']) {
+    for (final label in ['Chat', 'Profiles', 'Providers']) {
       expect(find.text(label).hitTestable(), findsOneWidget, reason: label);
     }
   });
@@ -488,7 +489,7 @@ void main() {
             child: child!,
           ),
           home: const AppShell(
-            location: AppRoutes.office,
+            location: AppRoutes.gateway,
             child: SizedBox(key: ValueKey('body')),
           ),
         ),
@@ -497,7 +498,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Office'), findsOneWidget);
+    expect(find.text('Office'), findsNothing);
+    expect(find.text('Connections'), findsOneWidget);
     expect(find.byKey(const ValueKey('body')), findsOneWidget);
   });
 

@@ -3,7 +3,7 @@ import 'app_route_location_patterns.dart';
 abstract final class AppRoutes {
   static const hermes = '/hermes';
   static const addHermes = '/hermes/add';
-  static const office = '/office';
+
   static const profiles = '/profiles';
   static const soul = '/soul';
   static const agents = profiles;

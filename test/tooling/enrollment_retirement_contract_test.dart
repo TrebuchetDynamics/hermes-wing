@@ -205,7 +205,7 @@ exit 0
             'scripts/maestro/gateway_connection_settings_qa.yaml',
             'scripts/maestro/providers_models_unsupported_qa.yaml',
             'scripts/maestro/schedules_unsupported_qa.yaml',
-            'scripts/maestro/office_workspace_qa.yaml',
+
             'scripts/maestro/chat_concurrent_sessions_qa.yaml',
             'scripts/maestro/chat_process_recovery_qa.yaml',
             'scripts/maestro/chat_ux_qa.yaml',
@@ -428,9 +428,7 @@ exit 0
         'tools-refresh',
         'installed-skills-search',
         'toolsets-search',
-        'office-agent-search',
-        'office-refresh',
-        'office-open-',
+
         'Providers unavailable',
         'Schedules unavailable',
         'Persona editing unavailable',

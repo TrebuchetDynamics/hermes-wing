@@ -12,7 +12,7 @@ import '../../features/hermes_chat/support/fake_hermes_channel.dart';
 
 const routes = {
   'Chat': AppRoutes.hermes,
-  'Office': AppRoutes.office,
+
   'Schedules': AppRoutes.schedules,
   'Providers': AppRoutes.providers,
   'Connections': AppRoutes.gateway,
@@ -171,6 +171,28 @@ void main() {
           const ValueKey('desktop-utility-navigation'),
         );
         expect(
+          find.descendant(
+            of: workflow,
+            matching: find.bySemanticsLabel('Schedules'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: workflow,
+            matching: find.bySemanticsLabel('Providers'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.descendant(
+            of: utilities,
+            matching: find.bySemanticsLabel('Providers'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.bySemanticsLabel('Office'), findsNothing);
+        expect(
           tester.getTopLeft(workflow).dy,
           lessThan(tester.getTopLeft(utilities).dy),
         );
@@ -241,7 +263,6 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(find.bySemanticsLabel('Workflow'), findsNothing);
       for (final label in [
-        'Office',
         'Schedules',
         'Providers',
         'Tools',

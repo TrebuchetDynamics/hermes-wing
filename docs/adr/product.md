@@ -77,8 +77,9 @@ finds no Office-named reference surface. Retire Wing's standalone Office route a
 navigation instead of enhancing it or calling the Bots roster an Office equivalent.
 Preserve shared Agent profiles/connections/sessions; a canonical Bot Chat port is
 separate and requires its real official contract. Existing completed Office study
-remains history. This decision queues removal; it does not claim the UI is removed
-or authorize implementation, a worker or a schedule in this planning pass.
+remains history. The [retirement candidate](../quality/office-retirement.md) removes
+the Wing-only UI without replacing it with Bots. Its offline checks do not establish
+independent acceptance, canonical delivery or native/live qualification.
 
 ## Wing Link deprecation
 

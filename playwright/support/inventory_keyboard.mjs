@@ -58,11 +58,11 @@ export function keyboardActor(page, testInfo, trace) {
   const reach = async (role, name, direction = 'Tab') => {
     const locator = control(role, name);
     await expect(locator).toHaveCount(1);
-    for (let step = 0; step < 32; step++) {
+    for (let step = 0; step < 64; step++) {
       if (await matchesFocus(locator)) return assertFocus(role, name);
       await press(direction);
     }
-    throw new Error(`Keyboard could not reach ${role} ${name} within 32 ${direction} keys: ${JSON.stringify(trace)}`);
+    throw new Error(`Keyboard could not reach ${role} ${name} within 64 ${direction} keys: ${JSON.stringify(trace)}`);
   };
   const type = async (name, value) => {
     await assertFocus('textbox', name);

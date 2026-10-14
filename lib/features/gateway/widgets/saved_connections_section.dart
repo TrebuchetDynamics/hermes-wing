@@ -57,7 +57,7 @@ class _GatewaySettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final profileCount = group.profileCount > 1
-        ? ' · ${strings.officeAgentCount(group.profileCount)}'
+        ? ' · ${strings.connectionProfileCount(group.profileCount)}'
         : '';
     final primary = directory.gateways.firstWhere(
       (gateway) => gateway.id == group.id,

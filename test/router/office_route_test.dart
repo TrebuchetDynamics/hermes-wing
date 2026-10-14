@@ -11,8 +11,11 @@ import '../features/hermes_chat/support/fake_hermes_channel.dart';
 import '../features/hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 void main() {
-  testWidgets('office route renders inside the app shell', (tester) async {
-    final channel = FakeHermesChannel.disconnected();
+  testWidgets('retired office URL uses fallback without changing the owner', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    final owner = channel.state;
     addTearDown(channel.dispose);
     final directory = directoryFor(
       configs: const [],
@@ -29,7 +32,7 @@ void main() {
     addTearDown(container.dispose);
     final router = container.read(routerProvider);
     addTearDown(router.dispose);
-    router.go(AppRoutes.office);
+    router.go('/office');
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -43,8 +46,23 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Office'), findsWidgets);
-    expect(find.text('No Hermes profiles available'), findsOneWidget);
+    expect(find.text('Page not found'), findsOneWidget);
+    expect(find.byType(AppShell), findsNothing);
+    expect(channel.state.selectedProfileId, owner.selectedProfileId);
+    expect(channel.state.activeSessionId, owner.activeSessionId);
+    expect(channel.connectCalls, isEmpty);
+    expect(channel.createSessionCalls, isEmpty);
+    expect(channel.selectProfileCalls, isEmpty);
+    expect(channel.selectSessionCalls, isEmpty);
+    expect(channel.sentTextAttachments, isEmpty);
+    await tester.tap(find.text('Return to chat'));
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, AppRoutes.hermes);
     expect(find.byType(AppShell), findsOneWidget);
+    expect(channel.state.activeSessionId, owner.activeSessionId);
+    expect(channel.createSessionCalls, isEmpty);
+    expect(channel.selectSessionCalls, isEmpty);
+    expect(channel.sentTextAttachments, isEmpty);
+    expect(tester.takeException(), isNull);
   });
 }

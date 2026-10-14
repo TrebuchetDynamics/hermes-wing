@@ -2068,8 +2068,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         context.go(AppRoutes.tools);
       case 'gateway':
         context.go(AppRoutes.gateway);
-      case 'office':
-        context.go(AppRoutes.office);
+
       case 'profiles':
         ChatWorkspaceOverlay.open(context, AppRoutes.profiles);
       case 'providers' || 'model':
@@ -2298,12 +2297,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       description: strings.localCommandGatewayDescription,
       icon: Icons.dns_outlined,
     ),
-    _LocalSlashCommand(
-      id: 'office',
-      command: '/office',
-      description: strings.localCommandOfficeDescription,
-      icon: Icons.apartment_outlined,
-    ),
+
     _LocalSlashCommand(
       id: 'profiles',
       command: '/profiles',

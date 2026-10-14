@@ -181,7 +181,7 @@
   "appTitle": "Hermes Wing",
   "hermesDestination": "Chat",
   "agentsDestination": "Profiles",
-  "officeDestination": "Office",
+
   "settingsDestination": "Settings",
   "moreDestinations": "More",
   "openMoreDestinations": "Open more destinations",
@@ -355,52 +355,15 @@
   "gatewayDisconnectTitle": "Disconnect from this gateway?",
   "gatewayDisconnectBody": "Hermes Wing will close this connection. The saved gateway and API key stay on this device so you can reconnect later.",
   "gatewayDisconnectFailed": "Could not disconnect from this gateway.",
-  "officeTitle": "Office",
-  "officeSubtitle": "Pick a profile to continue working.",
-  "officeAgentCount": "{count, plural, =1{1 profile} other{{count} profiles}}",
-  "@officeAgentCount": {
+  "connectionProfileCount": "{count, plural, =1{1 profile} other{{count} profiles}}",
+  "@connectionProfileCount": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "officeSearchLabel": "Search profiles and gateways",
-  "officeClearSearch": "Clear search",
-  "officeShowingCount": "Showing {visible} of {total} profiles",
-  "@officeShowingCount": {
-    "placeholders": {
-      "visible": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "officeNoAgentsTitle": "No Hermes profiles available",
-  "officeNoAgentsBody": "Connect or refresh a saved gateway to populate the Office.",
-  "officeOpenSettings": "Open settings",
-  "officeNoMatches": "No profiles match this search.",
-  "officeRefresh": "Refresh Office",
-  "officeOpenChat": "Open chat",
-  "officeProfileManagementOnly": "Management only",
-  "officeCurrentChat": "Current chat",
-  "officeReturnToChat": "Return to chat",
-  "officeOpenFailed": "Could not open this Hermes profile. Refresh and try again.",
-  "officeGatewayDefault": "Gateway endpoint contact",
-  "officeSessionCount": "{count, plural, =1{1 session} other{{count} sessions}}",
-  "@officeSessionCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "officeStatusOnline": "Online",
-  "officeStatusOffline": "Offline",
-  "officeStatusRefreshing": "Refreshing",
-  "officeStatusAuthenticationFailed": "Authentication required",
+
   "installedSkillsTitle": "Installed skills",
   "enabledToolsetsTitle": "Enabled toolsets",
   "toolsetsTitle": "Toolsets",
@@ -754,7 +717,7 @@
   "localCommandToolsDescription": "Open installed skills and toolsets.",
   "localCommandSkillsDescription": "Open installed skills.",
   "localCommandGatewayDescription": "Open gateway status.",
-  "localCommandOfficeDescription": "Open the accessible profile workspace.",
+
   "localCommandAgentsDescription": "Open gateway-scoped profiles.",
   "localCommandProvidersDescription": "Open providers and models.",
   "localCommandModelDescription": "Open provider and model management.",
@@ -2174,7 +2137,7 @@
   "themePaletteForest": "Forest",
   "themePaletteAmber": "Amber",
   "themePaletteMulberry": "Mulberry",
-  "tipMoreDestinations": "Chat, Discover, Office, and Tasks are below. Profiles, Providers, Tools, Memory, and Gateway administration live under More.",
+  "tipMoreDestinations": "Chat, Profiles, and Connections are below. Schedules, Providers, Tools, Persona, and Settings live under More.",
   "tipVoice": "Tap the microphone to talk. Hold it to dictate and review before sending.",
   "tipApprovals": "Hermes asks before sensitive actions. Review each request, then approve once, allow for the session, always allow, or deny.",
   "tipDismissTooltip": "Dismiss tip",

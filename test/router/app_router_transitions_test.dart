@@ -282,7 +282,7 @@ void main() {
       final constants = <String, String>{
         'AppRoutes.hermes': AppRoutes.hermes,
         'AppRoutes.addHermes': AppRoutes.addHermes,
-        'AppRoutes.office': AppRoutes.office,
+
         'AppRoutes.profiles': AppRoutes.profiles,
         'AppRoutes.agents': AppRoutes.agents,
         'AppRoutes.legacyAgents': AppRoutes.legacyAgents,

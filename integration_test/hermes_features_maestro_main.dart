@@ -20,7 +20,7 @@ import 'package:wing/features/local_setup/screens/termux_hermes_setup_screen.dar
 import 'package:wing/features/providers/screens/providers_screen.dart';
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/features/tools/screens/tools_screen.dart';
-import 'package:wing/features/office/screens/office_screen.dart';
+
 import 'package:wing/features/schedules/screens/schedules_screen.dart';
 import 'package:wing/features/settings/providers/theme_settings_provider.dart';
 import 'package:wing/features/settings/screens/settings_screen.dart';
@@ -98,7 +98,7 @@ class FeatureFixture {
   static const reviewRoutes = [
     '/profiles',
     '/tools',
-    '/office',
+
     '/providers',
     '/soul',
     '/gateway',
@@ -162,7 +162,7 @@ class FeatureFixture {
         for (final route in <String, Widget>{
           '/profiles': const ProfilesScreen(),
           '/tools': const ToolsScreen(),
-          '/office': const OfficeScreen(),
+
           '/providers': const ProvidersScreen(),
           '/soul': const SoulScreen(),
           '/settings': const SettingsScreen(),
@@ -204,7 +204,7 @@ class FeatureFixture {
         for (final entry in const <String, String>{
           'Profiles fixture': '/profiles',
           'Tools fixture': '/tools',
-          'Office fixture': '/office',
+
           'Providers fixture': '/providers',
           'SOUL fixture': '/soul',
           'Gateway fixture': '/gateway',

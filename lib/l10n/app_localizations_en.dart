@@ -607,9 +607,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentsDestination => 'Profiles';
 
   @override
-  String get officeDestination => 'Office';
-
-  @override
   String get settingsDestination => 'Settings';
 
   @override
@@ -1023,13 +1020,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not disconnect from this gateway.';
 
   @override
-  String get officeTitle => 'Office';
-
-  @override
-  String get officeSubtitle => 'Pick a profile to continue working.';
-
-  @override
-  String officeAgentCount(int count) {
+  String connectionProfileCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1038,75 +1029,6 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get officeSearchLabel => 'Search profiles and gateways';
-
-  @override
-  String get officeClearSearch => 'Clear search';
-
-  @override
-  String officeShowingCount(int visible, int total) {
-    return 'Showing $visible of $total profiles';
-  }
-
-  @override
-  String get officeNoAgentsTitle => 'No Hermes profiles available';
-
-  @override
-  String get officeNoAgentsBody =>
-      'Connect or refresh a saved gateway to populate the Office.';
-
-  @override
-  String get officeOpenSettings => 'Open settings';
-
-  @override
-  String get officeNoMatches => 'No profiles match this search.';
-
-  @override
-  String get officeRefresh => 'Refresh Office';
-
-  @override
-  String get officeOpenChat => 'Open chat';
-
-  @override
-  String get officeProfileManagementOnly => 'Management only';
-
-  @override
-  String get officeCurrentChat => 'Current chat';
-
-  @override
-  String get officeReturnToChat => 'Return to chat';
-
-  @override
-  String get officeOpenFailed =>
-      'Could not open this Hermes profile. Refresh and try again.';
-
-  @override
-  String get officeGatewayDefault => 'Gateway endpoint contact';
-
-  @override
-  String officeSessionCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count sessions',
-      one: '1 session',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get officeStatusOnline => 'Online';
-
-  @override
-  String get officeStatusOffline => 'Offline';
-
-  @override
-  String get officeStatusRefreshing => 'Refreshing';
-
-  @override
-  String get officeStatusAuthenticationFailed => 'Authentication required';
 
   @override
   String get installedSkillsTitle => 'Installed skills';
@@ -1884,10 +1806,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localCommandGatewayDescription => 'Open gateway status.';
-
-  @override
-  String get localCommandOfficeDescription =>
-      'Open the accessible profile workspace.';
 
   @override
   String get localCommandAgentsDescription => 'Open gateway-scoped profiles.';
@@ -4146,7 +4064,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipMoreDestinations =>
-      'Chat, Discover, Office, and Tasks are below. Profiles, Providers, Tools, Memory, and Gateway administration live under More.';
+      'Chat, Profiles, and Connections are below. Schedules, Providers, Tools, Persona, and Settings live under More.';
 
   @override
   String get tipVoice =>

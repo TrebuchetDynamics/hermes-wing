@@ -378,7 +378,7 @@ void main() {
       const titles = [
         'Profiles',
         'Tools',
-        'Office',
+
         'Providers',
         'Persona',
         'Connections',

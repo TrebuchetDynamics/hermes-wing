@@ -165,7 +165,7 @@ void main() {
           'providers': '/providers',
           'tools': '/tools',
           'schedules': '/tasks',
-          'office': '/office',
+
           'persona': '/soul',
           'gateway': '/gateway',
           'settings': '/settings',

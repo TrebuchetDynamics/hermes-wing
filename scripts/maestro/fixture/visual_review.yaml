@@ -8,7 +8,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     visible: Maestro fixture
     timeout: 30000
 - tapOn: Start visual review
-- assertVisible: '1 / 26'
+- assertVisible: '1 / 24'
 - assertVisible: '^Profiles$'
 - takeScreenshot: light-profiles
 # The fixture advances synchronously; retrying can skip a screen.
@@ -19,12 +19,6 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     waitToSettleTimeoutMs: 0
 - assertVisible: '^Tools$'
 - takeScreenshot: light-tools
-- tapOn:
-    text: Next screen
-    retryTapIfNoChange: false
-    waitToSettleTimeoutMs: 0
-- assertVisible: '^Office$'
-- takeScreenshot: light-office
 - tapOn:
     text: Next screen
     retryTapIfNoChange: false
@@ -90,7 +84,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     text: Next screen
     retryTapIfNoChange: false
     waitToSettleTimeoutMs: 0
-- assertVisible: '14 / 26'
+- assertVisible: '13 / 24'
 - assertVisible: '^Profiles$'
 - takeScreenshot: dark-profiles
 - tapOn:
@@ -99,12 +93,6 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     waitToSettleTimeoutMs: 0
 - assertVisible: '^Tools$'
 - takeScreenshot: dark-tools
-- tapOn:
-    text: Next screen
-    retryTapIfNoChange: false
-    waitToSettleTimeoutMs: 0
-- assertVisible: '^Office$'
-- takeScreenshot: dark-office
 - tapOn:
     text: Next screen
     retryTapIfNoChange: false

@@ -55,17 +55,26 @@ test("unknown routes render a bounded not-found screen", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Office renders its connected empty state and settings recovery action", async ({
+test("retired Office URL uses not-found recovery without owner mutation", async ({
   page,
 }) => {
   await openConnected(page, "/office");
-
+  await expect.poll(() => page.evaluate(() => JSON.parse(globalThis.wingE2EHermesStateSummary()).status)).toBe('connected');
+  const owner = await page.evaluate(() => JSON.parse(globalThis.wingE2EHermesStateSummary()));
+  const mutations = [];
+  page.on('request', request => {
+    if (request.method() !== 'GET') mutations.push(new URL(request.url()).pathname);
+  });
   await expect(
-    page.getByRole("group", { name: /No Hermes profiles available/ }),
+    page.getByRole("group", { name: 'Page not found Hermes Wing does not have a screen for /office.' }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Open settings" }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Office', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Return to chat', exact: true }).press('Enter');
+  await expect(page).toHaveURL(/#\/hermes$/);
+  const after = await page.evaluate(() => JSON.parse(globalThis.wingE2EHermesStateSummary()));
+  expect(after.active_session_id).toBe(owner.active_session_id);
+  expect(after.selected_profile_id).toBe(owner.selected_profile_id);
+  expect(mutations).toEqual([]);
 });
 
 test("Profiles fail closed when profile administration is not advertised", async ({

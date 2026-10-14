@@ -11,7 +11,7 @@ import '../../features/hermes_chat/screens/hermes_chat_screen.dart';
 import '../../features/local_setup/screens/local_hermes_setup_screen.dart';
 import '../../features/local_setup/providers/local_hermes_setup_provider.dart';
 import '../../features/local_setup/screens/termux_hermes_setup_screen.dart';
-import '../../features/office/screens/office_screen.dart';
+
 import '../../features/providers/screens/providers_screen.dart';
 import '../../features/schedules/screens/schedules_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
@@ -87,13 +87,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 initiallyEditingConnection:
                     state.uri.queryParameters['connect'] == '1',
               ),
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.office,
-            pageBuilder: (context, state) => wingFadeThroughPage(
-              key: state.pageKey,
-              child: const OfficeScreen(),
             ),
           ),
 

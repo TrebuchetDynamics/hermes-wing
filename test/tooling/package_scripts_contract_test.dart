@@ -654,7 +654,7 @@ void main() {
       'scripts/maestro/multi_gateway_chat.yaml',
       'scripts/maestro/providers_models_unsupported_qa.yaml',
       'scripts/maestro/tools_inventory_qa.yaml',
-      'scripts/maestro/office_workspace_qa.yaml',
+
       'scripts/maestro/schedules_unsupported_qa.yaml',
       'scripts/maestro/gateway_status_qa.yaml',
       'scripts/maestro/gateway_connection_settings_qa.yaml',

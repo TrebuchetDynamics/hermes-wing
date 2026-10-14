@@ -9,7 +9,9 @@ Task `t_1083781a` separates existing working destinations in the production shel
 
 At widths of 600 logical pixels and above:
 
-- Workflow contains Chat, Office and Schedules, in that order.
+- Workflow contains Chat and Schedules, in that order. Wing-only Office is retired;
+  see the [candidate receipt](../quality/office-retirement.md). Historical verification
+  below describes the earlier nine-destination shell, not current Office support.
 - Utilities contains Providers, Connections, Tools, Profiles, Persona and Settings.
 - Expanded headings and a divider visibly separate the groups. Named semantic groups remain available in icon-only mode; every destination remains a named button with exact selected state. Chromium exposes that state as `aria-current="true"`.
 - Utilities sit toward the bottom when space permits. Both groups share a scroll area at short heights. Keyboard focus scrolls its destination into view; the collapse control stays outside that scroll area.

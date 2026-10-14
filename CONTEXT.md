@@ -8,7 +8,7 @@ Existing Wing test results do not establish parity with this corrected reference
 Hermes Wing targets a 1:1 Flutter port of official Hermes Desktop. Implement only
 features traced to `hermes-agent/apps/desktop`; platform/accessibility adaptations
 must preserve those outcomes, not add Wing-only capabilities. Standalone Office
-is non-reference and queued for removal, not enhancement. See
+is retired from this candidate; shared Chat, Profiles and Connections remain. See
 [feature admission](docs/adr/product.md#official-desktop-features-only).
 Hermes Agent owns profiles, Projects, providers, models, configuration, sessions,
 runs, tools, approvals, schedules, memory and gateway state. Wing never creates a

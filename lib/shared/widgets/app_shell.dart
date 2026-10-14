@@ -395,6 +395,9 @@ class _DesktopShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final style = AppShellDesktopStyle.forBrightness(theme.brightness);
+    final workflowCount = AppShellPresentation(
+      AppLocalizations.of(context),
+    ).workflowDestinations.length;
     return Scaffold(
       body: Column(
         children: [
@@ -485,7 +488,7 @@ class _DesktopShell extends StatelessWidget {
                                                       context,
                                                     ).shellWorkflowNavigation,
                                                     start: 0,
-                                                    end: 3,
+                                                    end: workflowCount,
                                                   ),
                                                   if (expanded)
                                                     const Padding(
@@ -511,7 +514,7 @@ class _DesktopShell extends StatelessWidget {
                                                     label: AppLocalizations.of(
                                                       context,
                                                     ).shellUtilityNavigation,
-                                                    start: 3,
+                                                    start: workflowCount,
                                                     end: destinations.length,
                                                   ),
                                                 ],

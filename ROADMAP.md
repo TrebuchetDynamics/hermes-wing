@@ -430,8 +430,9 @@ M6 integrates accepted applicable outcomes and names deferrals. No cards created
   denial/cancel, large output, keyboard/CJK IME, 200% text, reduced motion and
   TalkBack receipts on named Android; corresponding browser/native desktop checks
   only on targets exercised. Keep [message-action accessibility](test/features/hermes_chat/screens/hermes_chat_message_actions_a11y_test.dart).
-  Voice needs separate physical microphone/acoustic receipts; Office keeps its 2D
-  equivalent. Account/wallet/3D additions cannot bypass separate authority gates.
+  Voice needs separate physical microphone/acoustic receipts. Wing-only Office is
+  retired in the candidate, not a 2D/3D parity target; account/wallet additions
+  require actual official-reference admission and separate authority gates.
 
 ### M6 — Deliver an integrated, qualified alpha
 

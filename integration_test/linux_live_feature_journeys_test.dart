@@ -179,116 +179,89 @@ void main() {
     },
   );
 
-  testWidgets(
-    'live Tools search/refresh, Office activation and capability gaps',
-    (tester) async {
-      final agent = manifest('WING_LIVE_PROFILE_MANIFEST');
+  testWidgets('live Tools search/refresh and capability gaps', (tester) async {
+    final agent = manifest('WING_LIVE_PROFILE_MANIFEST');
 
-      final channel = HermesApiChannel();
-      final store = FakeHermesEndpointStore(
-        profiles: [
-          HermesEndpointConfig(
-            id: 'linux-live-journeys',
-            label: 'Linux test gateway',
-            baseUrl: agent['origin'] as String,
-            apiKey: agent['token'] as String,
-          ),
-        ],
-      );
-      final container = ProviderContainer(
-        overrides: [
-          hermesEndpointStoreProvider.overrideWithValue(store),
-          hermesChannelProvider.overrideWithValue(channel),
-        ],
-      );
-      addTearDown(container.dispose);
-      addTearDown(channel.dispose);
-      tester.view.physicalSize = const Size(1440, 1000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(
-        UncontrolledProviderScope(container: container, child: const WingApp()),
-      );
-      final directory = container.read(hermesGatewayDirectoryProvider);
-      await directory.start();
-      await directory.refresh();
-      await directory.activateGateway('linux-live-journeys');
-      expect(channel.state.isConnected, isTrue);
-      final router = container.read(routerProvider);
-      router.go('/tools');
-      await until(
-        tester,
-        () => find.byKey(const ValueKey('tools-refresh')).evaluate().isNotEmpty,
-      );
-      await tester.tap(find.byKey(const ValueKey('tools-refresh')));
-      await until(
-        tester,
-        () =>
-            tester
-                .widget<IconButton>(find.byKey(const ValueKey('tools-refresh')))
-                .onPressed !=
-            null,
-      );
-      expect(channel.state.optionalResourceErrors.isEmpty, isTrue);
-      for (final key in ['installed-skills-search', 'toolsets-search']) {
-        final field = find.byKey(ValueKey(key));
-        if (field.evaluate().isEmpty) {
-          continue; // A genuinely empty inventory has no filter.
-        }
-        await tester.ensureVisible(field);
-        await tester.enterText(field, 'wing-nonexistent-search-result');
-        await tester.pumpAndSettle();
-        expect(find.textContaining('match this search.'), findsWidgets);
-        await tester.enterText(field, '');
-        await tester.pumpAndSettle();
-      }
-      router.go('/office');
-      final search = find.byKey(const ValueKey('office-agent-search'));
-      await until(tester, () => search.evaluate().isNotEmpty);
-      await tester.enterText(search, 'wing-nonexistent-search-result');
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(const ValueKey('office-open-linux-live-journeys-default')),
-        findsNothing,
-      );
-      await tester.enterText(search, '');
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('office-refresh')));
-      await until(tester, () => !directory.refreshing);
-      final open = find.byKey(
-        const ValueKey('office-open-linux-live-journeys-default'),
-      );
-      await tester.ensureVisible(open);
-      await tester.tap(open);
-      await until(
-        tester,
-        () => router.routeInformationProvider.value.uri.path == '/hermes',
-      );
-      expect(channel.state.isConnected, isTrue);
-      for (final entry in {
-        '/providers': 'Providers unavailable',
-        '/tasks': 'Schedules unavailable',
-      }.entries) {
-        router.go(entry.key);
-        await until(tester, () => find.text(entry.value).evaluate().isNotEmpty);
-        expect(find.text('Manage credential'), findsNothing);
-        expect(find.text('Assign'), findsNothing);
-      }
-      router.go('/soul');
-      final personaGate = channel.state.selectedProfile == null
-          ? 'Choose a profile'
-          : 'Persona editing unavailable';
-      await until(tester, () => find.text(personaGate).evaluate().isNotEmpty);
-      expect(
-        channel.state.capabilities!.endpoints.containsKey(
-          'profile_soul_update',
+    final channel = HermesApiChannel();
+    final store = FakeHermesEndpointStore(
+      profiles: [
+        HermesEndpointConfig(
+          id: 'linux-live-journeys',
+          label: 'Linux test gateway',
+          baseUrl: agent['origin'] as String,
+          apiKey: agent['token'] as String,
         ),
-        isFalse,
-      );
-      expect(find.widgetWithText(FilledButton, 'Save'), findsNothing);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-    },
-  );
+      ],
+    );
+    final container = ProviderContainer(
+      overrides: [
+        hermesEndpointStoreProvider.overrideWithValue(store),
+        hermesChannelProvider.overrideWithValue(channel),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(channel.dispose);
+    tester.view.physicalSize = const Size(1440, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const WingApp()),
+    );
+    final directory = container.read(hermesGatewayDirectoryProvider);
+    await directory.start();
+    await directory.refresh();
+    await directory.activateGateway('linux-live-journeys');
+    expect(channel.state.isConnected, isTrue);
+    final router = container.read(routerProvider);
+    router.go('/tools');
+    await until(
+      tester,
+      () => find.byKey(const ValueKey('tools-refresh')).evaluate().isNotEmpty,
+    );
+    await tester.tap(find.byKey(const ValueKey('tools-refresh')));
+    await until(
+      tester,
+      () =>
+          tester
+              .widget<IconButton>(find.byKey(const ValueKey('tools-refresh')))
+              .onPressed !=
+          null,
+    );
+    expect(channel.state.optionalResourceErrors.isEmpty, isTrue);
+    for (final key in ['installed-skills-search', 'toolsets-search']) {
+      final field = find.byKey(ValueKey(key));
+      if (field.evaluate().isEmpty) {
+        continue; // A genuinely empty inventory has no filter.
+      }
+      await tester.ensureVisible(field);
+      await tester.enterText(field, 'wing-nonexistent-search-result');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('match this search.'), findsWidgets);
+      await tester.enterText(field, '');
+      await tester.pumpAndSettle();
+    }
+    expect(channel.state.isConnected, isTrue);
+    for (final entry in {
+      '/providers': 'Providers unavailable',
+      '/tasks': 'Schedules unavailable',
+    }.entries) {
+      router.go(entry.key);
+      await until(tester, () => find.text(entry.value).evaluate().isNotEmpty);
+      expect(find.text('Manage credential'), findsNothing);
+      expect(find.text('Assign'), findsNothing);
+    }
+    router.go('/soul');
+    final personaGate = channel.state.selectedProfile == null
+        ? 'Choose a profile'
+        : 'Persona editing unavailable';
+    await until(tester, () => find.text(personaGate).evaluate().isNotEmpty);
+    expect(
+      channel.state.capabilities!.endpoints.containsKey('profile_soul_update'),
+      isFalse,
+    );
+    expect(find.widgetWithText(FilledButton, 'Save'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }

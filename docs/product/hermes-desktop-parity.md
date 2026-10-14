@@ -334,7 +334,7 @@ controls and complete composition remain gaps. The [global session modal](../qua
 | Account/OAuth/credential pools, credits, wallet balances                      | contract-blocked | No account route                                                  | Exact account/provider/wallet contracts and secure OAuth handoff       |
 | SSH/Docker/WSL remote backends                                                | contract-blocked | Typed endpoints and externally managed SSH tunnel access          | Reviewed native SSH forwarding and separate typed Docker/WSL lifecycle contracts |
 | Web preview, file viewer, attachments/media                                   | partial          | Text/image attachments and bounded transcript media               | Advertised artifact/preview contracts and directory grants             |
-| Standalone Wing Office | retirement planned | Existing Wing-only 2D contact overview; no Office-named official reference at 158fd638 | Remove route/navigation while preserving shared Agent access; not a Desktop parity gap |
+| Standalone Wing Office | retired in candidate | No Office route, navigation or feature runtime; shared Agent access retained | [Offline checks](../quality/office-retirement.md); independent review/delivery pending, not a Desktop parity gap |
 | Auto-updates and desktop window/install flows                                 | partial          | Linux install/build and native menu commands                      | Signed manifest, activation, health, and rollback evidence             |
 | Full Desktop slash-command catalog                                            | partial          | Curated local `/usage`, `/model`, `/persona`, `/version` commands | Agent command catalog/completion contract; no arbitrary shell dispatch |
 

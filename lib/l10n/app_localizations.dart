@@ -1120,12 +1120,6 @@ abstract class AppLocalizations {
   /// **'Profiles'**
   String get agentsDestination;
 
-  /// No description provided for @officeDestination.
-  ///
-  /// In en, this message translates to:
-  /// **'Office'**
-  String get officeDestination;
-
   /// No description provided for @settingsDestination.
   ///
   /// In en, this message translates to:
@@ -1816,137 +1810,11 @@ abstract class AppLocalizations {
   /// **'Could not disconnect from this gateway.'**
   String get gatewayDisconnectFailed;
 
-  /// No description provided for @officeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Office'**
-  String get officeTitle;
-
-  /// No description provided for @officeSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick a profile to continue working.'**
-  String get officeSubtitle;
-
-  /// No description provided for @officeAgentCount.
+  /// No description provided for @connectionProfileCount.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 profile} other{{count} profiles}}'**
-  String officeAgentCount(int count);
-
-  /// No description provided for @officeSearchLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Search profiles and gateways'**
-  String get officeSearchLabel;
-
-  /// No description provided for @officeClearSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear search'**
-  String get officeClearSearch;
-
-  /// No description provided for @officeShowingCount.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing {visible} of {total} profiles'**
-  String officeShowingCount(int visible, int total);
-
-  /// No description provided for @officeNoAgentsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'No Hermes profiles available'**
-  String get officeNoAgentsTitle;
-
-  /// No description provided for @officeNoAgentsBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect or refresh a saved gateway to populate the Office.'**
-  String get officeNoAgentsBody;
-
-  /// No description provided for @officeOpenSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Open settings'**
-  String get officeOpenSettings;
-
-  /// No description provided for @officeNoMatches.
-  ///
-  /// In en, this message translates to:
-  /// **'No profiles match this search.'**
-  String get officeNoMatches;
-
-  /// No description provided for @officeRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh Office'**
-  String get officeRefresh;
-
-  /// No description provided for @officeOpenChat.
-  ///
-  /// In en, this message translates to:
-  /// **'Open chat'**
-  String get officeOpenChat;
-
-  /// No description provided for @officeProfileManagementOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Management only'**
-  String get officeProfileManagementOnly;
-
-  /// No description provided for @officeCurrentChat.
-  ///
-  /// In en, this message translates to:
-  /// **'Current chat'**
-  String get officeCurrentChat;
-
-  /// No description provided for @officeReturnToChat.
-  ///
-  /// In en, this message translates to:
-  /// **'Return to chat'**
-  String get officeReturnToChat;
-
-  /// No description provided for @officeOpenFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open this Hermes profile. Refresh and try again.'**
-  String get officeOpenFailed;
-
-  /// No description provided for @officeGatewayDefault.
-  ///
-  /// In en, this message translates to:
-  /// **'Gateway endpoint contact'**
-  String get officeGatewayDefault;
-
-  /// No description provided for @officeSessionCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 session} other{{count} sessions}}'**
-  String officeSessionCount(int count);
-
-  /// No description provided for @officeStatusOnline.
-  ///
-  /// In en, this message translates to:
-  /// **'Online'**
-  String get officeStatusOnline;
-
-  /// No description provided for @officeStatusOffline.
-  ///
-  /// In en, this message translates to:
-  /// **'Offline'**
-  String get officeStatusOffline;
-
-  /// No description provided for @officeStatusRefreshing.
-  ///
-  /// In en, this message translates to:
-  /// **'Refreshing'**
-  String get officeStatusRefreshing;
-
-  /// No description provided for @officeStatusAuthenticationFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Authentication required'**
-  String get officeStatusAuthenticationFailed;
+  String connectionProfileCount(int count);
 
   /// No description provided for @installedSkillsTitle.
   ///
@@ -3289,12 +3157,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open gateway status.'**
   String get localCommandGatewayDescription;
-
-  /// No description provided for @localCommandOfficeDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Open the accessible profile workspace.'**
-  String get localCommandOfficeDescription;
 
   /// No description provided for @localCommandAgentsDescription.
   ///
@@ -6850,7 +6712,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipMoreDestinations.
   ///
   /// In en, this message translates to:
-  /// **'Chat, Discover, Office, and Tasks are below. Profiles, Providers, Tools, Memory, and Gateway administration live under More.'**
+  /// **'Chat, Profiles, and Connections are below. Schedules, Providers, Tools, Persona, and Settings live under More.'**
   String get tipMoreDestinations;
 
   /// No description provided for @tipVoice.

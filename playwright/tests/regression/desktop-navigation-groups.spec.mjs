@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { APP_URL as APP, enableFlutterAccessibility } from '../../support/flutter_semantics.mjs';
 import { keyboardActor, scopedInventory } from '../../support/inventory_keyboard.mjs';
 
-const workflow = [['Chat', '/hermes'], ['Office', '/office'], ['Schedules', '/tasks']];
+const workflow = [['Chat', '/hermes'], ['Schedules', '/tasks']];
 const utilities = [['Providers', '/providers'], ['Connections', '/gateway'], ['Tools', '/tools'],
   ['Profiles', '/profiles'], ['Persona', '/soul'], ['Settings', '/settings']];
 const destinations = [...workflow, ...utilities];
@@ -35,18 +35,19 @@ test('desktop groups preserve named route selection, collapse and compact More r
   try {
     await scopedInventory(page, []);
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto(`${APP}#/profiles`);
+    await page.goto(`${APP}#/gateway`);
     await page.waitForFunction(() => typeof globalThis.wingE2EHermesConnect === 'function');
     await enableFlutterAccessibility(page, { delay: 500 });
     await page.evaluate(() => { globalThis.wingE2EReduceMotion(); globalThis.wingE2EHermesConnect(); });
     await expect.poll(owner).toEqual({ profile: 'default', session: 'e2e-hermes-session', provider: null, model: null, status: 'connected' });
     const beforeOwner = await owner();
+    await expect(page.getByRole('button', { name: 'Office', exact: true })).toHaveCount(0);
     await expect(actor.control('button', 'Collapse')).toHaveAttribute('aria-expanded', 'true');
     for (const [name] of workflow) await expect(group('Workflow').getByRole('button', { name, exact: true })).toHaveCount(1);
     for (const [name] of utilities) await expect(group('Utilities').getByRole('button', { name, exact: true })).toHaveCount(1);
     const first = await group('Workflow').boundingBox(), second = await group('Utilities').boundingBox();
     expect(first.y + first.height).toBeLessThan(second.y);
-    await selected('Profiles');
+    await selected('Connections');
     snapshots.push(await page.locator('body').ariaSnapshot());
 
     for (const collapsed of [false, true]) {
@@ -56,12 +57,26 @@ test('desktop groups preserve named route selection, collapse and compact More r
         await actor.press('Space');
         await expect(actor.control('button', 'Expand')).toHaveAttribute('aria-expanded', 'false');
       }
-      for (const [index, [name, path]] of destinations.entries()) {
-        await actor.reach('button', name, index % 2 ? 'Shift+Tab' : 'Tab');
+      for (const [name, path] of destinations) {
+        const overlay = name === 'Profiles' || name === 'Settings';
+        if (overlay) {
+          await actor.reach('button', 'Chat'); await actor.press('Enter');
+          await expect(page).toHaveURL(/#\/hermes$/);
+        }
+        // Preserve the original traversal directions after removing Office's slot.
+        const backwards = ['Providers', 'Tools', 'Persona'].includes(name);
+        await actor.reach('button', name, overlay || backwards ? 'Shift+Tab' : 'Tab');
         if (name === 'Chat' || name === 'Connections') await actor.visibleFocus('button', name, `${collapsed ? 'collapsed' : 'expanded'}-${name.toLowerCase()}`);
-        await actor.press(index % 2 ? 'Space' : 'Enter');
-        await expect(page).toHaveURL(new RegExp(`#${path}$`));
-        await selected(name);
+        await actor.press(backwards ? 'Space' : 'Enter');
+        if (overlay) {
+          await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+          await actor.reach('button', 'Close'); await actor.press('Enter');
+          await expect(page).toHaveURL(/#\/hermes$/);
+          await selected('Chat');
+        } else {
+          await expect(page).toHaveURL(new RegExp(`#${path}$`));
+          await selected(name);
+        }
         await expect(actor.control('button', collapsed ? 'Expand' : 'Collapse')).toHaveCount(1);
         expect(await owner()).toEqual(beforeOwner);
       }
@@ -73,10 +88,11 @@ test('desktop groups preserve named route selection, collapse and compact More r
     await expect(group('Utilities')).toHaveCount(0);
     for (const name of ['Chat', 'Profiles', 'Connections', 'More']) await expect(actor.control('tab', name)).toHaveCount(1);
     await actor.reach('tab', 'More'); await actor.press('Enter');
-    await actor.reach('button', 'Office'); await actor.press('Space');
+    await expect(page.getByRole('button', { name: 'Office', exact: true })).toHaveCount(0);
+    await actor.reach('button', 'Tools'); await actor.press('Space');
     // Compact More retains the existing imperative push contract: its active
     // page changes without replacing the root route-information URL.
-    await expect(page.getByRole('heading', { name: 'Office', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tools', exact: true })).toBeVisible();
     await actor.reach('tab', 'More'); await actor.press('Space');
     await actor.reach('button', 'Schedules'); await actor.press('Enter');
     await expect(page.getByRole('heading', { name: 'Schedules', exact: true })).toBeVisible();

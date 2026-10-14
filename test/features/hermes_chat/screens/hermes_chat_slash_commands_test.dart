@@ -43,10 +43,7 @@ Widget _routerTestApp(FakeHermesChannel channel) {
         path: AppRoutes.hermes,
         builder: (_, _) => const HermesChatScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.office,
-        builder: (_, _) => const Scaffold(body: Text('Office destination')),
-      ),
+
       GoRoute(
         path: AppRoutes.tools,
         builder: (_, _) => const Scaffold(body: Text('Tools destination')),
@@ -865,7 +862,7 @@ void main() {
     );
   });
 
-  testWidgets('local office command opens the accessible Office surface', (
+  testWidgets('retired office command is absent from local suggestions', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -878,10 +875,11 @@ void main() {
       '/office',
     );
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Office destination'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-office')),
+      findsNothing,
+    );
+    expect(find.byKey(const ValueKey('hermes-composer-field')), findsOneWidget);
     expect(
       channel.state.activeMessages.where((turn) => turn.text == '/office'),
       isEmpty,

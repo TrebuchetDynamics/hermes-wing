@@ -1,9 +1,12 @@
 # Persona conflict recovery evidence
 
 Task: `t_7a176ad4`; ledger task `DOC-PERSONA-CONFLICT-EVIDENCE`, goal `PERSONA`.
-Status: source inspection and focused offline execution; recovery acceptance passed,
-pending exact-candidate independent native review. Original failures are retained below.
-No review approval, milestone closure, canonical integration or publication is claimed.
+Status: recovery acceptance passed; independent native review approved exact commit
+`f96d4f3c6e3bf6492dfed8a33c052c6195e96c62` with an isolated 119-test run,
+analyzer, formatting, locked offline resolution and 26 local-link checks.
+Coordinator integrated that exact commit by fast-forward. The sections below retain
+pre-review attempt history; publication is recorded separately in the delivery receipt.
+PERSONA native/live qualification remains open under `VERIFY-PERSONA-NATIVE-CONFLICT`.
 
 ## Admission, scope and attribution
 

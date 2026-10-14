@@ -384,6 +384,11 @@
       "depends_on": [],
       "evidence": [
         {
+          "kind": "executed",
+          "ref": "Independent native review approved f96d4f3c6e3bf6492dfed8a33c052c6195e96c62; 119 five-target tests, offline enforced lockfile, formatting, analyzer and 26 local links passed on isolated exact commit. docs/quality/persona-conflict-evidence.md. Conflict 412 replaces rejected draft with authoritative newer text; PERSONA/native/live qualification remains open.",
+          "result": "pass"
+        },
+        {
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
@@ -397,10 +402,11 @@
       "id": "PERSONA",
       "priority": 5,
       "source": "docs/product/hermes-desktop-parity.md#statuses",
-      "status": "unverified",
+      "status": "partial",
       "tasks": [
         "DOC-PERSONA-CONFLICT-EVIDENCE",
-        "DOC-PERSONA-EVIDENCE"
+        "DOC-PERSONA-EVIDENCE",
+        "VERIFY-PERSONA-NATIVE-CONFLICT"
       ],
       "title": "Qualify standalone and embedded profile persona fidelity"
     },
@@ -7093,16 +7099,6 @@
     },
     {
       "depends_on": [
-        "DOC-PERSONA-EVIDENCE"
-      ],
-      "goal": "PERSONA",
-      "id": "DOC-PERSONA-CONFLICT-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Attribute persona conflict recovery separately from whitespace fidelity"
-    },
-    {
-      "depends_on": [
         "DOC-SHELL-PERSISTENCE-EVIDENCE"
       ],
       "goal": "SHELL-PERSISTENCE",
@@ -7288,6 +7284,16 @@
       "section": "Next",
       "status": "open",
       "title": "Prove the repaired optional OmniRoute dependency consumer closure on the supported Node.js 22 toolchain without starting host services"
+    },
+    {
+      "depends_on": [
+        "DOC-PERSONA-CONFLICT-EVIDENCE"
+      ],
+      "goal": "PERSONA",
+      "id": "VERIFY-PERSONA-NATIVE-CONFLICT",
+      "section": "Next",
+      "status": "open",
+      "title": "Qualify persona conflict recovery through native public controls without mutation replay"
     },
     {
       "depends_on": [
@@ -7951,6 +7957,16 @@
       "section": "Done",
       "status": "done",
       "title": "Compare grouped-recents ownership separately from profile-footer composition"
+    },
+    {
+      "depends_on": [
+        "DOC-PERSONA-EVIDENCE"
+      ],
+      "goal": "PERSONA",
+      "id": "DOC-PERSONA-CONFLICT-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Attribute persona conflict recovery separately from whitespace fidelity"
     },
     {
       "depends_on": [],

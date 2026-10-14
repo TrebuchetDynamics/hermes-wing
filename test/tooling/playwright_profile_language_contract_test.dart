@@ -26,9 +26,9 @@ void main() {
         'getByRole("button", { name: "Paste pairing link" })).toHaveCount(0)',
       ),
     );
-    expect(surfaces, contains('No Hermes profiles available'));
     expect(surfaces, contains('openConnected(page, "/profiles")'));
     expect(surfaces, contains('Profiles unavailable'));
+    expect(surfaces, contains('getByText("New Agent")).toHaveCount(0)'));
     expect(
       surfaces,
       contains(

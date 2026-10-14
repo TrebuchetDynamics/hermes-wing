@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('parity inventory names every requested Desktop surface', () {
+  test('parity inventory retains surface coverage and Office retirement', () {
     final text = File(
       'docs/product/hermes-desktop-parity.md',
     ).readAsStringSync();
@@ -20,11 +20,20 @@ void main() {
       'Account/OAuth',
       'SSH/Docker/WSL',
       'Web preview',
-      'Office 3D',
+
       'Auto-updates',
       'Full Desktop slash-command catalog',
     ]) {
       expect(text, contains(term), reason: term);
     }
+    expect(
+      text,
+      contains(
+        '| Standalone Wing Office | retired in candidate | No Office route, navigation or feature runtime; shared Agent access retained |',
+      ),
+    );
+    expect(text, contains('not a Desktop parity gap'));
+    expect(text, contains('Wing-only Office is retirement work'));
+    expect(text, contains('../adr/product.md#official-desktop-features-only'));
   });
 }

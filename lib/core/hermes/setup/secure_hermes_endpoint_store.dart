@@ -18,8 +18,6 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
   static const _profilesPreferenceKey = 'wing.hermes.profiles';
   static const _selectedProfilePreferenceKey = 'wing.hermes.selected_profile';
   static const _apiKeySecureStoragePrefix = 'wing.hermes.profile_api_key.';
-  static const _wingLinkTokenSecureStoragePrefix =
-      'wing.hermes.profile_wing_link_token.';
   static const _bundleSecureStorageKey = 'wing.hermes.endpoint_bundle.v1';
 
   final FlutterSecureStorage _secureStorage;
@@ -106,9 +104,6 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
     };
     for (final id in legacyIds) {
       await _secureStorage.delete(key: _apiKeyKey(id));
-      if (!ids.contains(id)) {
-        await _secureStorage.delete(key: _wingLinkTokenKey(id));
-      }
     }
     await _secureStorage.delete(key: _legacyApiKeySecureStorageKey);
     await prefs.remove(_legacyBaseUrlPreferenceKey);
@@ -336,7 +331,4 @@ class SecureHermesEndpointStore implements HermesEndpointStore {
         if (row?.containsKey(key) ?? false) key: row![key],
     };
   }
-
-  static String _wingLinkTokenKey(String id) =>
-      '$_wingLinkTokenSecureStoragePrefix$id';
 }

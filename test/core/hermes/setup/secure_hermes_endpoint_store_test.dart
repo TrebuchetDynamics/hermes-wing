@@ -326,7 +326,7 @@ void main() {
     });
 
     test(
-      'a modern bundle commit purges rollback-readable legacy secrets',
+      'a modern bundle commit purges legacy Agent keys but preserves inert Link slots',
       () async {
         SharedPreferences.setMockInitialValues({
           'wing.hermes.base_url': 'https://legacy.example',
@@ -355,7 +355,7 @@ void main() {
         );
         expect(
           await secure.read(key: 'wing.hermes.profile_wing_link_token.old'),
-          isNull,
+          'old-control-secret',
         );
         final prefs = await SharedPreferences.getInstance();
         expect(prefs.getString('wing.hermes.base_url'), isNull);

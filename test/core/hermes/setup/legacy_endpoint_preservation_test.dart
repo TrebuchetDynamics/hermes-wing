@@ -287,7 +287,7 @@ void main() {
         await restarted.deleteProfile('first');
         expect(
           await const FlutterSecureStorage().read(key: _tokenSlot),
-          isNull,
+          'synthetic-separate-control',
         );
         if (!legacyPreferences) expect((await _rawRows()).single, other);
         expect(storage.reads, isNot(contains(_tokenSlot)));

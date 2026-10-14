@@ -1409,16 +1409,16 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 tip: WingTip.voice,
                 text: AppLocalizations.of(context).tipVoice,
               ),
-            if (state.isServeReadOnly &&
-                state.isConnected &&
-                channel is HermesApiChannel)
+            if (state.isServeReadOnly && channel is HermesApiChannel)
               TextButton(
                 key: const ValueKey('hermes-local-serve-chat'),
                 onPressed: state.isSelectingProfile
                     ? null
-                    : () => unawaited(channel.enableLocalServeChat()),
+                    : () => unawaited(channel.retryLocalServeConversation()),
                 child: Text(
-                  state.serveChat?.needsReconciliation == true
+                  state.errorMessage != null
+                      ? strings.retryAction
+                      : state.serveChat?.needsReconciliation == true
                       ? strings.localServeReconcile
                       : strings.localServeEnableChat,
                 ),

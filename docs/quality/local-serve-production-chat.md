@@ -29,8 +29,11 @@ an authenticated-session ticket. That configuration remains read-only. The user
 must supply a session credential accepted by the selected unmodified backend;
 Wing does not acquire credentials, discover secrets, configure authentication,
 launch Agent, fall back to credential URLs, or claim all local servers support
-chat. Both connection and credential remain ephemeral, never stored as a saved
-gateway record. Remote, SSH, browser and Android entry paths are unchanged.
+chat. Read-only connection remains ephemeral, never stored as a saved gateway
+record. The later [WING-TASK-407 restoration](local-serve-restoration.md) remembers
+a deliberately enabled Linux conversation in an isolated secure recovery slot;
+it does not convert the native credential into a gateway credential. Remote,
+SSH, browser and Android entry paths are unchanged.
 
 Chat uses the existing `HermesApiChannel`, turn model, composer, approval queue
 and Stop controls. A deliberate text Send submits once to the captured
@@ -164,7 +167,9 @@ lockfile, `npm ci --ignore-scripts`, full Dart formatting, `flutter analyze --no
 917.912 seconds; compiled Chromium E2E took 300.204 seconds. Documentation/ledger
 closure is checked separately; unchanged product source reuses this gate.
 
-WING-TASK-407 owns persistent relaunch restoration. CONNECTION-PATHS and daily-use
+The [WING-TASK-407 receipt](local-serve-restoration.md) records the later bounded
+persistent restoration implementation and its review/qualification limits.
+At the WING-TASK-406 revision, CONNECTION-PATHS and daily-use
 acceptance remain partial. NOT_CHECKED: live Agent authentication, real secret
 acquisition, paid/live inference, physical keyboard/IME, screen readers, keychain,
 Android/physical hardware, persistent relaunch recovery and release/distribution.

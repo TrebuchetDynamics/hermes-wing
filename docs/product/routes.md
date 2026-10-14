@@ -238,6 +238,10 @@ or run-history caches, so an invisible stale read cannot change the next prompt'
 loaded context.
 
 Remembered conversations outside the first session inventory page recover through
+the selected transport's authorized exact-session read. The bounded Linux native
+serve path separately restores a deliberately enabled conversation through its
+secure origin/profile/stored/runtime pointer and public Retry; see the
+[restoration receipt](../quality/local-serve-restoration.md). Gateway recovery uses
 an exact authorized Agent session read, not a fallback selection or unbounded
 page scan. Pending/failed recovery preserves the saved identity and provides
 accessible **Retry** and **Choose session** actions; only an actual choice

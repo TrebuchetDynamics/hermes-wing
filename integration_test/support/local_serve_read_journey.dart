@@ -39,7 +39,14 @@ Future<Map<String, Object?>> runLocalServeReadJourney(
   final fixture = backend ?? LocalServeReadFixture();
   final store = _NoWriteStore();
   final container = ProviderContainer(
-    overrides: [hermesEndpointStoreProvider.overrideWithValue(store)],
+    overrides: [
+      hermesEndpointStoreProvider.overrideWithValue(store),
+      hermesChannelProvider.overrideWith((ref) {
+        final channel = HermesApiChannel();
+        ref.onDispose(channel.dispose);
+        return channel;
+      }),
+    ],
   );
   final channel = container.read(hermesChannelProvider) as HermesApiChannel;
   await tester.runAsync(fixture.start);

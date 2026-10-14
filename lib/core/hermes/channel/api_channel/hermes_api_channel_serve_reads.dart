@@ -5,6 +5,8 @@ extension _ServeReadsExtension on HermesApiChannel {
     String baseUrl,
     String credential, {
     bool Function()? canAccept,
+    String profile = 'default',
+    String? storedSession,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
     final disconnected = _disconnect();
@@ -28,17 +30,18 @@ extension _ServeReadsExtension on HermesApiChannel {
       reader = HermesWebReadClient.forLocalReads(
         origin: Uri.parse(baseUrl),
         credential: credential,
-        profile: 'default',
+        profile: profile,
       );
       _serveReader = reader;
+      _serveCredential = credential;
       final profiles = await reader.profiles();
       if (!current()) return;
-      if (!profiles.any((p) => p.id == 'default')) {
+      if (!profiles.any((p) => p.id == profile)) {
         throw const HermesWebReadException(HermesWebFailureKind.identity);
       }
       final page = await reader.sessions();
       if (!current()) return;
-      final session = page.sessions.firstOrNull?.id;
+      final session = storedSession ?? page.sessions.firstOrNull?.id;
       final history = session == null ? null : await reader.history(session);
       if (!current()) return;
       _setState(
@@ -48,8 +51,12 @@ extension _ServeReadsExtension on HermesApiChannel {
           connectedBaseUrl: baseUrl,
           connectedWithApiKey: true,
           profiles: profiles,
-          selectedProfileId: 'default',
-          sessions: _serveSessions(page),
+          selectedProfileId: profile,
+          sessions: [
+            ..._serveSessions(page),
+            if (session != null && !page.sessions.any((s) => s.id == session))
+              HermesSession(id: session, source: ''),
+          ],
           sessionsNextOffset: page.sessions.length,
           hasMoreSessions: page.sessions.length < page.total,
           activeSessionId: session,
@@ -71,6 +78,7 @@ extension _ServeReadsExtension on HermesApiChannel {
         HermesChannelState(
           status: HermesConnectionStatus.error,
           isServeReadOnly: true,
+          connectedBaseUrl: reader == null ? null : baseUrl,
           errorMessage: 'Local serve read connection failed.',
           connectionFailureKind: _serveFailure(error),
         ),

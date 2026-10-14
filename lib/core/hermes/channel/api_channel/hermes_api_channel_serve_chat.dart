@@ -25,6 +25,7 @@ extension _ServeChatExtension on HermesApiChannel {
         _qualifyingServeChat) {
       return;
     }
+    final checkpoint = _serveLifecycle?.recovery ?? _serveRecovery?.checkpoint;
     _retireServeChat();
     final qualification = _serveQualification;
     final selection = _sessionSelectionGeneration;
@@ -40,7 +41,16 @@ extension _ServeChatExtension on HermesApiChannel {
       final lifecycle = await reader.connectLifecycleForProduct();
       if (!current()) return;
       _serveLifecycle = lifecycle;
-      await lifecycle.resumeSession(session);
+      if (checkpoint != null &&
+          checkpoint.profile == _state.selectedProfileId &&
+          checkpoint.storedSessionId == session &&
+          checkpoint.origin.toString() == _state.connectedBaseUrl) {
+        await lifecycle.recover(checkpoint);
+      } else {
+        await lifecycle.resumeSession(session);
+      }
+      if (!current()) return;
+      await _persistServeRecovery(lifecycle);
       if (!current()) return;
       _serveChanges = lifecycle.changes.listen(
         (_) {
@@ -110,7 +120,7 @@ extension _ServeChatExtension on HermesApiChannel {
     _setState(
       _state.copyWith(
         serveChat: HermesServeChatState(
-          canSubmit: lifecycle.canSubmit,
+          canSubmit: lifecycle.canSubmit && !_serveSubmissionPending,
           running: lifecycle.running,
           stopRequested: lifecycle.stopRequested,
           needsReconciliation: lifecycle.needsReconciliation,
@@ -130,12 +140,16 @@ extension _ServeChatExtension on HermesApiChannel {
     if (lifecycle == null ||
         !_state.isConnected ||
         _state.isSelectingProfile ||
+        _serveSubmissionPending ||
         !lifecycle.canSubmit ||
         imageDataUrl != null ||
         textAttachment != null) {
       throw StateError('This local serve connection cannot submit this turn.');
     }
+    _serveSubmissionPending = true;
+    _syncServeChat(lifecycle);
     try {
+      await _persistServeRecovery(lifecycle, uncertain: true);
       await lifecycle.submitText(text);
     } catch (_) {
       if (identical(lifecycle, _serveLifecycle)) {
@@ -148,6 +162,7 @@ extension _ServeChatExtension on HermesApiChannel {
       }
       rethrow;
     } finally {
+      _serveSubmissionPending = false;
       if (identical(lifecycle, _serveLifecycle)) _syncServeChat(lifecycle);
     }
   }
@@ -162,6 +177,7 @@ extension _ServeChatExtension on HermesApiChannel {
       return false;
     }
     try {
+      await _persistServeRecovery(lifecycle, uncertain: true);
       return await lifecycle.interrupt();
     } catch (_) {
       if (identical(lifecycle, _serveLifecycle)) {

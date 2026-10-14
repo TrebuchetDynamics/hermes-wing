@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:flutter/widgets.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/channel/hermes_api_channel.dart';
 import '../../../core/hermes/client/hermes_api_client.dart';
 import '../../../core/hermes/client/hermes_api_config.dart';
 import '../../../core/hermes/models/hermes_session.dart';
@@ -245,6 +246,11 @@ class HermesGatewayDirectory extends ChangeNotifier
     WidgetsBinding.instance.addObserver(this);
     _activeChannel.addListener(_onActiveChannelChanged);
     _observingActiveChannel = true;
+    final channel = _activeChannel;
+    if (channel is HermesApiChannel &&
+        await channel.restoreSavedLocalServeConversation()) {
+      return;
+    }
     final rememberedSelection = await _cache.loadSelection();
     if (_disposed) return;
     final cachedContacts = await _cache.load();

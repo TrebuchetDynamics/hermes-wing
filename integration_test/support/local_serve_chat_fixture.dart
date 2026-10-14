@@ -15,6 +15,8 @@ class LocalServeChatFixture extends LocalServeReadFixture {
       dropSubmit = false,
       denySubmit = false;
   bool holdSubmit = false;
+  bool running = false, denyHistory = false, dropStop = false;
+  Completer<void>? holdHistory;
   Completer<void>? submitHeld;
   final canonical = <Map<String, Object>>[];
   int count(String method) => rpc.where((r) => r['method'] == method).length;
@@ -101,9 +103,20 @@ class LocalServeChatFixture extends LocalServeReadFixture {
             'session_id': 'runtime-$stored',
             'stored_session_id': stored,
             'info': {'profile_name': profile},
-            'running': false,
+            'running': running,
           };
         case 'session.history':
+          if (denyHistory) {
+            ws.add(
+              jsonEncode({
+                'jsonrpc': '2.0',
+                'id': frame['id'],
+                'error': {'code': 4001, 'message': 'Denied'},
+              }),
+            );
+            return;
+          }
+          await holdHistory?.future;
           result = {'count': canonical.length, 'messages': canonical};
         case 'session.events.since':
           result = {
@@ -146,6 +159,10 @@ class LocalServeChatFixture extends LocalServeReadFixture {
         case 'approval.respond':
           result = {'resolved': 1};
         case 'session.interrupt':
+          if (dropStop) {
+            await ws.close();
+            return;
+          }
           result = {'status': 'interrupted'};
         default:
           ws.add(
@@ -188,6 +205,7 @@ class LocalServeChatFixture extends LocalServeReadFixture {
   void approval({
     String id = 'queue-fixture',
     String serverId = 'srq-fixture',
+    String session = 'default-session',
   }) {
     sockets.last.add(
       jsonEncode({
@@ -195,7 +213,7 @@ class LocalServeChatFixture extends LocalServeReadFixture {
         'id': serverId,
         'method': 'approval',
         'params': {
-          'session_id': 'runtime-default-session',
+          'session_id': 'runtime-$session',
           'request_id': id,
           'command': 'synthetic bounded operation',
           'description': 'Approve fixture operation',

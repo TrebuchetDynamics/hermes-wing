@@ -1522,6 +1522,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final legacyConnected = state.isConnected && !hasGateways;
     final showingDirectory =
         !_editingConnection &&
+        !state.isServeReadOnly &&
         directory.activeContactId == null &&
         (hasGateways || !state.isConnected) &&
         !legacyConnected;

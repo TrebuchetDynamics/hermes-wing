@@ -85,6 +85,10 @@ session ownership. REST reads alone never authorize Send, approval or Stop;
 legacy local tokens remain read-only when ticket authentication is unavailable.
 Other native-web operations remain internal qualification. See the
 [bounded chat receipt](../quality/local-serve-production-chat.md). The
+[restoration receipt](../quality/local-serve-restoration.md) bounds Linux cold
+startup and explicit socket-loss Retry to a secure exact-owner pointer and a
+settled canonical history/replay barrier, never a mutation replay or detached-run
+durability claim. The
 [four-repository study](../analysis/understand-anything/README.md) informs the
 [bounded delivery plan](../plans/2026-10-03-study-follow-through.md), not a
 transport migration or new capability.

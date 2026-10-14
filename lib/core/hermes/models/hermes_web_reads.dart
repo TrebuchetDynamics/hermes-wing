@@ -10,9 +10,11 @@ abstract interface class HermesServeLifecycle {
   bool get stopRequested;
   bool get needsReconciliation;
   bool get disconnected;
+  HermesWebRecovery get recovery;
   List<HermesChatTurn> get turns;
   Map<String, HermesServeApproval> get approvals;
   Future<void> resumeSession(String storedSessionId);
+  Future<void> recover(HermesWebRecovery checkpoint);
   Future<void> submitText(String text);
   Future<bool> interrupt();
   Future<void> answerApproval(String requestId, bool allow);
@@ -27,6 +29,22 @@ final class HermesServeApproval {
   );
   final String serverId, command, description;
   final bool allowOnce;
+}
+
+final class HermesWebRecovery {
+  const HermesWebRecovery({
+    required this.profile,
+    required this.origin,
+    required this.runtimeSessionId,
+    required this.storedSessionId,
+    required this.epoch,
+    required this.sequence,
+    required this.uncertain,
+  });
+  final String profile, runtimeSessionId, storedSessionId, epoch;
+  final Uri origin;
+  final int sequence;
+  final bool uncertain;
 }
 
 /// Native web DTOs deliberately do not reuse the gateway /v1 schema.

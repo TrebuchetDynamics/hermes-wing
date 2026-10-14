@@ -5,22 +5,6 @@ enum HermesWebSubmission { idle, submitting, accepted, uncertain, terminal }
 
 enum HermesWebApprovalChoice { once, deny }
 
-final class HermesWebRecovery {
-  const HermesWebRecovery({
-    required this.profile,
-    required this.origin,
-    required this.runtimeSessionId,
-    required this.storedSessionId,
-    required this.epoch,
-    required this.sequence,
-    required this.uncertain,
-  });
-  final String profile, runtimeSessionId, storedSessionId, epoch;
-  final Uri origin;
-  final int sequence;
-  final bool uncertain;
-}
-
 /// Ephemeral projection onto Wing's existing turn model, not a session store.
 /// Product entry requires separate ticket authentication and negotiation;
 /// qualification entry never grants product authorization.
@@ -42,8 +26,10 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
   @override
   String? get storedSessionId => _stored;
   int _selection = 0, _sequence = 0, _turn = 0;
+  int _observedWhileSelecting = 0;
   bool _selecting = false, _reconcile = false, _cancelRequested = false;
   bool _running = false;
+  bool _confirmedIdle = false;
   @override
   bool get running => _running;
   @override
@@ -88,6 +74,7 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
       _submission != HermesWebSubmission.uncertain &&
       _submission != HermesWebSubmission.submitting;
 
+  @override
   HermesWebRecovery get recovery => HermesWebRecovery(
     profile: profile,
     origin: _connection._origin,
@@ -96,6 +83,8 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
     epoch: _connection.replayEpoch,
     sequence: _sequence,
     uncertain:
+        _running ||
+        _cancelRequested ||
         _submission == HermesWebSubmission.uncertain ||
         _submission == HermesWebSubmission.submitting,
   );
@@ -138,6 +127,7 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
     _runtime = null;
     _stored = null;
     _sequence = 0;
+    _observedWhileSelecting = 0;
     _approvals.clear();
     _turns.clear();
     _running = false;
@@ -168,11 +158,21 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
       _runtime = runtime;
       _stored = durable;
       _running = result['running'] == true || result['queued'] == true;
-      await _canonical(selection);
-      // Establish a replay barrier after canonical history; never append already
-      // persisted deltas on top of history. Replay is advisory, not durability.
+      _confirmedIdle =
+          result['running'] == false &&
+          (result['queued'] == null || result['queued'] == false);
       final replaySafe = await _replay(selection, lastSeen: 0);
-      _reconcile = _running || !replaySafe;
+      final barrier = _sequence;
+      await _canonical(selection);
+      // History and replay are separate reads; advancing events invalidate the
+      // snapshot instead of silently unlocking a stale conversation.
+      final settled = await _replay(selection, lastSeen: barrier);
+      _reconcile =
+          _running ||
+          !replaySafe ||
+          !settled ||
+          barrier != _sequence ||
+          _observedWhileSelecting > _sequence;
     } finally {
       if (selection == _selection) {
         _selecting = false;
@@ -220,6 +220,7 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
   }
 
   /// Explicit recovery; never submits, creates a replacement, or replays a write.
+  @override
   Future<void> recover(HermesWebRecovery checkpoint) async {
     webIdentity(checkpoint.profile, profile);
     webIdentity(checkpoint.origin, _connection._origin);
@@ -227,15 +228,12 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
       webMalformed();
     }
     await resumeSession(checkpoint.storedSessionId);
-    if (checkpoint.uncertain) _submission = HermesWebSubmission.uncertain;
-    // Runtime IDs and epochs can change. Only use a cursor on the exact live
-    // runtime and process that assigned it. Canonical history was read regardless.
-    if (_runtime == checkpoint.runtimeSessionId &&
-        _connection.replayEpoch == checkpoint.epoch) {
-      if (!await _replay(_selection, lastSeen: checkpoint.sequence)) {
-        _reconcile = true;
-      }
+    if (checkpoint.uncertain && (!_confirmedIdle || _reconcile)) {
+      _submission = HermesWebSubmission.uncertain;
+      _reconcile = true;
     }
+    // The saved runtime/cursor is not authority in a new connection. Resume
+    // establishes a fresh canonical barrier even when its runtime is unchanged.
     _notify();
   }
 
@@ -243,7 +241,10 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
     final uncertain = _submission == HermesWebSubmission.uncertain;
     final stored = _stored ?? _identityFailure();
     await resumeSession(stored);
-    if (uncertain) _submission = HermesWebSubmission.uncertain;
+    if (uncertain && (!_confirmedIdle || _reconcile)) {
+      _submission = HermesWebSubmission.uncertain;
+      _reconcile = true;
+    }
     _notify();
   }
 
@@ -440,11 +441,15 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
 
   void _event(Map<String, dynamic> event) {
     final type = webString(event['type'], maximum: 128);
-    if (event['session_id'] != _runtime || _runtime == null || _selecting) {
+    if (event['session_id'] != _runtime || _runtime == null) {
       return;
     }
     if (event.containsKey('profile') && event['profile'] != profile) return;
     final seq = webInteger(event['seq'], maximum: 9007199254740991);
+    if (_selecting) {
+      if (seq > _observedWhileSelecting) _observedWhileSelecting = seq;
+      return;
+    }
     if (seq <= _sequence) return;
     if (seq != _sequence + 1) {
       _reconcile = true;

@@ -8,6 +8,7 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/setup/hermes_endpoint_store.dart';
 import '../../../core/hermes/setup/secure_hermes_detached_run_store.dart';
 import '../../../core/hermes/setup/secure_hermes_endpoint_store.dart';
+import '../../../core/hermes/setup/secure_hermes_serve_recovery_store.dart';
 import '../gateways/gateway_contact_cache.dart';
 import '../gateways/hermes_gateway_directory.dart';
 import 'hermes_directory_lifetime.dart';
@@ -23,6 +24,7 @@ final hermesEndpointStoreProvider = Provider<HermesEndpointStore>(
 final hermesChannelProvider = Provider<HermesChannel>((ref) {
   final channel = HermesApiChannel(
     detachedRunStore: SecureHermesDetachedRunStore(),
+    serveRecoveryStore: SecureHermesServeRecoveryStore(),
   );
   ref.onDispose(channel.dispose);
   return channel;

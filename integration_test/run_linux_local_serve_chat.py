@@ -23,7 +23,7 @@ def module(name, path):
 def validate(receipt):
     assert receipt['requests'] == 15 and receipt['mutations'] == 4
     assert (receipt['sends'], receipt['answers'], receipt['stops']) == (2, 1, 1)
-    assert (receipt['rpc_requests'], receipt['tickets'], receipt['stale_answers']) == (20, 4, 0)
+    assert (receipt['rpc_requests'], receipt['tickets'], receipt['stale_answers']) == (23, 4, 0)
     assert all(receipt[k] is True for k in ('chat_auth_denied', 'chat_unsupported', 'idle_withdrawal',
                                          'authoritative_stop', 'uncertain_recovery_without_replay'))
     assert receipt['credential_saves'] == 0
@@ -84,7 +84,7 @@ def run():
 
 if __name__ == '__main__':
     if sys.argv[1:] == ['--self-check']:
-        receipt = dict(requests=15, mutations=4, sends=2, answers=1, stops=1, rpc_requests=20, tickets=4, stale_answers=0,
+        receipt = dict(requests=15, mutations=4, sends=2, answers=1, stops=1, rpc_requests=23, tickets=4, stale_answers=0,
                        chat_auth_denied=True, chat_unsupported=True, idle_withdrawal=True, authoritative_stop=True,
                        uncertain_recovery_without_replay=True, credential_saves=0, denied=True, unsupported=True,
                        cancelled=True, explicit_retry=True, profile='default', session='default-session', native_pid=1)

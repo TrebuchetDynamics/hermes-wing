@@ -302,13 +302,9 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
 
   Future<void> _reconnectOnce(HermesChannel channel) async {
     if (channel.state.isServeReadOnly) {
-      await _connectToEndpoint(
-        channel,
-        baseUrl: channel.state.connectedBaseUrl ?? _connectionForm.baseUrl.text,
-        apiKey: _connectionForm.apiKey.text.trim(),
-        persistOnSuccess: false,
-        serveReads: true,
-      );
+      if (channel is HermesApiChannel) {
+        await channel.retryLocalServeConversation();
+      }
       return;
     }
     final directory = ref.read(hermesGatewayDirectoryProvider);

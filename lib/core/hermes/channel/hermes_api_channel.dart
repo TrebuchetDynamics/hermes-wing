@@ -22,6 +22,7 @@ import '../reconciliation/hermes_text_reconciliation.dart';
 import '../../../shared/async/fire_and_forget.dart';
 import '../../../shared/security/wing_redaction.dart';
 import '../setup/hermes_endpoint_store.dart';
+import '../setup/secure_hermes_serve_recovery_store.dart';
 import '../shared/hermes_api_http.dart';
 import '../sse/hermes_sse_event_decoder.dart';
 import 'approvals/hermes_approval_responder.dart';
@@ -31,6 +32,7 @@ import 'hermes_detached_run_store.dart';
 part 'api_channel/hermes_api_channel_connection.dart';
 part 'api_channel/hermes_api_channel_serve_reads.dart';
 part 'api_channel/hermes_api_channel_serve_chat.dart';
+part 'api_channel/hermes_api_channel_serve_recovery.dart';
 part 'api_channel/hermes_api_channel_inventory.dart';
 part 'api_channel/hermes_api_channel_capabilities.dart';
 part 'api_channel/hermes_api_channel_sessions.dart';
@@ -52,6 +54,7 @@ class HermesApiChannel extends ChangeNotifier
     String Function()? sessionIdFactory,
     Uuid? uuid,
     HermesDetachedRunStore? detachedRunStore,
+    HermesServeRecoveryStore? serveRecoveryStore,
     this.streamIdleTimeout = const Duration(minutes: 5),
     this.runStatusReconcileInterval = const Duration(seconds: 3),
   }) : _clientBuilder =
@@ -60,6 +63,8 @@ class HermesApiChannel extends ChangeNotifier
        // Named public injection cannot use a private initializing formal.
        // ignore: prefer_initializing_formals
        _detachedRunStore = detachedRunStore,
+       // ignore: prefer_initializing_formals
+       _serveRecoveryStore = serveRecoveryStore,
        _sessionIdFactory =
            sessionIdFactory ??
            (() =>
@@ -69,6 +74,12 @@ class HermesApiChannel extends ChangeNotifier
   final String Function() _sessionIdFactory;
   final Uuid _uuid;
   final HermesDetachedRunStore? _detachedRunStore;
+  final HermesServeRecoveryStore? _serveRecoveryStore;
+  HermesServeRecoverySelection? _serveRecovery;
+  int _serveRecoveryGeneration = 0;
+  bool _serveRestorationPending = false;
+  String? _serveCredential;
+  Future<void> _servePersistenceTail = Future.value();
   final Duration streamIdleTimeout;
   final Duration runStatusReconcileInterval;
 
@@ -80,6 +91,7 @@ class HermesApiChannel extends ChangeNotifier
   StreamSubscription<void>? _serveChanges;
   int _serveQualification = 0;
   bool _qualifyingServeChat = false;
+  bool _serveSubmissionPending = false;
   HermesChannelState _state = const HermesChannelState();
   final _activeStreams = <String, StreamSubscription<HermesStreamEvent>>{};
   final _activeStreamCompleters = <String, Completer<void>>{};
@@ -134,6 +146,7 @@ class HermesApiChannel extends ChangeNotifier
     _retireServeChat();
     _serveReader?.disconnect();
     _client = null;
+    _serveRecoveryGeneration++;
     _connectionGeneration += 1;
     _sessionSelectionGeneration += 1;
     _invalidateProfileSelection();
@@ -277,23 +290,46 @@ class HermesApiChannel extends ChangeNotifier
     required String baseUrl,
     String? apiKey,
     bool deferSessionSelection = false,
-  }) => _connect(
-    baseUrl: baseUrl,
-    apiKey: apiKey,
-    deferSessionSelection: deferSessionSelection,
-  );
+  }) async {
+    await _forgetServeRecovery();
+    await _connect(
+      baseUrl: baseUrl,
+      apiKey: apiKey,
+      deferSessionSelection: deferSessionSelection,
+    );
+  }
 
   @override
-  Future<void> disconnect() => _disconnect();
+  Future<void> disconnect() async {
+    await _disconnect();
+    await _forgetServeRecovery();
+  }
 
   /// Explicit REST-only local serve selection; never falls back to gateway/RPC.
   Future<void> connectLocalServeReads({
     required String baseUrl,
     required String credential,
     bool Function()? canAccept,
-  }) => _connectServeReads(baseUrl, credential, canAccept: canAccept);
+  }) async {
+    if (!(canAccept?.call() ?? true)) return;
+    await _forgetServeRecovery();
+    await _connectServeReads(baseUrl, credential, canAccept: canAccept);
+  }
 
   Future<void> enableLocalServeChat() => _qualifyServeChat();
+  Future<bool> restoreSavedLocalServeConversation() =>
+      _restoreSavedServeConversation();
+  Future<void> retryLocalServeConversation() async {
+    if (_serveReader != null) {
+      await _qualifyServeChat();
+    } else if (_serveRecovery != null) {
+      await _retryServeRecovery();
+    } else if (_serveCredential != null && _state.connectedBaseUrl != null) {
+      await _connectServeReads(_state.connectedBaseUrl!, _serveCredential!);
+    } else {
+      await _restoreSavedServeConversation();
+    }
+  }
 
   @override
   void clearActiveSession() {

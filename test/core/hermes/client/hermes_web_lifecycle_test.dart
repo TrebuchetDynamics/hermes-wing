@@ -19,6 +19,8 @@ class LifecycleFixture {
   Map<String, dynamic>? held;
   List<Map<String, Object>> open = [];
   List<Map<String, Object>> replay = [];
+  bool advanceOnHistory = false;
+  bool eventBeforeBarrierReply = false;
   Future<void> start() async {
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
@@ -76,10 +78,14 @@ class LifecycleFixture {
             };
           case 'session.history':
             result = {'count': history.length, 'messages': history};
+            if (advanceOnHistory) sequence++;
           case 'session.events.since':
+            final events = replay
+                .where((e) => (e['seq'] as int) > (params['last_seen'] as int))
+                .toList();
             result = {
-              'events': replay,
-              'count': replay.length,
+              'events': events,
+              'count': events.length,
               'epoch': epoch,
               'truncated': truncate,
               'latest_seq': sequence,
@@ -103,6 +109,11 @@ class LifecycleFixture {
             result = {'resolved': resolved};
           default:
             throw StateError('Unexpected fixture method');
+        }
+        if (method == 'session.events.since' &&
+            eventBeforeBarrierReply &&
+            requests.where((r) => r['method'] == method).length.isEven) {
+          event('message.delta', {'text': 'after snapshot'});
         }
         reply(ws, rpc, result);
       });
@@ -178,6 +189,33 @@ void main() {
     client.disconnect();
     await fixture.close();
   });
+
+  test(
+    'history cannot unlock input across an advancing replay barrier',
+    () async {
+      fixture.advanceOnHistory = true;
+      await adapter.resumeSession('stored-fixture');
+      expect(adapter.canSubmit, false);
+      expect(adapter.needsReconciliation, true);
+      expect(
+        fixture.requests.where((r) => r['method'] == 'prompt.submit'),
+        isEmpty,
+      );
+      fixture.advanceOnHistory = false;
+      await adapter.reconcileActiveSession();
+      expect(adapter.canSubmit, true);
+    },
+  );
+
+  test(
+    'an event beyond the returned barrier cannot be silently dropped',
+    () async {
+      fixture.eventBeforeBarrierReply = true;
+      await adapter.resumeSession('stored-fixture');
+      expect(adapter.canSubmit, false);
+      expect(adapter.needsReconciliation, true);
+    },
+  );
 
   test(
     'acceptance, streamed shared turns, completion and canonical replacement',

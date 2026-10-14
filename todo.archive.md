@@ -5227,3 +5227,22 @@ Source section: Now / Next
   Implementation context: PORT-SHELL-PERSISTED-STATE is complete; do not reimplement
   its provider or treat the historical full-suite pass as native relaunch evidence.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-SHELL-COMPACT-RETURN-EVIDENCE** — Goal: SHELL-PERSISTENCE. Section: Done. Map wide-to-compact-to-wide preference preservation.
+  Payoff: qualify persisted sidebar intent and draft retention across native resizing.
+  Sources: [SHELL-PERSISTENCE](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary)
+  and [implemented preference slice](docs/quality/graphify-shell-persistence.md).
+  Scope: add or run an isolated Linux adaptive-return integration check and repair
+  the shared shell if it fails. Exclude upstream edits, personal app storage,
+  connection mutations and global startup redesign.
+  Acceptance: collapse with the keyboard, resize wide-to-compact-to-wide, and
+  retain the collapsed choice and draft without extra Agent reads or sends.
+  Record source hashes, target, commands and outcomes. The passing widget
+  regression is baseline evidence, not native qualification.
+  Dependencies: DOC-SHELL-PERSISTENCE-EVIDENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.

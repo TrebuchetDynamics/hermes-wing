@@ -89,3 +89,100 @@ and controls are unchanged; compiled browser, native app/device, live authentica
 inference, full repository/release checks and publication are NOT_CHECKED.
 Independent review, canonical integration and the remaining connection milestone
 are separate from this local implementation.
+
+## Remaining official connection acceptance
+
+Card: `t_e17c0b4a`, admitted isolated Wing base
+`a5f27f62386acb6781417e79710290800b7cf2b6`. The initial frozen
+`pass_workspace.py` guard returned `worker_start_admitted` before design/tests/edits,
+bound to manifest SHA256
+`acf14b434640cbb1c28bfec6592ca5c7b79bdbeec99d6e91ed904d3dfbe37a07`
+and helper-bundle SHA256
+`29755a239ad5c3d7ce0bfd7670cafaf40e6a4b649d2e746d061fcfdc155f2f08`.
+The worktree began clean. Only this receipt and the
+[connection comparison](../product/desktop-connection-paths.md) change; no production,
+test, fixture, config, export or dependency change was necessary.
+
+### Proposed parent acceptance mapping
+
+This mapping is for coordinator acceptance after independent review, not a
+canonical TODO/goals transition or a claim that `CONNECTION-PATHS` is met.
+
+| Parent criterion | Evidence at the pinned candidate | Verdict and limit |
+| --- | --- | --- |
+| Official welcome/Local/SSH/Remote auth and transport trace | Updated comparison maps official setup overlay, Local bootstrap, OpenSSH config/trust/probe/scoped lifecycle, Remote Test/Apply and native-login/ticket paths to current Wing production callers and inspected nearest upstream tests. Official Agent `158fd638da1629c8e62caf9ade1515d162def8ab`, Desktop tree `2038178ee53e13cde6fe297daa2484a868e7d3a3`; reference clean before/after. | Source trace complete for this batch; official tests/application not run. Three-button Wing welcome is an explicit fidelity gap, not official parity. |
+| One evidence-backed production correction | Delivered `restoreSession` admission guard, described above; integration `5ca00b61` is an ancestor of the admitted base. Fresh caller-admission and exact-directory-restoration tests pass in security union B below. | Already implemented before this batch; not duplicated or counted as new work. |
+| Compact/wide public controls, 1x/2x text | Union A includes unchanged `hermes_connection_primary_entry_test.dart` at Linux/Android overrides × 390/1280px × 1x/2x text. Existing welcome-recovery, first-run and Local-enrollment tests exercise the public router, keyboard entry/Back, explicit rejection/retry and cancellation. | Pass in Linux Flutter widgets. Overrides are not Android/native-device qualification. |
+| Local and Remote safety | Existing Local behavior tests cover metadata-only chooser cancellation/stale completion, fixed phone loopback, explicit docs and sanitized denial. Auth-recovery/remote-retry/saved-workflow tests cover explicit retry, safe persistence/removal errors and stale owner responses. Primary-entry tests preserve exact origin/profile/session and make no requests/saves on selection/Back. | Pass in unions A/B; no real chooser, certificate handshake, service preparation or live auth. |
+| SSH trust, separate Agent auth and ephemeral ownership | Existing form/panel tests and union B transport/request tests cover explicit host review, denied/missing verifier, separate Agent token, cancellation, failure cleanup, replacement owner and no saved ephemeral forwarding origin. | Pass in deterministic seams; approved-host Linux/Android SSH and durable SSH relaunch remain NOT_CHECKED. |
+| Imported/generated key and public-only copy | Existing key-selection/generated-key/store/UI tests cover bounds, passphrase/failure, generation consent, validated secure-storage readback/reuse, stale callbacks and public-only clipboard. Existing Help tests cover selectable safe guidance at compact/wide 200% text. | Pass in unions A/B; platform secure storage/picker and real host key login remain NOT_CHECKED. |
+| Inert saved records, exact recovery, zero mutation replay | `secure_hermes_endpoint_store_test.dart`, `legacy_endpoint_preservation_test.dart`, `hermes_gateway_session_restoration_test.dart`, `hermes_session_caller_admission_test.dart` in B retain origin/identity, inert slots and read-only recovery. Existing primary-entry/first-run assertions reject any POST and incidental connection activity. | Pass for named fixture cases, not a rerun of all historical 467 integrated tests or a full live recovery journey. |
+| Unsupported actions and authority | Comparison states manual Local, no lifecycle/shell/backend fallback, no production Remote OAuth/native-web negotiation, browser raw-TCP exclusion, no Agent edits and removed Link consumers/delivery. Production channel, Add/Local/SSH controller/form and enrollment callers inspected. | Inspected and documented; missing authoritative contracts stay unavailable. |
+| Native/live milestone and delivery | No personal service, credentials, inference, deployment, integration or push used. | NOT_CHECKED; same-card review and coordinator integration/publication are separate. |
+
+### Executed checks and identities
+
+Linux host, Flutter 3.44.2 framework `c9a6c48423`, engine revision `77e2e94772`,
+Dart 3.12.2. Dependency resolution used `flutter pub get --offline
+--enforce-lockfile` (exit 0). No upstream tests were executed. Initial checks:
+
+- `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`: exit 0, one file, zero changes.
+- `flutter analyze --no-pub`: exit 0, no issues (6.4 seconds).
+- Union A below: exit 0, 130 tests passed (reporter 1 minute 37 seconds).
+- Union B below: exit 0, 94 tests passed (reporter 14 seconds), with render hooks enabled.
+- `git diff --check`: exit 0. Lockfile hash unchanged; owned local links/anchors checked by the finish gate.
+
+```sh
+# A: retained public-control union
+flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/enrollment test/features/hermes_chat/widgets/platform_local_connection_panel_test.dart test/features/hermes_chat/widgets/platform_local_connection_behavior_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/connection_information_help_dialog_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart --reporter expanded
+# B: retained trust/storage/recovery union, with existing render hooks
+flutter test --no-pub --concurrency=1 test/core/hermes/ssh/managed_ssh_test.dart test/core/hermes/ssh/ssh_connection_request_test.dart test/features/hermes_chat/ssh_keys test/features/hermes_chat/widgets/managed_ssh_generated_key_ui_test.dart test/features/hermes_chat/widgets/platform_local_connection_behavior_test.dart test/core/hermes/setup/secure_hermes_endpoint_store_test.dart test/core/hermes/setup/legacy_endpoint_preservation_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart --reporter expanded
+```
+
+Unions overlap in Local behavior; their counts are separate runs, not a unique
+test total. `pubspec.lock` SHA256 remains
+`f089602c321af4a65d6f1dc70b6adef724079bedc8e4f1d0496f7b8e22641c89`;
+`pubspec.yaml` SHA256 is
+`7986bd3eaa967657f453e08f0522a4254496393699dc9640a7aba7de4cf1a43a`.
+Resolved local `.dart_tool/package_config.json` SHA256 is
+`6382cec7c5d10172ea018d26fa9d05aa8a5c98067e9a91d077a93a8c13382c35`
+(workspace-specific dependency receipt, not portable package identity).
+
+Existing render hooks used `FLUTTER_ROOT=<resolved Flutter SDK>`,
+`LOCAL_CAPTURE_FONT_ROOT=$FLUTTER_ROOT/bin/cache/artifacts/material_fonts`,
+`LOCAL_CAPTURE_ICON_FONT=$FLUTTER_ROOT/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf`,
+`LOCAL_CAPTURE_OUTPUT=$PWD/.task-evidence/connection-acceptance` and
+`WING_CAPTURE_GENERATED_KEY_UI=1`. No new screenshot harness or golden baseline.
+Four images were inspected: Android-override Local 390×844 and Linux-override
+Local 1280×1000, plus synthetic generated-public-key form 390×844 and 960×900.
+Local guide/actions and public-key/copy controls are readable; no private key or
+credential is visible. The wide Local capture is scrolled, so its header/top and
+bottom save controls are outside the crop; it is not proof of all controls at once.
+Render capture is 1x text; 2x keyboard/layout acceptance comes from the named tests,
+not these images. Widget fonts/icons are fixture rendering, not native screenshots.
+
+Image SHA256 receipts (ignored evidence, not committed product assets):
+
+| Relative evidence path | SHA256 |
+| --- | --- |
+| `.task-evidence/connection-acceptance/local-390.png` | `c0302ace63c44ca80ac701c6227038c1773c1240d377cda6422d71beb29c7658` |
+| `.task-evidence/connection-acceptance/local-1280.png` | `b6c0527cb2ca180f769760684dac9c8cc33a8c229cd4f781b0a056b0d912afd3` |
+| `.task-evidence/generated-ssh-key-ui/generated-390.png` | `63479857c370ad4d7f99175fbca2f0a067adbf3a1db0d678e098f2d31ac54efa` |
+| `.task-evidence/generated-ssh-key-ui/generated-960.png` | `69c6d103a849901f2ef6505390ebf3d2e2390c2ee6181a96a4287a86297ea37e` |
+
+The frozen `finish_task.py` gate reruns offline dependency resolution, format,
+analysis, both unions, diff and lock/local-link checks before committing only
+these two docs to `agent/wing/t_e17c0b4a`. Exact commit/check receipt is recorded
+in the native handoff; this text does not assert independent approval or publication.
+Ponytail decision: delete withdrawn assertions, reuse existing callers/tests/render
+hooks, preserve the linked private-key section anchor, add no new production code,
+dependency or test abstraction. No failed acceptance check or repair retry in the
+initial batch. Cost/usage and independent review duration are unknown.
+
+Implemented: corrected maintained comparison and this proposed acceptance mapping.
+Qualified: only named Linux-hosted deterministic widget/security checks and renders.
+Delivered: scoped local candidate only after the finish receipt; native review pending.
+Compiled browser is NOT_CHECKED because no browser behavior changed. Native/device,
+live Agent/provider/SSH/OAuth, installation, durable SSH relaunch, full repository
+and release checks remain NOT_CHECKED. The coordinator owns remaining fidelity/live
+gaps, review acceptance, canonical mapping/integration and authorized publication.

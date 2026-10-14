@@ -1,234 +1,110 @@
 # Desktop connection paths
 
-> Reference correction: [official Desktop authority](../quality/official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
+Status: pinned official-source comparison and bounded offline Wing acceptance,
+not full Desktop parity or native/live connection qualification.
 
+This comparison replaces the withdrawn separate-app research. Historical Wing
+receipts remain evidence of their named checks only; they do not establish what
+the official Desktop implements. See [reference authority](../quality/official-desktop-reference.md).
+[Product requirements](prd.md#connection-path-requirements) retain the accepted
+Local / SSH / Remote outcome, with explicit platform and security adaptations.
 
-Status: source-backed comparison and development managed-SSH implementation.
-The owner requested Local, SSH and Remote connection paths, starting with Desktop
-research. This document records that research and the current key-UX gaps. It does
-not qualify native Linux/Android live SSH, remote OAuth or native installation.
+## Source and transport boundary
 
-[Product requirements](prd.md#connection-path-requirements) own the required
-outcomes. The [technical design](../spec.md#connection-path-design) owns integration
-boundaries. The [test plan](../test-plan.md#connection-path-verification) owns
-verification. [Root TODO](../../TODO.md#now--next) owns bounded follow-up entries.
+Inspected read-only Hermes Agent revision:
+[`158fd638da1629c8e62caf9ade1515d162def8ab`](https://github.com/NousResearch/hermes-agent/tree/158fd638da1629c8e62caf9ade1515d162def8ab).
+Official `apps/desktop` tree: `2038178ee53e13cde6fe297daa2484a868e7d3a3`.
+The checkout was clean before inspection; no reference was updated, modified,
+installed, launched or tested. These are checkout identities, not latest-release
+claims. Source paths below are relative to this Agent revision; line ranges and
+nearest tests were inspected, not executed.
 
-## Source and evidence
+Official Desktop is an Electron/React chat surface over headless `hermes serve`
+and `apps/shared` JSON-RPC. Local backends are pooled by connection/profile;
+remote chat uses `/api/ws`. The narrow older-runtime fallback is `dashboard
+--no-open`, not the dashboard frontend. See `apps/desktop/src/AGENTS.md`:6–34
+and `apps/desktop/electron/backend-serve-support.test.ts`.
 
-Read-only Desktop reference: `withdrawn reference revision`.
-This identifies the inspected checkout, not the latest release or a clean-tree
-snapshot. Existing upstream changes were preserved. No Desktop tests, installer,
-SSH connection, OAuth login or live Agent workflow ran during this research.
+Wing production instead enrolls
+[`HermesApiChannel`](../../lib/features/hermes_chat/providers/hermes_channel_provider.dart),
+with direct Agent HTTP reads and exactly advertised REST/SSE operations. Its
+[connection bootstrap](../../lib/core/hermes/channel/api_channel/hermes_api_channel_connection.dart)
+reads health, capabilities and scoped sessions before reporting connected.
+Internal native-web qualification clients are not production enrollment.
+Similar URLs, shared Agent internals or Desktop session-token/OAuth success do
+not prove bearer, operation, grant, profile or session compatibility. A configured
+Desktop `serve` URL alone is not proof that it exposes Wing's required API.
+Never add an RPC, shell, credential-discovery or management fallback to hide this gap.
 
-| Path | Desktop behavior | Source |
+## Official welcome, Local, SSH and Remote trace
+
+Abbreviated official paths in this table are within `apps/desktop/`; component
+siblings share `src/components/`, and Remote setup siblings share
+`src/components/remote-setup/`.
+
+| Outcome | Official implementation and nearest tests | Retained Wing path and explicit difference |
 | --- | --- | --- |
-| Local — Get Started | Detect installation, offer adoption or install/update, confirm installation, stream progress, then enter provider setup or chat. | [Welcome](../quality/official-desktop-reference.md#withdrawn-evidence), [App](../quality/official-desktop-reference.md#withdrawn-evidence), [Install](../quality/official-desktop-reference.md#withdrawn-evidence), [installer](../quality/official-desktop-reference.md#withdrawn-evidence): `checkInstallStatus`, `verifyInstall`, `runInstall`. |
-| Connect via SSH | Collect host, SSH port, username and optional key-file path. Test a temporary forward, save the connection, then prepare remote service access. | [Welcome](../quality/official-desktop-reference.md#withdrawn-evidence), [IPC](../quality/official-desktop-reference.md#withdrawn-evidence): `test-ssh-connection`, `prepareSshTunnel`; [tunnel](../quality/official-desktop-reference.md#withdrawn-evidence). |
-| Connect to Remote Hermes | Accept a server URL, detect token or browser OAuth authentication, authenticate and check connectivity. | [remote auth](../quality/official-desktop-reference.md#withdrawn-evidence): `probeRemoteAuthMode`, `openRemoteOAuthLogin`; [IPC](../quality/official-desktop-reference.md#withdrawn-evidence): `connect-remote-gateway`; [Hermes client](../quality/official-desktop-reference.md#withdrawn-evidence): `testRemoteConnection`. |
+| Initial setup choice | `apps/desktop/src/components/desktop-install-overlay.tsx`:443–520 offers **Connect to existing Hermes** and a state-dependent Local card, not a three-button Local/SSH/Remote welcome. `desktop-install-local-card.ts`:13–37 selects install vs use-local presentation. `desktop-install-overlay.test.tsx`:94–166 checks choice, deliberate local start and recoverable missing bridge. | [Welcome](../../lib/features/enrollment/widgets/hermes_welcome.dart):78–126 uses **Get Started**, **Connect via SSH**, **Remote server**; [enrollment](../../lib/features/enrollment/screens/hermes_enrollment_screen.dart):50–52 opens the shared Add form. This retained hierarchy is an accepted Wing outcome, not official wording/layout parity. |
+| Local preparation | `desktop-install-overlay.tsx`:476–486 invokes `continueBootstrapLocal`; :523–579 has manual installation/docs/retry for unsupported installer platforms. `electron/local-backend-lifecycle.ts`:77–116 owns spawn/shutdown; nearest `local-backend-lifecycle.test.ts` and `backend-serve-support.test.ts` exercise lifecycle and command compatibility. | [Local panel](../../lib/features/hermes_chat/widgets/platform_local_connection_panel.dart):85–120,162–190 inspects Linux directory metadata and offers deliberate folder selection. It neither reads Agent files nor starts/installs a runtime or selects a Project. Existing [Local setup route](../../lib/features/local_setup/screens/local_hermes_setup_screen.dart) reuses direct authentication. Full managed-local parity remains a gap. |
+| SSH acquisition and trust | `apps/desktop/src/app/settings/gateway-settings.tsx` owns SSH host/user/port/key-path/remote-runtime/profile fields, host suggestions and Test. `electron/ssh-config.ts`:72–173 reads aliases/Includes and parses effective OpenSSH config. `electron/ssh-connection.ts`:1–24,238–286 uses system OpenSSH, inherited config/agent/jump hosts, `BatchMode=yes` and `StrictHostKeyChecking=accept-new`; no interactive programmatic password/passphrase prompt. `ssh-connection.test.ts`:154–211 checks policy, identity args and loopback forwarding; `ssh-config.test.ts` covers config parsing. | [SSH form](../../lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart) exposes deliberate Password / Private key, bounded native picker, encrypted-key passphrase, generated/saved Wing key and public-only copy. [Panel](../../lib/features/hermes_chat/widgets/managed_ssh_connection_panel.dart):53–69 requires fingerprint review; it does not inherit OpenSSH config, SSH-agent or jump-host support. These are explicit native/security adaptations, not a port of Desktop's key-path UX. |
+| SSH Test and runtime | `electron/main.ts`:10729–10811 creates an isolated SSH probe, detects remote platform, locates/probes Hermes and checks ownership support; timeout alone gets one bounded retry. It is not the withdrawn app's forwarded-health test. :10164–10182 scopes bootstrap, :10299–10317 connects the remote lifecycle and forward, :10354–10425 fences publication and builds the authenticated connection. `electron/ssh-bootstrap-coordinator.test.ts`, `remote-lifecycle.test.ts` and `windows-remote-lifecycle.test.ts` are nearest lifecycle/ownership tests. | [Native Dart forward](../../lib/core/hermes/ssh/ssh_forward_io.dart):17–25,73–164 authenticates SSH, reviews the host key and binds an ephemeral loopback listener; :174–218 forwards only to remote loopback Agent port. [Controller](../../lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart):35–116 then authenticates the separate Agent channel. No remote exec, bootstrap, restart, installation, discovery of tokens or durable forwarded-origin save. SSH authentication alone is not Agent readiness. |
+| Remote authentication and Test/Apply | `remote-setup/first-run.tsx`:16–38,55–72 separates Back, Test and Apply. `use-remote-setup.ts`:68–74,110–155,201 binds auth mode and exact first-run test payload. `electron/main.ts`:10662–10726 probes public status/providers; :10823–10879 tests real authenticated HTTP plus WebSocket. :16863 onward gates native login on supported auth flows. `use-remote-setup.test.tsx`:30–89,92–160 rejects stale probe/login/test results; `electron/remote-oauth-ticket.test.ts` checks ticket resolution. | [Add form](../../lib/features/hermes_chat/screens/state/hermes_chat_layout.dart):153–245 groups **Local / SSH / Remote**, with Remote HTTPS and VPN subchoices. [Connect/save](../../lib/features/hermes_chat/screens/state/hermes_chat_connection.dart):378–453 uses current form/owner leases and secure persistence, then returns ownership to the directory. HTTPS validates certificates/origin; non-local HTTP credential use needs explicit trusted-network consent. Remote browser OAuth/PKCE/cookie-to-WebSocket acquisition is not enabled or qualified by this form. |
 
-Desktop's [connection registry](../quality/official-desktop-reference.md#withdrawn-evidence) supports
-named saved connections and Settings selection, editing, testing and removal.
-Conversation identity includes connection, profile and session. Selecting another
-host must not retarget an existing conversation or pending request.
+Official Desktop's first-run choice does not expose SSH as a third welcome card
+in this inspected revision; SSH is a connection-mode/settings path. Do not rename
+the withdrawn Welcome/App/IPC/tunnel citations into official evidence. Desktop
+bootstrap is scoped, not the withdrawn single global fixed-port tunnel. Wing must
+not copy Desktop's privileged remote lifecycle or installation techniques without
+an eligible reviewed Agent contract; [Agent immutability](../adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent)
+still applies.
 
-## SSH is managed host access in Desktop
+## Current Wing controls and privacy
 
-Desktop invokes system OpenSSH with key-file authentication, `BatchMode=yes`,
-keepalives and `StrictHostKeyChecking=accept-new`. Its exposed onboarding path does
-not implement a password/passphrase prompt. Host trust follows OpenSSH
-trust-on-first-use, not an application fingerprint-review screen.
+Android welcome deliberately orders SSH, Remote, then **Use this phone (Termux)**.
+The Add form uses the same order; Linux/web retain Local, SSH, Remote. Remote
+preserves a selected VPN subchoice. Android Local is a manual staged guide in a
+separate Termux sandbox with fixed `http://127.0.0.1:8642`; guide completion does
+not assert readiness. Browser raw-TCP SSH is explicitly unavailable. Web Local is
+an explicit reachable endpoint, not browser host discovery or lifecycle authority.
 
-The forward targets remote loopback. Desktop prefers local port 18642, with an
-available alternative when occupied. One global tunnel is shared. Same-target
-starts are reused or deduplicated. Connection switches stop the tunnel, and
-inactive SSH conversations cannot retarget it. See
-[`ssh-tunnel.ts`](../quality/official-desktop-reference.md#withdrawn-evidence).
+### Private-key UX: Desktop reference and Wing adaptations
 
-[`prepareSshTunnel`](../quality/official-desktop-reference.md#withdrawn-evidence) prefers a remote
-dashboard, normally on port 9119, with dashboard-session authentication. If
-unavailable or legacy mode is selected, it can enable gateway API credentials,
-start or restart the gateway and forward to its API port. Dashboard and legacy
-API surfaces are distinct. The onboarding form's remote service default is 8642.
+Selected imported private-key content is bounded to 64 KiB including streamed
+bytes, remains attempt-scoped and is cleared on failure/cancel/disposal. Generated
+Ed25519 identity has a separate versioned platform-secure-storage slot; generation
+validates readback and reuses an existing valid identity without replacement.
+Only its public key is copied. See [selection](../../lib/features/hermes_chat/ssh_keys/managed_ssh_key_selection.dart),
+[generated store](../../lib/features/hermes_chat/ssh_keys/managed_ssh_generated_key_store.dart)
+and [copy guard](../../lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart).
+Native picker, secure-storage persistence and real host login remain unqualified.
 
-[`sshStartDashboard`](../quality/official-desktop-reference.md#withdrawn-evidence) launches a remote
-loopback dashboard through a shell. The remote process can outlive the local
-connection. Stopping a tunnel is not proof that the remote service or Agent run
-stopped. Welcome's initial tunnel test requires an existing service to answer
-health/status before later preparation. Successful SSH authentication alone does
-not pass that test, and health alone does not prove authenticated chat.
+Wing Link client/service/installers/bundling and legacy consumers are removed,
+not pending work or an optional setup path. Legacy intent/share/`step=pair`
+input is discarded with generic direct-reconnection guidance; it is not parsed,
+exchanged or displayed. Saved Agent credentials and endpoint/profile/session
+identities survive; raw legacy records and secure slots remain inert and preserved.
+Missing Agent credentials require direct reauthentication. Changed origins must
+not borrow another origin's credential. Cancellation keeps the caller's owner/draft.
 
-## Private-key UX: Desktop reference and Wing adaptations
+Reconnect restores the exact saved host/profile/session through directory owner
+leases; it never replays Send, create, approval, Stop or configuration mutations.
+The [delivered restoration correction and remaining acceptance](../quality/session-restoration-caller-admission.md)
+record the missing-entry-guard repair separately from these public controls. It
+was already delivered before this batch; no second production correction is needed.
 
-Desktop stores a key-file **path**, not imported private-key bytes, in its
-`SshConnectionConfig` and connection registry. Welcome and Settings both show a
-plain optional path input with `~/.ssh/id_rsa` as the placeholder. The inspected
-forms do not offer a key picker, key generation, public-key export or passphrase
-field. See [Welcome](../quality/official-desktop-reference.md#withdrawn-evidence),
-[ConnectionPane](../quality/official-desktop-reference.md#withdrawn-evidence),
-[settings persistence](../quality/official-desktop-reference.md#withdrawn-evidence)
-and [config normalization](../quality/official-desktop-reference.md#withdrawn-evidence).
+## Acceptance and remaining gaps
 
-The tunnel selects the supplied path or the home directory's `.ssh/id_rsa`,
-checks file existence, and passes it to system OpenSSH through `-i`.
-`buildSshArgs` also uses `BatchMode=yes` and `StrictHostKeyChecking=accept-new`.
-No application passphrase prompt or explicit SSH-agent selection is wired in
-this inspected path. An unlocked identity available to OpenSSH might work, but
-that requires runtime qualification. The literal `~` placeholder is not expanded
-by the inspected `existsSync` check or argument builder. Do not copy that input
-ambiguity into Wing. Desktop's temporary Test checks forwarded HTTP health,
-not SSH authentication alone. See
-[tunnel implementation](../quality/official-desktop-reference.md#withdrawn-evidence).
+The [offline acceptance receipt](../quality/session-restoration-caller-admission.md#remaining-official-connection-acceptance)
+maps the existing public-control/security tests, render evidence, source/dependency
+pins and exact commands. Linux-hosted widget tests exercise platform overrides,
+not Linux GTK/Android native plugins or a live Agent/provider. Public controls
+pass within those fixtures; that is not full Desktop product parity.
 
-Wing's native Dart transport accepts ephemeral private-key and passphrase
-callbacks through `ManagedSshCredentials`. The development form now implements
-Private key / Password controls, deliberate selection and encrypted-key input.
-Selected content is bounded to 64 KiB, including actual streamed bytes. Cancelled,
-replaced or disposed picker results cannot restore a selection. The form parses
-keys before authentication and releases selected secrets on completion or failure.
-OpenSSH bcrypt keys are limited to 1–64 rounds. Other unsupported formats require
-explicit password fallback.
-See [transport](../../lib/core/hermes/ssh/ssh_forward_io.dart) and
-[form](../../lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart).
-The [graph/source comparison](../quality/graphify-wing-recomparison.md) is an earlier
-snapshot, not the final implementation receipt. Fresh parent verification passed
-72 focused Flutter tests. Native chooser and full-app qualification remain open.
-
-Implemented first key-authentication increment; native execution not yet qualified:
-
-- Keep Desktop's host/port, username, key choice and service-port grouping.
-  Add an explicit **Private key / Password** choice instead of an ambiguous path.
-- Linux: use deliberate native file selection. Read only the selected file with
-  bounded size. Show a safe filename and public fingerprint, not full paths or
-  private-key contents. Do not scan the user's `.ssh` directory automatically.
-- Android: use the system document picker and its returned content. Do not ask
-  for a Linux path, assume persistent document access, require Termux/OpenSSH,
-  or copy the agent environment's private key into the phone.
-- Ask for an obscured passphrase only when the selected key requires one.
-  Separate wrong passphrase, unsupported key and SSH authentication failures
-  through sanitized messages. Keep password fallback deliberate.
-- First increment: selected key and passphrase are attempt-scoped. Clear their
-  references on cancellation, failure and disposal. Retrying requires deliberate
-  re-entry as needed. Do not promise remembered keys or automatic relaunch login.
-- Keep explicit host fingerprint review and reject changed or unreviewed keys.
-  Desktop's automatic first-use trust is not Wing's trust policy.
-- Keep the Agent token separate. SSH success is not authenticated Agent readiness.
-  Never bootstrap services, discover remote credentials or patch Agent.
-
-The later owner-requested increment adds **Generate SSH key**, consent,
-**Use saved Wing key** and public-only copy. Generated Ed25519 keys use a separate
-versioned platform-secure-storage entry; generation validates readback and reuses
-an existing valid identity without replacing it. Imported keys remain attempt-scoped.
-Persistent picker access and SSH-agent integration remain future work. The
-[parent receipt](../quality/connection-key-generation-help.md) records 132 focused
-union tests and clean full analysis, not native secure-storage qualification. Linux and Android must each exercise
-the actual app's key-authentication path and recovery against an approved host.
-A terminal login from the host itself proves neither phone reachability nor Wing
-key ownership. No private keys or personal credential stores were read here.
-
-## Current Wing support and gaps
-
-Wing Link is deprecated under the [product decision](../adr/product.md#wing-link-deprecation).
-Linux Local must default to the local Hermes home with deliberate alternate-folder
-selection. Android Local now provides staged same-phone setup guidance and a
-deliberate existing-Agent skip path. Both are wired into the production chooser,
-with selectable/copyable public connection Help. Discovery is metadata only; phone
-setup is manual, not a qualified installer. Native readiness, chooser and phone
-setup remain unqualified. Retained Link consumers and packaging still need removal.
-
-Owner correction, 2026-10-07: Local, SSH and Remote must connect directly to
-Hermes Agent without mandatory Wing Link installation, pairing or credentials.
-This is accepted intent, not a shipped first-run redesign or managed SSH claim.
-
-Android default welcome follows the accepted correction: **SSH**, **Remote
-server**, then **on-phone Termux**, as separate actions. The enrollment candidate
-removes default computer/QR pairing promotions while retaining explicit legacy
-handoffs and unchanged Local setup. Its Linux-hosted widget checks are not native
-Android, installation or managed-SSH qualification. See [enrollment](enrollment.md).
-
-The Add Hermes connection editor uses **SSH**, **Remote**, then
-**Use this phone (Termux)** on native Android, matching welcome's on-phone
-distinction. Linux and web retain **Local**, **SSH**, then **Remote**. The
-Termux choice retains the manual guide and fixed same-phone loopback endpoint;
-it is not computer-local access or an installer. Remote contains **Remote HTTPS** and **VPN / NetBird /
-Tailscale** subchoices. Selecting Remote preserves an already selected VPN mode.
-The [Android editor receipt](../quality/android-connection-editor-order.md)
-records Linux-hosted production-widget regressions at compact/wide widths and
-200% text, not native Android or live SSH/Termux qualification.
-The [connection layout](../../lib/features/hermes_chat/screens/state/hermes_chat_layout.dart)
-and [English copy](../../lib/l10n/app_en.arb) define the presentation.
-The [auth-recovery regression](../../test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart)
-now expects three primary choices and nested VPN access.
-The [entry-label receipt](../quality/connection-entry-labels.md) records exact
-rendered labels, 13 widget passes and four fresh compiled Chromium journeys.
-The Chat/Add Hermes terminology slice is qualified. The current development
-worktree also routes Chat Add directly to the form and places **Add Hermes** before
-optional setup/pairing in enrollment. The later [first-run receipt](../quality/direct-first-run.md)
-records 123 focused widget passes, four dedicated widget passes and ten compiled
-Chromium journeys on Linux. Six Agent-only traces record no management requests
-or mutations. This bounded deterministic evidence does not establish main delivery
-or Android/live authentication. The [native first-run receipt](../quality/direct-first-run-native.md)
-adds four passing Linux GTK fixture journeys with synthetic denial, explicit
-keyboard retry and zero management/mutation attempts. Managed connection parity
-remains incomplete.
-
-- Retained Local setup still uses legacy contracts; the default enrollment
-  chooser no longer promotes computer setup or QR pairing. See [enrollment](enrollment.md).
-- Remote and VPN modes connect to an explicitly supplied Agent endpoint.
-  No separate management authority or pairing mode is offered. Remote browser
-  OAuth is not established by Desktop's OAuth implementation.
-- The current development SSH form creates native Dart forwarding, explicitly
-  reviews the host key and adopts the direct Agent channel. It does not require
-  an external tunnel or CLI QR. Password authentication and a partial private-key
-  selection path are exposed. Key acquisition/recovery acceptance, saved SSH
-  relaunch and native Linux/Android live qualification remain open. See the [controller](../../lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart)
-  and [production panel tests](../../test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart).
-
-The previous four-primary-choice presentation is historical. Four transport modes
-remain available through the new grouping. External-tunnel connection is an
-existing path, but it is not Desktop's managed SSH onboarding.
-
-## Planned delivery and proposed defaults
-
-Qualify remaining native save recovery and live behavior, then deliver the implemented direct first-run entry
-without a pairing detour. Reuse existing Agent authentication, secure storage and owner-fenced
-recovery. Optional management failure must not gate a valid Agent connection. Missing Agent APIs are unsupported
-features, not a reason to require Wing Link.
-
-The required product outcome is three primary entry paths: **Local**, **SSH** and
-**Remote**, with the Android adaptation **SSH**, **Remote**, then explicit
-**on-phone Termux**. Retain VPN connectivity within Remote rather than removing it.
-Reuse current setup, enrollment, endpoint storage and channel contracts.
-
-The implemented managed-SSH slice uses native Dart TCP forwarding to an
-already-configured, authenticated Agent endpoint. It runs no OpenSSH subprocess.
-Browser raw TCP is explicitly unsupported. The next key-UX increment above must
-preserve explicit host trust, connection ownership and cleanup. This research
-adds no remote-command or host-management authority.
-
-Reconnect must recover the same host/profile/session without mutation replay.
-The isolated saved-directory retirement candidate removes automatic legacy
-credential verification/acknowledgment during startup, refresh and reconnect.
-Saved Agent and Link fields remain unchanged; legacy host grouping is retained.
-The [directory regressions](../../test/features/hermes_chat/gateways/hermes_gateway_directory_test.dart)
-cover pending bundles, foreground refresh and cancelled/replaced startup using
-Linux-hosted deterministic fixtures. Review, integration and native/live
-qualification remain separate; this does not retire enrollment or other consumers.
-Do not store an ephemeral forwarded origin as the durable remote-host identity
-without defining how restart and port replacement preserve ownership. Keep Agent
-credentials origin-bound; forwarding does not grant lifecycle authority.
-
-Remote bootstrap, installation and service changes are separate host-management
-operations. This first connection slice does not silently provision credentials,
-restart a remote gateway or install Hermes. Existing Docker/WSL backend requirements
-remain in the parity backlog, not in the initial SSH slice.
-
-Desktop implementation techniques that must not be copied include arbitrary
-remote shell/configuration/file access, Agent source patches and secret-bearing
-command arguments or URLs. See
-[`ensureSshDashboardCompatibility`](../quality/official-desktop-reference.md#withdrawn-evidence)
-and the [immutable Agent boundary](../adr/runtime-and-delivery.md#hard-boundary-never-modify-hermes-agent).
-
-Primary grouping is implemented and has bounded deterministic evidence.
-The managed-SSH defaults define backlog scope, not a reviewed native contract or
-shipped feature. Managed SSH, native launch, live remote authentication and full
-three-path qualification remain unverified or unimplemented as stated above.
+Remaining gaps are explicit: official setup wording/hierarchy and managed-local
+lifecycle fidelity; Desktop OpenSSH config/agent/jump-host behavior; eligible
+production native JSON-RPC/auth acquisition; Remote OAuth; durable SSH relaunch
+identity/trust recovery; approved Linux/Android host/device authentication and
+secure-storage/picker qualification; real inference and full three-path/recovery
+qualification. Missing exact Agent operations remain unavailable. This batch does
+not close `CONNECTION-PATHS`, canonical TODO/goals, installation, native/live or
+release acceptance, and does not merge or publish its local candidate.

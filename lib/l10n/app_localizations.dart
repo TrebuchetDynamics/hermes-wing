@@ -94,6 +94,24 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @localServeReadsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Read an already-running Hermes serve backend'**
+  String get localServeReadsLabel;
+
+  /// No description provided for @localServeReadsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Linux loopback only. Enter this backend\'s host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history only. No launch, chat, approvals or Stop. This connection and token are not saved; enter them again after relaunch.'**
+  String get localServeReadsBody;
+
+  /// No description provided for @localServeTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes serve session token'**
+  String get localServeTokenLabel;
+
   /// No description provided for @connectionGuideTitle.
   ///
   /// In en, this message translates to:

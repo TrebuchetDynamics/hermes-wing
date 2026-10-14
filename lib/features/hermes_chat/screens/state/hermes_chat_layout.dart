@@ -80,6 +80,25 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       await _connect(channel);
     }
 
+    final serveChoice =
+        !kIsWeb &&
+            defaultTargetPlatform == TargetPlatform.linux &&
+            channel is HermesApiChannel
+        ? CheckboxListTile(
+            key: const ValueKey('hermes-local-serve-reads'),
+            value: _localServeReads,
+            title: Text(strings.localServeReadsLabel),
+            subtitle: Text(strings.localServeReadsBody),
+            onChanged: connecting
+                ? null
+                : (value) {
+                    _connectionForm.abandonAttempt();
+                    _connectionForm.apiKey.clear();
+                    _setState(() => _localServeReads = value ?? false);
+                  },
+          )
+        : const SizedBox.shrink();
+
     final form = SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
       child: Center(
@@ -337,8 +356,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                               enableSuggestions: false,
                               enableIMEPersonalizedLearning: false,
                               decoration: InputDecoration(
-                                labelText: strings.platformLocalTokenLabel,
-                                helperText: strings.platformLocalTokenHelper,
+                                labelText: _localServeReads
+                                    ? strings.localServeTokenLabel
+                                    : strings.platformLocalTokenLabel,
+                                helperText: _localServeReads
+                                    ? strings.localServeReadsBody
+                                    : strings.platformLocalTokenHelper,
                                 helperMaxLines: 4,
                                 prefixIcon: const Icon(Icons.key_outlined),
                                 suffixIcon: IconButton(
@@ -379,7 +402,19 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                             ),
                             const SizedBox(height: 20),
                             const SizedBox(height: 12),
-                            connectionCheck(),
+                            serveChoice,
+                            if (_localServeReads && connecting)
+                              TextButton(
+                                key: const ValueKey(
+                                  'hermes-local-serve-cancel',
+                                ),
+                                onPressed: () {
+                                  _connectionForm.abandonAttempt();
+                                  unawaited(channel.disconnect());
+                                },
+                                child: Text(strings.cancelAction),
+                              ),
+                            if (!_localServeReads) connectionCheck(),
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.all(12),
@@ -398,7 +433,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
-                                      strings.chatLayoutTokenStorageBody,
+                                      _localServeReads
+                                          ? strings.localServeReadsBody
+                                          : strings.chatLayoutTokenStorageBody,
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
                                             color: colors.onSurfaceVariant,

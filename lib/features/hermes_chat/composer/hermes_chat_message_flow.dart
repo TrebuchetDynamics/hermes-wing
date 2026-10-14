@@ -260,6 +260,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
       state.activeMessages.last.status == HermesTurnStatus.streaming;
 
   bool _hasChatTransport(HermesChannelState state) {
+    if (state.isServeReadOnly) return false;
     final capabilities = state.capabilities;
     if (capabilities == null) return true;
     return HermesTransportPolicy(capabilities).supportsAnyChatTransport;

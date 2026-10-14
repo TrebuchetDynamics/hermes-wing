@@ -6,6 +6,8 @@ import '../../protocol/wing_json.dart';
 import '../../protocol/voice/models/wing_voice_run.dart';
 import '../client/hermes_api_client.dart';
 import '../client/hermes_api_config.dart';
+import '../client/hermes_web_read_client_unsupported.dart'
+    if (dart.library.io) '../client/hermes_web_read_client.dart';
 import '../models/hermes_capabilities.dart';
 import '../models/hermes_chat_turn.dart';
 import '../models/hermes_health.dart';
@@ -27,6 +29,7 @@ import 'hermes_channel.dart';
 import 'hermes_detached_run_store.dart';
 
 part 'api_channel/hermes_api_channel_connection.dart';
+part 'api_channel/hermes_api_channel_serve_reads.dart';
 part 'api_channel/hermes_api_channel_inventory.dart';
 part 'api_channel/hermes_api_channel_capabilities.dart';
 part 'api_channel/hermes_api_channel_sessions.dart';
@@ -71,6 +74,7 @@ class HermesApiChannel extends ChangeNotifier
   static final _detachedRunOperationTails = <Object, Future<void>>{};
 
   HermesApiClient? _client;
+  HermesWebReadClient? _serveReader;
   HermesChannelState _state = const HermesChannelState();
   final _activeStreams = <String, StreamSubscription<HermesStreamEvent>>{};
   final _activeStreamCompleters = <String, Completer<void>>{};
@@ -122,6 +126,7 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   void dispose() {
+    _serveReader?.disconnect();
     _client = null;
     _connectionGeneration += 1;
     _sessionSelectionGeneration += 1;
@@ -275,6 +280,13 @@ class HermesApiChannel extends ChangeNotifier
   @override
   Future<void> disconnect() => _disconnect();
 
+  /// Explicit REST-only local serve selection; never falls back to gateway/RPC.
+  Future<void> connectLocalServeReads({
+    required String baseUrl,
+    required String credential,
+    bool Function()? canAccept,
+  }) => _connectServeReads(baseUrl, credential, canAccept: canAccept);
+
   @override
   void clearActiveSession() {
     _sessionSelectionGeneration += 1;
@@ -283,17 +295,22 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   Future<void> selectSession(String sessionId, {bool Function()? canAccept}) =>
-      _selectSession(sessionId, canAccept: canAccept);
+      _serveReader != null
+      ? _selectServeSession(sessionId, canAccept: canAccept)
+      : _selectSession(sessionId, canAccept: canAccept);
 
   @override
   Future<bool> restoreSession(String sessionId, {bool Function()? canAccept}) =>
       _restoreSession(sessionId, canAccept: canAccept);
 
   @override
-  Future<void> loadEarlierMessages() => _loadEarlierMessages();
+  Future<void> loadEarlierMessages() => _serveReader != null
+      ? _loadEarlierServeMessages()
+      : _loadEarlierMessages();
 
   @override
-  Future<void> loadMoreSessions() => _loadMoreSessions();
+  Future<void> loadMoreSessions() =>
+      _serveReader != null ? _loadMoreServeSessions() : _loadMoreSessions();
 
   @override
   Future<void> createSession({String? title, bool Function()? canAccept}) =>
@@ -317,11 +334,16 @@ class HermesApiChannel extends ChangeNotifier
     String profileId, {
     bool allowDiscovered = false,
     bool deferSessionSelection = false,
-  }) => _selectProfile(
-    profileId,
-    allowDiscovered: allowDiscovered,
-    deferSessionSelection: deferSessionSelection,
-  );
+  }) => _serveReader != null
+      ? _selectServeProfile(
+          profileId,
+          deferSessionSelection: deferSessionSelection,
+        )
+      : _selectProfile(
+          profileId,
+          allowDiscovered: allowDiscovered,
+          deferSessionSelection: deferSessionSelection,
+        );
 
   @override
   Future<void> createProfile({required String name, String? cloneFrom}) =>
@@ -365,7 +387,7 @@ class HermesApiChannel extends ChangeNotifier
         _state.isSessionStreaming(sessionId)) {
       return;
     }
-    await _selectSession(sessionId);
+    await selectSession(sessionId);
   }
 
   @override

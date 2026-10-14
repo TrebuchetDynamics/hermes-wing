@@ -5,35 +5,35 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/client/hermes_web_read_client.dart';
 
 void main() {
-  test(
-    'native qualification transport has no product import or export path',
-    () {
-      const internal = {
-        'lib/core/hermes/client/hermes_web_read_client.dart',
-        'lib/core/hermes/client/hermes_web_read_rpc.dart',
-        'lib/core/hermes/client/hermes_web_lifecycle.dart',
-        'lib/core/hermes/models/hermes_web_reads.dart',
-      };
-      for (final file
-          in Directory('lib')
-              .listSync(recursive: true)
-              .whereType<File>()
-              .where(
-                (f) => f.path.endsWith('.dart') && !internal.contains(f.path),
-              )) {
-        expect(
-          file.readAsStringSync(),
-          isNot(contains('hermes_web_read')),
-          reason: file.path,
-        );
-        expect(
-          file.readAsStringSync(),
-          isNot(contains('HermesWebReadClient')),
-          reason: file.path,
-        );
-      }
-    },
-  );
+  test('native lifecycle has only the fixed local read product import path', () {
+    const internal = {
+      'lib/core/hermes/client/hermes_web_read_client.dart',
+      'lib/core/hermes/client/hermes_web_read_rpc.dart',
+      'lib/core/hermes/client/hermes_web_lifecycle.dart',
+      'lib/core/hermes/models/hermes_web_reads.dart',
+      'lib/core/hermes/channel/hermes_api_channel.dart',
+      'lib/core/hermes/channel/api_channel/hermes_api_channel_serve_reads.dart',
+      'lib/core/hermes/client/hermes_web_read_client_unsupported.dart',
+    };
+    for (final file
+        in Directory('lib')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where(
+              (f) => f.path.endsWith('.dart') && !internal.contains(f.path),
+            )) {
+      expect(
+        file.readAsStringSync(),
+        isNot(contains('hermes_web_read')),
+        reason: file.path,
+      );
+      expect(
+        file.readAsStringSync(),
+        isNot(contains('HermesWebReadClient')),
+        reason: file.path,
+      );
+    }
+  });
   test(
     'ticket subprotocol ready permits only fixed ping and list reads',
     () async {

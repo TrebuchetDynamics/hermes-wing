@@ -4,6 +4,7 @@ import 'dart:io';
 
 import '../models/hermes_web_reads.dart';
 import '../models/hermes_chat_turn.dart';
+import '../models/hermes_profile.dart';
 import '../shared/hermes_api_http.dart';
 
 export '../models/hermes_web_reads.dart';
@@ -11,10 +12,18 @@ export '../models/hermes_web_reads.dart';
 part 'hermes_web_read_rpc.dart';
 part 'hermes_web_lifecycle.dart';
 
-/// Internal Linux/VM qualification transport. Not exported by hermes_api.dart,
-/// registered with Riverpod, or usable as a product channel. Loopback-only until
-/// credential authority and remote/platform transport are separately reviewed.
+/// Fixed loopback REST reads; ticket/RPC lifecycle remains qualification-only.
 final class HermesWebReadClient {
+  HermesWebReadClient.forLocalReads({
+    required Uri origin,
+    required String credential,
+    required String profile,
+  }) : this.forQualification(
+         origin: origin,
+         credential: credential,
+         profile: profile,
+       );
+
   HermesWebReadClient.forQualification({
     required Uri origin,
     required String? credential,
@@ -48,6 +57,12 @@ final class HermesWebReadClient {
   final String? _credential;
   final String _profile;
   final Duration timeout;
+  HermesWebReadClient forProfile(String profile) =>
+      HermesWebReadClient.forLocalReads(
+        origin: _origin,
+        credential: _credential ?? '',
+        profile: profile,
+      );
   int _generation = 0;
   bool _closed = false;
   final Set<HttpClient> _http = {};
@@ -99,6 +114,26 @@ final class HermesWebReadClient {
       limit: limit,
       offset: offset,
     );
+  }
+
+  Future<List<HermesProfile>> profiles() async {
+    final json = await _request('/api/profiles');
+    final profiles = <HermesProfile>[];
+    for (final raw in webRows(json['profiles'], 128)) {
+      final row = webObject(raw);
+      final name = webString(row['name'], maximum: 128);
+      _validateIdentity(name);
+      if (profiles.any((p) => p.id == name)) webMalformed();
+      final displayName = webString(row['display_name']);
+      profiles.add(
+        HermesProfile(
+          id: name,
+          displayName: displayName.isEmpty ? name : displayName,
+          revision: '',
+        ),
+      );
+    }
+    return List.unmodifiable(profiles);
   }
 
   Future<HermesWebHistoryPage> history(

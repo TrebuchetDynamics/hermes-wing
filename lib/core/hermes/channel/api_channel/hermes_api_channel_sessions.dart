@@ -2,6 +2,8 @@ part of '../hermes_api_channel.dart';
 
 extension _SessionsExtension on HermesApiChannel {
   Future<void> _disconnect() async {
+    _serveReader?.disconnect();
+    _serveReader = null;
     _client = null;
     _connectionGeneration += 1;
     _sessionSelectionGeneration += 1;
@@ -17,6 +19,19 @@ extension _SessionsExtension on HermesApiChannel {
     bool Function()? canAccept,
   }) async {
     if (!(canAccept?.call() ?? true)) return false;
+    if (_serveReader != null) {
+      final reader = _serveReader;
+      if (!_state.isConnected || _state.isSelectingProfile) return false;
+      if (!_state.sessions.any((s) => s.id == sessionId)) {
+        throw const HermesSessionRestorationUnsupported();
+      }
+      final selection = _sessionSelectionGeneration + 1;
+      await _selectServeSession(sessionId, canAccept: canAccept);
+      return identical(_serveReader, reader) &&
+          selection == _sessionSelectionGeneration &&
+          (canAccept?.call() ?? true) &&
+          _state.activeSessionId == sessionId;
+    }
     final client = _requireConnectedClient();
     final profileId = _state.selectedProfileId;
     final profileGuard = _profileRequestGuard(client, profileId);

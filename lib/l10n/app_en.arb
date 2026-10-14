@@ -1,4 +1,7 @@
 {
+  "localServeReadsLabel": "Read an already-running Hermes serve backend",
+  "localServeReadsBody": "Linux loopback only. Enter this backend's host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history only. No launch, chat, approvals or Stop. This connection and token are not saved; enter them again after relaunch.",
+  "localServeTokenLabel": "Hermes serve session token",
   "connectionGuideTitle": "Connect step by step",
   "connectionGuidePrepare": "1. Prepare Hermes Agent",
   "connectionGuidePrepareBody": "On the computer running Agent, open the official Hermes dashboard with hermes dashboard. Choose the intended profile, then Channels → API server. Enable the API on loopback for this computer, or ask the host administrator for a trusted HTTPS endpoint. Wing does not install or start Agent.",

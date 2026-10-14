@@ -9,6 +9,17 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get localServeReadsLabel =>
+      'Read an already-running Hermes serve backend';
+
+  @override
+  String get localServeReadsBody =>
+      'Linux loopback only. Enter this backend\'s host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history only. No launch, chat, approvals or Stop. This connection and token are not saved; enter them again after relaunch.';
+
+  @override
+  String get localServeTokenLabel => 'Hermes serve session token';
+
+  @override
   String get connectionGuideTitle => 'Connect step by step';
 
   @override

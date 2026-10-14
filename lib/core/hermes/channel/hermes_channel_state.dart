@@ -29,6 +29,7 @@ enum HermesOptionalResource { detailedHealth, models, skills, toolsets, jobs }
 class HermesChannelState {
   const HermesChannelState({
     this.status = HermesConnectionStatus.disconnected,
+    this.isServeReadOnly = false,
     this.errorMessage,
     this.connectionFailureKind,
     this.capabilities,
@@ -66,6 +67,9 @@ class HermesChannelState {
   });
 
   final HermesConnectionStatus status;
+
+  /// Fixed authenticated serve REST reads; never a gateway capability grant.
+  final bool isServeReadOnly;
   final String? errorMessage;
   final HermesConnectionFailureKind? connectionFailureKind;
   final HermesCapabilityDocument? capabilities;
@@ -131,6 +135,7 @@ class HermesChannelState {
   /// (`supportsSchema` + advertised endpoint + granted scope) so surfaces can
   /// hide read/write affordances the connected token cannot use.
   bool get canCreateSessions =>
+      !isServeReadOnly &&
       !isSelectingProfile &&
       (capabilities == null ||
           _authorizesEndpoint('session_create', 'POST', '/api/sessions'));
@@ -145,28 +150,31 @@ class HermesChannelState {
           ));
 
   bool get canUpdateSessions =>
-      capabilities == null ||
-      _authorizesEndpoint(
-        'session_update',
-        'PATCH',
-        '/api/sessions/{session_id}',
-      );
+      !isServeReadOnly &&
+      (capabilities == null ||
+          _authorizesEndpoint(
+            'session_update',
+            'PATCH',
+            '/api/sessions/{session_id}',
+          ));
 
   bool get canDeleteSessions =>
-      capabilities == null ||
-      _authorizesEndpoint(
-        'session_delete',
-        'DELETE',
-        '/api/sessions/{session_id}',
-      );
+      !isServeReadOnly &&
+      (capabilities == null ||
+          _authorizesEndpoint(
+            'session_delete',
+            'DELETE',
+            '/api/sessions/{session_id}',
+          ));
 
   bool get canForkSessions =>
-      capabilities == null ||
-      _authorizesEndpoint(
-        'session_fork',
-        'POST',
-        '/api/sessions/{session_id}/fork',
-      );
+      !isServeReadOnly &&
+      (capabilities == null ||
+          _authorizesEndpoint(
+            'session_fork',
+            'POST',
+            '/api/sessions/{session_id}/fork',
+          ));
 
   bool get canReadDetailedHealth =>
       _authorizesEndpoint('health_detailed', 'GET', '/health/detailed');
@@ -345,6 +353,7 @@ class HermesChannelState {
 
   HermesChannelState copyWith({
     HermesConnectionStatus? status,
+    bool? isServeReadOnly,
     String? errorMessage,
     HermesConnectionFailureKind? connectionFailureKind,
     bool clearErrorMessage = false,
@@ -414,6 +423,7 @@ class HermesChannelState {
     );
     return HermesChannelState(
       status: status ?? this.status,
+      isServeReadOnly: isServeReadOnly ?? this.isServeReadOnly,
       errorMessage: clearErrorMessage
           ? null
           : errorMessage ?? this.errorMessage,

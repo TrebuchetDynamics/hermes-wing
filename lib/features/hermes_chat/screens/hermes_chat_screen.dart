@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/channel/hermes_api_channel.dart';
 import '../../../core/hermes/client/hermes_api_client.dart';
 import '../../../core/hermes/client/hermes_api_config.dart';
 import '../../../core/hermes/shared/hermes_api_http.dart';
@@ -323,6 +324,7 @@ class HermesChatScreen extends ConsumerStatefulWidget {
 class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     with WidgetsBindingObserver {
   late final HermesConnectionForm _connectionForm;
+  bool _localServeReads = false;
   final _composerController = TextEditingController();
   late final FocusNode _composerFocusNode;
   final _transcriptScrollController = ScrollController();
@@ -636,6 +638,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _selectConnectionMode(HermesConnectionMode mode) {
     if (_connectionMode == mode) return;
+    if (_localServeReads) _connectionForm.apiKey.clear();
+    _localServeReads = false;
     _connectionForm.abandonAttempt();
     if ((mode == HermesConnectionMode.local ||
             mode == HermesConnectionMode.ssh) &&

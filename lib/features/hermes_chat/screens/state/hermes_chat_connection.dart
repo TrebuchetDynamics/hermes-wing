@@ -24,6 +24,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       _approvals.dismiss(request);
 
   void _selectEndpointProfile(HermesEndpointConfig profile) {
+    _localServeReads = false;
     _connectionForm.applyProfile(
       baseUrl: profile.baseUrl,
       apiKey: profile.apiKey,
@@ -254,7 +255,8 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       channel,
       baseUrl: baseUrl,
       apiKey: apiKey.isEmpty ? null : apiKey,
-      persistOnSuccess: true,
+      persistOnSuccess: !_localServeReads,
+      serveReads: _localServeReads,
     );
   }
 
@@ -299,6 +301,16 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   }
 
   Future<void> _reconnectOnce(HermesChannel channel) async {
+    if (channel.state.isServeReadOnly) {
+      await _connectToEndpoint(
+        channel,
+        baseUrl: channel.state.connectedBaseUrl ?? _connectionForm.baseUrl.text,
+        apiKey: _connectionForm.apiKey.text.trim(),
+        persistOnSuccess: false,
+        serveReads: true,
+      );
+      return;
+    }
     final directory = ref.read(hermesGatewayDirectoryProvider);
     final contactId = directory.activeContactId;
     final sessionId = channel.state.activeSessionId;
@@ -380,7 +392,19 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
     required String baseUrl,
     String? apiKey,
     required bool persistOnSuccess,
+    bool serveReads = false,
   }) async {
+    if (serveReads) {
+      final intent = _connectionForm.intentGeneration;
+      final directory = ref.read(hermesGatewayDirectoryProvider);
+      await directory.showDirectory();
+      if (!mounted ||
+          intent != _connectionForm.intentGeneration ||
+          !identical(channel, ref.read(hermesChannelProvider)) ||
+          !identical(directory, ref.read(hermesGatewayDirectoryProvider))) {
+        return;
+      }
+    }
     final attempt = _connectionForm.beginAttempt(
       baseUrl: baseUrl,
       apiKey: apiKey,
@@ -396,17 +420,29 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
         identical(ref.read(hermesChannelProvider), channel) &&
         identical(ref.read(hermesGatewayDirectoryProvider), directory) &&
         identical(ref.read(hermesEndpointStoreProvider), store);
-    await channel.connect(
-      baseUrl: attempt.baseUrl,
-      apiKey: attempt.storedApiKey,
-    );
+    if (serveReads && channel is HermesApiChannel) {
+      await channel.connectLocalServeReads(
+        baseUrl: attempt.baseUrl,
+        credential: attempt.apiKey ?? '',
+        canAccept: ownsAttempt,
+      );
+    } else if (!serveReads) {
+      await channel.connect(
+        baseUrl: attempt.baseUrl,
+        apiKey: attempt.storedApiKey,
+      );
+    } else {
+      return;
+    }
     if (!ownsAttempt() ||
         channel.state.status != HermesConnectionStatus.connected ||
         hermesPublicEndpointBaseUrl(channel.state.connectedBaseUrl ?? '') !=
             attempt.baseUrl) {
       return;
     }
-    if (persistOnSuccess) {
+    if (serveReads) {
+      _setState(() => _editingConnection = false);
+    } else if (persistOnSuccess) {
       // Connecting itself changes the conversation owner. Fence storage against
       // changes after that acknowledged connection, including away-and-return.
       final ownerGeneration = _composerOwnerGeneration;

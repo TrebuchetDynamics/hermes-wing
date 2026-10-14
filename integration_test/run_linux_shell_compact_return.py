@@ -28,11 +28,13 @@ def validate(receipt):
     assert type(receipt['native_pid']) is int and receipt['native_pid'] > 0
 
 
-def run():
+def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.dart',
+        receipt_name='shell-compact-return.json', validate_receipt=validate,
+        artifact_name='compact-return-receipt.json'):
     live = module('compact_process_helpers', SOURCE / 'scripts/support/desktop_live_workflow.py')
     freeze = module('compact_snapshot_helpers', SOURCE / 'scripts/support/desktop_no_inference_smoke.py')
     local = module('compact_isolation_helpers', SOURCE / 'scripts/support/local_setup_enrollment_native.py')
-    evidence = SOURCE / '.task-evidence' / CARD
+    evidence = SOURCE / '.task-evidence' / card
     evidence.mkdir(parents=True, exist_ok=True)
     attempt = Path(tempfile.mkdtemp(prefix='native-', dir=evidence))
     result = dict(status='FAIL', live_agent='NOT_CHECKED', os_keyring='NOT_CHECKED',
@@ -41,7 +43,7 @@ def run():
     try:
         with live.owned_workspace(attempt) as root:
             app, sdk = root / 'app', root / 'flutter'
-            freeze.CARD, freeze.OWNED, freeze.OVERLAYS = CARD, (), ()
+            freeze.CARD, freeze.OWNED, freeze.OVERLAYS = card, (), ()
             freeze.ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux', 'scripts', 'playwright/support')
             identity = freeze.freeze(SOURCE, app)
             (attempt / 'source.json').write_text(json.dumps(identity, indent=2))
@@ -74,7 +76,7 @@ def run():
                 pkg_config_versions=subprocess.check_output(['pkg-config', '--modversion', 'gtk+-3.0',
                     'gstreamer-1.0', 'gstreamer-app-1.0', 'gstreamer-audio-1.0', 'libsecret-1'], env=env, timeout=30).decode())
             assert not list((root / 'data').rglob('shared_preferences.json'))
-            path = root / 'cache/shell-compact-return.json'
+            path = root / 'cache' / receipt_name
             observed = {}
 
             def observe(driver):
@@ -82,7 +84,7 @@ def run():
                     return
                 assert not path.is_symlink() and path.stat().st_size < 32768
                 receipt = json.loads(path.read_text())
-                validate(receipt)
+                validate_receipt(receipt)
                 fields = Path('/proc', str(receipt['native_pid']), 'stat').read_text().rsplit(')', 1)[1].split()
                 assert int(fields[2]) == driver and fields[0] != 'Z'
                 assert receipt['native_pid'] != driver
@@ -91,19 +93,20 @@ def run():
 
             command = ['xvfb-run', '-a', '-s', '-screen 0 1440x1000x24 -nolisten tcp',
                        str(sdk / 'bin/flutter'), 'test', '--no-pub', '--concurrency=1', '-d', 'linux',
-                       'integration_test/linux_shell_compact_return_test.dart']
+                       target]
             with (attempt / 'native.log').open('wb') as log:
                 code, driver = live.run_owned(['bash', '-c', 'exec "$@" 2>&1', 'shell', *command],
                     app, env, timeout=600, stdout=log, observe=observe)
             result.update(command=command, exit_code=code, driver_pid=driver)
-            assert code == 0, f'Native compact return failed; inspect {attempt}/native.log'
+            assert code == 0, f'Native journey failed; inspect {attempt}/native.log'
+            result['native_binary_sha256'] = freeze.digest(app / 'build/linux/x64/debug/bundle/wing')
             receipt = json.loads(path.read_text())
-            validate(receipt)
+            validate_receipt(receipt)
             assert observed and observed['receipt_sha256'] == freeze.digest(path)
             assert not live.live_group(driver), 'Owned process group survived'
             result.update(receipt=receipt, process=observed, owned_group_gone=True,
                           preferences=preferences(root, freeze.digest))
-            shutil.copyfile(path, attempt / 'compact-return-receipt.json')
+            shutil.copyfile(path, attempt / artifact_name)
             assert all(freeze.digest(app / p) == row['sha256'] for p, row in identity['inputs'].items())
             assert all(freeze.digest(root / p) == expected for p, expected in dependencies.items())
             result['status'] = 'PASS'

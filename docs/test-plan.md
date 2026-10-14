@@ -45,27 +45,40 @@ must disappear. A later response attempt must send no approval mutation. Repeat
 for a running turn and preserve profile/session/sequence rejection.
 `test/core/hermes/client/hermes_web_lifecycle_test.dart` contains the idle and
 running withdrawal regressions at `8866604b`. Their existence is source evidence,
-not an executed pass in this documentation run. Production-control wiring and
-isolated Linux workflow qualification remain with WING-TASK-406, after its
-transport predecessor. Do not transfer earlier lifecycle or settlement receipts
-to changed tests without checking the complete relevant input closure.
+not an executed pass in this documentation run. WING-TASK-406 is integrated;
+its [production-chat receipt](quality/local-serve-production-chat.md) records
+public-control wiring and bounded Linux GTK fixture qualification. Persistent
+restoration remains WING-TASK-407. Do not transfer earlier lifecycle or settlement
+receipts to changed tests without checking the complete relevant input closure.
 
 ## Profiles consumer-removal verification
 
-[The isolated candidate](quality/profiles-agent-only-follow-through.md) reports
-focused widget success, scoped analysis success and full-analysis failure.
-Retained rework output confirms the previously failing pending-credential probe
-now passes. Independent review approved the same isolated correction. Preserve
-that regression when assembling the combined candidate. Capture its dependency
-closure, repair the missing fixture/import inputs and retire excluded legacy
-fallback expectations through their existing owners. The smallest next check is
-the pending-recovery probe and focused Profiles/editor targets on that assembled
-source, not a repeat of unchanged branch qualification. Count directory recovery
-callbacks too. Assert zero
-Link constructions/requests under absent or denied Agent access, exact native
-operation paths and rejection of late results after owner replacement. Then run
-full analysis and existing combined-source/browser gates. GTK, Android, live
-authentication and main delivery require separate evidence.
+Current Profiles/editor source is Agent-only; removal is integrated rather than
+an unlanded candidate. The [historical handoff](quality/profiles-agent-only-follow-through.md)
+retains its earlier fixture/import failures. Preserve the pending-credential and
+mutation-owner regressions in `test/features/profiles/` when changing this boundary.
+Count directory recovery callbacks, assert zero Link constructions/requests under
+absent or denied Agent access, and reject late results after owner replacement.
+Run focused Profiles/editor targets, analysis and affected combined-source/browser
+gates on changed inputs. Earlier isolated receipts do not qualify a new candidate;
+Android and live authentication require named-target evidence.
+
+## Production serve restoration delivery gate
+
+WING-TASK-406's bounded chat path is integrated. WING-TASK-407's reviewed candidate
+`ea035dd239d560b1f81e84cae3d5ed21844c2a4f` is not integrated or published.
+Its recorded full `flutter test --no-pub --concurrency=1` run failed in
+`test/core/hermes/client/hermes_web_read_test.dart`: the source-boundary guard
+rejects the candidate secure recovery store's shared model import. Recorded
+analysis, web build and browser passes do not waive that failure. This docs pass
+inspected those receipts; it did not execute the product gates.
+
+The next implementation action is to repair the guard at the existing task's
+scope, preserving exclusions for internal clients/lifecycle and adding negative
+coverage. Verify the repaired exact candidate and independent review before
+coordinator integration and publication. Preserve the existing replay/history,
+secure-storage and two-process Linux acceptance; no mutation replay, weakened
+containment or fabricated live qualification is permitted.
 
 ## Terminal working-directory files (planned)
 

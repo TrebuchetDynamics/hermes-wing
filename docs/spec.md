@@ -31,22 +31,24 @@ the [existing proposal](product/notification-contract-proposal.md), not this des
 An ordered event for the owned runtime session removes the matching server-request
 ID even when no local turn is running. It notifies observers without answering
 or replaying the request. Profile, session and sequence admission still apply.
-This internal qualification adapter is not the production `HermesApiChannel`.
-The implementation at `8866604b` does not establish production wiring, live
-acceptance, native qualification or delivery on main. Existing fixture receipts
-qualify only their recorded inputs, not this later change.
+`HermesApiChannel` now uses this lifecycle through its deliberately enabled Linux
+loopback serve chat path (`_qualifyServeChat` / `connectLifecycleForProduct`).
+The [production-chat receipt](quality/local-serve-production-chat.md) records
+bounded deterministic Linux qualification at `3dc2c169`, included in current main.
+Other native-web operations remain internal; neither this wiring nor fixture
+success establishes live Agent, Android or durable detached-run support.
 
 ## Profiles removal candidate
 
-[The Agent-only Profiles candidate](quality/profiles-agent-only-follow-through.md)
-removes Link inventory/catalog/configuration callbacks from one isolated branch.
-The canonical Profiles source still retains its fallback. Exact advertised Agent
-operations remain gated; unavailable profile configuration is not simulated.
-The reviewed correction removes the post-editor directory refresh that recovered
-pending legacy credentials after Cancel/save. Agent mutation reconciliation remains
-owner-fenced. The bounded slice passed independent review on its isolated source.
-Full analysis still fails on excluded fixture/import inputs. Widget evidence and
-review approval do not qualify the canonical tree, native/live use or main delivery.
+The Agent-only removal is integrated: current
+[`ProfilesScreen`](../lib/features/profiles/screens/profiles_screen.dart) and
+[`ProfileEditorSheet`](../lib/features/profiles/widgets/profile_editor_sheet.dart)
+use direct Agent capabilities, with no Link inventory/catalog/configuration fallback.
+Unavailable operations remain unavailable. Editor return does not recover pending
+legacy credentials; Agent mutation reconciliation remains owner-fenced.
+The [earlier candidate handoff](quality/profiles-agent-only-follow-through.md)
+preserves its original failures and qualification limits, not current integration
+status. Native/live capability qualification remains separate from source inclusion.
 
 ## Android qualification environment
 

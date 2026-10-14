@@ -5246,3 +5246,163 @@ Source section: Now / Next
   regression is baseline evidence, not native qualification.
   Dependencies: DOC-SHELL-PERSISTENCE-EVIDENCE; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **CONNECTION-OFFICIAL-DESKTOP-PORT** — Goal: CONNECTION-PATHS.
+  Re-trace welcome, Local, SSH and Remote against official `apps/desktop`, then
+  implement the smallest evidenced production connection correction.
+  Payoff: stop implementing behavior from a disqualified product reference.
+  Scope: official Desktop source and nearest tests, Wing channel caller and
+  production entry; pin the inspected revision and keep upstream read-only.
+  Acceptance: trace actual connection/auth/transport and lifecycle contracts,
+  including headless serve/JSON-RPC versus Wing's existing REST/SSE path. Do not
+  assume compatibility or invent a new backend. Apply one evidence-backed Wing
+  correction with production-control regressions and compact/wide visual checks.
+  Unsupported operations remain explicit; preserve profile identity, strict host
+  trust, direct Agent authority and public-only key copy. No Agent patches,
+  personal-runtime changes or unapproved deployment/spending.
+  Sources: [2026-10-03-desktop-daily-workflow](docs/plans/2026-10-03-desktop-daily-workflow.md) (current planning context)
+  [2026-10-03-desktop-port-first-wave](docs/plans/2026-10-03-desktop-port-first-wave.md) (historical planning context)
+  [2026-09-04-conduit-adaptation-roadmap](docs/superpowers/plans/2026-09-04-conduit-adaptation-roadmap.md) (historical planning context);
+   [accepted connection requirements](docs/product/prd.md#connection-path-requirements),
+  [official reference correction](docs/quality/official-desktop-reference.md),
+  official `apps/desktop/AGENTS.md`, `src/AGENTS.md` and `DESIGN.md`.
+  Dependencies: none.
+  Section: Now.
+  Ownership: coordinator wing; original correction card t_4d935efb completed
+  independent native review. Coordinate with existing CONNECTION-LINK-REMOVAL and
+  CONNECTION-SAVED-WORKFLOWS owners before further writing.
+  Delivered correction: [session restoration caller admission](docs/quality/session-restoration-caller-admission.md)
+  rejects stale restoration before clearing the current selection. Independent review
+  approved df23f83729f40186224b0f36c4cb7d5429ae58ec; coordinator integration and
+  origin/main readback verified 5ca00b6196d37c798b9da1bf1ce9077fbdf25f40.
+  All three reviewed blobs match. Fresh combined-candidate format/analyzer,
+  enforced offline lockfile and 467 channel/directory/storage tests passed.
+  Completed offline acceptance: independent native review approved
+  `57b3e53b16f21f63fac61e9139e556e2578c7092`; exact-tree fast-forward integration
+  and origin/main readback verified the same commit. The source-bound
+  [acceptance mapping](docs/quality/session-restoration-caller-admission.md#remaining-official-connection-acceptance)
+  completes official welcome/Local/SSH/Remote auth/transport tracing and compact/wide
+  public-control checks. Reviewer independently passed all seven gates, including
+  130 public-control and 94 trust/storage/recovery tests (overlapping suites).
+  Fresh integration whitespace, 25 local links/anchors and dependency hash checks passed.
+  CONNECTION-PATHS stays partial: transport/lifecycle fidelity and native/live,
+  compiled browser and full release qualification are not established by this task.
+  Plan authority: [all-plan reference policy](docs/plans/README.md).
+  Official knowledge input: [bounded source findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Trace one send/stream/input/Stop/disconnect/resume slice through request leases, explicit connection/profile/durable/runtime identities, timeout/abort and replay ordering. Inspect production helpers behind warm/cold resume and expired-approval tests before adding the smallest regression-backed correction. Pane reactivity and accessible error recovery are behavior acceptance, not naming-only refactors.
+
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-OFFICE-ACCESSIBLE-EQUIVALENT** — Goal: OFFICE. Section: Next.
+  Retire Wing-only Office from the 1:1 Flutter product.
+  Payoff: implement only official Desktop features, without deleting Agent state.
+  Sources: [official-only decision](docs/adr/product.md#official-desktop-features-only),
+  [completed reference study](docs/quality/office-contact-session-reference.md#scope-and-verdict),
+  `lib/features/office/`, `lib/router/`, shared navigation/localization and nearest tests.
+  Scope: coherent retirement of standalone Office screen, route, navigation,
+  feature-only widgets/assets/exports and their current documentation/test consumers.
+  Trace all callers first; preserve shared gateway/profile/session directory behavior,
+  credentials, contacts and normal Chat/Profiles/Connections access. Use existing
+  router fallback for obsolete URLs; do not replace Office with another bespoke view.
+  Acceptance: no user-facing Office entry or feature-only runtime dependency remains;
+  retained source-backed paths preserve owner/session state and normal keyboard
+  navigation with nearest regressions. Tests for removed UI must not delete shared
+  authorization, stale-owner, storage or no-replay coverage. Match any future Bots
+  surface to its canonical official behavior, not Office's recent-session shortcut.
+  Dependencies: DOC-OFFICE-REFERENCE (done); completed absence study is retained.
+  Ownership: unclaimed; planning creates no worker and does not change active leases.
+  This reuses the existing ID under the owner's new scope; old Office QA expansion
+  is superseded, not falsely completed. No removal is implemented by this plan.
+
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-PERSONA-CONFLICT-EVIDENCE** — Goal: PERSONA. Section: Done. Attribute persona conflict recovery separately from whitespace fidelity.
+  Completion: independent native review approved `f96d4f3c6e3bf6492dfed8a33c052c6195e96c62`; 119 focused tests, analyzer, formatting, locked offline resolution and 26 local links passed. Exact reviewed commit integrated by fast-forward. Native/live PERSONA qualification remains open under VERIFY-PERSONA-NATIVE-CONFLICT.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify exact owner/revision, rejected-save messaging and preserved draft proof or missing oracle. No live saves or duplicate accepted repairs.
+  Dependencies: DOC-PERSONA-EVIDENCE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **VERIFY-PROFILE-FOOTER-NATIVE** — Goal: PARITY-COMPOSITION.
+  Keep the delivered passive footer reachable and current in an isolated Linux app.
+  Payoff: qualify profile context and management navigation on the desktop target.
+  Sources: [footer contract and limits](docs/quality/profile-footer-implementation.md)
+  and [client decision](docs/adr/client.md#decision).
+  Scope: production shell/footer, native QA harness and smallest exposed Wing
+  presentation repairs. Excludes new profile switching/editing, APIs, live inference,
+  credentials, system installs and physical/screen-reader support claims.
+  Acceptance: native Tab/Shift+Tab and Enter/Space reach Manage profiles after
+  collapse and compact/wide return at enlarged text. Current-owner replacement
+  updates the redacted label; obsolete notifications do not restore old context.
+  Explicit navigation leaves profile/session identity unchanged; passive rendering
+  adds no domain reads or mutations. Retain source/platform/focus/effect receipts
+  and run nearest regressions plus analysis.
+  Dependencies: VERIFY-GLOBAL-SESSION-MODAL-NATIVE (done). Section: Next.
+  Ownership: unclaimed in this index; check tracker leases before execution.
+  Completion: independent native review run 422 approved exact commit
+  `9f8bea8d0010c69cab743e8dc6d6c397dd21f29a`; coordinator fast-forward
+  integrated and verified origin/main at that SHA. Clean exact-source review
+  reproduced 16 focused tests, analyzer, formatting and both GTK Linux journeys.
+  All 786 native input hashes and teardown receipt verified at integration.
+  [Native evidence](docs/quality/profile-footer-native.md). Deterministic framework
+  input only; physical input, screen readers, Android and live Agent NOT_CHECKED.
+  Recovery successor and full PARITY-COMPOSITION remain open.
+
+
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY** — Goal: PARITY-COMPOSITION.
+  Keep native profile context current through management-route return and reconnect.
+  Payoff: preserve the passive footer's owner boundary while feature routes change.
+  Sources: [footer scope](docs/quality/profile-footer-implementation.md)
+  and [native panel limits](docs/quality/global-session-modal-native.md#boundaries).
+  Scope: production shell/footer and Profiles route with deterministic channel
+  overrides, Linux native QA harness and nearest regressions. Repair exposed Wing
+  defects only. Exclude edit/switch feature expansion, new APIs, live inference,
+  secrets, system installs, physical input and screen-reader support claims.
+  Acceptance: keyboard-open Manage profiles, return to Chat and reconnect the
+  current channel. The current redacted label and reachable control survive at
+  compact/wide widths and enlarged text. Delayed retired-owner notifications do
+  not change the replacement context. Passive footer work adds no reads or writes;
+  explicit route reads are counted separately. Preserve exact profile/session
+  identity and record input, focus, request and owned-process teardown evidence.
+  Run bounded Linux integration and nearest regression checks plus analysis.
+  Dependencies: VERIFY-PROFILE-FOOTER-NATIVE (done). Section: Next.
+  Ownership: coordinator wing; implementation and independent native review complete.
+  Completion: native review run 424 approved exact commit
+  `7bc246f60a3fe1cdf93e36425724e60de9a6ebc3`; coordinator fast-forward
+  integrated and read back origin/main at that SHA. Original seven acceptance
+  checks and independent analysis, formatting, 15 focused tests, runner self-check
+  and isolated GTK/Xvfb journey passed. All 786 native source hashes and owned
+  process teardown verified before delivery. See
+  [recovery evidence](docs/quality/profile-footer-native-recovery.md).
+  Deterministic channel-state recovery only; production-router retained drafts,
+  live Agent transport, Android, physical input and screen readers NOT_CHECKED.
+  WING-TASK-408 and full PARITY-COMPOSITION remain open.
+
+<!-- End of archived task batch. -->

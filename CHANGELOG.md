@@ -4,6 +4,15 @@ All notable user-visible changes will be documented here.
 
 ## Unreleased
 
+### Removed
+
+- Removed Wing Link client/service, setup and pairing entry, installers and bundled
+  management dependencies. Existing personal services, inert saved records and
+  secure slots remain untouched; missing Agent operations stay unavailable.
+- Removed the Wing-only Office surface. Shared Chat, Profiles and Connections
+  remain. Earlier entries below describe historical implementations, not current
+  support. See [current routes](docs/product/routes.md).
+
 ### Fixed
 
 - Production HTTP run Chat now retires exact approvals settled elsewhere and
@@ -32,6 +41,13 @@ All notable user-visible changes will be documented here.
   protected-main delivery remain separate.
 
 ### Added
+
+- Linux loopback serve connections now offer deliberate chat enablement on the
+  exact selected session, with separate ticket authentication and fixed-chat
+  negotiation. Send, current-request approval and Stop use the production channel;
+  recovery does not replay mutations. The [bounded receipt](docs/quality/local-serve-production-chat.md)
+  records Linux GTK fixture qualification, not live Agent, Android or persistent
+  relaunch restoration. WING-TASK-407 remains unintegrated.
 
 - Native SSH now offers consent-based Ed25519 key generation, reuse of an app-owned
   secure-storage key and public-only copy. Local entry adds Linux Hermes-home

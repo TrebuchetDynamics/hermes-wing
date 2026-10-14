@@ -5071,3 +5071,19 @@ Source section: Now / Next
   Acceptance: Identify named-target uninstall proof and documented data-retention limits, or the missing procedure. No installs, service changes or deletion.
   Dependencies: DOC-DESKTOP-DELIVERY-EVIDENCE; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-SLASH-DENIAL-EVIDENCE** — Goal: SLASH-CATALOG. Section: Done. Map one unavailable slash action and its recovery.
+  Completion: independently approved native review at `dd9e92a0c6736c58a2e9c446c247d744c3c0afb5`; [denial and recovery evidence](docs/quality/slash-denial-evidence.md). Missing-check acceptance satisfied; authoritative transport and native/live parity remain separate.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [SLASH-CATALOG](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify unsupported-action disclosure and zero-dispatch proof or a missing check. No new commands, shell dispatch or speculative routes.
+  Dependencies: DOC-SLASH-CATALOG-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.

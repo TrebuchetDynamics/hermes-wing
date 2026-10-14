@@ -333,6 +333,11 @@
           "kind": "inspection",
           "ref": "docs/quality/slash-catalog-contract.md",
           "result": "pass"
+        },
+        {
+          "kind": "inspection",
+          "ref": "docs/quality/slash-denial-evidence.md",
+          "result": "pass"
         }
       ],
       "id": "SLASH-CATALOG",
@@ -341,7 +346,8 @@
       "status": "partial",
       "tasks": [
         "DOC-SLASH-CATALOG-CONTRACT",
-        "DOC-SLASH-DENIAL-EVIDENCE"
+        "DOC-SLASH-DENIAL-EVIDENCE",
+        "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT"
       ],
       "title": "Match supported full Desktop slash commands and completion"
     },
@@ -7120,16 +7126,6 @@
     },
     {
       "depends_on": [
-        "DOC-SLASH-CATALOG-CONTRACT"
-      ],
-      "goal": "SLASH-CATALOG",
-      "id": "DOC-SLASH-DENIAL-EVIDENCE",
-      "section": "Next",
-      "status": "in_progress",
-      "title": "Map one unavailable slash action and its recovery"
-    },
-    {
-      "depends_on": [
         "DOC-VOICE-QUALIFICATION"
       ],
       "goal": "VOICE",
@@ -7317,6 +7313,16 @@
       "section": "Next",
       "status": "open",
       "title": "Preserve native footer profile context through management-route return and channel replacement without implicit mutations"
+    },
+    {
+      "depends_on": [
+        "DOC-SLASH-DENIAL-EVIDENCE"
+      ],
+      "goal": "SLASH-CATALOG",
+      "id": "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
+      "section": "Next",
+      "status": "open",
+      "title": "Qualify supported authoritative slash execution and unavailable-action recovery"
     },
     {
       "depends_on": [
@@ -8010,6 +8016,16 @@
       "section": "Done",
       "status": "done",
       "title": "Compare the current curated commands with an authoritative catalog"
+    },
+    {
+      "depends_on": [
+        "DOC-SLASH-CATALOG-CONTRACT"
+      ],
+      "goal": "SLASH-CATALOG",
+      "id": "DOC-SLASH-DENIAL-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Map one unavailable slash action and its recovery"
     },
     {
       "depends_on": [],

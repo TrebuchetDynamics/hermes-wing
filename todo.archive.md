@@ -5087,3 +5087,75 @@ Source section: Now / Next
   Acceptance: Identify unsupported-action disclosure and zero-dispatch proof or a missing check. No new commands, shell dispatch or speculative routes.
   Dependencies: DOC-SLASH-CATALOG-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **WING-TASK-409** — Goal: INTEGRATION. Section: Done. Repair stale tooling
+  contracts blocking reviewed serve-read integration.
+  Completion: independent native review approved exact `cc2bd210925bffb5f46bed925ba3fe01c2b220d9`.
+  Baseline failures reproduced; nine focused tests, tooling format, enforced offline
+  lockfile, analyzer and whitespace checks passed on the isolated committed repair.
+  Parent serve-read integration/publication and live qualification remain separate.
+  Payoff: restore meaningful mandatory checks without reopening retired product work.
+  Scope: the three failing tooling contracts for browser profile terminology,
+  archived plan/task traceability and official Desktop parity; nearest deterministic
+  contract regressions only. Preserve fail-closed profiles, archive multiplicity,
+  current-task bodies and the official-only feature boundary. No production behavior,
+  Agent edits, gate waivers, remote writes or live qualification.
+  Acceptance: each baseline failure is reproduced, then corrected from current
+  tracked source evidence; regressions still reject missing/duplicate/wrong-state
+  task bodies and unsupported product claims. Format, analyze and the three focused
+  tooling targets pass on the exact committed candidate. One independent native
+  review approves that candidate; coordinator separately assembles the reviewed
+  serve-read slice and runs remaining mandatory gates before integration/publication.
+  Checks: `dart format --output=none --set-exit-if-changed test/tooling`;
+  `flutter analyze --no-pub`;
+  `flutter test --no-pub --concurrency=1 test/tooling/playwright_profile_language_contract_test.dart test/tooling/plan_backlog_traceability_test.dart test/tooling/hermes_desktop_parity_contract_test.dart`.
+  Sources: [required gates](CONTRIBUTING.md#required-checks),
+  [official reference boundary](CONTEXT.md), [plan mapping](docs/plans/README.md#plan-to-task-coverage),
+  [parity inventory](docs/product/hermes-desktop-parity.md),
+  `test/tooling/playwright_profile_language_contract_test.dart`,
+  `test/tooling/plan_backlog_traceability_test.dart`,
+  `test/tooling/hermes_desktop_parity_contract_test.dart`.
+  Dependencies: None. Repairs a reproduced canonical-main prerequisite for
+  WING-TASK-405; does not replace its original card or budget.
+  Ownership: wing coordinator owns canonical ledger/integration; one isolated
+  native worker owns only the tooling repair and independent review handoff.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **WING-TASK-405** — Goal: CONNECTION-PATHS. Connect to an explicitly selected,
+  already-running local `hermes serve` through production controls.
+  Completion: independent native review approved `d08587299062f1439002abe116200585b594b1d3`;
+  combined candidate `496aaef69b25e0a49cc2590a7a961f9800b2d4b8` preserves its exact
+  production/test blobs plus reviewed tooling repair. Mandatory format, analyzer,
+  full Flutter suite (3782 passed, eight skipped), web build, default Chromium E2E,
+  npm audit and whitespace gates passed. Isolated Linux GTK authenticated-fixture
+  journey passed; live Agent authentication, actual secret acquisition, inference,
+  Android and physical-device acceptance remain NOT_CHECKED. Persistent restoration
+  and serve mutations remain WING-TASK-407 and WING-TASK-406, respectively.
+  Payoff: expose the official Desktop backend without treating REST/SSE and
+  JSON-RPC credentials or capabilities as interchangeable.
+  Scope: existing web-read client, endpoint/channel selection, secure credential
+  acquisition and nearest production connection tests. Trace actual official
+  authentication before promoting any qualification-only code. No automatic
+  process launch, remote authentication expansion, CLI fallback or Wing Link.
+  Acceptance: connect and read profile/session/history for the captured owner;
+  prove authentication denial, unsupported capability, cancellation and explicit
+  retry through public controls. Late results cannot replace another connection.
+  Record the exact qualified auth/operation contract. Keep unsupported surfaces
+  unavailable rather than enabling mutations through a broad authorization flag.
+  Run focused client/widget tests, analyzer and an isolated Linux app journey
+  against a deterministic authenticated backend. Live Agent authentication and
+  Android remain separate NOT_CHECKED outcomes until exercised.
+  Sources: [official source findings](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
+  [transport qualification](docs/adr/client.md#transport-qualification),
+  [direct connection requirements](docs/product/prd.md#connection-path-requirements).
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next.
+  Ownership: unclaimed; coordinate connection and Link-removal owners before edits.

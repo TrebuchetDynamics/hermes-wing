@@ -575,7 +575,8 @@
       "tasks": [
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
-        "MT-VERIFY-BROWSER-GATES"
+        "MT-VERIFY-BROWSER-GATES",
+        "WING-TASK-409"
       ],
       "title": "Source-bound merge-train integration verification"
     },
@@ -7319,16 +7320,6 @@
     },
     {
       "depends_on": [
-        "CONNECTION-OFFICIAL-DESKTOP-PORT"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "WING-TASK-405",
-      "section": "Next",
-      "status": "open",
-      "title": "Connect production controls to a qualified already-running local Hermes serve backend"
-    },
-    {
-      "depends_on": [
         "WING-TASK-405"
       ],
       "goal": "CONNECTION-PATHS",
@@ -8555,6 +8546,24 @@
       "section": "Done",
       "status": "done",
       "title": "Re-select a model explicitly after native restart and send once to the restored exact session"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-OFFICIAL-DESKTOP-PORT"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "WING-TASK-405",
+      "section": "Done",
+      "status": "done",
+      "title": "Connect production controls to a qualified already-running local Hermes serve backend"
+    },
+    {
+      "depends_on": [],
+      "goal": "INTEGRATION",
+      "id": "WING-TASK-409",
+      "section": "Done",
+      "status": "done",
+      "title": "Repair stale tooling contracts blocking reviewed serve-read integration"
     }
   ],
   "version": 1

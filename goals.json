@@ -7288,16 +7288,6 @@
     },
     {
       "depends_on": [
-        "VERIFY-PROFILE-FOOTER-NATIVE"
-      ],
-      "goal": "PARITY-COMPOSITION",
-      "id": "VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY",
-      "section": "Next",
-      "status": "open",
-      "title": "Preserve native footer profile context through management-route return and channel replacement without implicit mutations"
-    },
-    {
-      "depends_on": [
         "DOC-SLASH-DENIAL-EVIDENCE"
       ],
       "goal": "SLASH-CATALOG",
@@ -8562,6 +8552,16 @@
       "section": "Done",
       "status": "done",
       "title": "Keep the passive profile footer keyboard-reachable and owner-current through native Linux adaptive return"
+    },
+    {
+      "depends_on": [
+        "VERIFY-PROFILE-FOOTER-NATIVE"
+      ],
+      "goal": "PARITY-COMPOSITION",
+      "id": "VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY",
+      "section": "Done",
+      "status": "done",
+      "title": "Preserve native footer profile context through management-route return and channel replacement without implicit mutations"
     },
     {
       "depends_on": [

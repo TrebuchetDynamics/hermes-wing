@@ -96,6 +96,11 @@ transport reconnect. Live Agent/provider, Android, screen reader, keyring,
 physical-input, install/update, signing and release qualification are NOT_CHECKED.
 Full repository/browser suites are not required or claimed for this fixture-only
 slice. No upstream runtime, personal service/configuration, ledger, canonical main
-or remote publication is modified. Pending review leaves canonical closure and
-parent parity open. See [prior implementation](profile-footer-implementation.md)
+or remote publication was modified by the worker. Independent native review run
+424 approved exact commit `7bc246f60a3fe1cdf93e36425724e60de9a6ebc3` after
+repeating analysis, formatting, 15 focused tests, strict self-check and the isolated
+GTK/Xvfb journey. Coordinator verified all 786 native source input hashes and
+owned-process teardown, fast-forward integrated that exact candidate and read back
+origin/main at the same SHA. The bounded recovery task is complete;
+`WING-TASK-408` and parent parity remain open. See [prior implementation](profile-footer-implementation.md)
 and [native session-modal boundaries](global-session-modal-native.md#boundaries).

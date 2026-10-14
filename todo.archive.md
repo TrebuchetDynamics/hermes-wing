@@ -5198,3 +5198,32 @@ Completion: WING-TASK-406's bounded offline and deterministic Linux acceptance
 passed on `3dc2c1698d5697f59b1630ae80e99b72fdfce5ff`, including independent native
 review and coordinator integration gates. Persistent restoration, live Agent
 authentication/inference and Android qualification remain separate.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-SHELL-PERSISTENCE-EVIDENCE** — Goal: SHELL-PERSISTENCE. Section: Done. Prove sidebar preference restoration after app relaunch.
+  Completion: independently reviewed commit `399d1f2ba2da4dafb5657c5cd137ce8a6f824289`
+  is integrated and published to `origin/main`. All seven required checks passed;
+  nine focused tests and two isolated Linux GTK processes proved 64px restoration,
+  unchanged saved preference and zero Agent calls. See
+  [fixture qualification and remaining boundaries](docs/quality/shell-persistence-native.md).
+  Android, physical OS keyboard dispatch, actual keyring and live Agent remain unqualified.
+  Payoff: prove the implemented local preference survives a real process restart.
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [SHELL-PERSISTENCE](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary)
+  and [implemented preference slice](docs/quality/graphify-shell-persistence.md).
+  Scope: add or run a two-process Linux harness with task-owned persistent
+  preferences, plus the nearest regressions. Repair the local shell preference
+  path if needed. Exclude global startup redesign, personal desktop state,
+  upstream edits, live inference and credential discovery.
+  Acceptance: collapse through the real keyboard control, terminate the first
+  app process, launch a second against the same isolated storage, and observe
+  the 64px sidebar without replayed sends or mutations. Retain exact source,
+  target, commands and exit results. Fresh provider scopes alone are not proof.
+  Dependencies: none.
+  Implementation context: PORT-SHELL-PERSISTED-STATE is complete; do not reimplement
+  its provider or treat the historical full-suite pass as native relaunch evidence.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.

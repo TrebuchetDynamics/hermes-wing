@@ -7106,14 +7106,6 @@
       "title": "Map wide-to-compact-to-wide preference preservation"
     },
     {
-      "depends_on": [],
-      "goal": "SHELL-PERSISTENCE",
-      "id": "DOC-SHELL-PERSISTENCE-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Prove sidebar preference restoration after app relaunch"
-    },
-    {
       "depends_on": [
         "DOC-VOICE-QUALIFICATION"
       ],
@@ -8015,6 +8007,14 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify remaining exact session search and resume acceptance; fork/rename/delete receipts are bounded deterministic evidence"
+    },
+    {
+      "depends_on": [],
+      "goal": "SHELL-PERSISTENCE",
+      "id": "DOC-SHELL-PERSISTENCE-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Prove sidebar preference restoration after app relaunch"
     },
     {
       "depends_on": [],

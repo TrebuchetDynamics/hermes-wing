@@ -283,6 +283,7 @@ void main() {
           await tester.pumpAndSettle();
           final edit = find.widgetWithText(OutlinedButton, 'Edit');
           await tester.ensureVisible(edit);
+          await tester.pumpAndSettle();
           await tester.tap(edit);
           await tester.pumpAndSettle();
           expect(find.byType(ProfileEditorSheet), findsOneWidget);

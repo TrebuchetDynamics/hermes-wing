@@ -4,6 +4,15 @@ Task: `t_7f735d79`; ledger proposal: `DOC-PERSONA-EVIDENCE`, goal `PERSONA`.
 Status: current-source offline verification; independent same-card review pending.
 This receipt does not close the PERSONA milestone or approve historical cards.
 
+Conflict recovery has a separate [current-source attribution receipt](persona-conflict-evidence.md)
+on `t_7a176ad4`: ordinary failure retains the draft, while 412 replaces it with
+authoritative newer text before deliberate re-edit/retry. Its fresh acceptance
+run on `c22c36e2e57c10e5d0f3a787469dcec6a8d1738f` failed two compact Profiles
+modal-entry cases. Authorized same-card recovery adds one post-scroll settling
+frame before the real pointer tap; the changed-input full five-target suite now
+passes all 119 tests. Original failed receipts remain preserved. The older passing
+matrix below is historical, not evidence for the recovery inputs or review approval.
+
 ## Admission and smallest complete change
 
 The initial clean detached candidate was

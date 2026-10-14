@@ -270,8 +270,18 @@ needs its own exact capability, ownership and qualification evidence.
   official `apps/desktop/AGENTS.md`, `src/AGENTS.md` and `DESIGN.md`.
   Dependencies: none.
   Section: Now.
-  Ownership: unclaimed; coordinate with existing CONNECTION-LINK-REMOVAL and
-  CONNECTION-SAVED-WORKFLOWS owners before writing.
+  Ownership: coordinator wing; original correction card t_4d935efb completed
+  independent native review. Coordinate with existing CONNECTION-LINK-REMOVAL and
+  CONNECTION-SAVED-WORKFLOWS owners before further writing.
+  Delivered correction: [session restoration caller admission](docs/quality/session-restoration-caller-admission.md)
+  rejects stale restoration before clearing the current selection. Independent review
+  approved df23f83729f40186224b0f36c4cb7d5429ae58ec; coordinator integration and
+  origin/main readback verified 5ca00b6196d37c798b9da1bf1ce9077fbdf25f40.
+  All three reviewed blobs match. Fresh combined-candidate format/analyzer,
+  enforced offline lockfile and 467 channel/directory/storage tests passed.
+  Remaining acceptance: complete welcome/Local/SSH/Remote auth/transport tracing
+  and compact/wide public-control checks; this correction does not close the parent.
+  Native/live, compiled browser and full release checks were not performed for this slice.
   Plan authority: [all-plan reference policy](docs/plans/README.md).
   Official knowledge input: [bounded source findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Trace one send/stream/input/Stop/disconnect/resume slice through request leases, explicit connection/profile/durable/runtime identities, timeout/abort and replay ordering. Inspect production helpers behind warm/cold resume and expired-approval tests before adding the smallest regression-backed correction. Pane reactivity and accessible error recovery are behavior acceptance, not naming-only refactors.
 

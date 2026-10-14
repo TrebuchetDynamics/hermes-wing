@@ -1,9 +1,10 @@
 # Linux passive profile footer qualification
 
-Status: implementation verified for `t_247cda0e` /
-`VERIFY-PROFILE-FOOTER-NATIVE`, goal `PARITY-COMPOSITION`; independent native
-review is pending. This does not close the canonical ledger or establish full
-Desktop parity. Coordinator integration and publication are separate.
+Status: independently reviewed and delivered for `t_247cda0e` /
+`VERIFY-PROFILE-FOOTER-NATIVE`, goal `PARITY-COMPOSITION`. Native review run 422
+approved exact commit `9f8bea8d0010c69cab743e8dc6d6c397dd21f29a`; coordinator
+fast-forward integration and exact origin/main readback verified that commit.
+This closes only the bounded native footer task, not full Desktop parity.
 
 ## Delivered boundary
 
@@ -122,9 +123,13 @@ system installs, personal state, live Agent, credentials or inference are used.
 
 ## Limits and next slice
 
-Independent review, canonical integration, publication and
-`VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY` remain separate. Full
-`PARITY-COMPOSITION` is partial; no ledger closure is proposed before review.
+Independent review reproduced the 16 focused regressions, clean analyzer and
+formatting, footer native journey (105.157s) and compact-return control (35.365s)
+from a clean exact-commit snapshot. The coordinator verified all 786 native input
+hashes against the delivered commit and the passing source/teardown receipt;
+no runtime source or dependency changed during integration.
+`VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY` remains separate. Full
+`PARITY-COMPOSITION` is partial.
 Physical keyboard/OS resize, screen reader, Android, keyring, live Agent/provider,
 packaging/install/update and full repository/release/browser gates are
 NOT_CHECKED. This bounded fixture does not qualify those outcomes or the split

@@ -5159,3 +5159,42 @@ Source section: Now / Next
   [direct connection requirements](docs/product/prd.md#connection-path-requirements).
   Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next.
   Ownership: unclaimed; coordinate connection and Link-removal owners before edits.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **WING-TASK-406** — Goal: CONNECTION-PATHS. Send, stream, answer a correlated
+  approval and request Stop through the qualified production `serve` connection.
+  Payoff: a successful connection leads to usable chat, not a read-only test panel.
+  Scope: production HermesChannel adapter and chat composition using the existing
+  lifecycle models. Preserve connection/profile/stored/runtime session identity.
+  No general RPC bridge, secret logging, new Agent contracts or automatic sends.
+  Acceptance: one explicit Send reaches the captured owner and streams ordered
+  transcript/tool events. An approval response targets only its current request;
+  `request.cancel` retires it. Stop targets the captured session and distinguishes
+  requested, uncertain and authoritative terminal outcomes. Denial, timeout,
+  cancellation and owner replacement retain actionable recovery without replay.
+  Add transport and production-control regressions, then exercise the complete
+  workflow in the isolated Linux app with deterministic backend request counts.
+  Fixtures do not qualify live inference, spending or Android behavior.
+  Sources: [lifecycle findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences),
+  [transport boundaries](docs/adr/client.md#transport-qualification).
+  Current implementation input: `8866604b` adds idle `request.cancel` handling
+  in the internal lifecycle adapter, profile-bound queue display/answer admission
+  and settlement regressions. This is not production wiring or a current executed
+  pass. Smallest next check: run
+  `flutter test --no-pub --concurrency=1 test/core/hermes/client/hermes_web_lifecycle_test.dart`
+  on the assembled candidate, then add the production-control withdrawal journey
+  with zero stale approval responses. Carry adapter, channel, fixture, regression,
+  localization and dependency inputs with their own baseline manifest. Canonical
+  `goals.json` remains ledger authority; branch-ledger byte equality is not an
+  implementation prerequisite. Sources: [withdrawal verification](docs/test-plan.md#idle-approval-withdrawal-regression).
+  Dependencies: WING-TASK-405. Section: Next.
+  Ownership: unclaimed; preserve PARITY-LIVE-WORKFLOW and existing chat owners.
+
+Completion: WING-TASK-406's bounded offline and deterministic Linux acceptance
+passed on `3dc2c1698d5697f59b1630ae80e99b72fdfce5ff`, including independent native
+review and coordinator integration gates. Persistent restoration, live Agent
+authentication/inference and Android qualification remain separate.

@@ -4614,6 +4614,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-406: native independent review run400 approved exact 3dc2c1698d5697f59b1630ae80e99b72fdfce5ff; lifecycle 13 and focused 449 tests; deterministic Linux GTK two Sends one approval one Stop zero stale answers zero credential saves; coordinator frozen-candidate format/analyze/full Flutter suite/web build/Chromium E2E/npm audit/diff check passed under Node.js 22; docs/quality/local-serve-production-chat.md. Live auth/inference, Android and persistent restart recovery NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING_APP_URL=http://127.0.0.1:18767/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 10m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1",
           "result": "pass"
         },
@@ -7320,16 +7325,6 @@
     },
     {
       "depends_on": [
-        "WING-TASK-405"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "WING-TASK-406",
-      "section": "Next",
-      "status": "open",
-      "title": "Send stream approve and Stop through the qualified production serve connection"
-    },
-    {
-      "depends_on": [
         "WING-TASK-406"
       ],
       "goal": "CONNECTION-PATHS",
@@ -8556,6 +8551,16 @@
       "section": "Done",
       "status": "done",
       "title": "Connect production controls to a qualified already-running local Hermes serve backend"
+    },
+    {
+      "depends_on": [
+        "WING-TASK-405"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "WING-TASK-406",
+      "section": "Done",
+      "status": "done",
+      "title": "Send stream approve and Stop through the qualified production serve connection"
     },
     {
       "depends_on": [],

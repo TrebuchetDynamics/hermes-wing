@@ -1,8 +1,10 @@
 # WING-TASK-406: local serve production chat
 
-Status: implemented candidate; independent native exact-source review and
-coordinator integration/publication remain separate. This does not close the
-CONNECTION-PATHS or daily-use milestone.
+Status: offline implementation and deterministic Linux workflow approved by an
+independent native review; coordinator integration gates passed on exact candidate
+`3dc2c1698d5697f59b1630ae80e99b72fdfce5ff`. This closes WING-TASK-406's bounded
+acceptance, not the CONNECTION-PATHS or daily-use milestone. Publication requires
+exact remote readback; live authentication and persistent restoration stay open.
 
 ## Outcome and bounded authority
 
@@ -148,8 +150,21 @@ commit/ref, followed by one independent same-card native review. Coordinator
 broader integration gates, merge and normal-policy publication are separate;
 this worker performs none of them and does not close the canonical ledger.
 
-NOT_CHECKED: live Agent authentication, real secret acquisition, paid/live
-inference, physical keyboard/IME, screen readers, keychain, Android/physical
-hardware, persistent relaunch recovery and release/distribution. Full canonical
-integration suites remain coordinator-owned. Next slice is WING-TASK-407 only
-after reviewed delivery of this card.
+Independent native review approved exact `3dc2c1698d5697f59b1630ae80e99b72fdfce5ff`
+without implementation edits. It repeated the 13 lifecycle tests, 449 focused
+regressions, analyzer, localization/format checks and isolated Linux GTK journey.
+The fixture observed two Sends, one approval, one Stop, zero stale answers and
+zero credential saves; this is deterministic Linux evidence, not live inference.
+
+Coordinator frozen-candidate checks passed under Node.js 22: offline enforced
+lockfile, `npm ci --ignore-scripts`, full Dart formatting, `flutter analyze --no-pub`,
+`flutter test --no-pub --concurrency=1` (3,791 passed; eight skipped),
+`flutter build web --release -t lib/main_e2e.dart`, `npm run web:e2e`,
+`npm audit` (zero vulnerabilities) and `git diff --check`. Full Flutter tests took
+917.912 seconds; compiled Chromium E2E took 300.204 seconds. Documentation/ledger
+closure is checked separately; unchanged product source reuses this gate.
+
+WING-TASK-407 owns persistent relaunch restoration. CONNECTION-PATHS and daily-use
+acceptance remain partial. NOT_CHECKED: live Agent authentication, real secret
+acquisition, paid/live inference, physical keyboard/IME, screen readers, keychain,
+Android/physical hardware, persistent relaunch recovery and release/distribution.

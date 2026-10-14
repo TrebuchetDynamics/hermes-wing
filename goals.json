@@ -355,6 +355,11 @@
       "depends_on": [],
       "evidence": [
         {
+          "kind": "executed",
+          "ref": "flutter test --no-pub --concurrency=1 (947 affected regressions) and compiled Chromium browser-surfaces/desktop-navigation-groups (13 passed); independent native review approved exact 3fb1b2976ea2ef5d695c5a929fb25465178b5e6b; docs/quality/office-retirement.md; integration 2d7cd8c45fe52fb4838e2e168c0aaa7ebe760720 preserves tested product tree; native/live/full-parity NOT_CHECKED",
+          "result": "pass"
+        },
+        {
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
@@ -368,7 +373,7 @@
       "id": "OFFICE",
       "priority": 4,
       "source": "docs/adr/product.md#official-desktop-features-only",
-      "status": "unmet",
+      "status": "met",
       "tasks": [
         "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
         "DOC-OFFICE-REFERENCE"
@@ -7069,16 +7074,6 @@
       "title": "Review failure containment for the first bounded native operation"
     },
     {
-      "depends_on": [
-        "DOC-OFFICE-REFERENCE"
-      ],
-      "goal": "OFFICE",
-      "id": "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
-      "section": "Next",
-      "status": "in_progress",
-      "title": "Retire Wing-only Office route and navigation while preserving shared Agent access"
-    },
-    {
       "depends_on": [],
       "goal": "PARITY-TABS",
       "id": "DOC-PARITY-TAB-CONTRACT",
@@ -7902,6 +7897,16 @@
       "section": "Done",
       "status": "done",
       "title": "Prepare a read-only exact-candidate comparison entrypoint"
+    },
+    {
+      "depends_on": [
+        "DOC-OFFICE-REFERENCE"
+      ],
+      "goal": "OFFICE",
+      "id": "DOC-OFFICE-ACCESSIBLE-EQUIVALENT",
+      "section": "Done",
+      "status": "done",
+      "title": "Retire Wing-only Office route and navigation while preserving shared Agent access"
     },
     {
       "depends_on": [],

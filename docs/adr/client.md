@@ -78,8 +78,13 @@ uncertain ownership until resolved; a native socket is not a durable detached-ru
 guarantee. Preserve exact remembered sessions and owner/generation fences across
 async reads and preference writes without creating replacement domain state.
 
-Production currently uses `HermesApiChannel`; native-web clients remain internal
-qualification, not an enabled production adapter or authorization flow. The
+Production uses `HermesApiChannel`. Its Linux loopback serve read connection has
+an explicit fixed-chat entry requiring separate session-ticket authentication,
+exclusive-submit and server-request negotiation, and captured runtime/stored
+session ownership. REST reads alone never authorize Send, approval or Stop;
+legacy local tokens remain read-only when ticket authentication is unavailable.
+Other native-web operations remain internal qualification. See the
+[bounded chat receipt](../quality/local-serve-production-chat.md). The
 [four-repository study](../analysis/understand-anything/README.md) informs the
 [bounded delivery plan](../plans/2026-10-03-study-follow-through.md), not a
 transport migration or new capability.

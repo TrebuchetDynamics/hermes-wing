@@ -103,8 +103,26 @@ abstract class AppLocalizations {
   /// No description provided for @localServeReadsBody.
   ///
   /// In en, this message translates to:
-  /// **'Linux loopback only. Enter this backend\'s host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history only. No launch, chat, approvals or Stop. This connection and token are not saved; enter them again after relaunch.'**
+  /// **'Linux loopback only. Enter this backend\'s host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history. Chat requires a separately authenticated ticket connection; legacy local tokens may allow reads only. No launch or credential discovery. This connection and token are not saved; enter them again after relaunch.'**
   String get localServeReadsBody;
+
+  /// No description provided for @localServeEnableChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable chat on this session'**
+  String get localServeEnableChat;
+
+  /// No description provided for @localServeReconcile.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconcile this session without resending'**
+  String get localServeReconcile;
+
+  /// No description provided for @localServeStopRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop requested. Waiting for Hermes to confirm completion; closing the connection does not confirm Stop.'**
+  String get localServeStopRequested;
 
   /// No description provided for @localServeTokenLabel.
   ///

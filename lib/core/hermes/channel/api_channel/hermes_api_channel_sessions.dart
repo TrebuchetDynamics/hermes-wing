@@ -2,6 +2,7 @@ part of '../hermes_api_channel.dart';
 
 extension _SessionsExtension on HermesApiChannel {
   Future<void> _disconnect() async {
+    _retireServeChat();
     _serveReader?.disconnect();
     _serveReader = null;
     _client = null;

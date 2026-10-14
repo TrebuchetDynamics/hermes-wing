@@ -14,6 +14,9 @@ final class HermesWebReadClient {
   }
 
   void disconnect() {}
+  void closeLifecycle() {}
+  Future<HermesServeLifecycle> connectLifecycleForProduct() =>
+      throw UnsupportedError('Local serve chat requires native transport.');
   HermesWebReadClient forProfile(String profile) =>
       throw UnsupportedError('Local serve reads unavailable.');
   Future<List<HermesProfile>> profiles() =>

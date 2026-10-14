@@ -29,6 +29,7 @@ extension _ConnectionExtension on HermesApiChannel {
     String? apiKey,
     bool deferSessionSelection = false,
   }) async {
+    _retireServeChat();
     _serveReader?.disconnect();
     _serveReader = null;
     final generation = _connectionGeneration + 1;

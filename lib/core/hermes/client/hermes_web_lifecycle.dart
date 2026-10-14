@@ -22,31 +22,63 @@ final class HermesWebRecovery {
 }
 
 /// Ephemeral projection onto Wing's existing turn model, not a session store.
-/// Only accessible by explicit qualification opt-in on the loopback read client.
-/// Gateway channel, product enrollment and Wing Link are deliberately untouched.
-final class HermesWebLifecycle {
+/// Product entry requires separate ticket authentication and negotiation;
+/// qualification entry never grants product authorization.
+final class HermesWebLifecycle implements HermesServeLifecycle {
   HermesWebLifecycle._(this._connection);
   final HermesWebReadConnection _connection;
   final _changes = StreamController<void>.broadcast();
+  @override
   Stream<void> get changes => _changes.stream;
   String get profile => _connection._profile;
+  bool _productAuthorized = false;
   HermesWebProductAuthorization get productAuthorization =>
-      HermesWebProductAuthorization.unsupportedAuthorization;
+      _productAuthorized && !_connection._closed
+      ? HermesWebProductAuthorization.authenticatedTicket
+      : HermesWebProductAuthorization.unsupportedAuthorization;
   String? _runtime, _stored;
+  @override
   String? get runtimeSessionId => _runtime;
+  @override
   String? get storedSessionId => _stored;
   int _selection = 0, _sequence = 0, _turn = 0;
   bool _selecting = false, _reconcile = false, _cancelRequested = false;
   bool _running = false;
+  @override
+  bool get running => _running;
+  @override
+  bool get stopRequested => _cancelRequested;
+  @override
+  bool get disconnected => _connection._closed;
   HermesWebSubmission _submission = HermesWebSubmission.idle;
   HermesWebSubmission get submission => _submission;
+  @override
   bool get needsReconciliation => _reconcile;
   bool _eventReplaySupported = true;
   bool get eventReplaySupported => _eventReplaySupported;
   final List<HermesChatTurn> _turns = [];
+  @override
   List<HermesChatTurn> get turns => List.unmodifiable(_turns);
   final Map<String, String> _approvals = {}; // queue ID -> server request ID
+  final Map<String, HermesServeApproval> _approvalDetails = {};
+  @override
+  Map<String, HermesServeApproval> get approvals => Map.unmodifiable({
+    for (final id in _approvals.keys)
+      if (_approvalDetails[id] != null) id: _approvalDetails[id]!,
+  });
+  @override
+  Future<void> answerApproval(String requestId, bool allow) {
+    if (allow && _approvalDetails[requestId]?.allowOnce != true) {
+      _identityFailure();
+    }
+    return respondToApproval(
+      requestId,
+      allow ? HermesWebApprovalChoice.once : HermesWebApprovalChoice.deny,
+    );
+  }
+
   Set<String> get approvalRequestIds => Set.unmodifiable(_approvals.keys);
+  @override
   bool get canSubmit =>
       !_connection._closed &&
       _runtime != null &&
@@ -71,6 +103,7 @@ final class HermesWebLifecycle {
   Never _identityFailure() =>
       throw const HermesWebReadException(HermesWebFailureKind.identity);
   void _notify() {
+    _approvalDetails.removeWhere((id, _) => !_approvals.containsKey(id));
     if (!_changes.isClosed) _changes.add(null);
   }
 
@@ -91,6 +124,7 @@ final class HermesWebLifecycle {
 
   /// Agentless watch resume avoids implicit crash continuation in qualification.
   /// A later explicit submit upgrades the session on the server.
+  @override
   Future<void> resumeSession(String storedSessionId) =>
       _select(stored: storedSessionId);
 
@@ -108,6 +142,7 @@ final class HermesWebLifecycle {
     _turns.clear();
     _running = false;
     _submission = HermesWebSubmission.idle;
+    _cancelRequested = false;
     _reconcile = true;
     _notify();
     try {
@@ -260,6 +295,7 @@ final class HermesWebLifecycle {
     return true;
   }
 
+  @override
   Future<void> submitText(String text) async {
     if (!canSubmit) {
       throw const HermesWebReadException(HermesWebFailureKind.busy);
@@ -315,6 +351,7 @@ final class HermesWebLifecycle {
 
   /// The server interrupt receipt is not completion, and a closed socket is not
   /// cancellation. Replacement submissions remain disabled until reconciliation.
+  @override
   Future<bool> interrupt() async {
     final selection = _selection;
     final scope = _scope();
@@ -391,6 +428,13 @@ final class HermesWebLifecycle {
       webMalformed();
     }
     _approvals[queueId] = id;
+    final choices = params['choices'];
+    _approvalDetails[queueId] = HermesServeApproval(
+      id,
+      webString(params['command'] ?? '', maximum: 4096),
+      webString(params['description'] ?? '', maximum: 4096),
+      choices is List && choices.contains('once'),
+    );
     _notify();
   }
 
@@ -441,6 +485,15 @@ final class HermesWebLifecycle {
       );
       _submission = HermesWebSubmission.terminal;
       _running = false;
+      for (var i = 0; i < _turns.length; i++) {
+        if (_turns[i].status == HermesTurnStatus.streaming) {
+          _turns[i] = _turns[i].copyWith(
+            status: status == 'complete'
+                ? HermesTurnStatus.completed
+                : HermesTurnStatus.failed,
+          );
+        }
+      }
       _reconcile = true;
     } else if (!_cancelRequested && !_reconcile) {
       switch (type) {

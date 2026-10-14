@@ -29,12 +29,14 @@ class _NoWriteStore extends EmptyHermesEndpointStore {
 }
 
 Future<Map<String, Object?>> runLocalServeReadJourney(
-  WidgetTester tester,
-) async {
+  WidgetTester tester, {
+  LocalServeReadFixture? backend,
+  Future<Map<String, Object?>> Function(HermesApiChannel)? afterConnected,
+}) async {
   SharedPreferences.setMockInitialValues({});
   final previous = HttpOverrides.current;
   HttpOverrides.global = null;
-  final fixture = LocalServeReadFixture();
+  final fixture = backend ?? LocalServeReadFixture();
   final store = _NoWriteStore();
   final container = ProviderContainer(
     overrides: [hermesEndpointStoreProvider.overrideWithValue(store)],
@@ -137,6 +139,8 @@ Future<Map<String, Object?>> runLocalServeReadJourney(
     expect(fixture.requests.length, 6);
     expect(fixture.requests.every((r) => r.startsWith('GET ')), isTrue);
     expect(tester.takeException(), isNull);
+    final chatReceipt =
+        await afterConnected?.call(channel) ?? const <String, Object?>{};
     return {
       'requests': fixture.requests.length,
       'mutations': 0,
@@ -147,6 +151,7 @@ Future<Map<String, Object?>> runLocalServeReadJourney(
       'explicit_retry': true,
       'profile': channel.state.selectedProfileId,
       'session': channel.state.activeSessionId,
+      ...chatReceipt,
     };
   } finally {
     await tester.pumpWidget(const SizedBox.shrink());

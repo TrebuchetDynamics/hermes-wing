@@ -1409,6 +1409,23 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 tip: WingTip.voice,
                 text: AppLocalizations.of(context).tipVoice,
               ),
+            if (state.isServeReadOnly &&
+                state.isConnected &&
+                channel is HermesApiChannel)
+              TextButton(
+                key: const ValueKey('hermes-local-serve-chat'),
+                onPressed: state.isSelectingProfile
+                    ? null
+                    : () => unawaited(channel.enableLocalServeChat()),
+                child: Text(
+                  state.serveChat?.needsReconciliation == true
+                      ? strings.localServeReconcile
+                      : strings.localServeEnableChat,
+                ),
+              ),
+            if (state.serveChat?.stopRequested == true &&
+                state.serveChat?.running == true)
+              Text(strings.localServeStopRequested),
             _buildComposer(context, channel, state, canSendTurns, isTurnActive),
           ],
         );
@@ -2683,7 +2700,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     bool canSendTurns,
   ) {
     final settings = ref.watch(wingVoiceSettingsProvider);
-    final handsFreeAvailable = canSendTurns && settings.continuousVoiceEnabled;
+    final handsFreeAvailable =
+        canSendTurns &&
+        !channel.state.isServeReadOnly &&
+        settings.continuousVoiceEnabled;
     final handsFreeActive = _voiceInputController.continuousEnabled;
     final strings = AppLocalizations.of(context);
     final draftIsCurrent = _draftCaptureGuard(channel);
@@ -2813,6 +2833,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Widget _buildContinuousVoiceSwitch(bool canSendTurns) {
+    canSendTurns =
+        canSendTurns && !ref.read(hermesChannelProvider).state.isServeReadOnly;
     final settings = ref.watch(wingVoiceSettingsProvider);
     final voiceEnabled = settings.continuousVoiceEnabled;
     final active = _voiceInputController.continuousEnabled;
@@ -2911,6 +2933,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Widget _buildAttachmentButton(bool canSendTurns) {
+    canSendTurns =
+        canSendTurns && !ref.read(hermesChannelProvider).state.isServeReadOnly;
     return IconButton(
       key: const ValueKey('hermes-attachment-button'),
       tooltip: AppLocalizations.of(context).chatLayoutAttachFileTooltip,
@@ -2932,6 +2956,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Widget _buildMicButton(bool canSendTurns) {
+    canSendTurns =
+        canSendTurns && !ref.read(hermesChannelProvider).state.isServeReadOnly;
     if (_voiceInputController.capturing) {
       return IconButton.filled(
         key: const ValueKey('hermes-mic-button'),
@@ -3015,6 +3041,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   Widget _buildDraftMicButton(HermesChannel channel, bool canSendTurns) {
+    canSendTurns = canSendTurns && !channel.state.isServeReadOnly;
     final strings = AppLocalizations.of(context);
     final isCurrent = _draftCaptureGuard(channel);
     final capturing = _voiceInputController.capturing;

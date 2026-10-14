@@ -12,7 +12,7 @@ export '../models/hermes_web_reads.dart';
 part 'hermes_web_read_rpc.dart';
 part 'hermes_web_lifecycle.dart';
 
-/// Fixed loopback REST reads; ticket/RPC lifecycle remains qualification-only.
+/// Fixed loopback REST reads and separately authenticated native chat.
 final class HermesWebReadClient {
   HermesWebReadClient.forLocalReads({
     required Uri origin,
@@ -159,6 +159,35 @@ final class HermesWebReadClient {
   }
 
   Future<HermesWebReadConnection> connectReads() => _connect();
+
+  /// Ticket authentication is distinct from successful REST reads. This fixed
+  /// contract also requires the Agent's exclusive-submit and request negotiation.
+  Future<HermesServeLifecycle> connectLifecycleForProduct() async {
+    final connection = await _connect(lifecycle: true);
+    try {
+      final capabilities = await connection._read('gateway.capabilities', {});
+      if (capabilities['per_session_exclusive_submit'] != true) webMalformed();
+      final requests = await connection._read('client.capabilities', {
+        'server_requests': true,
+      });
+      if (!webRows(requests['server_requests'], 128).contains('approval')) {
+        webMalformed();
+      }
+      connection._lifecycle!._productAuthorized = true;
+      return connection._lifecycle!;
+    } catch (_) {
+      closeLifecycle();
+      rethrow;
+    }
+  }
+
+  void closeLifecycle() {
+    _generation++;
+    _connection?._stop(
+      const HermesWebReadException(HermesWebFailureKind.stale),
+    );
+    _connection = null;
+  }
 
   /// Explicit internal opt-in. Never registered as a product HermesChannel.
   Future<HermesWebLifecycle> connectLifecycleForQualification() async {

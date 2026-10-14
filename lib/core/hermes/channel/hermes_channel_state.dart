@@ -12,6 +12,16 @@ import '../models/hermes_session.dart';
 import '../models/hermes_skill.dart';
 import '../models/hermes_toolset.dart';
 
+final class HermesServeChatState {
+  const HermesServeChatState({
+    required this.canSubmit,
+    required this.running,
+    required this.stopRequested,
+    required this.needsReconciliation,
+  });
+  final bool canSubmit, running, stopRequested, needsReconciliation;
+}
+
 enum HermesConnectionStatus { disconnected, connecting, connected, error }
 
 enum HermesConnectionFailureKind {
@@ -30,6 +40,7 @@ class HermesChannelState {
   const HermesChannelState({
     this.status = HermesConnectionStatus.disconnected,
     this.isServeReadOnly = false,
+    this.serveChat,
     this.errorMessage,
     this.connectionFailureKind,
     this.capabilities,
@@ -70,6 +81,7 @@ class HermesChannelState {
 
   /// Fixed authenticated serve REST reads; never a gateway capability grant.
   final bool isServeReadOnly;
+  final HermesServeChatState? serveChat;
   final String? errorMessage;
   final HermesConnectionFailureKind? connectionFailureKind;
   final HermesCapabilityDocument? capabilities;
@@ -354,6 +366,8 @@ class HermesChannelState {
   HermesChannelState copyWith({
     HermesConnectionStatus? status,
     bool? isServeReadOnly,
+    HermesServeChatState? serveChat,
+    bool clearServeChat = false,
     String? errorMessage,
     HermesConnectionFailureKind? connectionFailureKind,
     bool clearErrorMessage = false,
@@ -424,6 +438,7 @@ class HermesChannelState {
     return HermesChannelState(
       status: status ?? this.status,
       isServeReadOnly: isServeReadOnly ?? this.isServeReadOnly,
+      serveChat: clearServeChat ? null : serveChat ?? this.serveChat,
       errorMessage: clearErrorMessage
           ? null
           : errorMessage ?? this.errorMessage,

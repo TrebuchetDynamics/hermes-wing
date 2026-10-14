@@ -14,7 +14,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get localServeReadsBody =>
-      'Linux loopback only. Enter this backend\'s host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history only. No launch, chat, approvals or Stop. This connection and token are not saved; enter them again after relaunch.';
+      'Linux loopback only. Enter this backend\'s host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history. Chat requires a separately authenticated ticket connection; legacy local tokens may allow reads only. No launch or credential discovery. This connection and token are not saved; enter them again after relaunch.';
+
+  @override
+  String get localServeEnableChat => 'Enable chat on this session';
+
+  @override
+  String get localServeReconcile => 'Reconcile this session without resending';
+
+  @override
+  String get localServeStopRequested =>
+      'Stop requested. Waiting for Hermes to confirm completion; closing the connection does not confirm Stop.';
 
   @override
   String get localServeTokenLabel => 'Hermes serve session token';

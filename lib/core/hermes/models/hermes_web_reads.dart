@@ -1,7 +1,41 @@
+import 'hermes_chat_turn.dart';
+
+/// Only the fixed, authenticated native serve workflow implements this seam.
+abstract interface class HermesServeLifecycle {
+  Stream<void> get changes;
+  String? get runtimeSessionId;
+  String? get storedSessionId;
+  bool get canSubmit;
+  bool get running;
+  bool get stopRequested;
+  bool get needsReconciliation;
+  bool get disconnected;
+  List<HermesChatTurn> get turns;
+  Map<String, HermesServeApproval> get approvals;
+  Future<void> resumeSession(String storedSessionId);
+  Future<void> submitText(String text);
+  Future<bool> interrupt();
+  Future<void> answerApproval(String requestId, bool allow);
+}
+
+final class HermesServeApproval {
+  const HermesServeApproval(
+    this.serverId,
+    this.command,
+    this.description,
+    this.allowOnce,
+  );
+  final String serverId, command, description;
+  final bool allowOnce;
+}
+
 /// Native web DTOs deliberately do not reuse the gateway /v1 schema.
 /// Only presentation-safe fields are retained; host paths and domain extras die
 /// at this decoder boundary. No server advertisement here is an operation grant.
-enum HermesWebProductAuthorization { unsupportedAuthorization }
+enum HermesWebProductAuthorization {
+  unsupportedAuthorization,
+  authenticatedTicket,
+}
 
 enum HermesWebFailureKind {
   malformed,

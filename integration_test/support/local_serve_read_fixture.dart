@@ -17,6 +17,7 @@ class LocalServeReadFixture {
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       requests.add('${request.method} ${request.uri.path}');
+      if (await handleExtra(request)) return;
       request.response.headers.contentType = ContentType.json;
       if (request.method != 'GET' ||
           request.headers.value('Authorization') != 'Bearer $token') {
@@ -105,6 +106,7 @@ class LocalServeReadFixture {
     'message_count': 2,
     'is_active': false,
   };
+  Future<bool> handleExtra(HttpRequest request) async => false;
   Future<void> close() async {
     if (!(holdProfiles?.isCompleted ?? true)) holdProfiles!.complete();
     await server.close(force: true);

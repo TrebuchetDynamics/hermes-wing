@@ -1,6 +1,9 @@
 {
   "localServeReadsLabel": "Read an already-running Hermes serve backend",
-  "localServeReadsBody": "Linux loopback only. Enter this backend's host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history only. No launch, chat, approvals or Stop. This connection and token are not saved; enter them again after relaunch.",
+  "localServeReadsBody": "Linux loopback only. Enter this backend's host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history. Chat requires a separately authenticated ticket connection; legacy local tokens may allow reads only. No launch or credential discovery. This connection and token are not saved; enter them again after relaunch.",
+  "localServeEnableChat": "Enable chat on this session",
+  "localServeReconcile": "Reconcile this session without resending",
+  "localServeStopRequested": "Stop requested. Waiting for Hermes to confirm completion; closing the connection does not confirm Stop.",
   "localServeTokenLabel": "Hermes serve session token",
   "connectionGuideTitle": "Connect step by step",
   "connectionGuidePrepare": "1. Prepare Hermes Agent",

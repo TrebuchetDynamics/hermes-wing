@@ -30,6 +30,7 @@ import 'hermes_detached_run_store.dart';
 
 part 'api_channel/hermes_api_channel_connection.dart';
 part 'api_channel/hermes_api_channel_serve_reads.dart';
+part 'api_channel/hermes_api_channel_serve_chat.dart';
 part 'api_channel/hermes_api_channel_inventory.dart';
 part 'api_channel/hermes_api_channel_capabilities.dart';
 part 'api_channel/hermes_api_channel_sessions.dart';
@@ -75,6 +76,10 @@ class HermesApiChannel extends ChangeNotifier
 
   HermesApiClient? _client;
   HermesWebReadClient? _serveReader;
+  HermesServeLifecycle? _serveLifecycle;
+  StreamSubscription<void>? _serveChanges;
+  int _serveQualification = 0;
+  bool _qualifyingServeChat = false;
   HermesChannelState _state = const HermesChannelState();
   final _activeStreams = <String, StreamSubscription<HermesStreamEvent>>{};
   final _activeStreamCompleters = <String, Completer<void>>{};
@@ -126,6 +131,7 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   void dispose() {
+    _retireServeChat();
     _serveReader?.disconnect();
     _client = null;
     _connectionGeneration += 1;
@@ -287,10 +293,15 @@ class HermesApiChannel extends ChangeNotifier
     bool Function()? canAccept,
   }) => _connectServeReads(baseUrl, credential, canAccept: canAccept);
 
+  Future<void> enableLocalServeChat() => _qualifyServeChat();
+
   @override
   void clearActiveSession() {
+    _retireServeChat();
     _sessionSelectionGeneration += 1;
-    _setState(_state.copyWith(clearActiveSessionId: true));
+    _setState(
+      _state.copyWith(clearActiveSessionId: true, clearServeChat: true),
+    );
   }
 
   @override
@@ -381,6 +392,8 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   Future<void> reconcileActiveSession() async {
+    // Native recovery requires explicit intent and must not run on resume.
+    if (_serveReader != null) return;
     final sessionId = _state.activeSessionId;
     if (_state.status != HermesConnectionStatus.connected ||
         sessionId == null ||
@@ -488,12 +501,18 @@ class HermesApiChannel extends ChangeNotifier
     String? imageDataUrl,
     String? textAttachment,
     String? attachmentName,
-  }) => _sendText(
-    text,
-    imageDataUrl: imageDataUrl,
-    textAttachment: textAttachment,
-    attachmentName: attachmentName,
-  );
+  }) => _serveReader != null
+      ? _sendServeText(
+          text,
+          imageDataUrl: imageDataUrl,
+          textAttachment: textAttachment,
+        )
+      : _sendText(
+          text,
+          imageDataUrl: imageDataUrl,
+          textAttachment: textAttachment,
+          attachmentName: attachmentName,
+        );
 
   @override
   bool get canSteerActiveTurn {
@@ -504,13 +523,38 @@ class HermesApiChannel extends ChangeNotifier
   }
 
   @override
-  void cancelActiveTurn() => _cancelActiveTurn();
+  void cancelActiveTurn() {
+    if (_serveLifecycle != null) {
+      _serveReader?.closeLifecycle();
+      return;
+    }
+    _cancelActiveTurn();
+  }
 
   @override
-  void stopActiveTurn() => fireAndForget(_stopActiveTurn(), 'stop active turn');
+  void stopActiveTurn() => fireAndForget(
+    _serveReader != null ? _stopServeTurn() : _stopActiveTurn(),
+    'stop active turn',
+  );
 
   @override
   HermesTurnInterruptionTarget? get activeTurnInterruptionTarget {
+    final lifecycle = _serveLifecycle;
+    if (lifecycle != null) {
+      if (!lifecycle.running ||
+          lifecycle.disconnected ||
+          _state.isSelectingProfile) {
+        return null;
+      }
+      return HermesTurnInterruptionTarget(
+        owner: this,
+        connectionGeneration: _connectionGeneration,
+        profileId: _state.selectedProfileId,
+        sessionId: lifecycle.storedSessionId!,
+        streamGeneration: _serveQualification,
+        runId: lifecycle.runtimeSessionId,
+      );
+    }
     final session = _state.activeSessionId;
     final generation = _sessionStreamGenerations[session];
     if (session == null ||
@@ -531,7 +575,7 @@ class HermesApiChannel extends ChangeNotifier
   @override
   Future<bool> stopTurn(HermesTurnInterruptionTarget target) async {
     if (!target.matches(activeTurnInterruptionTarget)) return false;
-    return _stopActiveTurn();
+    return _serveReader != null ? _stopServeTurn() : _stopActiveTurn();
   }
 
   @override
@@ -578,6 +622,9 @@ class HermesApiChannel extends ChangeNotifier
     String? runId,
     HermesApprovalRequest? origin,
   }) async {
+    if (_serveReader != null) {
+      return _answerServeApproval(approvalId, decision, runId, origin);
+    }
     final client = _client;
     if (client == null) {
       throw StateError('Hermes channel is not connected.');

@@ -99,6 +99,8 @@ extension _ServeReadsExtension on HermesApiChannel {
     }
     final generation = _connectionGeneration;
     final selection = _beginProfileSelection(profile);
+    _retireServeChat();
+    _setState(_state.copyWith(clearServeChat: true, hasUnreconciledRun: false));
     final reader = previous.forProfile(profile);
     bool current() =>
         generation == _connectionGeneration &&
@@ -161,6 +163,8 @@ extension _ServeReadsExtension on HermesApiChannel {
       throw const HermesSessionRestorationUnsupported();
     }
     final selection = ++_sessionSelectionGeneration;
+    _retireServeChat();
+    _setState(_state.copyWith(clearServeChat: true, hasUnreconciledRun: false));
     final history = await reader.history(session);
     if (!identical(_serveReader, reader) ||
         selection != _sessionSelectionGeneration ||

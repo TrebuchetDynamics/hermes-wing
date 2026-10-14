@@ -23,6 +23,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   void _sendComposerText(HermesChannel channel) {
+    if (channel.state.isServeReadOnly && !_canSendTurns(channel.state)) return;
     if (_sessionRestorationUnsettled) return;
     final composing = _composerController.value.composing;
     if (_composerCompositionActive ||
@@ -101,6 +102,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   void _insertComposerContent(KeyboardInsertedContent content) {
+    if (ref.read(hermesChannelProvider).state.isServeReadOnly) return;
     if (_sessionRestorationUnsettled) return;
     if (_rejectAdditionalComposerAttachment()) return;
     _invalidateAttachmentPick();
@@ -256,11 +258,12 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   bool _isTurnActive(HermesChannelState state) =>
-      state.activeMessages.isNotEmpty &&
-      state.activeMessages.last.status == HermesTurnStatus.streaming;
+      state.serveChat?.running ??
+      (state.activeMessages.isNotEmpty &&
+          state.activeMessages.last.status == HermesTurnStatus.streaming);
 
   bool _hasChatTransport(HermesChannelState state) {
-    if (state.isServeReadOnly) return false;
+    if (state.isServeReadOnly) return state.serveChat?.canSubmit == true;
     final capabilities = state.capabilities;
     if (capabilities == null) return true;
     return HermesTransportPolicy(capabilities).supportsAnyChatTransport;
@@ -274,6 +277,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   bool _canRespondToApprovals(HermesChannelState state) {
+    if (state.isServeReadOnly) return state.serveChat != null;
     final capabilities = state.capabilities;
     if (capabilities == null) return true;
     return HermesTransportPolicy(capabilities).supportsRunApprovalResponse;
@@ -310,6 +314,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   void _sendQueuedFollowUpIfIdle(HermesChannel channel) {
+    if (channel.state.isServeReadOnly) return;
     final queued = _followUps.takeNextIfEligible(
       activeSessionId: channel.state.activeSessionId,
       turnActive: _isTurnActive(channel.state),
@@ -337,6 +342,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   bool _canSendQueuedFollowUp(HermesChannelState state) =>
+      !state.isServeReadOnly &&
       _followUps.canSendNext(
         activeSessionId: state.activeSessionId,
         turnActive: _isTurnActive(state),
@@ -458,6 +464,7 @@ extension _HermesChatScreenMessageFlow on _HermesChatScreenState {
   }
 
   String? _retryableFailedUserText(HermesChannelState state) {
+    if (state.isServeReadOnly) return null;
     final turns = state.activeMessages;
     if (turns.length < 2) return null;
     final assistantTurn = turns.last;

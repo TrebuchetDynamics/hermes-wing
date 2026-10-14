@@ -6714,14 +6714,6 @@
       "title": "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
     },
     {
-      "depends_on": [],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-OFFICIAL-DESKTOP-PORT",
-      "section": "Now",
-      "status": "in_progress",
-      "title": "Re-trace official Desktop welcome and Local/SSH/Remote contracts; implement the first evidenced Flutter connection correction"
-    },
-    {
       "depends_on": [
         "CONNECTION-PRIMARY-ENTRY"
       ],
@@ -7466,6 +7458,14 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify optional Local existing-install and setup-needed consent cancellation and explicit retry through compiled public controls"
+    },
+    {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-OFFICIAL-DESKTOP-PORT",
+      "section": "Done",
+      "status": "done",
+      "title": "Re-trace official Desktop welcome and Local/SSH/Remote contracts; implement the first evidenced Flutter connection correction"
     },
     {
       "depends_on": [],

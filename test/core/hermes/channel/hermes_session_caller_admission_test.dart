@@ -16,23 +16,26 @@ const inventory =
     '''{"data":[{"id":"synthetic-active","source":"test"},{"id":"synthetic-other","source":"test"}]}''';
 
 void main() {
-  for (final action in ['open', 'create']) {
+  for (final action in ['open', 'create', 'restore']) {
     for (final phase in [
       'before',
       'clearing',
       'response',
       'rejection',
       'history',
+      if (action == 'restore') 'failure',
     ]) {
-      if (action == 'open' && (phase == 'history' || phase == 'clearing')) {
+      if ((action != 'create' && phase == 'history') ||
+          (action == 'open' && phase == 'clearing')) {
         continue;
       }
       test(
-        '$action caller admission at $phase rejects stale result and cache',
+        '$action caller admission at $phase preserves ownership and explicit retry',
         () async {
           final started = Completer<void>();
           final gate = Completer<String>();
           var alive = true;
+          var delayedOnce = false;
           final requests = <String>[];
           final channel = HermesApiChannel(
             sessionIdFactory: () => 'synthetic-created',
@@ -41,12 +44,13 @@ void main() {
               get: (uri, headers) async {
                 requests.add('GET ${uri.path}');
                 final delayed =
-                    action == 'open' &&
+                    action != 'create' &&
                         uri.path == '/api/sessions/synthetic-other/messages' ||
                     action == 'create' &&
                         phase == 'history' &&
                         uri.path == '/api/sessions/synthetic-created/messages';
-                if (delayed) {
+                if (delayed && !delayedOnce) {
+                  delayedOnce = true;
                   started.complete();
                   return gate.future;
                 }
@@ -73,6 +77,7 @@ void main() {
           );
           addTearDown(channel.dispose);
           await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+          final initialState = channel.state;
           final initial = channel.state.activeSessionId;
           requests.clear();
           if (phase == 'clearing') {
@@ -81,26 +86,42 @@ void main() {
             });
           }
           if (phase == 'before') alive = false;
-          final future = action == 'open'
-              ? channel.selectSession('synthetic-other', canAccept: () => alive)
-              : channel.createSession(canAccept: () => alive);
+          final restoration = action == 'restore'
+              ? channel.restoreSession(
+                  'synthetic-other',
+                  canAccept: () => alive,
+                )
+              : null;
+          final future =
+              restoration ??
+              (action == 'open'
+                  ? channel.selectSession(
+                      'synthetic-other',
+                      canAccept: () => alive,
+                    )
+                  : channel.createSession(canAccept: () => alive));
           if (phase == 'before' || phase == 'clearing') {
             await future;
+            if (restoration != null) expect(await restoration, isFalse);
             expect(requests, isEmpty);
             expect(
               channel.state.activeSessionId,
               phase == 'before' ? initial : isNull,
             );
+            if (phase == 'before') {
+              expect(identical(channel.state, initialState), isTrue);
+            }
             return;
           }
           await started.future;
-          alive = false;
-          if (phase == 'rejection') {
+          alive = phase == 'failure';
+          if (phase == 'rejection' || phase == 'failure') {
             gate.completeError(StateError('synthetic failure'));
-            if (action == 'create') {
+            if (action == 'create' || phase == 'failure') {
               await expectLater(future, throwsStateError);
             } else {
               await future;
+              if (restoration != null) expect(await restoration, isFalse);
             }
           } else {
             gate.complete(
@@ -110,7 +131,7 @@ void main() {
                     })
                   : jsonEncode({
                       'object': 'list',
-                      'session_id': action == 'open'
+                      'session_id': action != 'create'
                           ? 'synthetic-other'
                           : 'synthetic-created',
                       'data': [],
@@ -122,6 +143,7 @@ void main() {
                     }),
             );
             await future;
+            if (restoration != null) expect(await restoration, isFalse);
           }
           expect(
             channel.state.activeSessionId,
@@ -145,6 +167,18 @@ void main() {
             requests.where((r) => r.startsWith('POST')),
             action == 'create' ? ['POST /api/sessions'] : isEmpty,
           );
+          if (action == 'restore') {
+            alive = true;
+            expect(
+              await channel.restoreSession(
+                'synthetic-other',
+                canAccept: () => alive,
+              ),
+              isTrue,
+            );
+            expect(channel.state.activeSessionId, 'synthetic-other');
+            expect(requests.where((r) => !r.startsWith('GET')), isEmpty);
+          }
         },
       );
     }

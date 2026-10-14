@@ -16,6 +16,7 @@ extension _SessionsExtension on HermesApiChannel {
     String sessionId, {
     bool Function()? canAccept,
   }) async {
+    if (!(canAccept?.call() ?? true)) return false;
     final client = _requireConnectedClient();
     final profileId = _state.selectedProfileId;
     final profileGuard = _profileRequestGuard(client, profileId);

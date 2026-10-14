@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/plan_backlog_contract.dart';
+
 void main() {
   test('every retained plan has an explicit canonical backlog disposition', () {
     final plans = [Directory('docs/plans'), Directory('docs/superpowers/plans')]
@@ -25,17 +27,7 @@ void main() {
         (task as Map<String, dynamic>)['id'] as String: task,
     };
     final todo = File('TODO.md').readAsStringSync();
-    final markers = RegExp(
-      r'^- \[[ xX]\] \*\*([A-Z][A-Z0-9-]+)\*\*',
-      multiLine: true,
-    ).allMatches(todo).toList();
-    final bodies = <String, String>{
-      for (var i = 0; i < markers.length; i++)
-        markers[i].group(1)!: todo.substring(
-          markers[i].start,
-          i + 1 < markers.length ? markers[i + 1].start : todo.length,
-        ),
-    };
+    final archive = File('todo.archive.md').readAsStringSync();
     final entries = <String>{};
     for (final line in map.group(1)!.split('\n')) {
       if (!line.startsWith('| `docs/')) continue;
@@ -59,16 +51,18 @@ void main() {
       if (disposition == 'Current') {
         expect(ids, isNotEmpty, reason: 'Current plan has no tasks: $path');
       }
+      final bodies = <String, String>{};
       for (final id in ids) {
         expect(
           tasks.containsKey(id),
           isTrue,
           reason: '$path names unknown $id',
         );
-        expect(
-          bodies.containsKey(id),
-          isTrue,
-          reason: '$path names no body for $id',
+        bodies[id] = planTaskBody(
+          id: id,
+          status: tasks[id]!['status'] as String,
+          todo: todo,
+          archive: archive,
         );
       }
       if (ids.isNotEmpty && disposition != 'Policy') {

@@ -4050,6 +4050,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408 rendered saved-host selection: 40 rebuilt Chromium overlay cases at 390/1280px and 200% text, 26 router tests, flutter analyze --no-pub and locked offline dependencies pass. Independent native-source review approves test blob 5f623ed634d725ac9596b102861c3968855b7f3d; gateway-switch no-op fails both new replacement-session barriers. docs/quality/chat-workspace-overlay-browser.md#rendered-saved-host-switching. Empty credentials and synthetic HTTP only; active-run connection switching, saved-secret isolation, GTK HTTP/SSE, Android and live Agent NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING-TASK-408: python3 -B integration_test/run_linux_chat_workspace_overlay.py — all36 Linux GTK journeys pass, twelve Tab/Enter shell entries including compact More; Flutter3.44.2/Dart3.12.2, 390/1280 logical pixels and200% text; typed receipts/source/dependencies and teardown verified. flutter analyze --no-pub and28 focused router/receipt/shell tests pass; independent native-source review approved. docs/quality/chat-workspace-overlay-native.md. Automatic shell return focus, owner replacement, native HTTP/SSE, Android and live Agent NOT_CHECKED.",
           "result": "pass"
         },

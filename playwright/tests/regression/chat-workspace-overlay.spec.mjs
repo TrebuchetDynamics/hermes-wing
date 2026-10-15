@@ -230,7 +230,8 @@ for (const width of [390, 1280]) {
   }
 
   for (const destination of ['Settings', 'Profiles']) {
-    test(`${destination} retains replacement connection through overlay history at ${width}px/200% text`, async ({ page, request }) => {
+    for (const rendered of destination === 'Settings' ? [false, true] : [false]) {
+    test(`${destination} retains replacement connection${rendered ? ' via rendered saved-host selection' : ''} through overlay history at ${width}px/200% text`, async ({ page, request }) => {
       expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
       const replacementOrigin = new URL(APP);
       replacementOrigin.hostname = 'localhost';
@@ -268,15 +269,57 @@ for (const width of [390, 1280]) {
         return route.fulfill({ response, headers: { ...response.headers(), ...headers } });
       });
       await page.setViewportSize({ width, height: 1400 });
-      await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-connection-overlay`);
+      await page.goto(`${APP}?e2eTextScale=2#/hermes${rendered ? '/add' : '?view=synthetic-connection-overlay'}`);
       await ready(page);
-      await page.evaluate(() => globalThis.wingE2EHermesConnect());
+      const chat = () => page.getByRole(width < 600 ? 'tab' : 'button', { name: 'Chat', exact: true });
+      if (rendered) {
+        for (const [origin, label] of [[replacementOrigin.origin, 'Synthetic replacement host'], [new URL(APP).origin, 'Synthetic original host']]) {
+          if (label === 'Synthetic original host') await page.getByRole('button', { name: 'Add Hermes', exact: true }).click();
+          await expect(page.getByRole('textbox', { name: /^Hermes Agent URL/ })).toBeVisible();
+          const actor = keyboardActor(page, null, []);
+          for (const [name, value] of [['Hermes Agent URL', origin], ['Connection name (optional)', label]]) {
+            // Flutter adds the URL placeholder to its accessible name on focus.
+            const focusedName = () => page.evaluate(() => document.querySelector('input:focus, textarea:focus')?.getAttribute('aria-label') ?? '');
+            for (let step = 0; step < 64 && !(await focusedName()).startsWith(name); step++) await actor.press('Tab');
+            expect((await focusedName()).startsWith(name)).toBe(true);
+            await page.keyboard.press('ControlOrMeta+A');
+            await page.keyboard.type(value);
+            await expect(page.locator('input:focus, textarea:focus')).toHaveValue(value);
+          }
+          await actor.reach('button', 'Add Hermes');
+          await actor.press('Enter');
+          await expect(page.getByLabel(new RegExp(`${label}.*online`))).toBeVisible();
+        }
+        await page.getByLabel(/Synthetic original host.*online/).click();
+        await expect.poll(async () => (await state(page)).active_session_id).toBe('e2e-hermes-session');
+        await page.evaluate(() => { location.hash = '#/hermes'; });
+      } else await page.evaluate(() => globalThis.wingE2EHermesConnect());
       await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
       expect(await state(page)).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false });
       const location = page.url();
-      await shellOpen(page, width, destination);
-      // This existing seam replaces the production channel owner, not a rendered Connections action.
-      await page.evaluate(base => globalThis.wingE2EHermesConnect(base), replacementOrigin.origin);
+      const open = async () => {
+        if (rendered && width < 600) {
+          await page.getByRole('textbox').last().click();
+          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          await page.keyboard.type('/settings');
+          await expect(page.locator('input:focus, textarea:focus')).toHaveValue('/settings');
+          await page.getByRole('button', { name: /^\/settings / }).click();
+          await expect(closeButton(page)).toBeVisible();
+        } else await shellOpen(page, width, destination);
+      };
+      await open();
+      if (rendered) {
+        // Leave Settings through Connections and explicitly activate the saved host.
+        await page.getByRole('button', { name: 'Connections', exact: true }).click();
+        await page.getByRole('button', { name: /^Synthetic replacement host http:/ }).click();
+        await page.getByRole('button', { name: 'Connect chat', exact: true }).click();
+        await expect.poll(async () => (await state(page)).active_session_id).toBe(session);
+        await chat().click();
+        await expect(page.getByRole('group', { name: /Synthetic replacement host history\.$/ })).toBeVisible();
+        await open();
+      } else {
+        await page.evaluate(base => globalThis.wingE2EHermesConnect(base), replacementOrigin.origin);
+      }
       await expect.poll(async () => (await state(page)).active_session_id).toBe(session);
       await expect(closeButton(page)).toBeVisible();
       const replacement = await state(page);
@@ -294,7 +337,7 @@ for (const width of [390, 1280]) {
       await expect(closeButton(page)).toBeVisible();
       await page.keyboard.press('Escape');
       await assertChat();
-      await shellOpen(page, width, destination);
+      await open();
       await closeButton(page).click();
       await assertChat();
       expect(replacementReads).toContain('/api/sessions');
@@ -302,6 +345,7 @@ for (const width of [390, 1280]) {
       expect(writes).toEqual([]);
       expect(errors).toEqual([]);
     });
+    }
 
     test(`${destination} keyboard shell entry retains chat through Back/Forward, Escape and Close at ${width}px/200% text`, async ({ page, request }, testInfo) => {
       expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);

@@ -55,8 +55,14 @@ focus path changes. Active-run rendered profile cases allow one deliberate Send,
 then require the distinct replacement profile/session/history before completing
 the original synthetic run. Verify canonical server completion and unchanged new
 owner through reopen/Back/Forward/Escape; this is not consumption of cancelled
-old terminal events or detached-run recovery. Keep rendered/saved connection
-switching and native streaming open under WING-TASK-408. Browser and
+old terminal events or detached-run recovery. Rendered saved-host cases use real
+Add Hermes forms and Settings → Connections → saved host → Connect chat to select
+distinct empty-credential synthetic hosts. Reopen and Back/Forward/Escape/Close
+must retain the new session/history and exclude old history, with zero mutations.
+Compact contact Chat uses local Settings; wide Chat uses its shell. See
+[rendered saved-host evidence](quality/chat-workspace-overlay-browser.md#rendered-saved-host-switching).
+Keep active-run connection switching, saved-secret isolation and native streaming
+open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

@@ -320,6 +320,44 @@ consumed cancelled old terminal events, recoverable detached-run persistence,
 automatic return focus after an owner-changing action, switch-back recovery,
 native streaming or live Agent/provider behavior. Parent acceptance remains open.
 
+## Rendered saved-host switching
+
+Two additional compiled cases save two credential-free synthetic loopback hosts
+through the real Add Hermes forms, then select the original host's conversation.
+Only accessibility/reduced-motion setup and an initial `#/hermes` route
+normalization use browser seams; neither connection uses a connect hook. At
+390px the selected-contact conversation deliberately hides the bottom bar, so
+Settings opens through the rendered `/settings` suggestion; at 1280px it opens
+through the shell. Both use 200% text. Form entry uses Tab and actual typing,
+including Flutter's focus-dependent URL accessible name.
+
+Settings' Connections link leaves the overlay. Selecting the distinct saved host
+and **Connect chat**, then Chat, must load its exact session and different history.
+Reopened Settings must preserve that replacement through Back, Forward/Escape and
+Close, exclude the original transcript, and issue zero API mutations. Distinct
+replacement-origin session/history reads are required. The existing hook-driven
+Settings/Profiles replacement cases remain unchanged in scope; the default runner
+already includes the expanded spec.
+
+The rebuilt application passes all 40 Chromium overlay cases without retries,
+skips or flaky outcomes on Flutter 3.44.2/Dart 3.12.2, Node.js 22.5.1 and system
+Chromium. Analysis, locked offline dependencies and 26 focused router tests pass.
+Independent native-source review approved test blob
+`5f623ed634d725ac9596b102861c3968855b7f3d`. Production and dependency bytes are
+unchanged. A temporary production mutation skipped Connections' gateway switch;
+both new cases rejected the original session at the replacement-session barrier.
+That mutation was restored byte-for-byte before rebuilding the final application.
+
+Initial attempts failed on unfocused/offscreen Flutter form semantics, a URL
+accessible name that changes with focus, mixed hook/directory ownership, startup
+redirects, and the compact selected-contact navigation path. The final fixture
+uses public form/selection controls and settled editor typing instead; these
+were harness corrections, not product fixes. Retained failures are private.
+
+This qualifies rendered switching between empty-credential synthetic saved hosts,
+not saved-secret isolation, cross-origin credential reuse, active-run connection
+switching, GTK HTTP/SSE or live authentication. Parent acceptance remains open.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -327,13 +365,13 @@ shell entries and retained draft/transcript through keyboard Close/Escape and
 framework Back, with an in-memory channel. It does not promote this browser's
 HTTP/SSE evidence to native transport proof.
 
-Rendered/saved connection switching and native streaming remain unqualified. The distinct-origin browser cases above cover
-only explicit channel replacement through the existing E2E hook. GTK now
+Saved-secret switching and native streaming remain unqualified. The distinct-origin
+hook cases and rendered empty-credential saved-host cases above have separate bounds. GTK now
 separately covers shell and
 chat-local slash/Tab-completion/Manage focus return. Browser Manage and keyboard
 suggestion recovery are covered above; browser direct Tab completion remains
 unsupported by its native-only shortcut gate. Android, physical keyboard/IME,
 screen readers and live Agent/provider behavior remain unqualified. The shared
 focus change was separately [requalified in GTK](chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification).
-Keep the original task open; next qualify rendered connection switching without
-repeating delivered matrices.
+Keep the original task open; next qualify active-run rendered connection switching
+without repeating delivered matrices.

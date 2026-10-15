@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/hermes_api.dart';
+import 'package:wing/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
 import 'package:wing/core/hermes/ssh/managed_ssh.dart';
 import 'package:wing/features/hermes_chat/providers/managed_ssh_connection_controller.dart';
 import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
@@ -69,6 +70,23 @@ class FakeChannel extends ChangeNotifier implements HermesChannel {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _HeldClearStore implements HermesServeRecoveryStore {
+  final entered = Completer<void>();
+  final release = Completer<void>();
+  @override
+  Future<void> clear() async {
+    if (!entered.isCompleted) {
+      entered.complete();
+      await release.future;
+    }
+  }
+
+  @override
+  Future<HermesServeRecoverySelection?> load() async => null;
+  @override
+  Future<void> save(HermesServeRecoverySelection selection) async {}
 }
 
 class FakeForward extends ManagedSshForward {
@@ -810,6 +828,94 @@ void main() {
       await tester.pumpAndSettle();
       expect(channel.state.connectedBaseUrl, 'https://example.invalid');
       await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      channel.dispose();
+    },
+  );
+  for (final dispose in [false, true]) {
+    test(
+      'SSH cancellation during secure recovery cleanup prevents late API reads; dispose=$dispose',
+      () async {
+        final store = _HeldClearStore();
+        var reads = 0;
+        final channel = HermesApiChannel(
+          serveRecoveryStore: store,
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              reads++;
+              throw StateError('Cancelled adoption must not read');
+            },
+          ),
+        );
+        final forward = FakeForward();
+        final controller = ManagedSshConnectionController(forward, channel);
+        final connecting = controller.connectSsh(
+          input,
+          verifyHostKey: (_, _) async => true,
+        );
+        forward.ready();
+        await store.entered.future;
+        if (dispose) {
+          controller.dispose();
+        } else {
+          unawaited(controller.cancel());
+        }
+        await Future<void>.delayed(Duration.zero);
+        store.release.complete();
+        expect(await connecting, false);
+        await Future<void>.delayed(Duration.zero);
+        expect(reads, 0);
+        expect(channel.state.status, HermesConnectionStatus.disconnected);
+        expect(forward.closes, 1);
+        if (!dispose) controller.dispose();
+        channel.dispose();
+      },
+    );
+  }
+  test(
+    'replacement during secure cleanup never reads the old SSH origin',
+    () async {
+      final store = _HeldClearStore();
+      final origins = <String>[];
+      final channel = HermesApiChannel(
+        serveRecoveryStore: store,
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            origins.add(uri.origin);
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' =>
+                '''{
+              "object":"hermes.api_server.capabilities",
+              "platform":"test","model":"test",
+              "auth":{"type":"bearer","required":true,"granted_scopes":[]},
+              "features":{},"endpoints":{}
+            }''',
+              '/api/sessions' => '{"sessions":[],"total":0}',
+              _ => throw StateError('Unexpected read'),
+            };
+          },
+        ),
+      );
+      final forward = FakeForward();
+      final controller = ManagedSshConnectionController(forward, channel);
+      final old = controller.connectSsh(
+        input,
+        verifyHostKey: (_, _) async => true,
+      );
+      forward.ready();
+      await store.entered.future;
+      final replacement = channel.connect(baseUrl: 'https://example.invalid');
+      store.release.complete();
+      await replacement;
+      expect(await old, false);
+      expect(channel.state.isConnected, true);
+      expect(channel.state.connectedBaseUrl, 'https://example.invalid');
+      expect(origins, isNotEmpty);
+      expect(origins, everyElement('https://example.invalid'));
+      expect(forward.closes, 1);
       controller.dispose();
       channel.dispose();
     },

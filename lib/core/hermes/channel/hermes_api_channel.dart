@@ -292,7 +292,6 @@ class HermesApiChannel extends ChangeNotifier
     String? apiKey,
     bool deferSessionSelection = false,
   }) async {
-    await _forgetServeRecovery();
     await _connect(
       baseUrl: baseUrl,
       apiKey: apiKey,

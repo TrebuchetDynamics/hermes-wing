@@ -15,6 +15,10 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Cancelling managed SSH while secure recovery cleanup is pending now revokes
+  Agent adoption before API reads begin. Disposing the controller has the same
+  protection, and replacement connections remain untouched.
+
 - Cancelling or disposing an adopted managed SSH connection now disconnects its
   owned Agent channel before releasing the local forwarding port. A replacement
   connection opened during teardown stays untouched. This closes stale connected

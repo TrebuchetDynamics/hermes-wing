@@ -353,6 +353,14 @@ successor own this gap; no credential mutation or new runtime check ran here.
 
 ## SSH private-key qualification
 
+Secure-cleanup cancellation adds three production-channel regressions in
+`test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`:
+cancel and controller disposal during held recovery-store cleanup prevent late
+API reads, while replacement reaches only its own origin. The focused channel,
+client, SSH and connection-control union passes 768 tests with eight opt-in SSH
+skips; analyzer and formatting pass on the reviewed source. Linux-hosted tests
+use synthetic transport responses, not a native/device/live SSH target.
+
 Adopted-connection retirement also has three deterministic controller regressions
 in `test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`:
 explicit cancel and controller disposal disconnect the owned Agent, and a new

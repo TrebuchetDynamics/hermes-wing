@@ -1369,6 +1369,12 @@ patches, personal credential discovery, service restarts or provider spending.
   Three new deterministic regressions cover cancellation, disposal and replacement
   during asynchronous teardown; the panel target passes 34 tests. Independent
   native source review approved the source/test hashes. Parent remains open.
+  Cleanup-wait cancellation: shared API connection ownership is now published
+  before secure recovery cleanup awaits; cancellation/disposal fences late reads
+  and a replacement retains ownership. Three production-channel regressions cover
+  held storage cleanup. Planner's call: repair this reproduced cancellation gap
+  before Android transport enablement. Parent Android/native/durable acceptance
+  and next action remain open; no live inference or platform qualification claimed.
   Dependencies: DOC-BACKEND-CONTRACT.
   Section: Next.
   Ownership: unclaimed in this index. Verify live tracker/continuation leases.

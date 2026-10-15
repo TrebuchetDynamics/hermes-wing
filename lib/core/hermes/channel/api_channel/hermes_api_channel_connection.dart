@@ -49,6 +49,9 @@ extension _ConnectionExtension on HermesApiChannel {
     HermesApiClient? client;
     var hasUnreconciledRun = false;
     try {
+      // Publish ownership before storage awaits so cancellation can revoke adoption.
+      await _forgetServeRecovery();
+      if (generation != _connectionGeneration) return;
       client = _clientBuilder(
         HermesApiConfig.fromBaseUrl(baseUrl, apiKey: apiKey),
       );

@@ -75,6 +75,12 @@ and exact channel origin, clears its credential references, and tears down only
 its owned transport on route/mode replacement. It must not disconnect a newer
 unrelated Agent connection. SSH teardown is not Agent Stop or authoritative run
 completion. Agent-owned work remains uncertain until authoritative readback.
+API adoption publishes its connecting generation before awaiting secure recovery
+cleanup. Cancellation or replacement during that wait revokes the old attempt
+before client construction or HTTP reads; controller disposal follows the same
+path. Three production-channel regressions hold that cleanup pending and exercise
+cancel, disposal and replacement. These are deterministic checks, not native SSH
+or Android transport qualification.
 
 Adoption-loss follow-through: the controller now watches lease loss before Agent
 connection completes, including its asynchronous preflight. Loss clears attempt

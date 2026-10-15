@@ -1375,6 +1375,13 @@ patches, personal credential discovery, service restarts or provider spending.
   held storage cleanup. Planner's call: repair this reproduced cancellation gap
   before Android transport enablement. Parent Android/native/durable acceptance
   and next action remain open; no live inference or platform qualification claimed.
+  Serve cleanup prerequisite: explicit serve entry now claims its connection
+  generation before secure cleanup. Five production-channel regressions cover
+  disconnect, API/serve replacement, abandoned setup and sanitized storage failure
+  without credential Retry. Planner's call: fix the reproduced three-obsolete-read
+  race in this shared seam before Android selection; retain the same next action
+  and all Android/native/durable acceptance above. Independent source review
+  approves the exact Dart hashes; focused final qualification is recorded separately.
   Dependencies: DOC-BACKEND-CONTRACT.
   Section: Next.
   Ownership: unclaimed in this index. Verify live tracker/continuation leases.

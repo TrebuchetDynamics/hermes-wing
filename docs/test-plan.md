@@ -353,6 +353,14 @@ successor own this gap; no credential mutation or new runtime check ran here.
 
 ## SSH private-key qualification
 
+The shared serve entry also has five production-channel cleanup regressions in
+`test/core/hermes/channel/hermes_serve_cleanup_ownership_test.dart`: disconnect,
+new API/serve ownership and abandoned setup prevent obsolete reads after storage
+cleanup; storage failure stays sanitized and cannot enable credential Retry.
+The original three ownership cases each made three obsolete reads before the fix.
+These Linux-hosted synthetic HTTP tests do not enable Android tunneled serve or
+qualify native SSH, durable restoration or live Agent access.
+
 Secure-cleanup cancellation adds three production-channel regressions in
 `test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`:
 cancel and controller disposal during held recovery-store cleanup prevent late

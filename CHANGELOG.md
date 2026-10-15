@@ -15,6 +15,10 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Explicit serve connection now claims ownership before secure recovery cleanup.
+  Cancellation, abandoned setup and newer API/serve connections prevent obsolete
+  reads; storage failures stay sanitized without enabling credential Retry.
+
 - Cancelling managed SSH while secure recovery cleanup is pending now revokes
   Agent adoption before API reads begin. Disposing the controller has the same
   protection, and replacement connections remain untouched.

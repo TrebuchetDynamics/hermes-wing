@@ -116,6 +116,13 @@ persist an SSH mapping.
 
 ## Android Agent transport boundary
 
+The explicit serve entry now claims its connection generation before awaiting
+secure recovery cleanup, matching the API adoption fence. Disconnect, newer
+API/serve intent and abandoned admission prevent obsolete credential-bearing reads.
+Storage failure stays sanitized and leaves no credential available for Retry.
+Five production-channel regressions cover this shared prerequisite; this does not
+select serve in the SSH controller or enable Android transport support.
+
 The current controller calls `HermesChannel.connect` with the forwarded origin
 and separately supplied Agent credential. Production `HermesApiChannel` uses its
 advertised health/capabilities/session REST contract. Supported profile/history,

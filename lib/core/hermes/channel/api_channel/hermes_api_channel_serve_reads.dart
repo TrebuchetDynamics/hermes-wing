@@ -7,6 +7,7 @@ extension _ServeReadsExtension on HermesApiChannel {
     bool Function()? canAccept,
     String profile = 'default',
     String? storedSession,
+    bool forgetRecovery = false,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
     final disconnected = _disconnect();
@@ -27,6 +28,11 @@ extension _ServeReadsExtension on HermesApiChannel {
         identical(_serveReader, reader) &&
         (canAccept?.call() ?? true);
     try {
+      if (forgetRecovery) {
+        // Claim the connection before storage awaits so newer intent can revoke it.
+        await _forgetServeRecovery();
+        if (!current()) return;
+      }
       reader = HermesWebReadClient.forLocalReads(
         origin: Uri.parse(baseUrl),
         credential: credential,

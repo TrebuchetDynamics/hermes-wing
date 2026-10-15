@@ -312,8 +312,12 @@ class HermesApiChannel extends ChangeNotifier
     bool Function()? canAccept,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
-    await _forgetServeRecovery();
-    await _connectServeReads(baseUrl, credential, canAccept: canAccept);
+    await _connectServeReads(
+      baseUrl,
+      credential,
+      canAccept: canAccept,
+      forgetRecovery: true,
+    );
   }
 
   Future<void> enableLocalServeChat() => _qualifyServeChat();

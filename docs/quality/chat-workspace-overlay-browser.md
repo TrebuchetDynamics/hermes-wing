@@ -222,6 +222,33 @@ This is rendered same-endpoint profile selection over synthetic HTTP, not connec
 replacement, profile switching during an active run, GTK profile-switch execution,
 real authentication or live Agent/provider qualification.
 
+## Distinct-connection owner replacement
+
+Four compiled cases replace the channel's connection while Settings or Profiles
+remains open, at 390/1280px and 200% text. The existing E2E connect hook calls the
+production `HermesApiChannel`; an intercepted distinct loopback origin supplies a
+new session and assistant history. Only synthetic read responses are used; this
+is not a rendered Connections selection, saved-host credential test or live Agent.
+After replacement settles, the modal must still be visible. Back, Forward/Escape
+and deliberate reopen/Close must retain the exact replacement session/state and
+original Chat URL, display its distinct history, exclude old history and issue
+zero API mutations. Assertions require reads from the replacement origin rather
+than accepting an unchanged original owner. The default browser runner includes
+these cases through the existing overlay spec.
+
+The rebuilt final matrix passed all 30 Chromium cases with zero retries, skips or
+flaky outcomes on Flutter 3.44.2/Dart 3.12.2 and Node.js 22.5.1. The 26 focused
+router tests and `flutter analyze --no-pub` passed. This is test-only follow-through;
+production source is unchanged and parent acceptance stays open.
+
+A compiled negative control made production reconnect a no-op when already
+connected. The compact Settings case failed the exact replacement-session barrier;
+three cases were not run after the failure limit. That temporary line was restored
+byte-for-byte before rebuilding the final candidate. An initial test-harness
+failure came from Flutter's duplicated Profiles tooltip name after shell rebuild;
+the helper now accepts the same bounded label duplication as Settings. No product
+validation or behavior was changed.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -229,8 +256,9 @@ shell entries and retained draft/transcript through keyboard Close/Escape and
 framework Back, with an in-memory channel. It does not promote this browser's
 HTTP/SSE evidence to native transport proof.
 
-Connection replacement, profile switching during an active run and native streaming
-remain unqualified. GTK now
+Rendered/saved connection switching, profile switching during an active run and
+native streaming remain unqualified. The distinct-origin browser cases above cover
+only explicit channel replacement through the existing E2E hook. GTK now
 separately covers shell and
 chat-local slash/Tab-completion/Manage focus return; browser Manage/Tab-completion,
 Android, physical keyboard/IME, screen readers and live Agent/provider behavior

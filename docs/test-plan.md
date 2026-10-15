@@ -39,8 +39,12 @@ original mounted workspace rather than a duplicate shell, and retain the new
 profile/session/history through deliberate reopen, Back/Forward and Escape with
 zero API mutations. Require explicit profile queries and exclude old history and
 active-row markers. Standalone Profiles must retain its existing Chat/Back path.
-Keep connection replacement, active-run profile switching and native streaming
-open under WING-TASK-408. Browser and
+The distinct-connection cases replace the production channel through the existing
+E2E hook while either overlay remains visible. Require a distinct intercepted
+loopback origin, exact new session/history through Back/Forward/Escape and Close,
+no old transcript and zero API mutations. This is not rendered Connections or
+saved-credential qualification. Keep rendered/saved connection switching,
+active-run profile switching and native streaming open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

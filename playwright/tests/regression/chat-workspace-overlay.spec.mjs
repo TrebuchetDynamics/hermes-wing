@@ -32,7 +32,7 @@ async function shellOpen(page, width, destination, actor) {
       else await page.getByText('Settings', { exact: true }).last().click();
     }
   } else {
-    returnFocus = await activate(page.getByRole('button', { name: destination === 'Settings' ? /^Settings(?: Settings)?$/ : 'Profiles', exact: true }));
+    returnFocus = await activate(page.getByRole('button', { name: destination === 'Settings' ? /^Settings(?: Settings)?$/ : /^Profiles(?: Profiles)?$/, exact: true }));
   }
   await expect(closeButton(page)).toBeVisible();
   return returnFocus;
@@ -121,6 +121,79 @@ for (const width of [390, 1280]) {
   });
 
   for (const destination of ['Settings', 'Profiles']) {
+    test(`${destination} retains replacement connection through overlay history at ${width}px/200% text`, async ({ page, request }) => {
+      expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
+      const replacementOrigin = new URL(APP);
+      replacementOrigin.hostname = 'localhost';
+      const session = 'synthetic-replacement-host-session';
+      const writes = [], replacementReads = [], errors = [];
+      page.on('pageerror', error => errors.push(error.name));
+      page.on('console', message => {
+        if (/overflowed|RenderFlex|EXCEPTION CAUGHT/.test(message.text())) errors.push('render error');
+      });
+      page.on('request', request => {
+        const url = new URL(request.url());
+        if (!/^\/(api|v1)\//.test(url.pathname)) return;
+        if (!['GET', 'OPTIONS'].includes(request.method())) writes.push({ method: request.method(), route: url.pathname });
+        if (url.origin === replacementOrigin.origin && request.method() === 'GET') replacementReads.push(url.pathname);
+      });
+      // A distinct loopback origin uses only intercepted synthetic reads, never another Agent.
+      await page.route(`${replacementOrigin.origin}/**`, async route => {
+        const url = new URL(route.request().url());
+        const headers = {
+          'access-control-allow-origin': new URL(APP).origin,
+          'access-control-allow-methods': 'GET, OPTIONS',
+          'access-control-allow-headers': '*',
+        };
+        if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+        expect(route.request().method()).toBe('GET');
+        if (url.pathname === '/api/sessions') return route.fulfill({ headers, json: {
+          object: 'list', offset: 0, limit: 50, has_more: false,
+          data: [{ id: session, title: 'Synthetic replacement host', source: 'e2e', model: 'hermes-agent' }],
+        } });
+        if (url.pathname === `/api/sessions/${session}/messages`) return route.fulfill({ headers, json: {
+          object: 'list', session_id: session,
+          data: [{ id: 'synthetic-replacement-host-reply', session_id: session, role: 'assistant', content: 'Synthetic replacement host history.' }],
+        } });
+        const response = await request.get(new URL(url.pathname + url.search, APP).href);
+        return route.fulfill({ response, headers: { ...response.headers(), ...headers } });
+      });
+      await page.setViewportSize({ width, height: 1400 });
+      await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-connection-overlay`);
+      await ready(page);
+      await page.evaluate(() => globalThis.wingE2EHermesConnect());
+      await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
+      expect(await state(page)).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false });
+      const location = page.url();
+      await shellOpen(page, width, destination);
+      // This existing seam replaces the production channel owner, not a rendered Connections action.
+      await page.evaluate(base => globalThis.wingE2EHermesConnect(base), replacementOrigin.origin);
+      await expect.poll(async () => (await state(page)).active_session_id).toBe(session);
+      await expect(closeButton(page)).toBeVisible();
+      const replacement = await state(page);
+      expect(replacement).toMatchObject({ status: 'connected', active_session_id: session, has_error: false });
+      const assertChat = async () => {
+        await expect(closeButton(page)).not.toBeVisible();
+        await expect(page.getByRole('group', { name: /Synthetic replacement host history\.$/ })).toBeVisible();
+        await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).not.toBeVisible();
+        expect(await state(page)).toEqual(replacement);
+        expect(page.url()).toBe(location);
+      };
+      await page.goBack();
+      await assertChat();
+      await page.goForward();
+      await expect(closeButton(page)).toBeVisible();
+      await page.keyboard.press('Escape');
+      await assertChat();
+      await shellOpen(page, width, destination);
+      await closeButton(page).click();
+      await assertChat();
+      expect(replacementReads).toContain('/api/sessions');
+      expect(replacementReads).toContain(`/api/sessions/${session}/messages`);
+      expect(writes).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+
     test(`${destination} keyboard shell entry retains chat through Back/Forward, Escape and Close at ${width}px/200% text`, async ({ page, request }, testInfo) => {
       expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
       const errors = [], writes = [], trace = [];

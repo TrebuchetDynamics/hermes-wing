@@ -4005,6 +4005,11 @@
         },
         {
           "kind": "executed",
+          "ref": "Distinct-connection replacement through existing E2E hook while Settings/Profiles remain open: exact new loopback-origin session/history survive Back/Forward/Escape/Close with zero API mutations; 30 rebuilt Chromium cases at390/1280px and200% text,26 router tests and flutter analyze --no-pub pass. Reconnect-no-op negative control detected; production bytes restored. docs/quality/chat-workspace-overlay-browser.md#distinct-connection-owner-replacement. Rendered/saved connection switching,active-run profile switching,new GTK,Android and live Agent NOT_CHECKED;parent open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "Independent native review run 422 approved 9f8bea8d0010c69cab743e8dc6d6c397dd21f29a; 16 focused tests, clean analyzer/formatting and two isolated GTK Linux journeys; docs/quality/profile-footer-native.md. Exact-source fast-forward origin/main delivery verified; recovery, physical-input, screen-reader, Android and live-Agent qualification remain open.",
           "result": "pass"
         },

@@ -363,126 +363,164 @@ known correction. This planning pass changes neither README nor the tutorial.
 
 ## Remaining README review: proof, readiness and useful workflow
 
-This continues the same review; preserve its accepted overall direction and keep
-README near its existing length. The supplied scores remain editorial judgments,
-not measured usability. Source/image inspection is at Wing `e0aebfc0`.
+### Current-source disposition and Conduit lessons
 
-### Historical evidence is not current availability
+The owner requests README improvement informed by
+[the supplied Conduit README](https://github.com/kaishi00/hermes-conduit/README.md)
+and the full editorial re-review. The supplied **7.5/10** and October 12/165-line
+snapshot are historical editorial judgments, not measured usability or current
+source dimensions. Preserve the accepted purpose, direct Agent ownership, honest
+preview, credential distinctions and security warnings; do not reopen them.
 
-A receipt's "not delivered" statement describes that receipt's revision/time, not
-current main. Before publishing status, compare its tested source/artifact with
-current implementation and delivery evidence. Separate implemented, fixture-tested,
-native-exercised and live-authenticated states. A newer commit proves delivery,
-not a missing live test; an older report proves neither current absence nor current
-qualification. Use "not verified by the evidence reviewed" when that is the limit.
+Inspected Wing base: `6125337d09627258063c44ebbddc8fbc15de923d`.
+The current README has 209 lines and getting-started has 311. Inspection of both
+tracked showcase PNGs confirms visible **DEMO DATA · SIMULATED SESSION**; the wide
+image also says **SIMULATED RUN** and **not live synchronization**. The original
+LIVE RUN contradiction is already repaired at the producer. The images still show
+**Gateway readiness / echo e2e**, dense desktop text and, in the wide image, the
+retired **Office** navigation entry. The remaining issue is useful, current proof,
+not a missing label. No new capture, build or live session ran in this plan.
 
-The beginner tutorial stays install → click → credential → success → recovery.
-Keep acceptance history under `docs/quality/`, linked through a separate Testing
-and evidence section in the documentation index rather than inline user steps.
-Do not rewrite historical receipts to make them appear to test current code.
+Current disposition of the supplied review:
 
-### P1: fix showcase credibility at the producer
+- Acquisition paths exist and connect instructions now obtain/open Wing first.
+  Improve scanning and reduce duplication; do not rebuild the solved prerequisite.
+- The tutorial no longer opens with worktree/receipt history. It remains long and
+  embeds route/grant details, key-storage rules and repeated readiness explanations.
+- A platform matrix already lives at
+  [Platform evidence and limits](../getting-started.md#platform-evidence-and-limits),
+  and README links there rather than using internal routes as the primary answer.
+  Keep this single user-facing owner; improve evidence precision, not create a twin.
+- The no-tools smoke and optional repository-summary milestone already exist.
+  Tighten the handoff and example wording; do not add a duplicate workflow.
+- Full-app SSH/native/live assertions still require matching target evidence.
+  Historical absence-of-delivery prose does not establish current main's absence.
 
-The actual tracked `assets/readme/showcase.png` was visually inspected. It shows
-**LIVE RUN**, **The same Hermes session on desktop and mobile**, a small/dense
-desktop view and mobile approval for **Command: echo e2e**. It contains no visible
-simulated-data label. The generator emits those labels in `composeShowcase` and
-`serve_web.mjs` supplies the presentation fixture. The external image embedded in
-the supplied review is not the source of this repository-image observation.
+Conduit source inspected: README revision
+[`e2e8209a61b7809f146a401b6854f8ee6e780f87`](https://github.com/kaishi00/hermes-conduit/blob/e2e8209a61b7809f146a401b6854f8ee6e780f87/README.md).
+The supplied GitHub `/README.md` URL was read through its raw-file equivalent;
+this pinned revision is the README's latest path commit observed during research,
+not a claim that another client's advertised features were executed.
 
-First change the shared generator to burn **DEMO DATA · SIMULATED SESSION** into
-all relevant exported crops, replace LIVE RUN with honest demo wording, and clarify
-that the paired views depict the same fixture scenario, not observed cross-device
-live synchronization. Fix the producer, not just README caption or PNG pixels.
-Then regenerate affected shared assets and inspect them at README/mobile display
-sizes. Preserve real UI captures, reduced motion and fail-on-error checks.
+Borrow Conduit's outcome-first opening, short **What it does → Requirements →
+Connecting** progression, distinct build instructions, and explicit distinction
+between server credentials and transport. Do not copy its same-database/cross-device
+promise, native dashboard port 9119/login/RPC contract, iOS/App Store status, OAuth,
+Cloudflare tokens, notifications/relay, CarPlay, privacy absolutes or feature list.
+Conduit is editorial prior art only; official `apps/desktop` remains the product
+reference and the connected Agent remains runtime authority. Its setup commands
+were inspected, not executed.
 
-The subsequent product-proof slice should use a recognizable synthetic repository
-summary task, readable tool-result context and phone-first attention—not `echo e2e`
-as the selling point. Keep changes isolated to presentation fixtures; never run
-that illustrative command or expose actual repositories/transcripts. Real end-to-end
-recording remains conditional on authorized live qualification, not fabricated proof.
+### Selected approach and planner calls
 
-### P1/P2: better first experience without an invented product demo
+This is a bounded onboarding refinement, not a new website or application design.
+Use the existing open `LANDING-PRODUCT-PROOF` for the composed README/tutorial/asset
+slice and `LANDING-PAGES-QUALITY` for independent artifact checks. Preserve completed
+`LANDING-FIRST-REPLY`, existing dependencies, queue order, focus and live-QA owners.
+No new IDs, implementation, dispatch, commits, publication or timers are authorized
+by this planning pass. Existing separately authorized work is not paused.
 
-For existing Hermes users, make **Set up your first chat** the primary README action
-and the honest connection-screen preview secondary. Lead with the improved product
-image, not a claim that a form demonstrates streaming/tools/approval/recovery.
-A future clearly simulated, read-only demo using shared real UI components remains
-Proposed. If later accepted, isolate its fixture channel, make mutation controls
-inert with clear explanations, collect no credentials and send no Agent/provider
-traffic. Do not add a demo backend, ship the E2E harness as production, or delay
-the real connection path for this optional feature.
+Planner calls, rejectable without changing the owner's requested outcome:
 
-### P2: publish a concise user-facing verification matrix
+1. Keep README around **160–180 lines**, with a benefit-led opening, existing
+   primary **Set up your first chat**, secondary honest preview, and three distinct
+   start choices. Put client acquisition/build before first-chat actions; remove
+   repeated setup prose instead of moving all technical detail into README.
+2. Keep `docs/getting-started.md` as the beginner tutorial and its existing platform
+   matrix as the user-facing support owner. Do not create `platform-support.md` or
+   another evidence ledger just because an earlier proposal named it. Keep exact
+   section anchors where incoming links exist; add no speculative legacy aliases.
+3. Tutorial spine: obtain/open Wing → prepare Agent → choose Local/SSH/Remote or
+   Android Termux → enter the right credential → no-tools first reply → optional
+   bounded repository summary → common errors → data/permissions and concise limits.
+   Separate advanced protocol/key/reference material with links to existing
+   [connection contracts](../product/desktop-connection-paths.md) and runbooks.
+   Exact grant/method inventories and receipt chronology belong in technical owners,
+   not the uninterrupted beginner steps. Keep route-specific SSH readiness nearby.
+4. Reuse Wing's current components, capture generator, dark presentation and
+   phone-attention composition. Prefer a readable synthetic demo-repository summary
+   and a clearly scoped read-only file-list approval over `echo e2e`. Make command
+   text unmistakably illustrative; never run it. Select a narrow readable crop
+   showing context/tool result/decision, not every desktop navigation control.
+   Recapture current UI so Office and other retired controls disappear. Keep
+   provenance burned into wide/mobile outputs and all failure/redaction guards.
+5. Keep this scope independent of a whole landing-page rebrand. Update shared
+   site assets/captions only where the same producer or changed links require it;
+   retain the wider existing landing acceptance rather than falsely close it from
+   README-only progress. No new interactive product demo or credential collection.
 
-Plan a maintained `docs/product/platform-support.md` user-facing owner, linked by
-README and getting-started instead of making `docs/product/routes.md` the primary
-support answer. This is planned publication, not an empty document created now.
-Keep routes as the internal specification and use existing quality reports as inputs.
+Rejected approaches: a copy-only caption patch leaves stale UI and toy content;
+importing Conduit's capabilities overstates Wing support; a full redesign increases
+scope without fixing the tutorial; deleting limitations hides risk. No ADR, new
+framework, dependency, backend, analytics or Agent mutation is needed.
 
-Rows: Chat; streaming/tools; approvals/Stop; SSH; voice/notifications; background
-recovery. Platform columns must separate Android, web, Linux and other named native
-targets, not merge native evidence with a browser viewport. Cells use plain states
-such as implemented, tested with simulated responses, live verified, experimental,
-unsupported or not verified by reviewed evidence. Link precise source/artifact,
-target/date and evidence for each claim. Distinguish rendering from authenticated
-operation; never derive live support from route availability, terminal SSH login,
-a historical report's silence, a screenshot or successful compilation.
+### Concrete acceptance and checks
 
-Place the SSH platform status next to setup instructions: interface implemented,
-fixture connection tested and real full-app authenticated SSH verified are separate
-facts. Browser SSH remains unsupported. Do not promote Linux/Android live readiness
-until matching current-source evidence exists; do not label it broken merely because
-an inspected receipt lacks that proof. Reuse existing live-QA ownership.
+A fresh reader must find a suitable client before connection/use, identify Agent
+versus provider credentials, and know the visible success/failure result without
+understanding worktrees, request grants or test receipts. Preserve cost, transport,
+trust, redaction and no-replay warnings. Unsupported browser SSH/OAuth and uncertain
+native SSH readiness remain explicit. Explain unknowns plainly, not as brokenness.
 
-### P2: add one optional useful workflow after the smoke prompt
+For Chat, streaming/tools, approvals/Stop, SSH, voice, notifications and recovery,
+keep platform evidence distinctions: implemented UI, simulated rendering/transport,
+native exercised and authenticated live verification are not interchangeable.
+Separate voice and notifications where their status differs. Link the actual
+source/target evidence, verify current inclusion, and keep formal chronology in
+`docs/quality/`. Neither screenshots nor a terminal SSH login qualify Wing live use.
 
-Keep the one-sentence/no-tools prompt as the connectivity milestone. Then offer a
-separate explicit action: ask Agent to summarize a deliberately granted demo Project
-or repository's structure, observe tool activity, and revisit the same conversation.
-Explain scope/permission and provider cost before sending; do not request secrets,
-unrestricted filesystem access or a destructive tool. Show approvals only when
-actually requested and tested; do not promise background completion/restoration
-or notification reliability before named-platform live qualification. A foreground
-return to history is not background/process-death acceptance.
+Retain the deliberate no-tools introduction prompt. The optional second milestone
+uses a non-sensitive Agent-granted demo Project, no secret reads or writes, provider
+cost warning, observed tool activity and foreground return to the exact session.
+Approvals are conditional on Agent actually requesting them; no guaranteed prompt,
+background completion, notifications or cross-device continuity claim is added.
 
-### P3: simpler words, same evidence boundary
+Verification, not an editorial score, is the acceptance metric:
 
-Prefer "tested with simulated Agent responses; full live workflow testing is
-incomplete" to "scoped fixture coverage" and "we haven't verified the whole
-chat-to-approval-to-reconnect workflow" to a qualification formula. Say signed
-packages/automatic updates are unavailable only after checking current distribution;
-"not verified" is not synonymous with "does not exist". Keep formal wording in
-quality records. Preserve known incoming anchors; add aliases only for evidenced
-links or deliberate stable navigation, not every former heading.
+- Count README lines against the 160–180 planner target; check user-path order,
+  anchors, prerequisites, safe recovery and no duplicate support owner.
+- Extend existing README/tooling contracts for semantic ordering, useful synthetic
+  content, per-crop provenance and absence of retired Office UI. Keep security and
+  unsupported-operation negatives; do not preserve obsolete text solely for tests.
+- Use `flutter test --no-pub test/tooling/readme_assets_contract_test.dart
+  test/tooling/wing_link_docs_contract_test.dart
+  test/tooling/plan_backlog_traceability_test.dart` and `git diff --check` for the
+  composed implementation. These are planned implementation checks, not passes here.
+- If capture fixture/component wiring changes, run its nearest regression before
+  `npm run readme:assets`; validate matching Flutter 3.44.2 and Node 22. Inspect
+  wide and narrow assets at real README display sizes, plus keyboard/zoom/reduced
+  motion for any changed site path. Do not substitute browser viewport evidence
+  for Android/native or infer live success from deterministic captures.
+- `LANDING-PAGES-QUALITY` retains fresh assembled-artifact subpath/CTA/image checks,
+  console/same-origin error handling and exact artifact identity. Use its existing
+  producer; a public cached site is not the changed candidate. No deployment here.
 
-### Queue ownership and checks
+Current tests already assert simulation labels, honest preview, client acquisition,
+no-tools-before-summary ordering and guide anchors. The historical two failing text
+assertions recorded above describe the older planning checkpoint, not current
+failure proof. Reuse input-matched evidence or run affected checks on the eventual
+implementation; never remove those negative boundaries to make copy shorter.
 
-The tutorial/order, CTA, readiness/SSH status and generator-provenance work for
-this continuation is complete under archived `LANDING-FIRST-REPLY`. Keep later
-landing copy and asset changes within the open product-proof and Pages-quality
-owners; do not create a duplicate first-reply task.
-`LANDING-PRODUCT-PROOF` owns the more compelling task/crop/composition and share
-assets. `LANDING-PAGES-QUALITY` retains artifact-level checks. No new tasks,
-focus/status/dependency changes, workers or timer are introduced.
-
-Acceptance: every standalone image carries legible simulation provenance; generator
-and presentation fixtures remain deterministic/redacted; claimed support has exact
-platform/source-bound evidence; no internal receipt chronology appears in tutorial
-steps; optional tools are deliberate and bounded. Add focused provenance/matrix/link
-regressions during implementation. Regeneration via `npm run readme:assets` plus
-browser/visual recapture is future verification, not performed by this planning
-pass. The already recorded stale README/Termux text assertions remain failures to
-reconcile without deleting security coverage. No overall visual/accessibility PASS
-or real authenticated Android/desktop/SSH outcome is claimed from this inspection.
+Existing user order remains `LANDING-PAGES-QUALITY` before `LANDING-PRODUCT-PROOF`;
+the former can prepare focused artifact checks independently, and the latter owns
+the minimal README/tutorial/current-image batch. This plan does not reprioritize
+either task or turn a whole-site rebrand into a prerequisite for README progress.
+Preserve the product-proof parent until its remaining responsive site/share
+acceptance passes. No unmet product question requires an interview. An independent
+read-only builder check of the revised plan and both task bodies reported
+“nothing important left.” This is planning readiness, not implementation or test
+acceptance.
 
 ## Verification configuration and limits
 
 A cheap numeric proxy is **onboarding readiness points**: on-page API enablement,
 exact Wing capability prerequisite, browser CORS explanation and first-reply success
-criterion. Baseline is **0 of 4** at inspected source. Target **4 of 4** is content
-coverage only; passing it cannot establish onboarding quality or live success.
+criterion. The original source baseline was **0 of 4**. At the current
+`6125337d` inspection, the same read-only command returns **4 of 4**. This is
+already-delivered content coverage, not a reason to repeat first-reply work; it
+cannot measure tutorial readability, useful imagery, onboarding quality or live
+success. The remaining work uses the observable acceptance above, not a fabricated
+conversion rate or a fresh editorial score.
 
 ```text
 Goal: Existing Hermes users choose the right connection route and reach first reply.

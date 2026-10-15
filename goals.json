@@ -5745,6 +5745,11 @@
         },
         {
           "kind": "inspection",
+          "ref": "docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [6125337d current README/guide and both images inspected; Conduit README e2e8209a61b7809f146a401b6854f8ee6e780f87 editorial prior art only; remaining copy/current-proof gaps]",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
           "ref": "docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [actual showcase image and producer at e0aebfc0; no live qualification]",
           "result": "pass"
         }
@@ -6831,7 +6836,6 @@
       "MT-VERIFY-BROWSER-GATES",
       "SECURITY-RETAINED-RELEASE-AUDIT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
-      "VERIFY-DESKTOP-NATIVE-DELIVERY",
       "VERIFY-LIVE-WORKFLOW-RECOVERY",
       "VERIFY-OMNIROUTE-NODE22-CLOSURE",
       "FILES-TERMINAL-BROWSE",
@@ -6847,7 +6851,6 @@
       "CONNECTION-LINK-RETIREMENT",
       "CONNECTION-OWNER-RECONNECT",
       "CONNECTION-SETUP-AUTH-MATRIX",
-      "WING-TASK-407",
       "DOC-PARITY-TAB-CONTRACT",
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "DOC-M3-CONTRACT-CHECKPOINT",
@@ -6884,12 +6887,13 @@
       "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
       "LANDING-PRODUCT-PROOF",
+      "DOC-M2-INODE-POLICY-EVIDENCE",
+      "DOC-API-DEVICE-SELF-CONFORMANCE",
+      "DOC-API-PROTOCOL-ERROR-EVIDENCE",
+      "VERIFY-DESKTOP-NATIVE-DELIVERY",
       "VERIFY-PERSONA-LIVE-COMPATIBILITY",
       "VERIFY-M4-LIVE-INVENTORY",
       "VERIFY-SHELL-NATIVE-INPUT",
-      "DOC-API-DEVICE-SELF-CONFORMANCE",
-      "DOC-API-PROTOCOL-ERROR-EVIDENCE",
-      "DOC-M2-INODE-POLICY-EVIDENCE",
       "M2-DEVICE-QUALIFICATION",
       "VERIFY-M6-ANDROID-INTEGRATED"
     ]
@@ -7042,6 +7046,16 @@
       "section": "Next",
       "status": "open",
       "title": "Implement owner-safe managed SSH disconnect and reconnect"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CPU-ENVELOPE-PROOF"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-INODE-POLICY-EVIDENCE",
+      "section": "Next",
+      "status": "open",
+      "title": "Assess the additional scratch inode-policy prerequisite"
     },
     {
       "depends_on": [],
@@ -7468,16 +7482,6 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Map profile-list protocol error precedence"
-    },
-    {
-      "depends_on": [
-        "DOC-M2-CPU-ENVELOPE-PROOF"
-      ],
-      "goal": "M2",
-      "id": "DOC-M2-INODE-POLICY-EVIDENCE",
-      "section": "Needs decision",
-      "status": "open",
-      "title": "Assess the additional scratch inode-policy prerequisite"
     },
     {
       "depends_on": [],

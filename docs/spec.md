@@ -219,6 +219,9 @@ native storage and full-app qualification remain open. The
 and [pinned source comparison](quality/graphify-wing-recomparison.md) for the
 attempt-scoped Linux file picker and Android document-picker acceptance.
 Neither terminal OpenSSH nor widget tests qualify those native application paths.
+The [bounded forwarding contract](security/managed-ssh-forward-contract.md) defines
+trust, credential acquisition, cancellation, ephemeral/durable identity and the
+separate Android tunneled-serve implementation boundary; it enables no new transport.
 
 1. Select an explicit endpoint and authenticate directly to Hermes Agent.
    No management connection, credential or fallback is offered.

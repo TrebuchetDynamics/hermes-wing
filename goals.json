@@ -7040,14 +7040,6 @@
       "title": "Map hostile-content rejection for one permitted artifact type"
     },
     {
-      "depends_on": [],
-      "goal": "REMOTE-BACKENDS",
-      "id": "DOC-BACKEND-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Define and review the bounded native SSH-forwarding contract"
-    },
-    {
       "depends_on": [
         "BACKEND-SSH-CONNECT"
       ],
@@ -7660,6 +7652,14 @@
       "section": "Done",
       "status": "done",
       "title": "Verify owned code-first HTTP contract against handlers"
+    },
+    {
+      "depends_on": [],
+      "goal": "REMOTE-BACKENDS",
+      "id": "DOC-BACKEND-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Define and review the bounded native SSH-forwarding contract"
     },
     {
       "depends_on": [],

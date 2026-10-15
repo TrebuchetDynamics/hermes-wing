@@ -5520,3 +5520,46 @@ Source section: Now / Next
   workspace activity before adoption; this documentation pass assigns no worker.
 
 <!-- End archived WING-TASK-407. -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-BACKEND-CONTRACT** — Goal: REMOTE-BACKENDS. Define and review the
+  bounded native SSH-forwarding contract using the completed Desktop research.
+  Payoff: review the implemented forwarding boundary without repeating research
+  or treating unreviewed source as an approved native contract.
+  Sources: [source comparison](docs/product/desktop-connection-paths.md),
+  [native boundary](docs/adr/client.md#decision),
+  [connection design](docs/spec.md#connection-path-design).
+  Scope: one fixed forwarding operation to an already-configured Agent. Review
+  the existing Dart TCP adapter, typed network bounds, credential acquisition,
+  explicit host-key trust, loopback binding, deadlines, durable host identity, ephemeral port mapping,
+  cancellation/cleanup and supported-platform/removal conditions.
+  Acceptance: reviewed contract and failure oracles preserve direct Agent traffic,
+  separate Wing Link credentials, no shell and immutable Agent source. Resolve
+  local key selection against existing path restrictions rather than assuming an
+  exception. The current key reader's size bounds and picker cancellation fences
+  remain acceptance in BACKEND-SSH-KEY-AUTH. See the
+  [source comparison](docs/quality/graphify-wing-recomparison.md).
+  Keep remote bootstrap and Docker/WSL contracts separate.
+  Do not repeat the completed Desktop trace or substitute another investigation
+  chain. This is the sole open contract task for REMOTE-BACKENDS.
+  Dependencies: None.
+  Section: Done.
+  Ownership: completed by Wing coordinator; independent native source review approved.
+  Checks: `git diff --check`; verify cited source/contract links and exact Android SSH/Agent operation/authentication bounds against the unmodified reference; review existing SSH failure tests without claiming native execution.
+  Android focus: review the existing fixed forward and the actual authenticated
+  chat/profile operation path on Android, not just TCP/health. Keep ticket/RPC versus
+  REST scope explicit and identify the exact safe existing seam before enabling
+  an Android tunneled serve path. Record unsupported operations, not new authority.
+  Next action: review these implemented boundaries and failure oracles once; do not
+  start a fresh research chain or wait for live credentials to review source.
+  Evidence: [bounded contract](docs/security/managed-ssh-forward-contract.md),
+  reviewed against Wing `bfba2dede34612a42d971fd674effdd0f0458815` and the pinned
+  unmodified official Agent reference. Focused adapter/form/panel/provider/key tests
+  passed: 62 passes, 8 opt-in loopback SSH skips. Offline locked dependencies,
+  `flutter analyze --no-pub` and `git diff --check` passed. No runtime implementation
+  changed; native application, durable SSH restoration and Android tunneled-serve
+  qualification remain open.

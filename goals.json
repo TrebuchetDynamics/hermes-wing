@@ -4005,6 +4005,11 @@
         },
         {
           "kind": "executed",
+          "ref": "Browser Manage and Tab-traversal/Enter suggestion recovery at390/1280px and200% text: seed caller-owned composer focus before shared overlay push; six new cases assert automatic focus and exact draft/transcript/state/URL through Close/Escape/Back/Forward with zero writes. 36 rebuilt Chromium cases,84 router/shell-focus/profile-picker regressions,flutter analyze --no-pub and formatting pass. Pre-fix history focus regression retained; no focus bypass in final tests. docs/quality/chat-workspace-overlay-browser.md#chat-local-manage-and-keyboard-suggestion-recovery. Direct Tab execution native-only;new GTK,Android,active-run profile switching,rendered/saved connection switching and live Agent NOT_CHECKED;parent open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "Distinct-connection replacement through existing E2E hook while Settings/Profiles remain open: exact new loopback-origin session/history survive Back/Forward/Escape/Close with zero API mutations; 30 rebuilt Chromium cases at390/1280px and200% text,26 router tests and flutter analyze --no-pub pass. Reconnect-no-op negative control detected; production bytes restored. docs/quality/chat-workspace-overlay-browser.md#distinct-connection-owner-replacement. Rendered/saved connection switching,active-run profile switching,new GTK,Android and live Agent NOT_CHECKED;parent open.",
           "result": "pass"
         },

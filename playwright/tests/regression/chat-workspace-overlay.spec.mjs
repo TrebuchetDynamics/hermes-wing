@@ -4,7 +4,7 @@ import { keyboardActor } from '../../support/inventory_keyboard.mjs';
 
 test.describe.configure({ retries: 0 });
 const draft = 'Synthetic retained overlay draft';
-const closeButton = page => page.getByRole('button', { name: 'Close', exact: true });
+const closeButton = page => page.getByRole('button', { name: /^Close(?: Close)?$/, exact: true });
 const state = page => page.evaluate(() => JSON.parse(globalThis.wingE2EHermesStateSummary()));
 
 async function ready(page) {
@@ -119,6 +119,93 @@ for (const width of [390, 1280]) {
     expect(writes).toEqual([]);
     expect(errors).toEqual([]);
   });
+
+  for (const [entry, destination] of [['keyboard suggestion', 'Settings'], ['keyboard suggestion', 'Profiles'], ['manage', 'Profiles']]) {
+    test(`${destination} ${entry} entry retains focus and history state at ${width}px/200% text`, async ({ page, request }, testInfo) => {
+      expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
+      const writes = [], errors = [];
+      page.on('pageerror', error => errors.push(error.name));
+      page.on('console', message => {
+        if (/overflowed|RenderFlex|EXCEPTION CAUGHT/.test(message.text())) errors.push('render error');
+      });
+      page.on('request', request => {
+        const route = new URL(request.url()).pathname;
+        if (/^\/(api|v1)\//.test(route) && request.method() !== 'GET') writes.push({ method: request.method(), route });
+      });
+      if (entry === 'manage') {
+        await page.route(url => url.pathname === '/v1/capabilities', async route => {
+          const response = await route.fetch(), base = await response.json();
+          await route.fulfill({ response, json: {
+            ...base,
+            profile_context: { type: 'query', name: 'profile', required: true, default_profile_id: 'default' },
+            auth: { ...base.auth, granted_scopes: [...base.auth.granted_scopes, 'profiles:read'] },
+            endpoints: { ...base.endpoints, profiles: { method: 'GET', path: '/api/profiles', profile_scoped: false, required_scopes: ['profiles:read'] } },
+          } });
+        });
+        await page.route(url => url.pathname === '/api/profiles', route => route.fulfill({ json: { data: [
+          { id: 'default', name: 'Home profile', revision: 'r1' },
+        ] } }));
+      }
+      await page.setViewportSize({ width, height: 1400 });
+      await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-controls-overlay`);
+      await ready(page);
+      await page.evaluate(() => globalThis.wingE2EHermesConnect());
+      await expect.poll(async () => (await state(page)).active_session_id).toBe('e2e-hermes-session');
+      await page.evaluate(() => globalThis.wingE2EHermesLoadDefaultProfileInventory());
+      await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
+      const composer = page.getByRole('textbox', { name: /^(?:Message (?:Hermes|Home profile)…)?$/ });
+      await composer.click();
+      await page.locator('input:focus, textarea:focus').fill(draft);
+      const before = await state(page), location = page.url();
+      expect(before).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false });
+      const expectedDraft = entry === 'manage' ? draft : '';
+      const open = async () => {
+        // Park the pointer away from the previous Close tooltip before keyboard entry.
+        await page.mouse.move(0, 0);
+        if (entry === 'manage') {
+          await page.getByRole('button', { name: width < 480 ? /^Switch profile: Home profile(?: Switch profile: Home profile)?$/ : 'Home profile', exact: true }).click();
+          await page.getByRole('button', { name: 'Manage profiles', exact: true }).click();
+        } else {
+          await page.locator('input:focus, textarea:focus').fill(destination === 'Settings' ? '/sett' : '/prof');
+          const suggestion = page.getByRole('button', { name: new RegExp(`^/${destination.toLowerCase()} `) });
+          await expect(suggestion).toBeVisible();
+          // Web preserves Tab traversal; direct Tab execution is native-desktop-only.
+          const actor = keyboardActor(page, testInfo, []);
+          await actor.press('Tab');
+          await expect(closeButton(page)).not.toBeVisible();
+          await expect(composer).toHaveValue(destination === 'Settings' ? '/sett' : '/prof');
+          const name = (await suggestion.getAttribute('aria-label') ?? await suggestion.textContent()).replace(/\s+/g, ' ').trim();
+          await actor.reach('button', name);
+          await actor.press('Enter');
+        }
+        await expect(closeButton(page)).toBeVisible();
+        await expect(page.getByRole('heading', { name: destination, exact: true })).toBeVisible();
+        await expect(composer).not.toBeVisible();
+      };
+      const assertChat = async () => {
+        await expect(closeButton(page)).not.toBeVisible();
+        await expect(page.locator('input:focus, textarea:focus')).toHaveValue(expectedDraft);
+        await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
+        expect(await state(page)).toEqual(before);
+        expect(page.url()).toBe(location);
+      };
+      for (const dismissal of ['close', 'escape', 'back']) {
+        await test.step(dismissal, async () => {
+          await open();
+          if (dismissal === 'close') await closeButton(page).click();
+          else if (dismissal === 'escape') await page.keyboard.press('Escape');
+          else await page.goBack();
+          await assertChat();
+        });
+      }
+      await page.goForward();
+      await expect(closeButton(page)).toBeVisible();
+      await page.keyboard.press('Escape');
+      await assertChat();
+      expect(writes).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+  }
 
   for (const destination of ['Settings', 'Profiles']) {
     test(`${destination} retains replacement connection through overlay history at ${width}px/200% text`, async ({ page, request }) => {

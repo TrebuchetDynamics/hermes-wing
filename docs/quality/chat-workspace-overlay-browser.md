@@ -249,6 +249,44 @@ failure came from Flutter's duplicated Profiles tooltip name after shell rebuild
 the helper now accepts the same bounded label duplication as Settings. No product
 validation or behavior was changed.
 
+## Chat-local Manage and keyboard suggestion recovery
+
+Six additional compiled cases exercise the rendered profile picker's **Manage
+profiles** action and Settings/Profiles suggestion activation by Tab traversal and
+Enter, at 390/1280px and 200% text. Bootstrap alone uses the existing synthetic
+connection/default-inventory hooks; Manage uses the same advertised synthetic
+profile-read contract as the rendered profile-switch cases. Direct Tab execution
+from the composer remains native-desktop-only: web preserves browser traversal,
+and the tests assert Tab alone neither executes the suggestion nor clears its
+prefix. This is an accessible browser path, not web Tab-completion parity.
+
+Close, Escape, browser Back and Forward/Escape must restore the composer
+**before any compensating input**. Manage retains the unsent draft; local command
+execution deliberately clears its prefix. The canonical transcript, exact channel
+state and complete Chat URL remain unchanged, with zero API mutations. The default
+browser runner already selects the expanded spec.
+
+These cases reproduced a browser-history focus defect: explicit pop returned focus,
+but history restoration could retain a removed suggestion or profile-picker control
+as the underlying route's focus target. The shared overlay opener now requests the
+caller-owned return focus before pushing, so Navigator retains that target for
+history restoration. Its existing mounted/current-route check still protects the
+post-pop request. Shell entries omit that optional focus node and keep their
+originating-control behavior. No Agent/transport or profile-selection behavior changes.
+
+Initial diagnostics also attempted an invalid unfocused semantics-textarea draft
+read. That did not prove data loss: the rendered draft remained visible. The final
+regression reads the focused editor only after asserting automatic return focus;
+there is no focus-assertion bypass. Waiting for profile-picker route disposal did
+not repair the defect and that experimental production change was removed. The
+pre-fix failing assertions and final source-bound logs are retained privately.
+
+The rebuilt application passes all 36 Chromium cases with zero retries, skips or
+flaky outcomes on Flutter 3.44.2/Dart 3.12.2 and Node.js 22.5.1. Analysis, Dart
+formatting and 84 focused router, shell-focus and profile-picker regressions pass.
+The six new cases pass with all automatic-focus assertions enabled, including
+Back and Forward/Escape; the source change is two lines in the shared opener.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -260,7 +298,9 @@ Rendered/saved connection switching, profile switching during an active run and
 native streaming remain unqualified. The distinct-origin browser cases above cover
 only explicit channel replacement through the existing E2E hook. GTK now
 separately covers shell and
-chat-local slash/Tab-completion/Manage focus return; browser Manage/Tab-completion,
-Android, physical keyboard/IME, screen readers and live Agent/provider behavior
-remain unqualified. Keep the original task and acceptance open; next qualify
-remaining owner-switching behavior, without repeating these matrices.
+chat-local slash/Tab-completion/Manage focus return. Browser Manage and keyboard
+suggestion recovery are covered above; browser direct Tab completion remains
+unsupported by its native-only shortcut gate. Android, physical keyboard/IME,
+screen readers and live Agent/provider behavior remain unqualified. This focus
+change has not been re-exercised in GTK. Keep the original task and acceptance
+open; next qualify remaining owner-switching behavior without repeating these matrices.

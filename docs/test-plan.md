@@ -43,7 +43,13 @@ The distinct-connection cases replace the production channel through the existin
 E2E hook while either overlay remains visible. Require a distinct intercepted
 loopback origin, exact new session/history through Back/Forward/Escape and Close,
 no old transcript and zero API mutations. This is not rendered Connections or
-saved-credential qualification. Keep rendered/saved connection switching,
+saved-credential qualification. Browser Manage and Tab-traversal/Enter suggestion
+cases must restore composer focus before any editor click after Close, Escape,
+Back and Forward/Escape, retaining Manage's draft and the exact transcript/state/URL
+with zero mutations. Tab alone must preserve browser traversal and the command
+prefix; direct Tab execution remains native-desktop-only. Seed the caller-owned
+return focus before pushing the overlay so history restores it too. Keep
+rendered/saved connection switching,
 active-run profile switching and native streaming open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 

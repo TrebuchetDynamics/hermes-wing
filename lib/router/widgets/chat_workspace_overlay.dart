@@ -24,6 +24,8 @@ class ChatWorkspaceOverlay extends StatelessWidget {
         path == AppRoutes.settingsVoice ||
         path == AppRoutes.settingsDiagnostics;
     if (isOverlay && GoRouterState.of(context).uri.path == AppRoutes.hermes) {
+      // History restores Navigator focus without completing the original push.
+      returnFocus?.requestFocus();
       await context.push<void>(location);
       if (context.mounted && ModalRoute.of(context)?.isCurrent == true) {
         returnFocus?.requestFocus();

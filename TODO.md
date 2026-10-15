@@ -600,10 +600,12 @@ before their goals can become `met`.
   Partial delivery: [compiled overlay browser evidence](docs/quality/chat-workspace-overlay-browser.md)
   adds eight Settings/Profiles shell-history and disconnected deep-link cases at
   compact/wide widths and 200% text; included in the default browser suite.
-  No production behavior changed. Stream/owner replacement, chat-local entries,
-  automatic return focus and the isolated Linux journey remain unqualified.
-  Next action: extend the same production-path suite to stream/owner replacement,
-  then execute the native journey; do not repeat this bounded browser matrix.
+  Four additional compiled cases retain the pending reasoning SSE stream through
+  Back/Forward and consume completion while the overlay stays visible; one deliberate
+  Send is the only browser mutation. No production behavior changed. Owner replacement,
+  chat-local entries, automatic return focus and the isolated Linux journey remain
+  unqualified. Next action: qualify owner replacement in the same production-path
+  suite, then execute the native journey; do not repeat the delivered browser matrix.
 
 ### Terminal working-directory files (planned)
 

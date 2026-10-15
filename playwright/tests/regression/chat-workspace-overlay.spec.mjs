@@ -81,6 +81,57 @@ for (const width of [390, 1280]) {
       expect(errors).toEqual([]);
     });
 
+    test(`${destination} receives stream completion while hidden at ${width}px/200% text`, async ({ page, request }) => {
+      expect((await request.post(`${APP}e2e/hermes/reasoning-disclosure`)).ok()).toBe(true);
+      const writes = [], errors = [];
+      page.on('pageerror', error => errors.push(error.name));
+      page.on('console', message => {
+        if (/overflowed|RenderFlex|EXCEPTION CAUGHT/.test(message.text())) errors.push('render error');
+      });
+      page.on('request', request => {
+        const route = new URL(request.url()).pathname;
+        if (/^\/(api|v1)\//.test(route) && request.method() !== 'GET') writes.push({ method: request.method(), route });
+      });
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-stream-overlay`);
+      await ready(page);
+      await page.evaluate(() => globalThis.wingE2EHermesConnect());
+      const composer = page.getByRole('textbox', { name: 'Message Hermes…', exact: true });
+      await expect(composer).toBeVisible();
+      await composer.click();
+      const prompt = 'Synthetic overlay streaming request';
+      await page.locator('input:focus, textarea:focus').fill(prompt);
+      await page.getByRole('button', { name: 'Send', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).toBeVisible();
+      const running = await state(page);
+      expect(running).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false, last_turn_status: 'streaming' });
+      const location = page.url();
+      await shellOpen(page, width, destination);
+      await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).not.toBeVisible();
+      expect(await state(page)).toEqual(running);
+      await page.goBack();
+      await expect(closeButton(page)).not.toBeVisible();
+      await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).toBeVisible();
+      expect(await state(page)).toEqual(running);
+      await page.goForward();
+      await expect(closeButton(page)).toBeVisible();
+      // Release only the synthetic server; the mounted production channel consumes SSE.
+      const completed = await request.post(`${APP}e2e/hermes/reasoning-disclosure/complete`);
+      expect(completed.ok()).toBe(true);
+      expect(await completed.json()).toEqual({ run_id: 'run_1', session_id: 'e2e-hermes-session' });
+      await expect.poll(async () => (await state(page)).last_turn_status).toBe('completed');
+      await expect(closeButton(page)).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(closeButton(page)).not.toBeVisible();
+      await expect(page.getByRole('button', { name: 'Thought', exact: true })).toBeVisible();
+      await expect(page.getByRole('group', { name: /Hermes echo: Synthetic overlay streaming request$/ })).toBeVisible();
+      await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
+      expect(page.url()).toBe(location);
+      expect(await state(page)).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false, last_turn_status: 'completed' });
+      expect(writes).toEqual([{ method: 'POST', route: '/v1/runs' }]);
+      expect(errors).toEqual([]);
+    });
+
     test(`direct ${destination} deep link returns to disconnected chat at ${width}px/200% text`, async ({ page }, testInfo) => {
       const writes = [];
       page.on('request', request => {

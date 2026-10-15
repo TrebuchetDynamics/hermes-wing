@@ -50,11 +50,32 @@ Node.js 22.5.1 and system Chromium:
   expectation, and Escape outside the shared actor's allowed keys) were repaired.
   They are not product failures or passing acceptance evidence.
 
+## Streaming follow-through
+
+Four additional compiled cases exercise Settings and Profiles at both widths and
+200% text. A deliberate rendered Send starts the existing synthetic reasoning SSE
+scenario through the production HTTP channel. The tests require a streaming turn,
+open the overlay, traverse browser Back/Forward while the same stream remains
+active, then release the synthetic server while the overlay is still visible.
+The channel must consume completion before dismissal. Escape returns to the exact
+Chat URL, completed reasoning and rendered reply/history. The browser must issue
+exactly one run submission and no approval, Stop or other mutation.
+
+The synthetic server release is a test-controller operation, not a Wing approval
+or live inference. This covers a pending reasoning stream and terminal reply burst,
+not progressive token pacing or an actual provider. No new hook, fixture protocol,
+dependency or production Dart behavior was added. The existing default runner
+already selects this suite.
+
+A compiled negative control changed only retained `push` to replacing `go`.
+Three streaming cases rejected the lost return URL; compact Settings remained
+green. Source was restored byte-for-byte before rebuilding the final application.
+This detects navigation loss, not every possible stream interruption.
+
 ## Remaining acceptance
 
-No production Dart source changed. Active streaming, owner replacement, chat-local
-slash/Manage entries, automatic focus restoration, the isolated Linux app journey,
-Android, physical keyboard/IME, screen readers and live Agent/provider behavior
-are not qualified by this browser batch. Existing widget evidence is not promoted
-to those targets. Keep the original task and its acceptance open; next extend the
-same suite to streaming/owner replacement and execute the separate native journey.
+Owner replacement, chat-local slash/Manage entries, automatic focus restoration,
+the isolated Linux app journey, Android, physical keyboard/IME, screen readers and
+live Agent/provider behavior remain unqualified. Existing widget evidence is not
+promoted to those targets. Keep the original task and its acceptance open; next
+qualify owner replacement and execute the separate native journey.

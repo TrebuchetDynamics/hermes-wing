@@ -131,6 +131,32 @@ This qualifies keyboard shell entry and existing modal keyboard dismissal in
 Chromium, not automatic shell return focus, visible focus styling, keyboard-only
 bootstrap, Linux GTK keyboard entry or physical input.
 
+## Browser shell-return focus follow-through
+
+The four keyboard shell-history cases now capture the originating control's
+actual rendered role/name before entry and assert automatic DOM focus there after
+browser Back, Forward followed by Escape, and keyboard Close. Compact Settings
+returns to More, not its dismissed sheet action. No compensating pointer or
+keyboard input precedes these assertions. Draft readback occurs after the last
+return, so inspecting the editor cannot change the focus remembered by Forward.
+
+All 20 compiled Chromium overlay cases passed at 390/1280px and 200% text, with
+zero retries, on Flutter 3.44.2/Dart 3.12.2 and Node.js 22.5.1. Analyzer and all
+24 focused router tests passed. Independent native-source review approved the exact
+spec. No production behavior, fixture protocol, dependency or capability changed.
+The initial attempt passed 16 cases; four failed because clicking the composer
+between Back and Forward changed the expected return focus. Removing that
+intermediate input retained final draft readback and tested an uninterrupted
+shell-focus journey instead; this was a harness correction, not a product fix.
+
+A rebuilt negative control cleared focus before the production overlay push.
+Compact Profiles failed at automatic focus return after Back; compact Settings
+passed and the remaining two cases were not run after the first failure. An
+earlier mutation clearing focus only after the overlay future completed was not
+detected by the four cases. These are bounded sensitivity checks, not exhaustive
+focus-defect coverage. Production source was restored byte-for-byte for the final
+rebuild and browser run.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -138,9 +164,9 @@ shell entries and retained draft/transcript through keyboard Close/Escape and
 framework Back, with an in-memory channel. It does not promote this browser's
 HTTP/SSE evidence to native transport proof.
 
-Profile/connection replacement, late old-run completion after replacement, shell
-return focus and native streaming remain unqualified. GTK now separately covers
+Profile/connection replacement, late old-run completion after replacement and
+native streaming remain unqualified. GTK now separately covers shell and
 chat-local slash/Tab-completion/Manage focus return; browser Manage/Tab-completion,
 Android, physical keyboard/IME, screen readers and live Agent/provider behavior
 remain unqualified. Keep the original task and acceptance open; next qualify
-remaining owner-switching and shell-focus behavior, without repeating these matrices.
+remaining owner-switching behavior, without repeating these matrices.

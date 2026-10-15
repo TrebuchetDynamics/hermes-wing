@@ -15,23 +15,27 @@ async function ready(page) {
 
 async function shellOpen(page, width, destination, actor) {
   const activate = async control => {
-    if (!actor) return control.click();
     const role = await control.getAttribute('role');
     const name = (await control.getAttribute('aria-label') ?? await control.textContent() ?? '').replace(/\s+/g, ' ').trim();
     expect(name).toBeTruthy();
-    await actor.reach(role, name);
-    await actor.press('Enter');
+    if (actor) {
+      await actor.reach(role, name);
+      await actor.press('Enter');
+    } else await control.click();
+    return { role, name };
   };
+  let returnFocus;
   if (width < 600) {
-    await activate(page.getByRole('tab', { name: destination === 'Settings' ? 'More' : 'Profiles', exact: true }));
+    returnFocus = await activate(page.getByRole('tab', { name: destination === 'Settings' ? 'More' : 'Profiles', exact: true }));
     if (destination === 'Settings') {
       if (actor) await activate(page.getByRole('button', { name: 'Settings', exact: true }));
       else await page.getByText('Settings', { exact: true }).last().click();
     }
   } else {
-    await activate(page.getByRole('button', { name: destination === 'Settings' ? /^Settings(?: Settings)?$/ : 'Profiles', exact: true }));
+    returnFocus = await activate(page.getByRole('button', { name: destination === 'Settings' ? /^Settings(?: Settings)?$/ : 'Profiles', exact: true }));
   }
   await expect(closeButton(page)).toBeVisible();
+  return returnFocus;
 }
 
 for (const width of [390, 1280]) {
@@ -61,7 +65,7 @@ for (const width of [390, 1280]) {
       expect(before).toMatchObject({ status: 'connected', selected_profile_id: null, active_session_id: 'e2e-hermes-session', has_error: false });
       const location = page.url();
       const length = await page.evaluate(() => history.length);
-      await shellOpen(page, width, destination, actor);
+      const returnFocus = await shellOpen(page, width, destination, actor);
       await expect.poll(() => page.evaluate(() => history.length)).toBe(length + 1);
       await actor.assertFocus('button', 'Close');
       await actor.press('Tab');
@@ -71,8 +75,7 @@ for (const width of [390, 1280]) {
       await page.goBack();
       await expect(closeButton(page)).not.toBeVisible();
       await expect(composer).toBeVisible();
-      await composer.click();
-      await expect(page.locator('input:focus, textarea:focus')).toHaveValue(draft);
+      await actor.assertFocus(returnFocus.role, returnFocus.name);
       expect(page.url()).toBe(location);
       await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
       await page.goForward();
@@ -80,10 +83,12 @@ for (const width of [390, 1280]) {
       await page.keyboard.press('Escape');
       await expect(closeButton(page)).not.toBeVisible();
       await expect(composer).toBeVisible();
+      await actor.assertFocus(returnFocus.role, returnFocus.name);
       await shellOpen(page, width, destination, actor);
       await actor.assertFocus('button', 'Close');
       await actor.press('Enter');
       await expect(closeButton(page)).not.toBeVisible();
+      await actor.assertFocus(returnFocus.role, returnFocus.name);
       await composer.click();
       await expect(page.locator('input:focus, textarea:focus')).toHaveValue(draft);
       expect(page.url()).toBe(location);

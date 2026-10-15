@@ -28,9 +28,10 @@ entry (including compact More), slash, Tab-completion and profile-Manage entries
 all three dismissal seams and 200% text. Require automatic semantic focus return
 to the originating shell control (More for compact Settings), without extra input.
 Widget tests additionally replace the route before the overlay future completes;
-no disposed composer may regain focus. Keep compiled-browser shell return focus,
-profile/connection replacement, late old-run completion and native streaming open
-under WING-TASK-408. Browser and
+no disposed composer may regain focus. The compiled keyboard shell cases assert
+actual return focus before input after Back, Forward/Escape and Close; compact
+Settings returns to More. Keep profile/connection replacement, late old-run
+completion and native streaming open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

@@ -4030,6 +4030,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408 browser shell-return focus: rebuilt Flutter 3.44.2/Dart 3.12.2 main_e2e, Node22.5.1 Chromium 20 overlay cases with zero retries at390/1280px and200% text; automatic named focus after Back/Forward-Escape/Close, compact Settings returns More. flutter analyze --no-pub and24 router tests pass; independent native-source review approved spec SHA256327c7cd144d0055755c94aeba32d8979be0db14429eb01d28fe5eb1198479061. docs/quality/chat-workspace-overlay-browser.md#browser-shell-return-focus-follow-through. No production changes; parent acceptance remains open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING-TASK-408: python3 -B integration_test/run_linux_chat_workspace_overlay.py — all36 Linux GTK journeys pass, twelve Tab/Enter shell entries including compact More; Flutter3.44.2/Dart3.12.2, 390/1280 logical pixels and200% text; typed receipts/source/dependencies and teardown verified. flutter analyze --no-pub and28 focused router/receipt/shell tests pass; independent native-source review approved. docs/quality/chat-workspace-overlay-native.md. Automatic shell return focus, owner replacement, native HTTP/SSE, Android and live Agent NOT_CHECKED.",
           "result": "pass"
         },

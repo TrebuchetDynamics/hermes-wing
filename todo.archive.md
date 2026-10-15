@@ -5481,3 +5481,42 @@ Source section: Now / Next
   M6 stays unverified. VERIFY-M6-ANDROID-INTEGRATED retains actual qualification.
 
 <!-- End archived DOC-M6-INTEGRATED-RECEIPT-GAP. -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **WING-TASK-407** — Goal: CONNECTION-PATHS. Restore the same production
+  `serve` conversation after socket loss and an isolated app restart.
+  Payoff: connection recovery restores canonical work without duplicating a prompt.
+  Scope: the new production adapter's replay/history barrier, recovery storage and
+  public Retry. This is distinct from CONNECTION-OWNER-RECONNECT's REST/SSE slice.
+  Acceptance: monotonic events and canonical history reconcile before new input;
+  stored/runtime session identities remain explicit. Duplicate, stale and wrong-owner
+  events cannot alter the selected conversation. Unknown submit or Stop outcomes
+  remain uncertain until authoritative recovery. Reconnect/relaunch makes zero
+  prompt, approval or Stop replays. A later deliberate Send occurs exactly once.
+  Add adapter regressions and an isolated two-process Linux fixture journey with
+  denied-read recovery and exact request counts. Report detached-run limitations,
+  live Agent and Android gaps separately; do not promise background durability.
+  Sources: [accepted connection requirements](docs/product/prd.md#connection-path-requirements),
+  [replay and resume findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences),
+  [transport qualification](docs/adr/client.md#transport-qualification).
+  Dependencies: WING-TASK-406. Section: Next.
+  Checks: `flutter test --no-pub --concurrency=1`; `flutter analyze --no-pub`;
+  `dart format --output=none --set-exit-if-changed lib test integration_test`;
+  `flutter build web --release --no-pub -t lib/main_e2e.dart`; `npm run web:e2e`;
+  Node.js 22 `npm audit`; `python3 -B integration_test/run_linux_local_serve_restoration.py`;
+  exact-source independent review, scoped links and `git diff --check`.
+  Status: done.
+  Current evidence: recovered implementation c8001b96 plus the exact shared-model
+  source-guard repair passed independent native review; full Flutter, analysis,
+  formatting, compiled Chromium, audit and two-process Linux GTK gates passed.
+  See the [delivery receipt](docs/quality/local-serve-restoration.md#recovered-delivery-gate).
+  The original failed candidate and interrupted integration rerun are not passes.
+  CONNECTION-PATHS/M1, live Agent, OS keyring and Android acceptance remain open.
+  Ownership: Wing coordination; historical implementation t_d9e374e1. Verify actual
+  workspace activity before adoption; this documentation pass assigns no worker.
+
+<!-- End archived WING-TASK-407. -->

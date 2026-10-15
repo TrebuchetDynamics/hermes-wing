@@ -1,7 +1,8 @@
 # WING-TASK-407: production serve conversation restoration
 
-Status: local implementation and two-process Linux fixture passed;
-exact-source independent native review pending.
+Status: implemented, independently reviewed and verified on an isolated Linux
+fixture candidate. Coordinator integration/publication uses this reviewed product
+tree; native fixtures do not establish live Agent or platform keyring support.
 This is bounded Linux deterministic qualification, not closure of
 CONNECTION-PATHS, the daily-use milestone or live Agent support.
 
@@ -139,6 +140,36 @@ Its manifest SHA256 was
 `bca7a0a4fff34481514758b2ad8dadda63be71809a8ce4dee06b64cc9001f093`.
 The final gate repeats execution with the added strict RPC/ticket/resume-count
 assertions; that receipt, rather than this rehearsal, binds final acceptance.
+
+## Recovered delivery gate
+
+The original `ea035dd239d560b1f81e84cae3d5ed21844c2a4f` source-boundary failure
+is retained as a failed attempt, not waived. Its two implementation commits were
+recovered patch-equivalently onto `6aefde95` as `60ab8557` and `c8001b96`.
+The guard now permits only the recovery store's exact shared-model import;
+negative controls still reject internal read-client/lifecycle imports and symbols
+in that store and every other excluded path. Independent native review approved
+`c8001b96e2ecb06ba1b8bd69af0700fd8458f676` plus that exact guard repair
+(SHA-256 `3d2aba1bbaa303ac778c77adfe135b240a9c78710ff9f07fb0586c2b9bf0efd1`).
+The reviewer ran 28 focused and 15 adjacent tests without blocking findings.
+
+The first integration rerun ended without a terminal full-suite receipt at
+`+2681`; it remains interrupted/unqualified. The resumed frozen candidate passed:
+
+- Full-tree `dart format --output=none --set-exit-if-changed lib test integration_test`
+  and `flutter analyze --no-pub` (retained matching-input receipts).
+- `flutter test --no-pub --concurrency=1`: 3808 passed, 8 skipped.
+- `flutter build web --release --no-pub -t lib/main_e2e.dart` and `npm run web:e2e`.
+- Node.js 22.22.2 `npm audit`.
+- `python3 -B integration_test/run_linux_local_serve_restoration.py`, rerunning
+  the two-process GTK fixture and exact request/mutation assertions above.
+- Staged whitespace, scoped local documentation targets and ledger/archive checks.
+
+The delivery gate binds product tree `eeaee665a2cb68c76453da685c1b880ccf137754`
+before documentation/ledger closeout. No product/dependency bytes change in that
+closeout. Full daily-use, CONNECTION-PATHS, live authentication and physical-device
+acceptance remain open. Source-bound logs and exit receipts are private; no
+credentials or machine-local receipt paths are published.
 
 ## Method and limits
 

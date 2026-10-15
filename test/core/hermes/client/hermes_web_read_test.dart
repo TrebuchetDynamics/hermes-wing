@@ -4,7 +4,38 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/client/hermes_web_read_client.dart';
 
+const recoveryStore =
+    'lib/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
+
+bool usesInternalTransport(String path, String source) {
+  // The secure pointer codec shares models, never client/lifecycle authority.
+  if (path == recoveryStore) {
+    source = source.replaceAll("import '../models/hermes_web_reads.dart';", '');
+  }
+  return source.contains('hermes_web_read') ||
+      source.contains('HermesWebReadClient') ||
+      source.contains('hermes_web_lifecycle') ||
+      source.contains('HermesWebLifecycle');
+}
+
 void main() {
+  test('transport guard permits only the exact recovery model import', () {
+    const model = "import '../models/hermes_web_reads.dart';";
+    expect(usesInternalTransport(recoveryStore, model), isFalse);
+    expect(usesInternalTransport('lib/other.dart', model), isTrue);
+    for (final forbidden in [
+      "import '../client/hermes_web_read_client.dart';",
+      'HermesWebReadClient',
+      "import '../client/hermes_web_lifecycle.dart';",
+      'HermesWebLifecycle',
+    ]) {
+      expect(
+        usesInternalTransport(recoveryStore, '$model\n$forbidden'),
+        isTrue,
+      );
+      expect(usesInternalTransport('lib/other.dart', forbidden), isTrue);
+    }
+  });
   test('native lifecycle has only the fixed local read product import path', () {
     const internal = {
       'lib/core/hermes/client/hermes_web_read_client.dart',
@@ -23,13 +54,8 @@ void main() {
               (f) => f.path.endsWith('.dart') && !internal.contains(f.path),
             )) {
       expect(
-        file.readAsStringSync(),
-        isNot(contains('hermes_web_read')),
-        reason: file.path,
-      );
-      expect(
-        file.readAsStringSync(),
-        isNot(contains('HermesWebReadClient')),
+        usesInternalTransport(file.path, file.readAsStringSync()),
+        isFalse,
         reason: file.path,
       );
     }

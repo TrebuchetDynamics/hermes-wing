@@ -77,20 +77,20 @@ Android and live authentication require named-target evidence.
 
 ## Production serve restoration delivery gate
 
-WING-TASK-406's bounded chat path is integrated. WING-TASK-407's reviewed candidate
-`ea035dd239d560b1f81e84cae3d5ed21844c2a4f` is not integrated or published.
-Its recorded full `flutter test --no-pub --concurrency=1` run failed in
-`test/core/hermes/client/hermes_web_read_test.dart`: the source-boundary guard
-rejects the candidate secure recovery store's shared model import. Recorded
-analysis, web build and browser passes do not waive that failure. This docs pass
-inspected those receipts; it did not execute the product gates.
+WING-TASK-407 restores deliberately enabled Linux loopback serve conversations
+through the production channel. The [source-bound restoration receipt](quality/local-serve-restoration.md#recovered-delivery-gate)
+records the guard repair, independent review, full Flutter suite, compiled browser,
+audit and two-process GTK fixture verification. The old candidate's failed guard
+and the interrupted full-suite rerun remain distinct non-passing attempts.
 
-The next implementation action is to repair the guard at the existing task's
-scope, preserving exclusions for internal clients/lifecycle and adding negative
-coverage. Verify the repaired exact candidate and independent review before
-coordinator integration and publication. Preserve the existing replay/history,
-secure-storage and two-process Linux acceptance; no mutation replay, weakened
-containment or fabricated live qualification is permitted.
+The source guard allows only the secure pointer codec's exact shared-model import;
+negative tests continue rejecting internal read/lifecycle authority. The native
+fixture proves denied-history Retry and exact-owner startup with zero mutation
+replay, followed by one deliberate Send. Its file-backed synthetic storage override
+exercises the production codec, not the OS keyring. Physical devices, Android,
+real Agent authentication/provider usage, foreground reconnect and detached-run
+durability remain separate qualification gaps. CONNECTION-PATHS and M1 are not
+closed by this bounded delivery.
 
 ## Terminal working-directory files (planned)
 

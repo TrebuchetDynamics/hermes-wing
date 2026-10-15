@@ -46,8 +46,12 @@ All notable user-visible changes will be documented here.
   exact selected session, with separate ticket authentication and fixed-chat
   negotiation. Send, current-request approval and Stop use the production channel;
   recovery does not replay mutations. The [bounded receipt](docs/quality/local-serve-production-chat.md)
-  records Linux GTK fixture qualification, not live Agent, Android or persistent
-  relaunch restoration. WING-TASK-407 remains unintegrated.
+  records Linux GTK fixture qualification, not live Agent or Android support.
+  Deliberately enabled Linux conversations now restore exact stored/runtime
+  ownership across restart; canonical history and fresh authority settle before
+  input, and uncertain Send/Stop outcomes never replay. The
+  [restoration receipt](docs/quality/local-serve-restoration.md) includes two-process
+  GTK recovery; real keyring and live-provider qualification remain open.
 
 - Native SSH now offers consent-based Ed25519 key generation, reuse of an app-owned
   secure-storage key and public-only copy. Local entry adds Linux Hermes-home

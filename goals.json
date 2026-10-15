@@ -4630,6 +4630,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-407: c8001b96 plus exact-model guard repair independently reviewed; full Flutter, analyzer, format, web build/Chromium, Node 22 audit and two-process Linux GTK restoration passed. docs/quality/local-serve-restoration.md#recovered-delivery-gate. Fixtures only; CONNECTION-PATHS/M1, live Agent, OS keyring and Android remain open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING_APP_URL=http://127.0.0.1:18767/ CHROME_EXECUTABLE=<home>/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome NODE_OPTIONS=--max-old-space-size=2048 timeout 10m npx playwright test playwright/tests/regression/desktop-welcome.spec.mjs --workers=1",
           "result": "pass"
         },
@@ -7361,16 +7366,6 @@
     },
     {
       "depends_on": [
-        "WING-TASK-406"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "WING-TASK-407",
-      "section": "Next",
-      "status": "in_progress",
-      "title": "Restore the production serve conversation across socket loss and app restart without replay"
-    },
-    {
-      "depends_on": [
         "CONNECTION-OFFICIAL-DESKTOP-PORT"
       ],
       "goal": "PARITY-COMPOSITION",
@@ -8695,6 +8690,16 @@
       "section": "Done",
       "status": "done",
       "title": "Send stream approve and Stop through the qualified production serve connection"
+    },
+    {
+      "depends_on": [
+        "WING-TASK-406"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "WING-TASK-407",
+      "section": "Done",
+      "status": "done",
+      "title": "Restore the production serve conversation across socket loss and app restart without replay"
     },
     {
       "depends_on": [],

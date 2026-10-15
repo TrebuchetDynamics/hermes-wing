@@ -15,6 +15,11 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Cancelling or disposing an adopted managed SSH connection now disconnects its
+  owned Agent channel before releasing the local forwarding port. A replacement
+  connection opened during teardown stays untouched. This closes stale connected
+  state; it does not qualify Android SSH or durable relaunch.
+
 - Leaving a serve connection now retires its in-memory read credential, including
   direct switches to the Agent API transport. A later serve Retry cannot replace
   the new connection using the retired token; same-origin failed-read Retry remains

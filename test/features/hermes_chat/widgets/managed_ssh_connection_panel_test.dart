@@ -895,6 +895,75 @@ void main() {
       },
     );
   }
+  for (final dispose in [false, true]) {
+    test(
+      'retiring adopted SSH disconnects its Agent; dispose=$dispose',
+      () async {
+        final channel = FakeChannel();
+        final forward = FakeForward();
+        final controller = ManagedSshConnectionController(forward, channel);
+        final result = controller.connectSsh(
+          input,
+          verifyHostKey: (_, _) async => true,
+        );
+        forward.ready();
+        expect(await result, isTrue);
+        if (dispose) {
+          controller.dispose();
+          await Future<void>.delayed(Duration.zero);
+        } else {
+          await controller.cancel(attemptId: controller.attemptId);
+        }
+        expect(forward.closes, 1);
+        expect(channel.disconnects, 1);
+        expect(channel.state.status, HermesConnectionStatus.disconnected);
+        if (!dispose) controller.dispose();
+        channel.dispose();
+      },
+    );
+  }
+  test(
+    'adopted cancellation preserves replacement during lease teardown',
+    () async {
+      final channel = FakeChannel();
+      final forward = FakeForward();
+      final controller = ManagedSshConnectionController(forward, channel);
+      final result = controller.connectSsh(
+        input,
+        verifyHostKey: (_, _) async => true,
+      );
+      final closing = Completer<void>();
+      final closed = Completer<void>();
+      forward.waiting.complete(
+        ManagedSshTunnel(
+          agentUri: Uri.parse('http://127.0.0.1:45678'),
+          done: forward.ended.future,
+          close: () async {
+            closing.complete();
+            await closed.future;
+          },
+        ),
+      );
+      expect(await result, isTrue);
+      final cancellation = controller.cancel();
+      await closing.future;
+      expect(channel.disconnects, 1);
+      expect(channel.state.status, HermesConnectionStatus.disconnected);
+      const replacement = HermesChannelState(
+        status: HermesConnectionStatus.connected,
+        connectedBaseUrl: 'https://replacement.invalid',
+        selectedProfileId: 'replacement-profile',
+        activeSessionId: 'replacement-session',
+      );
+      channel.set(replacement);
+      closed.complete();
+      await cancellation;
+      expect(channel.disconnects, 1);
+      expect(channel.state, same(replacement));
+      controller.dispose();
+      channel.dispose();
+    },
+  );
   test('tunnel loss disconnects only the owning Agent', () async {
     final channel = FakeChannel();
     final forward = FakeForward();

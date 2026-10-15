@@ -86,6 +86,14 @@ SSH/form/provider/generated-key/channel union passes 403 tests with eight opt-in
 SSH tests skipped; independent native source review approved the source/test
 hashes. These are Linux-hosted Dart/widget checks, not native SSH qualification.
 
+The controller also disconnects its already-adopted Agent channel on explicit
+cancellation or controller disposal, before releasing the ephemeral listener.
+Previously that path closed SSH but left the Agent channel marked connected.
+Three deterministic regressions cover cancel, disposal and a replacement opened
+while lease cleanup is pending. Route disposal alone still retains an adopted
+app-scoped connection; this change does not turn transport teardown into Stop.
+Cleanup remains in `finally` if channel disconnection fails.
+
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path does not
 yet save that SSH target/trust mapping or implement cold-relaunch restoration.**

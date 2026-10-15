@@ -353,6 +353,13 @@ successor own this gap; no credential mutation or new runtime check ran here.
 
 ## SSH private-key qualification
 
+Adopted-connection retirement also has three deterministic controller regressions
+in `test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`:
+explicit cancel and controller disposal disconnect the owned Agent, and a new
+owner opened during lease cleanup is not disconnected. The full panel target
+passes 34 tests on Linux-hosted Flutter. These are not device/SSH authentication,
+durable restore or Agent Stop evidence; route-only disposal retains the tunnel.
+
 The [adoption-loss follow-through](security/managed-ssh-forward-contract.md#forwarding-and-lifecycle)
 records four new controller/production-channel regressions: loss before and during
 health loading cannot adopt a dead tunnel, credentials are cleared, replacements

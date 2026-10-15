@@ -1362,6 +1362,13 @@ patches, personal credential discovery, service restarts or provider spending.
   the Android/native/durable acceptance and next action above. The existing
   PARITY-LIVE-WORKFLOW task continues to hold live authentication/provider-ceiling
   acceptance; no inference or new live target is required for this offline fix.
+  Adopted-cancellation prerequisite: explicit cancel and controller disposal now
+  retire the owned Agent connection before releasing its forwarding listener.
+  Planner's call: fix this reproduced stale-connected-state defect before Android
+  serve selection; retain the next action and native/durable acceptance above.
+  Three new deterministic regressions cover cancellation, disposal and replacement
+  during asynchronous teardown; the panel target passes 34 tests. Independent
+  native source review approved the source/test hashes. Parent remains open.
   Dependencies: DOC-BACKEND-CONTRACT.
   Section: Next.
   Ownership: unclaimed in this index. Verify live tracker/continuation leases.

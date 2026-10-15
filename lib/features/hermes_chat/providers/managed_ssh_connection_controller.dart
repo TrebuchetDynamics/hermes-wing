@@ -156,29 +156,33 @@ class ManagedSshConnectionController {
   Future<void> cancel({int? attemptId}) async {
     if (attemptId != null && attemptId != _generation) return;
     if (!_pending && _tunnel == null) return;
-    final cancellation = ++_generation;
+    ++_generation;
     _clearAuthentication?.call();
     _clearAuthentication = null;
     final state = channel.state;
     final tunnel = _tunnel;
     _tunnel = null;
     final adopting = _adopting;
+    final adopted = _adopted;
     _adopting = false;
     _adopted = false;
     _pending = false;
-    if (tunnel != null) {
-      await tunnel.dispose();
-    } else {
-      await forward.disconnect();
-    }
-    if (cancellation == _generation &&
-        adopting &&
-        !_replacement &&
-        identical(state, channel.state) &&
-        (state.status == HermesConnectionStatus.connecting ||
-            state.status == HermesConnectionStatus.error ||
-            state.connectedBaseUrl == tunnel?.agentUri.toString())) {
-      await channel.disconnect();
+    // Retire Agent authentication before releasing a reusable local port.
+    try {
+      if ((adopting || adopted) &&
+          !_replacement &&
+          identical(state, channel.state) &&
+          (state.status == HermesConnectionStatus.connecting ||
+              state.status == HermesConnectionStatus.error ||
+              state.connectedBaseUrl == tunnel?.agentUri.toString())) {
+        await channel.disconnect();
+      }
+    } finally {
+      if (tunnel != null) {
+        await tunnel.dispose();
+      } else {
+        await forward.disconnect();
+      }
     }
   }
 

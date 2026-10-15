@@ -188,6 +188,40 @@ new post-barrier owner assertion; three cases were not run after the failure
 limit. The mutation was restored byte-for-byte before the final rebuild. This
 checks owner-hijack sensitivity, not every possible late-response failure.
 
+## Rendered profile-switch recovery
+
+Two additional compiled cases select **Chat with Coding profile** in the rendered
+Profiles overlay, at 390/1280px and 200% text. Per-test synthetic advertised
+profile reads reuse the existing profile-keyboard pattern; coder has a distinct
+session and assistant history. Only bootstrap uses the existing connection and
+default-inventory hooks. The actual profile action, deliberate overlay reopen,
+browser Back/Forward and Escape must retain coder's exact session/history, exclude
+the old profile's transcript and active-row marker, and issue zero API mutations.
+Session inventory and history requests must carry the explicit coder query.
+
+The valid fixture reproduced a production defect: the profile action selected
+coder successfully but pushed the same Chat shell above its retained instance,
+leaving blank content in Chromium. A production-router widget regression failed
+with duplicate Navigator page keys and no hit-testable composer. Profiles now
+pops a retained `ChatWorkspaceOverlay` instead of pushing a second shell. Direct
+Profiles entry without a retained workspace keeps its existing push-and-Back
+behavior. The two new widget cases assert the same mounted Chat, exact return URL,
+selected profile, visible composer and no residual route stack.
+
+On Flutter 3.44.2/Dart 3.12.2, Node.js 22.5.1 and system Chromium, all 26 rebuilt
+browser cases passed with zero retries/skips/flaky outcomes. Analysis, Dart format
+and the 64 focused router/profile widget tests passed. Independent native-source
+review approved the source after fixture/recovery rework. Initial harness failures
+included a missing history envelope identity and an incorrect expectation that
+programmatic pop creates a browser Forward entry. The final case deliberately
+reopens Profiles before testing Back/Forward; production validation was not weakened.
+The pre-fix blank-Chat reproduction and red widget test are retained privately;
+no separate deliberate production mutation was necessary for this bug fix.
+
+This is rendered same-endpoint profile selection over synthetic HTTP, not connection
+replacement, profile switching during an active run, GTK profile-switch execution,
+real authentication or live Agent/provider qualification.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -195,7 +229,8 @@ shell entries and retained draft/transcript through keyboard Close/Escape and
 framework Back, with an in-memory channel. It does not promote this browser's
 HTTP/SSE evidence to native transport proof.
 
-Profile/connection replacement and native streaming remain unqualified. GTK now
+Connection replacement, profile switching during an active run and native streaming
+remain unqualified. GTK now
 separately covers shell and
 chat-local slash/Tab-completion/Manage focus return; browser Manage/Tab-completion,
 Android, physical keyboard/IME, screen readers and live Agent/provider behavior

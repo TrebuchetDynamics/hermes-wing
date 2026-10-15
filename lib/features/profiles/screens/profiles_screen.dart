@@ -8,6 +8,7 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../router/widgets/chat_workspace_overlay.dart';
 import '../../../router/routes/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/wing_empty_state.dart';
@@ -514,6 +515,12 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     if (_chatRouteOpen) return;
     final router = GoRouter.maybeOf(context);
     if (router == null) return;
+    if (context.findAncestorWidgetOfExactType<ChatWorkspaceOverlay>() != null &&
+        router.canPop()) {
+      // Reuse the retained Chat shell rather than pushing its Navigator twice.
+      router.pop();
+      return;
+    }
     setState(() => _chatRouteOpen = true);
     try {
       await router.push<void>(AppRoutes.hermes);

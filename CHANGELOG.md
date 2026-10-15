@@ -15,6 +15,13 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Selecting Chat in a Profiles overlay now returns to the retained Chat workspace
+  instead of pushing a duplicate shell that could leave the transcript blank.
+  Standalone Profiles keeps its existing Chat/Back behavior. The
+  [bounded browser receipt](docs/quality/chat-workspace-overlay-browser.md#rendered-profile-switch-recovery)
+  covers synthetic profile/session ownership through reopen and browser history;
+  native profile switching and live Agent qualification remain separate.
+
 - Chat-local Settings and Profiles overlays now restore composer focus on return,
   including slash completion and the profile picker's Manage action. Returning
   after navigating away does not focus a disposed or hidden Chat. See the

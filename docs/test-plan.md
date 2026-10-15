@@ -33,8 +33,14 @@ actual return focus before input after Back, Forward/Escape and Close; compact
 Settings returns to More. The late-completion cases wait for the original run's
 canonical reply ID/status in the background channel cache before history navigation;
 the replacement session must remain selected and free of old reply/reasoning UI.
-Allow only one deliberate send and one session creation. Keep profile/connection
-replacement and native streaming open under WING-TASK-408. Browser and
+Allow only one deliberate send and one session creation in that matrix. The
+rendered profile-switch cases select Chat in the Profiles overlay, require the
+original mounted workspace rather than a duplicate shell, and retain the new
+profile/session/history through deliberate reopen, Back/Forward and Escape with
+zero API mutations. Require explicit profile queries and exclude old history and
+active-row markers. Standalone Profiles must retain its existing Chat/Back path.
+Keep connection replacement, active-run profile switching and native streaming
+open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

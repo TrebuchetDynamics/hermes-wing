@@ -4020,6 +4020,11 @@
         },
         {
           "kind": "executed",
+          "ref": "Rendered Profiles Chat returns to retained workspace rather than duplicate shell: 26 compiled Chromium overlay cases at 390/1280px and200% text,64 focused router/profile tests,flutter analyze --no-pub and Dart format pass; docs/quality/chat-workspace-overlay-browser.md#rendered-profile-switch-recovery. Pre-fix browser blank Chat and duplicate-page-key widget failure reproduced. Connection switching,active-run profile switching,new GTK,Android and live Agent NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "TMPDIR=<home>/.hermes/profiles/wing/cache/scratch PKG_CONFIG_PATH=\"$PWD/build/t_3a6bafe4/prereqs/root/usr/lib/x86_64-linux-gnu/pkgconfig\" LIBRARY_PATH=\"$PWD/build/t_3a6bafe4/prereqs/root/usr/lib/x86_64-linux-gnu\" timeout --signal=TERM --kill-after=20s 1000s python3 scripts/support/grouped_recents_native.py > build/t_3a6bafe4/evidence/launcher.log 2>&1",
           "result": "pass"
         },

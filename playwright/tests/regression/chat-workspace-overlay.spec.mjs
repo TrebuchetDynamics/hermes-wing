@@ -39,6 +39,87 @@ async function shellOpen(page, width, destination, actor) {
 }
 
 for (const width of [390, 1280]) {
+  test(`Profiles rendered owner switch survives overlay history at ${width}px/200% text`, async ({ page, request }) => {
+    expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
+    const writes = [], reads = [], errors = [];
+    const session = 'synthetic-coder-session';
+    const reply = 'Synthetic coding profile history.';
+    page.on('pageerror', error => errors.push(error.name));
+    page.on('console', message => {
+      if (/overflowed|RenderFlex|EXCEPTION CAUGHT/.test(message.text())) errors.push('render error');
+    });
+    page.on('request', request => {
+      const url = new URL(request.url());
+      if (!/^\/(api|v1)\//.test(url.pathname)) return;
+      if (request.method() !== 'GET') writes.push({ method: request.method(), route: url.pathname });
+      else reads.push({ route: url.pathname, profile: url.searchParams.get('profile') });
+    });
+    // Per-test synthetic advertised read contracts, matching profile-keyboard coverage.
+    await page.route(url => url.pathname === '/v1/capabilities', async route => {
+      const response = await route.fetch();
+      const base = await response.json();
+      await route.fulfill({ response, json: {
+        ...base,
+        profile_context: { type: 'query', name: 'profile', required: true, default_profile_id: 'default' },
+        auth: { ...base.auth, granted_scopes: [...base.auth.granted_scopes, 'profiles:read'] },
+        endpoints: { ...base.endpoints,
+          profiles: { method: 'GET', path: '/api/profiles', profile_scoped: false, required_scopes: ['profiles:read'] },
+        },
+      } });
+    });
+    await page.route(url => url.pathname === '/api/profiles', route => route.fulfill({ json: { data: [
+      { id: 'default', name: 'Home profile', revision: 'r1' },
+      { id: 'coder', name: 'Coding profile', revision: 'r2' },
+    ] } }));
+    await page.route(url => url.pathname === '/api/sessions' && url.searchParams.get('profile') === 'coder', route => route.fulfill({ json: {
+      object: 'list', offset: 0, limit: 50, has_more: false,
+      data: [{ id: session, title: 'Synthetic coding session', source: 'e2e', model: 'hermes-agent' }],
+    } }));
+    await page.route(url => url.pathname === `/api/sessions/${session}/messages`, route => route.fulfill({ json: {
+      object: 'list', session_id: session,
+      data: [{ id: 'synthetic-coder-reply', session_id: session, role: 'assistant', content: reply }],
+    } }));
+    await page.setViewportSize({ width, height: 1400 });
+    await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-profile-overlay`);
+    await ready(page);
+    await page.evaluate(() => globalThis.wingE2EHermesConnect());
+    await expect.poll(async () => (await state(page)).active_session_id).toBe('e2e-hermes-session');
+    await page.evaluate(() => globalThis.wingE2EHermesLoadDefaultProfileInventory());
+    await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
+    expect(await state(page)).toMatchObject({ selected_profile_id: 'default', active_session_id: 'e2e-hermes-session', has_error: false });
+    const location = page.url();
+    await shellOpen(page, width, 'Profiles');
+    await page.getByRole('button', { name: 'Chat with Coding profile', exact: true }).click();
+    await expect.poll(async () => (await state(page)).selected_profile_id).toBe('coder');
+    await expect(page.getByRole('group', { name: /Synthetic coding profile history\.$/ })).toBeVisible();
+    await expect(closeButton(page)).not.toBeVisible();
+    const replacement = await state(page);
+    expect(replacement).toMatchObject({ status: 'connected', selected_profile_id: 'coder', active_session_id: session, has_error: false });
+    const assertChat = async () => {
+      await expect(closeButton(page)).not.toBeVisible();
+      await expect(page.getByRole('group', { name: /Synthetic coding profile history\.$/ })).toBeVisible();
+      await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).not.toBeVisible();
+      expect(await state(page)).toEqual(replacement);
+    };
+    await assertChat();
+    expect(page.url()).toBe(location);
+    await shellOpen(page, width, 'Profiles');
+    await expect(page.getByRole('group', { name: 'Coding profile, ID: coder, Active chat', exact: true })).toBeVisible();
+    await expect(page.getByRole('group', { name: 'Home profile, ID: default, Active chat, Default', exact: true })).not.toBeVisible();
+    expect(await state(page)).toEqual(replacement);
+    await page.goBack();
+    await assertChat();
+    await page.goForward();
+    await expect(closeButton(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await assertChat();
+    expect(page.url()).toBe(location);
+    expect(reads).toContainEqual({ route: '/api/sessions', profile: 'coder' });
+    expect(reads).toContainEqual({ route: `/api/sessions/${session}/messages`, profile: 'coder' });
+    expect(writes).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
   for (const destination of ['Settings', 'Profiles']) {
     test(`${destination} keyboard shell entry retains chat through Back/Forward, Escape and Close at ${width}px/200% text`, async ({ page, request }, testInfo) => {
       expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);

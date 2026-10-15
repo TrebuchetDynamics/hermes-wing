@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/core/hermes/models/hermes_profile.dart';
+import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -45,6 +46,88 @@ Future<void> settleRoutes(WidgetTester tester) async {
 
 void main() {
   for (final width in [390.0, 1200.0]) {
+    testWidgets(
+      'profile overlay Chat returns to retained workspace at $width',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        tester.view.physicalSize = Size(width, 1200);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final channel = FakeHermesChannel(
+          profiles: const [
+            HermesProfile(
+              id: 'coder',
+              displayName: 'Coding profile',
+              revision: 'r2',
+            ),
+          ],
+          selectedProfileId: 'default',
+          capabilities: HermesCapabilityDocument.fromJson({
+            'schema_version': 1,
+            'profile_context': {
+              'type': 'query',
+              'name': 'profile',
+              'required': true,
+              'default_profile_id': 'default',
+            },
+            'auth': {
+              'granted_scopes': ['profiles:read'],
+            },
+            'endpoints': {
+              'profiles': {
+                'method': 'GET',
+                'path': '/api/profiles',
+                'required_scopes': ['profiles:read'],
+              },
+            },
+          }),
+        );
+        final container = ProviderContainer(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesEndpointStoreProvider.overrideWithValue(
+              FakeHermesEndpointStore(),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        addTearDown(channel.dispose);
+        final router = container.read(routerProvider);
+        addTearDown(router.dispose);
+        const location = '/hermes?view=synthetic-profile-overlay';
+        router.go(location);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
+          ),
+        );
+        await settleRoutes(tester);
+        final chat = tester.state(find.byType(HermesChatScreen));
+        final overlayClosed = router.push<void>(AppRoutes.profiles);
+        await settleRoutes(tester);
+        final action = find.byKey(const ValueKey('agent-chat-coder'));
+        await tester.ensureVisible(action);
+        await tester.tap(action);
+        await settleRoutes(tester);
+        await overlayClosed;
+        expect(channel.selectProfileCalls, ['coder']);
+        expect(channel.state.selectedProfileId, 'coder');
+        expect(find.byKey(close), findsNothing);
+        expect(find.byKey(composer).hitTestable(), findsOneWidget);
+        expect(tester.state(find.byType(HermesChatScreen)), same(chat));
+        expect(router.routeInformationProvider.value.uri.toString(), location);
+        expect(router.canPop(), isFalse);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+
     for (final trigger in ['settings', 'settings-tab', 'profiles', 'manage']) {
       testWidgets('chat $trigger retains workspace at $width', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.linux;

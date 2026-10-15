@@ -15,6 +15,12 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Chat's existing overflow menu now opens Settings while a compact saved-contact
+  stream is active. Returning restores the retained Chat and composer focus.
+  [Bounded Linux fixture checks](docs/quality/chat-workspace-overlay-native.md#compact-settings-during-active-saved-contact-chat)
+  also cover compact saved-host switching; Android and live authentication remain
+  unqualified.
+
 - Loading placeholders now fit inside parent scrollables, including saved
   Connections during a host switch. The nested-scrollable regression and
   [wide Linux streaming journey](docs/quality/chat-workspace-overlay-native.md#native-saved-host-replacement-during-streaming)

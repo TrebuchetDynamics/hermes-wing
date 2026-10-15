@@ -362,12 +362,58 @@ concerns the replacement workspace across its reopened modal, not original works
 identity across an explicit host change. No fresh browser/full-suite/device check
 or live Agent inference was performed.
 
+## Compact Settings during active saved-contact Chat
+
+The existing Chat overflow menu now includes Settings, reusing the shared retained
+workspace opener and composer return-focus guard. This restores a rendered compact
+path while a saved-contact stream hides the normal shell navigation and local
+command suggestions. It does not add a route, capability, Agent request or saved
+state. Three router regressions cover menu Tab/Enter selection and automatic return
+focus after Close, Escape and framework Back at 390 logical pixels and 200% text.
+The menu is opened by pointer; these checks are not a wholly keyboard-only journey.
+
+The production HTTP/SSE GTK matrix now passes all 24 journeys at 390/1280 logical
+pixels and 200% text, including three newly enabled compact saved-host switches.
+The replacement canonical history settles before original-server completion;
+reopened Settings and each dismissal retain the new host without stale reply
+controls, replacement writes or endpoint saves. Only each original deliberate
+Send writes. The fixture uses distinct loopback origins and no saved credentials.
+
+Executed on Flutter 3.44.2/Dart 3.12.2:
+
+```bash
+dart format --output=none --set-exit-if-changed lib/features/hermes_chat/screens/hermes_chat_screen.dart test/router/chat_workspace_overlay_test.dart integration_test/linux_chat_workspace_stream_test.dart
+flutter analyze --no-pub
+flutter test --no-pub --concurrency=1 test/router/chat_workspace_overlay_test.dart test/integration/linux_chat_workspace_overlay_runner_test.dart test/shared/widgets/wing_skeleton_test.dart test/features/hermes_chat/screens/hermes_chat_completion_focus_owner_test.dart test/features/hermes_chat/screens/hermes_chat_composer_focus_test.dart test/features/hermes_chat/screens/hermes_chat_saved_connection_workflows_test.dart test/features/hermes_chat/screens/hermes_chat_profile_switch_test.dart --reporter expanded
+python3 -B integration_test/run_linux_chat_workspace_stream.py
+```
+
+All 77 focused tests pass. Native receipt:
+`overlay-native-connection-sse-408/native-r0fmvhxx/verification.json` under local
+`.task-evidence/`. The runner records frozen source/dependencies, native PID and
+binary hash, and verifies process-group teardown and isolated-state removal.
+Independent native-source review approved the four implementation/test blobs.
+The rebuilt `lib/main_e2e.dart` also passes all 42 compiled Chromium overlay cases
+with `--retries=0`, using the locked Playwright install and loopback-only fixture:
+
+```bash
+flutter build web --no-pub --release --no-wasm-dry-run -t lib/main_e2e.dart
+node node_modules/@playwright/test/cli.js test --config=playwright.config.mjs playwright/tests/regression/chat-workspace-overlay.spec.mjs --retries=0
+```
+
+Earlier interrupted native attempts remain unqualified; a current test invocation
+also named a nonexistent extra target and was corrected before the passing union.
+
+Planner's call: adopt the idle unfinished compact candidate, preserve the existing
+PARITY-LIVE-WORKFLOW authentication/provider-ceiling gates, and finish this bounded
+WING-TASK-408 slice without restarting inference or changing original budgets.
+Next: deterministic saved-secret isolation through explicit saved-host replacement.
+
 ## Remaining acceptance
 
-Compact native connection replacement, cancelled old-terminal consumption and
-Android remain unqualified. Native HTTP/SSE through Settings, populated Profiles
-and wide saved-host replacement is
-bounded to these synthetic session-chat matrices, not live Agent, provider inference,
+Saved-secret isolation, cancelled old-terminal consumption and Android remain
+unqualified. Native HTTP/SSE through Settings, populated Profiles and compact/wide
+saved-host replacement is bounded to these synthetic session-chat matrices, not live Agent, provider inference,
 authentication, saved secrets or detached-run persistence.
 The separate browser receipt qualifies
 its bounded shell focus, replacement-owner and late-completion cases; it is not

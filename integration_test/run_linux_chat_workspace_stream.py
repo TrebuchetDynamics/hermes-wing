@@ -10,8 +10,6 @@ def expected_journeys():
     rows = []
     for width in (390.0, 1280.0):
         for destination in ('settings', 'profiles', 'profile-switch', 'connection-switch'):
-            if width < 600 and destination == 'connection-switch':
-                continue
             for dismissal in ('close', 'escape', 'back'):
                 row = dict(width=width, destination=destination, dismissal=dismissal,
                            text_scale=2, progressive_chunks=2, canonical_reply=True,

@@ -45,6 +45,100 @@ Future<void> settleRoutes(WidgetTester tester) async {
 }
 
 void main() {
+  for (final dismissal in ['close', 'escape', 'back']) {
+    testWidgets(
+      'compact streaming menu opens Settings and restores Chat: $dismissal',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        tester.view.physicalSize = const Size(390, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final channel = FakeHermesChannel();
+        channel.replaceTranscript([
+          HermesChatTurn(
+            id: 'synthetic-stream',
+            sessionId: 'sess_1',
+            author: HermesTurnAuthor.assistant,
+            createdAt: DateTime.utc(2026),
+            text: 'Synthetic pending reply',
+            status: HermesTurnStatus.streaming,
+          ),
+        ]);
+        final container = ProviderContainer(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesEndpointStoreProvider.overrideWithValue(
+              FakeHermesEndpointStore(),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        addTearDown(channel.dispose);
+        final router = container.read(routerProvider);
+        addTearDown(router.dispose);
+        const location = '/hermes?session=sess_1&filter=all#tail';
+        router.go(location);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: TextScaler.linear(2)),
+                child: child!,
+              ),
+            ),
+          ),
+        );
+        await settleRoutes(tester);
+        final chat = tester.state(find.byType(HermesChatScreen));
+        final field = find.byKey(composer);
+        await tester.enterText(field, 'Synthetic unsent draft');
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-more-actions-button')),
+        );
+        await settleRoutes(tester);
+        final settings = find.descendant(
+          of: find.byType(PopupMenuItem<String>),
+          matching: find.text('Settings'),
+        );
+        expect(settings.hitTestable(), findsOneWidget);
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await settleRoutes(tester);
+        expect(find.byKey(close), findsOneWidget);
+        expect(tester.widget<TextField>(field).focusNode!.hasFocus, isFalse);
+        if (dismissal == 'close') {
+          await tester.tap(find.byKey(close));
+        } else if (dismissal == 'escape') {
+          await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        } else {
+          await tester.binding.handlePopRoute();
+        }
+        await settleRoutes(tester);
+        expect(find.byKey(close), findsNothing);
+        expect(tester.state(find.byType(HermesChatScreen)), same(chat));
+        expect(
+          tester.widget<TextField>(field).controller!.text,
+          'Synthetic unsent draft',
+        );
+        expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
+        expect(router.routeInformationProvider.value.uri.toString(), location);
+        expect(
+          channel.state.activeMessages.last.status,
+          HermesTurnStatus.streaming,
+        );
+        expect(channel.sentVoiceTranscripts, isEmpty);
+        expect(channel.connectCalls, isEmpty);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+  }
   for (final width in [390.0, 1200.0]) {
     testWidgets('completion does not steal Settings focus at $width', (
       tester,

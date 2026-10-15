@@ -51,6 +51,21 @@ void main() {
       expect(ready(), isTrue, reason: 'HTTP/SSE client barrier');
     }
 
+    Future<void> openContactSettings() async {
+      final menu = find.byKey(const ValueKey('hermes-more-actions-button'));
+      expect(menu.hitTestable(), findsOneWidget);
+      await tester.tap(menu);
+      await settle();
+      final settings = find.byWidgetPredicate(
+        (widget) =>
+            widget is PopupMenuItem<String> && widget.value == 'settings',
+      );
+      expect(settings.hitTestable(), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await settle();
+    }
+
     final semantics = tester.ensureSemantics();
     final journeys = <Map<String, Object?>>[];
     for (final width in [390.0, 1280.0]) {
@@ -61,7 +76,6 @@ void main() {
         'profile-switch',
         'connection-switch',
       ]) {
-        if (width < 600 && destination == 'connection-switch') continue;
         for (final dismissal in ['close', 'escape', 'back']) {
           SharedPreferences.setMockInitialValues({});
           final fixture = (await tester.runAsync(_StreamFixture.start))!;
@@ -165,7 +179,9 @@ void main() {
             final controller = tester.widget<TextField>(field).controller!;
             await settle();
             expect(controller.text, 'Synthetic unsent next draft');
-            if (width < 600) {
+            if (width < 600 && replacement != null) {
+              await openContactSettings();
+            } else if (width < 600) {
               await tester.tap(
                 find.descendant(
                   of: find.byType(NavigationBar),
@@ -258,10 +274,15 @@ void main() {
               // Keep the original server pending until the exact new owner settles.
               expect(fixture.completed, isFalse);
               expect(replacement.replacementHistoryReads, greaterThan(0));
-              final chatAction = find.descendant(
-                of: find.byKey(const ValueKey('desktop-sidebar')),
-                matching: find.bySemanticsLabel('Chat'),
-              );
+              final chatAction = width < 600
+                  ? find.descendant(
+                      of: find.byType(NavigationBar),
+                      matching: find.text('Chat'),
+                    )
+                  : find.descendant(
+                      of: find.byKey(const ValueKey('desktop-sidebar')),
+                      matching: find.bySemanticsLabel('Chat'),
+                    );
               await tester.tap(chatAction);
               await settle();
               final replacementChat = tester.state(
@@ -294,7 +315,11 @@ void main() {
                 'content': _StreamFixture.reply,
               });
               await settle();
-              await tester.tap(find.bySemanticsLabel('Settings'));
+              if (width < 600) {
+                await openContactSettings();
+              } else {
+                await tester.tap(find.bySemanticsLabel('Settings'));
+              }
               await settle();
               expect(close, findsOneWidget);
               if (dismissal == 'close') {

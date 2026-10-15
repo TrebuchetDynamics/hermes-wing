@@ -4055,6 +4055,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408 compact active-stream Settings: 77 focused Flutter tests, analyze, format and 24 synthetic HTTP/SSE GTK journeys passed; independent native-source review approved. docs/quality/chat-workspace-overlay-native.md#compact-settings-during-active-saved-contact-chat. Parent and live acceptance remain open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING-TASK-408 populated native Profiles: 18 isolated GTK HTTP/SSE journeys at 390/1280 and 200% text, including six rendered active-stream profile replacements; 30 focused tests and flutter analyze --no-pub pass. Required native-source re-review approves Dart 4d6a093fc2ed66e13696da24d8d3d59bddebe707 and runner 6951560a3ce94af91424a91ae04de19aff7151c9. Selection no-op negative control fails replacement-owner barrier; production restored. docs/quality/chat-workspace-overlay-native.md#native-populated-profiles-and-active-run-replacement. Server stream closure only, not cancelled client terminal consumption. Native connections, saved secrets, Android and live Agent NOT_CHECKED; parent open.",
           "result": "pass"
         },

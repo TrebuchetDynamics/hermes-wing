@@ -21,8 +21,12 @@ zero connect/disconnect, Send, Stop, session creation/selection or profile selec
 calls, and the fake endpoint store must record zero saves. All 24 chat-local
 journeys assert automatic composer focus return, without tapping Chat. Slash
 commands intentionally consume their command text; shell and Manage preserve the
-unsent draft. Shell return focus is not asserted (`composer_focus_restored: false`
-means not checked for those twelve journeys, not a failed focus assertion).
+unsent draft. Shell journeys also assert automatic semantic focus return to the
+originating control: compact More for Settings, compact Profiles, or the wide
+Settings/Manage profiles control. No Tab, tap or focus request intervenes after
+dismissal. `shell_focus_restored` records this assertion for those twelve journeys;
+`composer_focus_restored: false` means composer return is not expected for shell
+entry, not a failed focus assertion.
 
 This uses the existing in-memory test channel and endpoint store, with mocked
 preferences. It does **not** exercise HTTP/SSE or credentials. The separate
@@ -100,11 +104,27 @@ Settings action was absent. The exact approved source was restored byte-for-byte
 the passing frozen-source receipt above remains bound to those restored bytes.
 This detects missing activation, not every possible traversal or focus regression.
 
+## Shell return-focus follow-through
+
+On the isolated candidate based on `c7fd0340`, all 36 GTK journeys passed with
+Flutter 3.44.2/Dart 3.12.2, including twelve shell return-focus assertions across
+Close, Escape and framework Back. The typed receipt distinguishes shell focus
+from composer focus. App PID, unchanged frozen source/dependency manifests,
+owned-process teardown and isolated-state removal were verified. Analyzer, locked
+offline dependency resolution and 28 focused router/receipt/shell tests passed.
+Independent read-only native-source review approved the two changed test files.
+No production fix was necessary; the existing navigator already restores focus.
+A rebuilt native negative control explicitly requested composer focus after modal
+dismissal. The first compact Settings/Close shell-focus assertion failed as
+expected. Exact approved source was restored byte-for-byte; the passing frozen
+source manifest matches the restored candidate. This checks focus theft, not
+physical keyboard or screen-reader behavior.
+
 ## Remaining acceptance
 
-Shell return focus, active stream behavior in GTK, profile/connection replacement,
-late old-run completion and Android remain unqualified. The chat-local entry/focus
-matrix is separate from shell focus.
+Compiled-browser shell return focus, active stream behavior in GTK,
+profile/connection replacement, late old-run completion and Android remain
+unqualified. The chat-local composer and GTK shell focus matrices are separate.
 Surface size and input use Flutter integration seams, not physical window resizing,
 an OS keyboard/IME, OS Back or screen-reader qualification.
 No live Agent, provider inference, personal preferences, keyring or services were

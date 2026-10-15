@@ -112,6 +112,7 @@ void main() {
               ? 'Synthetic unsent native draft'
               : '';
           final semantics = tester.ensureSemantics();
+          Finder? shellReturnTarget;
           if (entry == 'manage') {
             await tester.tap(
               find.byKey(const ValueKey('hermes-profile-switcher')),
@@ -146,21 +147,19 @@ void main() {
 
             if (width < 600) {
               final label = destination == 'settings' ? 'More' : 'Profiles';
-              await activate(
-                find.descendant(
-                  of: find.byType(NavigationBar),
-                  matching: find.text(label),
-                ),
+              shellReturnTarget = find.descendant(
+                of: find.byType(NavigationBar),
+                matching: find.text(label),
               );
+              await activate(shellReturnTarget);
               if (destination == 'settings') {
                 await activate(find.text('Settings').last);
               }
             } else {
-              await activate(
-                destination == 'profiles'
-                    ? find.byKey(const ValueKey('desktop-manage-profiles'))
-                    : find.bySemanticsLabel('Settings'),
-              );
+              shellReturnTarget = destination == 'profiles'
+                  ? find.byKey(const ValueKey('desktop-manage-profiles'))
+                  : find.bySemanticsLabel('Settings');
+              await activate(shellReturnTarget);
             }
           }
           await settle();
@@ -209,6 +208,13 @@ void main() {
           expect(tester.state(find.byType(HermesChatScreen)), same(chat));
           expect(tester.widget<TextField>(field).controller, same(controller));
           expect(controller!.text, expectedDraft);
+          if (shellReturnTarget != null) {
+            expect(
+              navigation.flag(tester, shellReturnTarget, focused: true),
+              isTrue,
+              reason: '$destination $dismissal must restore shell entry focus',
+            );
+          }
           if (entry != 'shell') {
             expect(
               tester.widget<TextField>(field).focusNode!.hasFocus,
@@ -243,6 +249,7 @@ void main() {
             'transcript_retained': true,
             'exact_location_retained': true,
             'shell_entry_keyboard': entry == 'shell',
+            'shell_focus_restored': entry == 'shell',
             'close_keyboard_focus': true,
             'composer_focus_restored': entry != 'shell',
             'mutations': 0,

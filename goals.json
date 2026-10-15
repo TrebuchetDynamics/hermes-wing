@@ -4295,6 +4295,11 @@
         },
         {
           "kind": "executed",
+          "ref": "python3 -B integration_test/run_linux_chat_workspace_overlay.py: 36 isolated GTK journeys pass, including twelve automatic shell return-focus assertions at 390/1280 logical pixels and 200% text; flutter analyze --no-pub and 28 focused router/receipt/shell tests pass. Independent host-native source review approved exact test hashes; docs/quality/chat-workspace-overlay-native.md#shell-return-focus-follow-through. No production change; browser shell focus, owner replacement, Android, physical input and live Agent NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "python3 -B integration_test/run_linux_chat_workspace_overlay.py: twelve isolated Linux GTK shell-entry journeys at 390/1280 logical widths and 200% text retain mounted Chat, draft, transcript and exact URL via keyboard Close/Escape and framework Back. In-memory channel, zero fake mutations; restored-source negative control rejected destructive go navigation. docs/quality/chat-workspace-overlay-native.md; native HTTP/SSE, automatic return focus, physical input, Android and live Agent NOT_CHECKED.",
           "result": "pass"
         },

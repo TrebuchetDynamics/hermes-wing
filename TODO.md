@@ -706,7 +706,8 @@ before their goals can become `met`.
   formatting and six streaming plus 36 existing GTK journeys pass. Removing the
   new guard makes the rebuilt first native journey fail its hidden-composer focus
   assertion; exact source was restored before final qualification. Independent
-  review remains pending. See [native HTTP/SSE evidence](docs/quality/chat-workspace-overlay-native.md#native-production-httpsse-through-settings).
+  native-source review approved exact candidate `9e31d196`; no required fixes.
+  See [native HTTP/SSE evidence](docs/quality/chat-workspace-overlay-native.md#native-production-httpsse-through-settings).
   Next action: qualify native HTTP/SSE through Profiles and native owner replacement.
   Saved-secret isolation and cancelled terminal consumption remain unqualified.
   Keep parent acceptance open; do not repeat delivered matrices.

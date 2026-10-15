@@ -4200,6 +4200,11 @@
         },
         {
           "kind": "executed",
+          "ref": "flutter build web --release --no-pub --no-wasm-dry-run -t lib/main_e2e.dart; node node_modules/@playwright/test/cli.js test --config=playwright.config.mjs playwright/tests/regression/chat-workspace-overlay.spec.mjs --workers=1 --retries=0: 38 Chromium cases pass including active-run rendered profile switching at 390/1280px and 200% text. 26 router tests and analyzer pass; active-profile no-op mutation fails both new cases and is restored. Independent native-source review approved blob 01ec178d2c292ee3160b1d65121eb7108b5ef2d6; docs/quality/chat-workspace-overlay-browser.md#active-run-rendered-profile-switching. Native/live/parent acceptance remains open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "flutter build web --release -t lib/main_e2e.dart",
           "result": "pass"
         },

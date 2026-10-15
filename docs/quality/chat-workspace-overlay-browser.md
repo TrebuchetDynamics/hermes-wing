@@ -287,6 +287,39 @@ formatting and 84 focused router, shell-focus and profile-picker regressions pas
 The six new cases pass with all automatic-focus assertions enabled, including
 Back and Forward/Escape; the source change is two lines in the shared opener.
 
+## Active-run rendered profile switching
+
+Two additional Chromium cases select **Chat with Coding profile** in the rendered
+Profiles overlay while the original synthetic reasoning run is streaming. They
+cover 390/1280px and 200% text. The replacement must settle to the explicit `coder`
+profile, distinct session and canonical coding history before the controller
+completes the original run. Canonical server readback requires that original
+run/session and exact output. Reopen, Back, Forward and Escape must retain the
+replacement state/history without old reply, reasoning controls or active-row
+markers. Only the original deliberate `POST /v1/runs` is allowed; profile switching
+and navigation issue no mutation. Existing bootstrap hooks and per-test synthetic
+read contracts are unchanged. The default browser suite already selects this spec.
+
+The rebuilt matrix passes all 38 Chromium cases with zero retries, skips or flaky
+outcomes on Flutter 3.44.2/Dart 3.12.2 and Node.js 22.5.1. Locked offline dependency
+resolution, `flutter analyze --no-pub`, all 26 router regressions, JavaScript syntax
+and staged whitespace checks pass. Required independent native-source review
+approved the corrected test blob `01ec178d2c292ee3160b1d65121eb7108b5ef2d6`.
+Production source, fixtures and dependencies are unchanged.
+
+A temporary production mutation made profile selection a no-op during streaming;
+both new cases failed the exact selected-profile barrier (`default` versus `coder`).
+The line was removed byte-for-byte before the final rebuild. The initial harness
+instead waited for SSE termination before releasing the synthetic server, timing
+out in both cases (36 existing cases passed). Removing that wait fixes the test
+ordering, not a product defect; initial failures remain in private receipts.
+
+This qualifies rendered switching away from a pending synthetic run and retention
+of the new owner after canonical server completion. It does **not** prove Flutter
+consumed cancelled old terminal events, recoverable detached-run persistence,
+automatic return focus after an owner-changing action, switch-back recovery,
+native streaming or live Agent/provider behavior. Parent acceptance remains open.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -294,13 +327,13 @@ shell entries and retained draft/transcript through keyboard Close/Escape and
 framework Back, with an in-memory channel. It does not promote this browser's
 HTTP/SSE evidence to native transport proof.
 
-Rendered/saved connection switching, profile switching during an active run and
-native streaming remain unqualified. The distinct-origin browser cases above cover
+Rendered/saved connection switching and native streaming remain unqualified. The distinct-origin browser cases above cover
 only explicit channel replacement through the existing E2E hook. GTK now
 separately covers shell and
 chat-local slash/Tab-completion/Manage focus return. Browser Manage and keyboard
 suggestion recovery are covered above; browser direct Tab completion remains
 unsupported by its native-only shortcut gate. Android, physical keyboard/IME,
-screen readers and live Agent/provider behavior remain unqualified. This focus
-change has not been re-exercised in GTK. Keep the original task and acceptance
-open; next qualify remaining owner-switching behavior without repeating these matrices.
+screen readers and live Agent/provider behavior remain unqualified. The shared
+focus change was separately [requalified in GTK](chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification).
+Keep the original task open; next qualify rendered connection switching without
+repeating delivered matrices.

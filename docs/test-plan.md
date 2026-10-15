@@ -51,8 +51,12 @@ prefix; direct Tab execution remains native-desktop-only. Seed the caller-owned
 return focus before pushing the overlay so history restores it too. The
 [GTK requalification](quality/chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification)
 passes all 36 native journeys with that shared focus fix; rerun it when the shared
-focus path changes. Keep rendered/saved connection switching,
-active-run profile switching and native streaming open under WING-TASK-408. Browser and
+focus path changes. Active-run rendered profile cases allow one deliberate Send,
+then require the distinct replacement profile/session/history before completing
+the original synthetic run. Verify canonical server completion and unchanged new
+owner through reopen/Back/Forward/Escape; this is not consumption of cancelled
+old terminal events or detached-run recovery. Keep rendered/saved connection
+switching and native streaming open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

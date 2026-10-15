@@ -120,11 +120,30 @@ expected. Exact approved source was restored byte-for-byte; the passing frozen
 source manifest matches the restored candidate. This checks focus theft, not
 physical keyboard or screen-reader behavior.
 
+## Shared browser-focus fix: GTK requalification
+
+The shared overlay opener now seeds the caller-owned return focus before push
+for browser history recovery, while preserving its mounted/current-route guard.
+On source `285bec1c`, `python3 -B integration_test/run_linux_chat_workspace_overlay.py`
+passed all 36 GTK journeys on Flutter 3.44.2/Dart 3.12.2. This rerun covers the
+changed production focus path: twelve keyboard-shell return-focus cases and
+24 chat-local slash, native Tab-completion and Manage cases, at both widths and
+200% text, with zero fixture mutations. No native test or production code changed
+in this requalification.
+
+The retained runner receipt verifies all 800 frozen source inputs, dependency
+manifests, app PID, process-group teardown and isolated-state removal. Locked
+offline package resolution, analyzer and 30 focused router/receipt/shell-navigation
+tests also passed. The runner's negative receipt self-check passed; the earlier
+native workspace-destruction, missing-activation and focus-theft controls above
+remain historical experiments, not new mutation runs for this source.
+
 ## Remaining acceptance
 
-Compiled-browser shell return focus, active stream behavior in GTK,
-profile/connection replacement, late old-run completion and Android remain
-unqualified. The chat-local composer and GTK shell focus matrices are separate.
+Active stream behavior, profile/connection replacement and late old-run completion
+in GTK, and Android remain unqualified. The separate browser receipt qualifies
+its bounded shell focus, replacement-owner and late-completion cases; it is not
+native evidence. The chat-local composer and GTK shell focus matrices are separate.
 Surface size and input use Flutter integration seams, not physical window resizing,
 an OS keyboard/IME, OS Back or screen-reader qualification.
 No live Agent, provider inference, personal preferences, keyring or services were

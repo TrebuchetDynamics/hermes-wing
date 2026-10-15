@@ -4315,6 +4315,11 @@
         },
         {
           "kind": "executed",
+          "ref": "python3 -B integration_test/run_linux_chat_workspace_overlay.py on 285bec1c: 36 GTK journeys at 390/1280 and 200% text, 800 frozen source inputs, native PID, dependencies, teardown and isolated-state removal verified; flutter analyze --no-pub and 30 focused router/receipt/shell-navigation tests pass. docs/quality/chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification. Synthetic in-memory channel only; parent WING-TASK-408, native HTTP/SSE, Android and live acceptance remain open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "python3 -B integration_test/run_linux_chat_workspace_overlay.py: 36 isolated GTK journeys pass, including 24 chat-local slash/Tab-completion/Manage focus returns; flutter test --no-pub --concurrency=1 test/router/chat_workspace_overlay_test.dart test/integration/linux_chat_workspace_overlay_runner_test.dart: 25 pass; rebuilt compiled Chromium overlay suite: 20 pass, zero retries; docs/quality/chat-workspace-overlay-native.md#chat-local-focus-follow-through. Shell focus, native HTTP/SSE, owner replacement, Android and live Agent NOT_CHECKED.",
           "result": "pass"
         },

@@ -48,8 +48,10 @@ cases must restore composer focus before any editor click after Close, Escape,
 Back and Forward/Escape, retaining Manage's draft and the exact transcript/state/URL
 with zero mutations. Tab alone must preserve browser traversal and the command
 prefix; direct Tab execution remains native-desktop-only. Seed the caller-owned
-return focus before pushing the overlay so history restores it too. Keep
-rendered/saved connection switching,
+return focus before pushing the overlay so history restores it too. The
+[GTK requalification](quality/chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification)
+passes all 36 native journeys with that shared focus fix; rerun it when the shared
+focus path changes. Keep rendered/saved connection switching,
 active-run profile switching and native streaming open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 

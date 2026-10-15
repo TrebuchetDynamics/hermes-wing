@@ -3,6 +3,18 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('Linux streaming runner rejects incomplete or malformed receipt', () {
+    final result = Process.runSync('python3', [
+      '-B',
+      'integration_test/run_linux_chat_workspace_stream.py',
+      '--self-check',
+    ]);
+    expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+    expect(
+      result.stdout,
+      contains('Streaming native receipt self-check passed'),
+    );
+  });
   test('Linux overlay runner rejects incomplete or malformed receipt', () {
     final result = Process.runSync('python3', [
       '-B',

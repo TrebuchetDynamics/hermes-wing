@@ -138,10 +138,93 @@ tests also passed. The runner's negative receipt self-check passed; the earlier
 native workspace-destruction, missing-activation and focus-theft controls above
 remain historical experiments, not new mutation runs for this source.
 
+## Native production HTTP/SSE through Settings
+
+The next WING-TASK-408 slice uses
+`integration_test/linux_chat_workspace_stream_test.dart` with an ephemeral IPv4
+loopback `HttpServer`, the unmodified default `HermesApiChannel`/`HermesApiClient`
+and native HTTP transport. There is no injected transport or in-memory channel.
+The fixture reuses the session-chat capability, history envelopes and
+`assistant.delta` / `[DONE]` protocol from the existing channel regressions.
+It advertises only session chat streaming and rejects unexpected requests or an
+invalid/duplicate Send. Endpoint persistence and preferences remain test fakes;
+no credential or personal Agent state is loaded.
+
+Six GTK journeys cover Settings at 390/1280 logical pixels and 200% text with
+keyboard-activated Close, Escape and framework `handlePopRoute` Back. Shell entry
+uses Flutter pointer taps (compact More → Settings or wide Settings); this new
+matrix does not claim keyboard-only entry. Each rendered Send starts one HTTP/SSE
+request. A first flushed chunk is rendered in Chat before Settings opens; a second
+is released and consumed only while Settings remains visible. The client must
+still report streaming before terminal release. Completion then reconciles the
+exact canonical assistant ID/text/status through HTTP history while the modal is
+still open. This is progressive synthetic streaming, not a single terminal burst.
+After dismissal the same mounted Chat/controller, next unsent draft, endpoint,
+session and full return URL survive, with the final reply rendered. Each journey
+requires exactly one Send, two history reads, zero unexpected requests and zero
+endpoint saves.
+
+This exposed a real completion-focus defect: Chat's nested `ModalRoute` remains
+current beneath the root overlay. Scheduled completion focus could therefore move
+to the hidden composer; Enter could send its retained draft instead of activating
+Close, and Escape would not dismiss Settings. The shared scheduled-focus helper
+now also requires the visible GoRouter location to be Chat. Its existing
+mounted/current-route, owner and reasoning-disclosure guards remain intact, and
+standalone widget hosts without GoRouter keep their existing behavior. Two new
+router widget regressions failed before this three-line fix and pass afterward.
+Native assertions check actual composer focus as well as Close semantics after
+settling the completion frame, before any compensating input.
+
+```bash
+python3 -B integration_test/run_linux_chat_workspace_stream.py --self-check
+python3 -B integration_test/run_linux_chat_workspace_stream.py
+python3 -B integration_test/run_linux_chat_workspace_overlay.py
+flutter analyze --no-pub
+flutter test --no-pub --concurrency=1 \
+  test/router/chat_workspace_overlay_test.dart \
+  test/integration/linux_chat_workspace_overlay_runner_test.dart \
+  test/core/hermes/client/platform/hermes_api_transport_io_test.dart \
+  test/core/hermes/channel/hermes_api_channel_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_composer_focus_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_completion_focus_owner_test.dart \
+  test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart \
+  --reporter expanded
+```
+
+On the isolated candidate based on `97d1ae4f`, locked offline package resolution,
+formatting, analyzer and all 401 focused tests passed. Flutter 3.44.2/Dart 3.12.2
+passed the six streaming journeys and requalified the existing 36 in-memory GTK
+journeys. Both runners verified the native PID, source/dependency identity,
+process-group teardown and isolated-state removal. The streaming wrapper reuses
+`run_linux_shell_compact_return.py` isolation, frozen source archives and atomic
+receipt publication; malformed-receipt self-checks run through the existing Dart
+runner-test target. It is an intentional separate native gate, not part of the
+default browser suite.
+
+Local receipts under `.task-evidence/` (not committed): streaming
+`overlay-native-sse-408/native-4y9xsc1w/verification.json`, existing matrix
+`overlay-native-408/native-hd6vtjin/verification.json`. Both source manifests hash
+to `dcedc10819ad2b75f0377dc0a37272fa729749cf568c99a0c773cdb7cfa091f7`
+and match all 802 current frozen inputs. Removing only the new visible-route guard
+and rebuilding GTK failed the first compact completion-under-overlay focus
+assertion (`overlay-native-sse-408/native-xkckttqo/native.log`). Exact source was
+restored before both final passing GTK runs. This negative control detects the
+reproduced focus theft, not arbitrary transport or ownership defects.
+
+Initial harness attempts also failed: Send needed a render frame, next-draft
+input needed explicit composer activation, an async server callback could not
+use guarded widget expectations, and semantics disposal had to precede test-end
+verification. An attempted reuse of the traversal helper's `pumpAndSettle` waited
+until stream idle timeout; streaming now uses only bounded frame pumps. These
+attempts remain failed receipts and do not qualify behavior.
+
 ## Remaining acceptance
 
-Active stream behavior, profile/connection replacement and late old-run completion
-in GTK, and Android remain unqualified. The separate browser receipt qualifies
+Native HTTP/SSE through Profiles, profile/connection replacement and late old-run
+completion in GTK, and Android remain unqualified. Native HTTP/SSE through
+Settings is bounded to the synthetic session-chat matrix above, not live Agent,
+provider inference, authentication, saved secrets or detached-run persistence.
+The separate browser receipt qualifies
 its bounded shell focus, replacement-owner and late-completion cases; it is not
 native evidence. The chat-local composer and GTK shell focus matrices are separate.
 Surface size and input use Flutter integration seams, not physical window resizing,

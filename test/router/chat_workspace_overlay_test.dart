@@ -46,6 +46,68 @@ Future<void> settleRoutes(WidgetTester tester) async {
 
 void main() {
   for (final width in [390.0, 1200.0]) {
+    testWidgets('completion does not steal Settings focus at $width', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      SharedPreferences.setMockInitialValues({});
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel();
+      HermesChatTurn reply(HermesTurnStatus status) => HermesChatTurn(
+        id: 'synthetic-completion',
+        sessionId: 'sess_1',
+        author: HermesTurnAuthor.assistant,
+        createdAt: DateTime.utc(2026),
+        text: 'Synthetic completion',
+        status: status,
+      );
+      channel.replaceTranscript([reply(HermesTurnStatus.streaming)]);
+      final container = ProviderContainer(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(channel.dispose);
+      final router = container.read(routerProvider);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      await settleRoutes(tester);
+      final closed = router.push<void>(AppRoutes.settings);
+      await settleRoutes(tester);
+      final field = find.byKey(composer);
+      expect(tester.widget<TextField>(field).focusNode!.hasFocus, isFalse);
+      channel.replaceTranscript([reply(HermesTurnStatus.completed)]);
+      await settleRoutes(tester);
+      expect(
+        tester.widget<TextField>(field).focusNode!.hasFocus,
+        isFalse,
+        reason: 'Completion must not focus Chat beneath a root overlay',
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settleRoutes(tester);
+      expect(find.byKey(close), findsNothing);
+      await closed;
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      await tester.pumpWidget(const SizedBox.shrink());
+      debugDefaultTargetPlatformOverride = null;
+    });
     testWidgets(
       'profile overlay Chat returns to retained workspace at $width',
       (tester) async {

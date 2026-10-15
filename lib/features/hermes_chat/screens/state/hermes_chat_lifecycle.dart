@@ -115,6 +115,9 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
         if (!(canFocus?.call() ?? true)) return;
         final route = ModalRoute.of(context);
         if (route != null && !route.isCurrent) return;
+        // Chat's nested route stays current beneath root navigator overlays.
+        final router = GoRouter.maybeOf(context);
+        if (router != null && router.state.uri.path != AppRoutes.hermes) return;
         _composerFocusNode.requestFocus();
       } finally {
         settled.complete();

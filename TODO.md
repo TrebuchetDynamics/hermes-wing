@@ -695,7 +695,19 @@ before their goals can become `met`.
   26 router regressions and analysis pass. Independent native-source review approved;
   a gateway-switch no-op fails both new owner barriers. See
   [active-run saved-host evidence](docs/quality/chat-workspace-overlay-browser.md#active-run-rendered-saved-host-switching).
-  Next action: qualify native HTTP/SSE retained streaming through Settings navigation.
+  Native HTTP/SSE Settings follow-through passes six isolated GTK journeys at
+  both widths/200% text: progressive synthetic chunks before/during the modal,
+  canonical history completion while it remains visible, then Close/Escape/framework
+  Back with exact mounted Chat/controller, draft, owner and URL retained. Only one
+  deliberate Send writes per journey. The production channel/client/native transport
+  are used without injected I/O. A reproduced completion-focus theft is fixed by
+  checking the visible router location before scheduled composer focus; two widget
+  regressions fail before the fix and pass after. All 401 focused tests, analysis,
+  formatting and six streaming plus 36 existing GTK journeys pass. Removing the
+  new guard makes the rebuilt first native journey fail its hidden-composer focus
+  assertion; exact source was restored before final qualification. Independent
+  review remains pending. See [native HTTP/SSE evidence](docs/quality/chat-workspace-overlay-native.md#native-production-httpsse-through-settings).
+  Next action: qualify native HTTP/SSE through Profiles and native owner replacement.
   Saved-secret isolation and cancelled terminal consumption remain unqualified.
   Keep parent acceptance open; do not repeat delivered matrices.
 

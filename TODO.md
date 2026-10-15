@@ -590,8 +590,20 @@ before their goals can become `met`.
   Sources: [2026-07-17-settings-information-architecture](docs/superpowers/plans/2026-07-17-settings-information-architecture.md) (historical planning context);
    [implemented overlay and evidence limits](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
   [port fidelity scope](docs/product/hermes-desktop-parity.md#current-delivery-assessment).
-  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Section: Next.
-  Ownership: unclaimed; coordinate router/shell and profile-footer owners before edits.
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT.
+  Section: Next.
+  Checks: `flutter test --no-pub --concurrency=1 test/router/chat_workspace_overlay_test.dart`;
+  `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before compiled Chromium
+  overlay navigation/history checks; run isolated Linux overlay journeys separately.
+  Ownership: current wing Autowork coordinator; isolated browser qualification.
+  Status: in_progress.
+  Partial delivery: [compiled overlay browser evidence](docs/quality/chat-workspace-overlay-browser.md)
+  adds eight Settings/Profiles shell-history and disconnected deep-link cases at
+  compact/wide widths and 200% text; included in the default browser suite.
+  No production behavior changed. Stream/owner replacement, chat-local entries,
+  automatic return focus and the isolated Linux journey remain unqualified.
+  Next action: extend the same production-path suite to stream/owner replacement,
+  then execute the native journey; do not repeat this bounded browser matrix.
 
 ### Terminal working-directory files (planned)
 

@@ -10,6 +10,18 @@ Status: verification strategy, not an execution receipt.
 verification methods. The [evidence matrix](quality/evidence-matrix.md) records
 qualification; individual receipts must identify the source, target and limits.
 
+## Chat workspace overlay navigation
+
+Rebuild `lib/main_e2e.dart`, start the deterministic loopback fixture, then run
+`npx playwright test playwright/tests/regression/chat-workspace-overlay.spec.mjs
+--workers=1 --retries=0`. The default `npm run web:e2e` runner also selects it.
+The [bounded browser receipt](quality/chat-workspace-overlay-browser.md) records
+Settings/Profiles shell entry, Back/Forward, Escape/Close, retained draft/transcript,
+zero API mutations and disconnected deep links at compact/wide widths and 200%
+Flutter text. Keep streaming, owner replacement, chat-local entry, automatic focus
+return and isolated Linux qualification open under WING-TASK-408. Browser fixtures
+are not native/device/live acceptance.
+
 ## Persona native conflict recovery
 
 Run `python3 -B integration_test/run_linux_persona_conflict.py` after locked

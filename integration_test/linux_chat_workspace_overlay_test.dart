@@ -16,6 +16,8 @@ import 'package:wing/router/app_router.dart';
 
 import '../test/features/hermes_chat/support/fake_hermes_channel.dart';
 import '../test/features/hermes_chat/support/fake_hermes_endpoint_store.dart';
+import '../test/shared/widgets/app_shell_navigation_groups_test.dart'
+    as navigation;
 
 // Native engine/router qualification with an in-memory channel, not HTTP/SSE,
 // physical keyboard, OS Back or live Agent qualification.
@@ -109,6 +111,7 @@ void main() {
           final expectedDraft = entry == 'shell' || entry == 'manage'
               ? 'Synthetic unsent native draft'
               : '';
+          final semantics = tester.ensureSemantics();
           if (entry == 'manage') {
             await tester.tap(
               find.byKey(const ValueKey('hermes-profile-switcher')),
@@ -130,33 +133,35 @@ void main() {
               await tester.ensureVisible(action);
               await tester.tap(action);
             }
-          } else if (width < 600) {
-            final label = destination == 'settings' ? 'More' : 'Profiles';
-            await tester.tap(
-              find.descendant(
-                of: find.byType(NavigationBar),
-                matching: find.text(label),
-              ),
-            );
-            if (destination == 'settings') {
-              await settle();
-              await tester.ensureVisible(find.text('Settings').last);
-              await tester.tap(find.text('Settings').last);
-            }
-          } else if (destination == 'profiles') {
-            await tester.tap(
-              find.byKey(const ValueKey('desktop-manage-profiles')),
-            );
           } else {
-            final entry = find
-                .descendant(
-                  of: find.byKey(const ValueKey('desktop-sidebar')),
-                  matching: find.text('Settings'),
-                )
-                .first;
-            await tester.ensureVisible(entry);
-            await settle();
-            await tester.tap(entry);
+            Future<void> activate(Finder target) async {
+              await navigation.reach(tester, target);
+              expect(
+                tester.getRect(target).overlaps(Offset.zero & Size(width, 900)),
+                isTrue,
+              );
+              await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+              await settle();
+            }
+
+            if (width < 600) {
+              final label = destination == 'settings' ? 'More' : 'Profiles';
+              await activate(
+                find.descendant(
+                  of: find.byType(NavigationBar),
+                  matching: find.text(label),
+                ),
+              );
+              if (destination == 'settings') {
+                await activate(find.text('Settings').last);
+              }
+            } else {
+              await activate(
+                destination == 'profiles'
+                    ? find.byKey(const ValueKey('desktop-manage-profiles'))
+                    : find.bySemanticsLabel('Settings'),
+              );
+            }
           }
           await settle();
           final close = find.byKey(
@@ -165,7 +170,6 @@ void main() {
           expect(close, findsOneWidget);
           expect(chat.mounted, isTrue);
           expect(tester.widget<TextField>(field).focusNode!.hasFocus, isFalse);
-          final semantics = tester.ensureSemantics();
           expect(
             tester
                 .getSemantics(close)
@@ -238,6 +242,7 @@ void main() {
             'draft_retained': true,
             'transcript_retained': true,
             'exact_location_retained': true,
+            'shell_entry_keyboard': entry == 'shell',
             'close_keyboard_focus': true,
             'composer_focus_restored': entry != 'shell',
             'mutations': 0,

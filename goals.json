@@ -4030,6 +4030,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408: python3 -B integration_test/run_linux_chat_workspace_overlay.py — all36 Linux GTK journeys pass, twelve Tab/Enter shell entries including compact More; Flutter3.44.2/Dart3.12.2, 390/1280 logical pixels and200% text; typed receipts/source/dependencies and teardown verified. flutter analyze --no-pub and28 focused router/receipt/shell tests pass; independent native-source review approved. docs/quality/chat-workspace-overlay-native.md. Automatic shell return focus, owner replacement, native HTTP/SSE, Android and live Agent NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING-TASK-408: rebuilt lib/main_e2e.dart on b451d87e; 20 compiled Chromium overlay cases pass, four with Tab/Enter shell entry including compact More at 390/1280px and 200% text; flutter analyze --no-pub and 25 focused router/receipt tests pass; keyboard-shell-entry source independently approved; automatic shell return focus/native/live remain unqualified. docs/quality/chat-workspace-overlay-browser.md#keyboard-shell-entry-follow-through",
           "result": "pass"
         },

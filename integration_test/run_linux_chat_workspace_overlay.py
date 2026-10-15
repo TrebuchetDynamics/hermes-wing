@@ -10,6 +10,7 @@ def expected_journeys():
     return [dict(width=width, entry=entry, destination=destination, dismissal=dismissal,
                  text_scale=2, chat_retained=True, draft_retained=True,
                  transcript_retained=True, exact_location_retained=True,
+                 shell_entry_keyboard=entry == 'shell',
                  close_keyboard_focus=True, composer_focus_restored=entry != 'shell',
                  mutations=0)
             for width in (390.0, 1280.0)

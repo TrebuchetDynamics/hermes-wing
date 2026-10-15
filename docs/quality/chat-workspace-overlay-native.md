@@ -76,11 +76,35 @@ read a newly created empty file before JSON was written. The Dart test now write
 a sibling pending file and renames it atomically. That interrupted run remains
 failed; only the subsequent complete run qualifies the matrix.
 
+## Keyboard shell-entry follow-through
+
+The twelve shell journeys now reach Settings and Profiles with Tab and activate
+with Enter. Compact Settings first traverses More and then its Settings action.
+The existing bounded shell traversal helper asserts semantic focus; the native
+test also requires the target to intersect the viewport before activation. No
+pointer click, programmatic focus or `ensureVisible` is used for shell entry.
+Bootstrap and draft entry still use fixture setup and `enterText`; these are not
+fully keyboard-only journeys.
+
+On the isolated candidate based on `2494e135`, all 36 GTK journeys passed with
+Flutter 3.44.2/Dart 3.12.2: twelve keyboard-shell and 24 retained chat-local cases.
+The runner verified the app PID, typed receipts, unchanged frozen source and
+dependency manifests, owned-process teardown and isolated-state removal.
+Analyzer, locked offline dependency resolution and 28 focused router/receipt/shell
+navigation tests passed. Independent read-only native-source review approved the
+two changed test/runner files. Production code and dependencies are unchanged.
+
+A rebuilt native negative control omitted Enter in the shell activation helper.
+The first compact Settings journey failed because More never opened and its
+Settings action was absent. The exact approved source was restored byte-for-byte;
+the passing frozen-source receipt above remains bound to those restored bytes.
+This detects missing activation, not every possible traversal or focus regression.
+
 ## Remaining acceptance
 
-Keyboard-only shell entry and shell return focus, active stream behavior in GTK,
-profile/connection replacement, late old-run completion and Android remain
-unqualified. The chat-local entry/focus matrix is separate from shell focus.
+Shell return focus, active stream behavior in GTK, profile/connection replacement,
+late old-run completion and Android remain unqualified. The chat-local entry/focus
+matrix is separate from shell focus.
 Surface size and input use Flutter integration seams, not physical window resizing,
 an OS keyboard/IME, OS Back or screen-reader qualification.
 No live Agent, provider inference, personal preferences, keyring or services were

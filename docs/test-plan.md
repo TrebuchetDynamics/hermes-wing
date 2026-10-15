@@ -23,12 +23,13 @@ Flutter text. Compiled coverage also retains an active synthetic SSE stream thro
 completion and same-endpoint/session replacement. Local slash entries must return
 focus automatically after Close, Escape and browser Back, without clicking Chat.
 Run `python3 -B integration_test/run_linux_chat_workspace_overlay.py` for the separate
-[isolated GTK receipt](quality/chat-workspace-overlay-native.md): shell, slash,
-Tab-completion and profile-Manage entries, all three dismissal seams and 200% text.
+[isolated GTK receipt](quality/chat-workspace-overlay-native.md): Tab/Enter shell
+entry (including compact More), slash, Tab-completion and profile-Manage entries,
+all three dismissal seams and 200% text.
 Widget tests additionally replace the route before the overlay future completes;
 no disposed composer may regain focus. Keep automatic shell return focus,
-GTK keyboard-only shell entry, profile/connection replacement, late old-run
-completion and native streaming open under WING-TASK-408. Browser and
+profile/connection replacement, late old-run completion and native streaming open
+under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

@@ -5,7 +5,7 @@ Use this when handing a local Hermes Wing Android build to a trusted tester or i
 ## Exact release evidence
 
 The release workflow emits `android-release-evidence.json` after dependency
-resolution, generated Termux metadata, and APK/AAB creation. It records actual
+resolution and APK/AAB creation. It records actual
 input digests, source dirty status, version/build, toolchain, workflow run and
 attempt, signing certificate identity, and separate APK/AAB digests. There is no generated host-service bootstrap metadata or binary in the release.
 
@@ -15,9 +15,12 @@ Split/store installations are rejected by this smoke and remain unqualified.
 APK install/launch evidence never qualifies the AAB, physical microphone, acoustic
 quality, or service lifecycle.
 
-Before publication, `release-qualification-index.json` hashes all four build
-manifests, payloads, auxiliary files, the host verification receipt, and all three
-platform smoke receipts. Missing or mismatched receipts fail publication.
+Before publication, `release-qualification-index.json` hashes all three client
+build manifests (Android, Linux and web), payloads, auxiliary files, the host
+verification receipt and the Android emulator smoke receipt. Missing or mismatched
+required receipts fail publication. This binds integrity and launch evidence, not
+same-artifact M1–M5, upgrade or recovery acceptance; see the
+[Android integrated receipt gap](../../quality/m6-android-integrated-receipt-gap.md).
 Historical manual receipts are not imported into this index; opt-in sanitized
 physical/server-audio receipts remain a separate manual evidence chain. See the
 [live microphone runbook](live-mic-smoke.md). No signed release or hosted workflow
@@ -142,13 +145,13 @@ build/app/outputs/bundle/release/app-release.aab
 
 1. Launch Hermes Wing on the Android target.
 2. Confirm the setup screen opens without requiring a token in logs or screenshots.
-3. Run the default pairing command with a phone-reachable trusted NetBird,
-   Tailscale, or other VPN address, or an isolated-LAN address. Use `--local` only for same-host pairing. Verify the QR
-   flow from the host screen and Android **Share → Hermes Wing** for an existing
-   pairing message. Use loopback `/open` only when Wing runs on that same host,
-   and manual URL/token
-   entry only as a one-profile fallback.
-4. Send one short text turn to confirm the installed app can reach the trusted gateway.
+3. Follow the [direct Agent guide](../../getting-started.md#direct-agent-connection):
+   prepare an authenticated Agent API and choose SSH, Remote server or manual
+   Termux preparation as appropriate. Wing offers no pairing or QR handoff.
+4. Only with separately approved QA authentication, exact grants and an
+   authoritative provider-call budget, send one short text turn to confirm the
+   installed app can reach the selected Agent. Otherwise record Chat as not checked.
+   A successful reply alone does not close the integrated receipt gap above.
 
 ## Continuous voice smoke after install
 

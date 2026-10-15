@@ -5455,3 +5455,29 @@ Source section: Now / Next
   check actual writer activity and retained continuation before execution.
 
 <!-- End DOC-M6-CHECKER-NODE22 archived contract. -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M6-INTEGRATED-RECEIPT-GAP** — Goal: M6. Section: Next. Map one same-artifact install-to-recovery receipt gap.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M6](ROADMAP.md#m6--deliver-an-integrated-qualified-alpha).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify the first missing Android workflow binding across release receipts and M1-M5. No candidate acquisition, build, install, signing or publication.
+  Checks: trace current Android release receipt producers/consumers and nearest
+  synthetic tests; verify changed local links and source fingerprints, ledger
+  validation and diff whitespace. Documentation evidence only, not M6 acceptance.
+  Current evidence: the [private ARM64 handoff](docs/runbooks/android/release-handoff.md#private-release-apk-handoff)
+  adds isolated packaging and required signing. Its artifact checks do not supply
+  same-artifact Android install, upgrade or recovery receipts; M6 stays unverified.
+  Dependencies: DOC-M6-CHECKER-NODE22.
+  Ownership: coordinator wing; completed offline assessment. The
+  [current receipt gap](docs/quality/m6-android-integrated-receipt-gap.md) identifies
+  the missing installed-APK-to-M1–M5 join before upgrade/recovery. Node.js 22.22.2
+  synthetic evidence/recorder tests: 54 passed. No candidate or target executed;
+  M6 stays unverified. VERIFY-M6-ANDROID-INTEGRATED retains actual qualification.
+
+<!-- End archived DOC-M6-INTEGRATED-RECEIPT-GAP. -->

@@ -5478,6 +5478,11 @@
         },
         {
           "kind": "inspection",
+          "ref": "docs/quality/m6-android-integrated-receipt-gap.md (current client-only chain binds installed APK launch, not same-artifact M1-M5 or upgrade/recovery; M6 unverified)",
+          "result": "pass"
+        },
+        {
+          "kind": "inspection",
           "ref": "docs/runbooks/offline-release-candidate-comparison.md (four source fingerprints match .task-evidence/t_bef84284/validation.json; 120 retained synthetic passes; same-card review and actual candidate unverified)",
           "result": "pass"
         },
@@ -5501,7 +5506,8 @@
         "DOC-M6-CANDIDATE-ADMISSION",
         "DOC-M6-CHECKER-NODE22",
         "DOC-M6-INTEGRATED-RECEIPT-GAP",
-        "DOC-M6-OFFLINE-CHECKER"
+        "DOC-M6-OFFLINE-CHECKER",
+        "VERIFY-M6-ANDROID-INTEGRATED"
       ],
       "title": "Qualify exact artifacts, integrated install, upgrade and recovery"
     },
@@ -6786,8 +6792,6 @@
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
       "DOC-M4-MEMORY-CONTRACT",
       "DOC-M4-PLATFORM-CONTRACT",
-      "DOC-M6-CHECKER-NODE22",
-      "DOC-M6-INTEGRATED-RECEIPT-GAP",
       "BACKEND-SSH-CONNECT",
       "BACKEND-SSH-KEY-NATIVE",
       "DOC-ACCOUNT-CONTRACT",
@@ -6806,7 +6810,8 @@
       "DOC-API-DEVICE-SELF-CONFORMANCE",
       "DOC-API-PROTOCOL-ERROR-EVIDENCE",
       "DOC-M2-INODE-POLICY-EVIDENCE",
-      "M2-DEVICE-QUALIFICATION"
+      "M2-DEVICE-QUALIFICATION",
+      "VERIFY-M6-ANDROID-INTEGRATED"
     ]
   },
   "tasks": [
@@ -7139,16 +7144,6 @@
       "title": "Attribute one 200-percent-text message-action journey"
     },
     {
-      "depends_on": [
-        "DOC-M6-CHECKER-NODE22"
-      ],
-      "goal": "M6",
-      "id": "DOC-M6-INTEGRATED-RECEIPT-GAP",
-      "section": "Next",
-      "status": "open",
-      "title": "Map one same-artifact install-to-recovery receipt gap"
-    },
-    {
       "depends_on": [],
       "goal": "NATIVE-INTEGRATION",
       "id": "DOC-NATIVE-DESIGN-REVIEW",
@@ -7451,6 +7446,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Qualify scheduled-job inventory on an authenticated native Agent target"
+    },
+    {
+      "depends_on": [
+        "DOC-M6-INTEGRATED-RECEIPT-GAP"
+      ],
+      "goal": "M6",
+      "id": "VERIFY-M6-ANDROID-INTEGRATED",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify same-artifact Android workflow, upgrade and recovery on an admitted target"
     },
     {
       "depends_on": [
@@ -7950,6 +7955,16 @@
       "section": "Done",
       "status": "done",
       "title": "Run the offline candidate comparator checks on Node.js 22"
+    },
+    {
+      "depends_on": [
+        "DOC-M6-CHECKER-NODE22"
+      ],
+      "goal": "M6",
+      "id": "DOC-M6-INTEGRATED-RECEIPT-GAP",
+      "section": "Done",
+      "status": "done",
+      "title": "Map one same-artifact install-to-recovery receipt gap"
     },
     {
       "depends_on": [

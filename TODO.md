@@ -89,7 +89,7 @@ Generated from `goals.json` by `goals.py render`. `met` requires an executed, pa
 | M4-PLATFORMS: Administer messaging gateways through typed per-platform operations | unmet | inspection <code>docs/product/hermes-desktop-parity.md#statuses</code> → pass | DOC-M4-HOST-LIFECYCLE-EVIDENCE, DOC-M4-PLATFORM-CONTRACT |
 | M4-SCHEDULES: Create/edit/pause/resume/run/delete scheduled jobs and delivery targets | partial | inspection <code>docs/product/hermes-desktop-parity.md#statuses</code> → pass | DOC-M4-SCHEDULE-CONTRACT, DOC-M4-SCHEDULE-DELIVERY-CONTRACT |
 | M5: Qualify native output and accessible interaction | partial | inspection <code>ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction</code> → pass | DOC-M5-ANDROID-FIXTURE, DOC-M5-LARGE-TEXT-EVIDENCE |
-| M6: Qualify exact artifacts, integrated install, upgrade and recovery | unverified | executed <code>Node.js v22.22.2: runbook three node --check commands exit 0; node --test test/tooling/compare_release_candidate_test.mjs test/tooling/release_evidence_test.mjs: 97 passed, 0 failed/skipped. Four input hashes unchanged; docs/runbooks/offline-release-candidate-comparison.md#executed-nodejs-22-baseline. Synthetic only; actual release/signatures/M1-M5/install/recovery NOT_CHECKED.</code> → pass; inspection <code>ROADMAP.md#m6--deliver-an-integrated-qualified-alpha</code> → pass; inspection <code>docs/quality/2026-10-06-m6-artifact-evidence.md</code> → pass; inspection <code>docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs</code> → pass; inspection <code>docs/runbooks/offline-release-candidate-comparison.md (four source fingerprints match .task-evidence/t_bef84284/validation.json; 120 retained synthetic passes; same-card review and actual candidate unverified)</code> → pass; inspection <code>docs/runbooks/release-alpha.md#local-artifact-verification</code> → pass; inspection <code>docs/test-plan.md#android-private-release-verification (isolated signing/package guard inspected; artifact receipt is not named-device install/upgrade/recovery proof)</code> → pass | DOC-M6-INTEGRATED-RECEIPT-GAP |
+| M6: Qualify exact artifacts, integrated install, upgrade and recovery | unverified | executed <code>Node.js v22.22.2: runbook three node --check commands exit 0; node --test test/tooling/compare_release_candidate_test.mjs test/tooling/release_evidence_test.mjs: 97 passed, 0 failed/skipped. Four input hashes unchanged; docs/runbooks/offline-release-candidate-comparison.md#executed-nodejs-22-baseline. Synthetic only; actual release/signatures/M1-M5/install/recovery NOT_CHECKED.</code> → pass; inspection <code>ROADMAP.md#m6--deliver-an-integrated-qualified-alpha</code> → pass; inspection <code>docs/quality/2026-10-06-m6-artifact-evidence.md</code> → pass; inspection <code>docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs</code> → pass; inspection <code>docs/quality/m6-android-integrated-receipt-gap.md (current client-only chain binds installed APK launch, not same-artifact M1-M5 or upgrade/recovery; M6 unverified)</code> → pass; inspection <code>docs/runbooks/offline-release-candidate-comparison.md (four source fingerprints match .task-evidence/t_bef84284/validation.json; 120 retained synthetic passes; same-card review and actual candidate unverified)</code> → pass; inspection <code>docs/runbooks/release-alpha.md#local-artifact-verification</code> → pass; inspection <code>docs/test-plan.md#android-private-release-verification (isolated signing/package guard inspected; artifact receipt is not named-device install/upgrade/recovery proof)</code> → pass | VERIFY-M6-ANDROID-INTEGRATED |
 | ACCOUNT: Qualify account/OAuth/pools/credits/wallet authority before exposure | unmet | inspection <code>docs/product/hermes-desktop-parity.md#statuses</code> → pass | DOC-ACCOUNT-CONTRACT, DOC-ACCOUNT-REVOCATION-EVIDENCE |
 | API-CONFORMANCE: Verify owned code-first HTTP contract against handlers | unverified | executed <code>python3 .task-evidence/t_f2b5c61e/check_discovery.py; receipt: .task-evidence/t_f2b5c61e/validation.json and docs/quality/2026-10-06-wing-link-api-conformance.md (GET /meta and GET /healthz only; all 20 source hashes match; full API conformance unverified)</code> → pass; inspection <code>docs/api/wing-link.openapi.yaml</code> → pass | DOC-API-DEVICE-SELF-CONFORMANCE, DOC-API-PROTOCOL-ERROR-EVIDENCE |
 | NATIVE-INTEGRATION: Review bounded host-local integration before privileged implementation | unverified | inspection <code>docs/adr/client.md#decision</code> → pass | DOC-NATIVE-DESIGN-REVIEW, DOC-NATIVE-FAILURE-BOUNDARY |
@@ -1215,18 +1215,6 @@ patches, personal credential discovery, service restarts or provider spending.
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
-- [ ] **DOC-M6-INTEGRATED-RECEIPT-GAP** — Goal: M6. Section: Next. Map one same-artifact install-to-recovery receipt gap.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M6](ROADMAP.md#m6--deliver-an-integrated-qualified-alpha).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify the first missing Android workflow binding across release receipts and M1-M5. No candidate acquisition, build, install, signing or publication.
-  Current evidence: the [private ARM64 handoff](docs/runbooks/android/release-handoff.md#private-release-apk-handoff)
-  adds isolated packaging and required signing. Its artifact checks do not supply
-  same-artifact Android install, upgrade or recovery receipts; M6 stays unverified.
-  Dependencies: DOC-M6-CHECKER-NODE22; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-
 - [ ] **BACKEND-SSH-CONNECT** — Goal: REMOTE-BACKENDS. Complete and qualify the
   existing native Dart SSH forwarding to an already-configured authenticated Agent.
   Payoff: replace manual tunnel setup on the admitted native target without
@@ -1540,3 +1528,28 @@ patches, personal credential discovery, service restarts or provider spending.
   Waydroid for independent Android QA under PARITY-MAESTRO-ANDROID-DEVICE;
   that setup and execution proceed without satisfying this physical-device slice.
   Desktop-first work proceeds independently.
+
+- [ ] **VERIFY-M6-ANDROID-INTEGRATED** — Goal: M6. Section: Needs decision.
+  Qualify same-artifact Android workflow, upgrade and recovery on an admitted target.
+  Payoff: prove installed daily use and retained-state recovery, not just APK launch.
+  Sources: [M6](ROADMAP.md#m6--deliver-an-integrated-qualified-alpha),
+  [first missing binding](docs/quality/m6-android-integrated-receipt-gap.md#first-missing-binding).
+  Scope: separately admitted candidate and disposable named Android target; bind
+  installed artifact/package/process identity to applicable M1–M5 outcomes, then
+  a distinct verified predecessor and approved upgrade/failure/recovery sequence.
+  Preserve paired/personal apps, credentials and Agent state. No release, deployment,
+  upstream edits, invented contracts or unapproved inference is authorized here.
+  Acceptance: exact source/tag/certificate/artifact and installed-byte readback;
+  named target/OS/ABI/package/process generations; applicable workflow receipts and
+  exact-owner canonical restoration with zero replay. Upgrade and recovery must
+  retain expected state, restore trusted bytes/health and verify canonical owner.
+  Unsupported operations remain explicit gaps; fixtures never qualify M6.
+  Checks: source/artifact-bound admitted Android journeys, sanitized operation
+  counts and readbacks; relevant regression and integration gates for any fixes.
+  Dependencies: DOC-M6-INTEGRATED-RECEIPT-GAP.
+  External gates: admitted signed candidate and distinct trusted predecessor,
+  disposable target/package and bounded failure/recovery authority; approved QA
+  authentication, exact grants and authoritative provider-call ceiling for live work.
+  No candidate acquisition, install or live action occurred in the predecessor.
+  Ownership: coordinator wing; not dispatched. Default: keep M6 unverified and
+  continue independent offline work until those inputs are available.

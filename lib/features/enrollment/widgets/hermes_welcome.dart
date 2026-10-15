@@ -32,10 +32,16 @@ class HermesWelcome extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) => SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+          padding: EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: android ? 24 : 48,
+          ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: (constraints.maxHeight - 96).clamp(0, double.infinity),
+              minHeight: (constraints.maxHeight - (android ? 48 : 96)).clamp(
+                0,
+                double.infinity,
+              ),
             ),
             child: Center(
               child: ConstrainedBox(
@@ -46,34 +52,39 @@ class HermesWelcome extends StatelessWidget {
                     ExcludeSemantics(
                       child: Image.asset(
                         'assets/branding/hermes-emblem.png',
-                        width: 100,
-                        height: 82,
+                        width: android ? 56 : 100,
+                        height: android ? 46 : 82,
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      s.welcomeEyebrow,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        letterSpacing: 3,
-                        color: theme.colorScheme.primary,
+                    if (!android) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        s.welcomeEyebrow,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          letterSpacing: 3,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                    ],
                     const SizedBox(height: 16),
                     Semantics(
                       header: true,
                       child: Text(
                         s.welcomeTitle,
                         textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style:
+                            (android
+                                    ? theme.textTheme.headlineMedium
+                                    : theme.textTheme.headlineLarge)
+                                ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       s.welcomeSubtitle,
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+                      style: theme.textTheme.bodyLarge?.copyWith(height: 1.4),
                     ),
                     if (!android) ...[
                       const SizedBox(height: 32),
@@ -102,27 +113,50 @@ class HermesWelcome extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 24),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        OutlinedButton.icon(
-                          key: const ValueKey('hermes-welcome-ssh'),
-                          onPressed: () => onConnect(HermesConnectionMode.ssh),
-                          icon: const Icon(Icons.key_outlined),
-                          label: Text(s.welcomeSsh),
-                        ),
-                        OutlinedButton.icon(
-                          key: const ValueKey('hermes-welcome-remote'),
-                          onPressed: () =>
-                              onConnect(HermesConnectionMode.remote),
-                          icon: const Icon(Icons.public),
-                          label: Text(s.welcomeRemote),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
+                    if (android)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          FilledButton.icon(
+                            key: const ValueKey('hermes-welcome-ssh'),
+                            onPressed: () =>
+                                onConnect(HermesConnectionMode.ssh),
+                            icon: const Icon(Icons.key_outlined),
+                            label: Text(s.welcomeSsh),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            key: const ValueKey('hermes-welcome-remote'),
+                            onPressed: () =>
+                                onConnect(HermesConnectionMode.remote),
+                            icon: const Icon(Icons.public),
+                            label: Text(s.welcomeRemote),
+                          ),
+                        ],
+                      )
+                    else
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          OutlinedButton.icon(
+                            key: const ValueKey('hermes-welcome-ssh'),
+                            onPressed: () =>
+                                onConnect(HermesConnectionMode.ssh),
+                            icon: const Icon(Icons.key_outlined),
+                            label: Text(s.welcomeSsh),
+                          ),
+                          OutlinedButton.icon(
+                            key: const ValueKey('hermes-welcome-remote'),
+                            onPressed: () =>
+                                onConnect(HermesConnectionMode.remote),
+                            icon: const Icon(Icons.public),
+                            label: Text(s.welcomeRemote),
+                          ),
+                        ],
+                      ),
+                    SizedBox(height: android ? 12 : 24),
                     optionalSetup,
                   ],
                 ),

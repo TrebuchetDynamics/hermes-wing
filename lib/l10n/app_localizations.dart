@@ -526,6 +526,18 @@ abstract class AppLocalizations {
   /// **'This phone'**
   String get platformLocalPhoneTitle;
 
+  /// No description provided for @platformLocalPhoneSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Run Agent in the separate Termux app, then connect here. Wing cannot install or start it; authentication is still required.'**
+  String get platformLocalPhoneSummary;
+
+  /// No description provided for @platformLocalSetupDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up Termux and Agent'**
+  String get platformLocalSetupDetails;
+
   /// No description provided for @platformLocalPhoneBoundary.
   ///
   /// In en, this message translates to:
@@ -643,7 +655,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Your self-improving AI assistant. Connect to Hermes Agent on your machine or a trusted remote host.'**
+  /// **'Your client for Hermes Agent. Connect to your computer or a trusted server.'**
   String get welcomeSubtitle;
 
   /// No description provided for @welcomeGetStarted.
@@ -3936,7 +3948,7 @@ abstract class AppLocalizations {
   /// No description provided for @enrollPhoneHelp.
   ///
   /// In en, this message translates to:
-  /// **'Manual on-phone Hermes Agent setup in Termux. Installation and readiness are not verified by Wing.'**
+  /// **'Manual setup in Termux. Readiness is not verified.'**
   String get enrollPhoneHelp;
 
   /// No description provided for @enrollBackToOptions.
@@ -4936,7 +4948,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLayoutConnectionModeLabel.
   ///
   /// In en, this message translates to:
-  /// **'How will Wing reach Hermes?'**
+  /// **'Connection method'**
   String get chatLayoutConnectionModeLabel;
 
   /// No description provided for @chatLayoutConnectionModeLocalLabel.

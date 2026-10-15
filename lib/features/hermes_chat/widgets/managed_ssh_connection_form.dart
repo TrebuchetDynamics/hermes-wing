@@ -207,6 +207,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
         return;
       }
     }
+    FocusScope.of(context).unfocus();
     final generation = ++_generation;
     final input = SshConnectionRequest(
       host: _host.text.trim(),
@@ -450,12 +451,14 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
     bool secret = false,
     bool port = false,
   }) => Padding(
-    padding: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.only(bottom: 12),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ExcludeSemantics(child: Text(label)),
-        const SizedBox(height: 8),
+        ExcludeSemantics(
+          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        ),
+        const SizedBox(height: 4),
         Semantics(
           label: label,
           child: TextFormField(
@@ -467,7 +470,16 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
             autocorrect: false,
             enableSuggestions: false,
             keyboardType: port ? TextInputType.number : TextInputType.text,
-            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+            ),
+            textInputAction: id == 'agent-token'
+                ? TextInputAction.done
+                : TextInputAction.next,
+            onFieldSubmitted: id == 'agent-token' ? (_) => _submit() : null,
           ),
         ),
       ],
@@ -481,7 +493,8 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
       child: Form(
         key: _form,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -494,8 +507,8 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
                     _sshPort,
                     port: true,
                   );
-                  if (constraints.maxWidth >= 600 &&
-                      MediaQuery.textScalerOf(context).scale(16) <= 24) {
+                  if (constraints.maxWidth >= 320 &&
+                      MediaQuery.textScalerOf(context).scale(16) <= 20) {
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -539,31 +552,47 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
                 ),
               if (_keyAuthentication) ...[
                 if (!kIsWeb && widget.generatedKeyLabels != null) ...[
-                  OutlinedButton(
-                    key: const ValueKey('managed-ssh-generate-key'),
-                    onPressed: _busy || _picking || _keyOperationBusy
-                        ? null
-                        : () => _useGeneratedKey(generate: true),
-                    child: Text(
-                      _generatingKey
-                          ? widget.generatedKeyLabels!.generating
-                          : widget.generatedKeyLabels!.generate,
-                    ),
-                  ),
-                  OutlinedButton(
-                    key: const ValueKey('managed-ssh-use-generated-key'),
-                    onPressed: _busy || _picking || _keyOperationBusy
-                        ? null
-                        : () => _useGeneratedKey(generate: false),
-                    child: Text(widget.generatedKeyLabels!.useSaved),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton(
+                        key: const ValueKey('managed-ssh-generate-key'),
+                        onPressed: _busy || _picking || _keyOperationBusy
+                            ? null
+                            : () => _useGeneratedKey(generate: true),
+                        child: Text(
+                          _generatingKey
+                              ? widget.generatedKeyLabels!.generating
+                              : widget.generatedKeyLabels!.generate,
+                        ),
+                      ),
+                      OutlinedButton(
+                        key: const ValueKey('managed-ssh-use-generated-key'),
+                        onPressed: _busy || _picking || _keyOperationBusy
+                            ? null
+                            : () => _useGeneratedKey(generate: false),
+                        child: Text(widget.generatedKeyLabels!.useSaved),
+                      ),
+                    ],
                   ),
                   if (_generatedPublicKey != null) ...[
-                    Text(widget.generatedKeyLabels!.selected),
-                    SelectableText(
-                      _generatedPublicKey!,
-                      key: const ValueKey('managed-ssh-generated-public-key'),
+                    ExpansionTile(
+                      key: const ValueKey('managed-ssh-key-details'),
+                      tilePadding: EdgeInsets.zero,
+                      childrenPadding: const EdgeInsets.only(bottom: 8),
+                      title: Text(widget.generatedKeyLabels!.selected),
+                      children: [
+                        SelectableText(
+                          _generatedPublicKey!,
+                          key: const ValueKey(
+                            'managed-ssh-generated-public-key',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SelectableText(_selectedKey!.fingerprint!),
+                      ],
                     ),
-                    Text(_selectedKey!.fingerprint!),
                     OutlinedButton(
                       key: const ValueKey('managed-ssh-copy-public-key'),
                       onPressed: _busy || _keyOperationBusy || _keyError != null

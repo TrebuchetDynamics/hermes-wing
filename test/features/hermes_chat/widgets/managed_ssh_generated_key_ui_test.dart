@@ -206,6 +206,9 @@ void main() {
       await generate(tester);
       final key = store.retained!;
       expect(store.generates, 1);
+      expect(find.text(key.publicKey), findsNothing);
+      expect(control('copy-public-key'), findsOneWidget);
+      await tapControl(tester, 'key-details');
       expect(find.text(key.fingerprint), findsOneWidget);
       expect(find.text(key.publicKey), findsOneWidget);
       expect(find.textContaining('PRIVATE KEY'), findsNothing);
@@ -464,6 +467,7 @@ void main() {
         final store = FakeGeneratedStore();
         await mount(tester, store, captureKey: boundary);
         await generate(tester);
+        await tapControl(tester, 'key-details');
         await tester.ensureVisible(control('generated-public-key'));
         FocusManager.instance.primaryFocus?.unfocus();
         await tester.pumpAndSettle();

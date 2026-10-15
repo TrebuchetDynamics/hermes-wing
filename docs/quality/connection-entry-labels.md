@@ -3,6 +3,67 @@
 > Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
 
 
+## Compact Android connection presentation
+
+Current UI slice, based on Wing `9a037f80`, within the accepted Android touch
+priority. The older card receipt below remains historical evidence; its
+external-tunnel-only wording is not the current managed SSH form contract.
+
+- Android keeps one Add Hermes heading and a compact SSH / Remote / This phone
+  selector. Selection semantics remain; the redundant checkmark no longer covers
+  the transport icon. Connection help is still available by an accessible icon.
+- The shared form pairs host/SSH port at ordinary phone text sizes, reduces field
+  spacing, and keeps all validators, sanitized failures, secret clearing, key
+  consent/storage and captured-owner callbacks. Public key/fingerprint text is
+  disclosed deliberately; Copy public key remains available. Keyboard Done uses
+  the existing submit guard and valid submission dismisses the keyboard.
+- The connection viewport respects bottom system insets. At 200% text it scrolls
+  instead of shrinking controls. Android welcome gives SSH the primary action,
+  reduces the existing emblem, and describes Wing as a client, not the runtime.
+- Termux starts with a concise sandbox/authentication boundary and explicit
+  existing/running-Agent actions. Full installation warnings and official links
+  remain together inside Set up Termux and Agent, before documentation actions.
+  No automatic install/start/configuration or readiness check was introduced.
+
+Verification on the Linux host:
+
+- `flutter gen-l10n`, changed-file `dart format`, `flutter analyze --no-pub` and
+  `git diff --check` passed. Localization outputs were generated, not hand-edited.
+- Focused `flutter test --no-pub --reporter json` across managed SSH form,
+  generated-key UI, panel and host-trust dialog; platform-local panel; primary
+  entry and compact presentation; enrollment and local setup: **103 unique
+  completed tests passed**, zero failures. The machine event inventory is retained
+  privately rather than summed across retries.
+- Five compact presentation cases passed with Android platform overrides,
+  including 390px/normal and 200% text, a 24px bottom system inset and a 300px
+  simulated keyboard inset. Existing owner/keyboard journeys also cover 320,
+  390, 1024 and 1280px across the relevant targets.
+- Negative control: removing only the connection SafeArea makes the new viewport
+  assertion fail at bottom 844 instead of at most 820. The initial button-only
+  assertion missed that mutation; the strengthened viewport assertion detects it.
+  The mutated export was restored; the reviewed candidate was never mutated.
+- `FLUTTER_ROOT=<sdk> WING_CAPTURE_COMPACT_CONNECTIONS=1 flutter test --no-pub
+  test/features/hermes_chat/screens/compact_connection_presentation_test.dart`
+  produced welcome, SSH password/key, keyboard-inset and Termux captures from the
+  real widgets. Captures explicitly resolve test-only Chip/ListTile Ahem defaults
+  to the native sans-serif font. They are not native Android font/IME or TalkBack
+  qualification. The keyboard picture simulates an inset, not an actual keyboard.
+- An isolated ARM64 profile-mode APK built from the reviewed app source with a
+  build-only `.qa` package suffix. ZIP integrity, package/ABI and development
+  signature verification passed. AOT bytes contain the new client/setup wording,
+  not the former assistant wording. This is a test handoff, not a signed release.
+  Existing compile-SDK 36 versus secure-storage SDK 37, future Kotlin migration
+  and Cupertino-font warnings remain disclosed, not silently waived.
+
+- Independent source review approved the scoped UI change with no required
+  fixes. This is source-review approval, not device or live qualification.
+
+No real host, authentication, provider request, Termux service or device install
+was exercised. These presentation changes do not fix or qualify the user's SSH
+connection failure. Physical Android system navigation/IME, process-death
+recovery, accessibility-service execution and live SSH remain separate checks.
+The broader Android chat-polish task remains open.
+
 ## Delivered boundary
 
 Card `t_68412445` implements `CONNECTION-ENTRY-LABELS` for `CONNECTION-PATHS`.

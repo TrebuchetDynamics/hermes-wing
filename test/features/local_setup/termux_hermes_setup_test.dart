@@ -51,6 +51,11 @@ void main() {
         );
         await tester.pumpAndSettle();
         final semantics = tester.ensureSemantics();
+        expect(key('platform-local-package-warning'), findsNothing);
+        await tester.ensureVisible(key('platform-local-setup-details'));
+        await tester.pumpAndSettle();
+        await tester.tap(key('platform-local-setup-details'));
+        await tester.pumpAndSettle();
         expect(key('platform-local-package-warning'), findsOneWidget);
         final warning = tester
             .widget<Text>(key('platform-local-package-warning'))

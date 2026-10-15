@@ -137,9 +137,9 @@ class _HermesEnrollmentScreenState
             margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
               key: const ValueKey('hermes-enrollment-local-setup'),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: android ? 4 : 12,
               ),
               leading: Icon(
                 android

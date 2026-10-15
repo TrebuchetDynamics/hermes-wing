@@ -108,6 +108,9 @@ void main() {
   ) async {
     await pumpEntry(tester, TargetPlatform.android);
     expect(find.text('This phone'), findsOneWidget);
+    expect(key('platform-local-termux-docs'), findsNothing);
+    await tester.tap(key('platform-local-setup-details'));
+    await tester.pumpAndSettle();
     expect(key('platform-local-termux-docs'), findsOneWidget);
     expect(key('hermes-open-qr-scanner'), findsNothing);
     expect(key('hermes-api-key-field'), findsNothing);

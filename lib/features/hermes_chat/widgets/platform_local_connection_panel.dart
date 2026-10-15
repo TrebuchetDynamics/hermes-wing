@@ -189,28 +189,35 @@ class _PlatformLocalConnectionPanelState
           const SizedBox(height: 16),
           widget.child,
         ] else if (_phone) ...[
-          heading(s.platformLocalPhoneTitle),
-          const SizedBox(height: 8),
-          Text(s.platformLocalPhoneBoundary),
+          Text(s.platformLocalPhoneSummary),
           const SizedBox(height: 12),
-          Text(
-            s.platformLocalPackageWarning,
-            key: const ValueKey('platform-local-package-warning'),
-          ),
-          const SizedBox(height: 16),
           if (_step == 0) ...[
-            heading(s.platformLocalPrepareTitle),
-            Text(s.platformLocalPrepareBody),
-            docs(
-              'platform-local-termux-docs',
-              s.platformLocalTermuxDocs,
-              'https://github.com/termux/termux-app#installation',
+            ExpansionTile(
+              key: const ValueKey('platform-local-setup-details'),
+              tilePadding: EdgeInsets.zero,
+              title: Text(s.platformLocalSetupDetails),
+              children: [
+                Text(s.platformLocalPhoneBoundary),
+                const SizedBox(height: 12),
+                Text(
+                  s.platformLocalPackageWarning,
+                  key: const ValueKey('platform-local-package-warning'),
+                ),
+                const SizedBox(height: 12),
+                Text(s.platformLocalPrepareBody),
+                docs(
+                  'platform-local-termux-docs',
+                  s.platformLocalTermuxDocs,
+                  'https://github.com/termux/termux-app#installation',
+                ),
+                docs(
+                  'platform-local-agent-docs',
+                  s.platformLocalAgentDocs,
+                  'https://hermes-agent.nousresearch.com/docs/getting-started/termux',
+                ),
+              ],
             ),
-            docs(
-              'platform-local-agent-docs',
-              s.platformLocalAgentDocs,
-              'https://hermes-agent.nousresearch.com/docs/getting-started/termux',
-            ),
+            const SizedBox(height: 12),
             FilledButton(
               key: const ValueKey('platform-local-existing-agent'),
               onPressed: widget.busy ? null : () => setState(() => _step = 1),

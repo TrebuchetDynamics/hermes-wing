@@ -124,6 +124,8 @@ void main() {
               contains('Termux'),
             );
             await activate('hermes-enrollment-local-setup');
+            expect(control('platform-local-package-warning'), findsNothing);
+            await activate('platform-local-setup-details');
             expect(control('platform-local-package-warning'), findsOneWidget);
             expect(control('platform-local-existing-agent'), findsOneWidget);
             expect(control('termux-copy-command'), findsNothing);

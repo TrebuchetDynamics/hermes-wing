@@ -168,9 +168,7 @@ void main() {
         tester
             .widgetList<ChoiceChip>(primary)
             .map((w) => (w.label as Text).data),
-        android
-            ? ['SSH', 'Remote', 'Use this phone (Termux)']
-            : ['Local', 'SSH', 'Remote'],
+        android ? ['SSH', 'Remote', 'This phone'] : ['Local', 'SSH', 'Remote'],
       );
       expect(
         (tester.widget<ChoiceChip>(_key('hermes-remote-transport-remote')).label
@@ -229,6 +227,7 @@ void main() {
         isTrue,
       );
       if (android) {
+        await _keyboardActivate(tester, 'platform-local-setup-details');
         expect(_key('platform-local-termux-docs'), findsOneWidget);
         await _keyboardActivate(tester, 'platform-local-skip-guide');
         expect(find.text('http://127.0.0.1:8642'), findsOneWidget);

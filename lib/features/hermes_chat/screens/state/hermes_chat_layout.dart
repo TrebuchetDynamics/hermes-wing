@@ -100,7 +100,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         : const SizedBox.shrink();
 
     final form = SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
@@ -109,66 +110,67 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.primaryContainer,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Icon(
-                          Icons.cloud_outlined,
-                          size: 28,
-                          color: colors.onPrimaryContainer,
+                if (!onPhone)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors.primaryContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Icon(
+                            Icons.cloud_outlined,
+                            size: 28,
+                            color: colors.onPrimaryContainer,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            strings.chatLayoutConnectTitle,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              strings.chatLayoutConnectTitle,
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _connectionMode == HermesConnectionMode.local
-                                ? strings.platformLocalConnectBody
-                                : strings.chatLayoutConnectBody,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colors.onSurfaceVariant,
-                              height: 1.45,
+                            const SizedBox(height: 6),
+                            Text(
+                              _connectionMode == HermesConnectionMode.local
+                                  ? strings.platformLocalConnectBody
+                                  : strings.chatLayoutConnectBody,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colors.onSurfaceVariant,
+                                height: 1.45,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        strings.chatLayoutConnectionModeLabel,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                    ),
+                    IconButton(
+                      key: const ValueKey('connection-information-help'),
+                      tooltip: strings.connectionInformationHelpTitle,
+                      onPressed: () => showConnectionInformationHelp(context),
+                      icon: const Icon(Icons.help_outline, size: 20),
                     ),
                   ],
                 ),
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: TextButton.icon(
-                    key: const ValueKey('connection-information-help'),
-                    onPressed: () => showConnectionInformationHelp(context),
-                    icon: const Icon(Icons.help_outline),
-                    label: Text(strings.connectionInformationHelpTitle),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  strings.chatLayoutConnectionModeLabel,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 Wrap(
                   key: const ValueKey('hermes-primary-connection-modes'),
                   spacing: 8,
@@ -188,6 +190,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                               ])
                       ChoiceChip(
                         key: ValueKey('hermes-connection-mode-${mode.name}'),
+                        showCheckmark: false,
                         selected:
                             _connectionMode == mode ||
                             (mode == HermesConnectionMode.remote &&
@@ -215,7 +218,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                           mode == HermesConnectionMode.remote
                               ? strings.chatLayoutConnectionPrimaryRemoteLabel
                               : mode == HermesConnectionMode.local && onPhone
-                              ? strings.enrollInstallOnPhoneAction
+                              ? strings.platformLocalPhoneTitle
                               : _connectionModeLabel(strings, mode),
                         ),
                       ),
@@ -904,7 +907,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     // Scrolling enlarged fields must not reorder traversal or strand AppBar Back.
     return FocusTraversalGroup(
       policy: WidgetOrderTraversalPolicy(),
-      child: form,
+      child: SafeArea(top: false, child: form),
     );
   }
 

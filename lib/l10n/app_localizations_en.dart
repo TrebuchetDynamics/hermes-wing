@@ -265,6 +265,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get platformLocalPhoneTitle => 'This phone';
 
   @override
+  String get platformLocalPhoneSummary =>
+      'Run Agent in the separate Termux app, then connect here. Wing cannot install or start it; authentication is still required.';
+
+  @override
+  String get platformLocalSetupDetails => 'Set up Termux and Agent';
+
+  @override
   String get platformLocalPhoneBoundary =>
       'Prepare Hermes Agent in Termux yourself, then connect directly. Wing cannot inspect Termux files and does not install, configure, start or restart Agent. Loopback still requires authentication.';
 
@@ -331,7 +338,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeSubtitle =>
-      'Your self-improving AI assistant. Connect to Hermes Agent on your machine or a trusted remote host.';
+      'Your client for Hermes Agent. Connect to your computer or a trusted server.';
 
   @override
   String get welcomeGetStarted => 'Get Started';
@@ -2280,7 +2287,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrollPhoneHelp =>
-      'Manual on-phone Hermes Agent setup in Termux. Installation and readiness are not verified by Wing.';
+      'Manual setup in Termux. Readiness is not verified.';
 
   @override
   String get enrollBackToOptions => 'Connection options';
@@ -2938,7 +2945,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Connect directly to Hermes Agent. Choose how this device can reach it.';
 
   @override
-  String get chatLayoutConnectionModeLabel => 'How will Wing reach Hermes?';
+  String get chatLayoutConnectionModeLabel => 'Connection method';
 
   @override
   String get chatLayoutConnectionModeLocalLabel => 'Local';

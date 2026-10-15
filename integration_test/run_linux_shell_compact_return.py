@@ -30,7 +30,7 @@ def validate(receipt):
 
 def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.dart',
         receipt_name='shell-compact-return.json', validate_receipt=validate,
-        artifact_name='compact-return-receipt.json'):
+        artifact_name='compact-return-receipt.json', inspect_preferences=preferences):
     live = module('compact_process_helpers', SOURCE / 'scripts/support/desktop_live_workflow.py')
     freeze = module('compact_snapshot_helpers', SOURCE / 'scripts/support/desktop_no_inference_smoke.py')
     local = module('compact_isolation_helpers', SOURCE / 'scripts/support/local_setup_enrollment_native.py')
@@ -105,7 +105,7 @@ def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.d
             assert observed and observed['receipt_sha256'] == freeze.digest(path)
             assert not live.live_group(driver), 'Owned process group survived'
             result.update(receipt=receipt, process=observed, owned_group_gone=True,
-                          preferences=preferences(root, freeze.digest))
+                          preferences=inspect_preferences(root, freeze.digest))
             shutil.copyfile(path, attempt / artifact_name)
             assert all(freeze.digest(app / p) == row['sha256'] for p, row in identity['inputs'].items())
             assert all(freeze.digest(root / p) == expected for p, expected in dependencies.items())

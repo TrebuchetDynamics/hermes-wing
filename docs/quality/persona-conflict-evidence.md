@@ -6,7 +6,10 @@ Status: recovery acceptance passed; independent native review approved exact com
 analyzer, formatting, locked offline resolution and 26 local-link checks.
 Coordinator integrated that exact commit by fast-forward. The sections below retain
 pre-review attempt history; publication is recorded separately in the delivery receipt.
-PERSONA native/live qualification remains open under `VERIFY-PERSONA-NATIVE-CONFLICT`.
+[Native synthetic recovery now passes](persona-native-conflict.md) under
+`VERIFY-PERSONA-NATIVE-CONFLICT`; live Agent compatibility remains open. The
+historical native-gap and review-next-action wording below describes the earlier
+widget-only candidate, not the later GTK qualification.
 
 ## Admission, scope and attribution
 

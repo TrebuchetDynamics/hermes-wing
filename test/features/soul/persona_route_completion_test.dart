@@ -25,7 +25,7 @@ final _cancel = find.widgetWithText(TextButton, 'Cancel');
 final _save = find.widgetWithText(FilledButton, 'Save');
 
 // Real production channel/client, directory and router; only transport is inert.
-class _Fixture {
+class PersonaRouteFixture {
   String document = _initial;
   String revision = 'r1';
   final reads = <Uri>[];
@@ -70,11 +70,17 @@ class _Fixture {
   late GoRouter router;
   Object? owner;
 
-  Future<void> open(WidgetTester tester, double width) async {
-    tester.view.physicalSize = Size(width, 1400);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  Future<void> open(
+    WidgetTester tester,
+    double width, {
+    bool configureView = true,
+  }) async {
+    if (configureView) {
+      tester.view.physicalSize = Size(width, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
     SharedPreferences.setMockInitialValues({});
     await channel.connect(baseUrl: 'http://localhost:8642');
     await channel.selectProfile('coder');
@@ -151,7 +157,7 @@ void main() {
       testWidgets(
         'actual router Persona rejected write conflict=$conflict stays open until explicit retry at $width / 200%',
         (tester) async {
-          final f = _Fixture();
+          final f = PersonaRouteFixture();
           await f.open(tester, width);
           await tester.enterText(_field, _draft);
           final gate = Completer<String>();
@@ -195,7 +201,7 @@ void main() {
     testWidgets(
       'actual router unchanged Persona save completes without write at $width / 200%',
       (tester) async {
-        final f = _Fixture();
+        final f = PersonaRouteFixture();
         await f.open(tester, width);
         await tester.tap(_save);
         await tester.pumpAndSettle();
@@ -211,7 +217,7 @@ void main() {
         'actual router cancelled pending Persona read late failure=$failure at $width / 200%',
         (tester) async {
           final gate = Completer<String>();
-          final f = _Fixture()..readGate = gate;
+          final f = PersonaRouteFixture()..readGate = gate;
           await f.open(tester, width);
           await tester.tap(_cancel);
           await tester.pumpAndSettle();
@@ -237,7 +243,7 @@ void main() {
       testWidgets(
         'actual router stale Persona write $outcome cannot complete newer owner at $width / 200%',
         (tester) async {
-          final f = _Fixture();
+          final f = PersonaRouteFixture();
           await f.open(tester, width);
           await tester.enterText(_field, _draft);
           f.writeGate = Completer<String>();
@@ -277,7 +283,7 @@ void main() {
       testWidgets(
         'actual Profiles modal $action dismisses only modal at $width / 200%',
         (tester) async {
-          final f = _Fixture();
+          final f = PersonaRouteFixture();
           await f.open(tester, width);
           f.router.go('/profiles');
           await tester.pumpAndSettle();
@@ -300,7 +306,7 @@ void main() {
     testWidgets(
       'actual router pending Persona write cannot redirect after route exit at $width / 200%',
       (tester) async {
-        final f = _Fixture();
+        final f = PersonaRouteFixture();
         await f.open(tester, width);
         await tester.enterText(_field, _draft);
         f.writeGate = Completer<String>();
@@ -319,7 +325,7 @@ void main() {
       'actual router Persona changed save completes only after persistence at $width / 200%',
       (tester) async {
         final semantics = tester.ensureSemantics();
-        final f = _Fixture();
+        final f = PersonaRouteFixture();
         await f.open(tester, width);
         await tester.enterText(_field, _draft);
         f.writeGate = Completer<String>();
@@ -372,7 +378,7 @@ void main() {
     testWidgets(
       'actual router Persona cancel discards draft at $width / 200%',
       (tester) async {
-        final f = _Fixture();
+        final f = PersonaRouteFixture();
         await f.open(tester, width);
         expect(f.text(tester), _initial);
         await tester.enterText(_field, _draft);

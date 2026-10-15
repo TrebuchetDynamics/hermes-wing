@@ -10,6 +10,18 @@ Status: verification strategy, not an execution receipt.
 verification methods. The [evidence matrix](quality/evidence-matrix.md) records
 qualification; individual receipts must identify the source, target and limits.
 
+## Persona native conflict recovery
+
+Run `python3 -B integration_test/run_linux_persona_conflict.py` after locked
+cached dependency resolution. The isolated Linux GTK runner exercises Tab/Enter
+controls in standalone Persona and the Profiles modal at compact/wide viewport
+sizes and 200% text. Require ordinary failure draft retention, 412 authoritative
+readback, explicit revision-aware retry, stale-owner completion rejection and
+exact write counts. The [executed receipt](quality/persona-native-conflict.md)
+records four passing synthetic journeys, retained harness failures and tool/source
+identity. Text entry and sizing use framework seams; physical keyboard/IME, screen
+readers, Android and deployed Agent concurrency still need separate qualification.
+
 ## Away-and-return status verification
 
 This planned matrix implements [user-demand acceptance](product/prd.md#user-demand-emphasis),

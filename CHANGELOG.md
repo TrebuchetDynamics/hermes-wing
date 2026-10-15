@@ -15,6 +15,11 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Loading placeholders now fit inside parent scrollables, including saved
+  Connections during a host switch. The nested-scrollable regression and
+  [wide Linux streaming journey](docs/quality/chat-workspace-overlay-native.md#native-saved-host-replacement-during-streaming)
+  cover the layout repair; compact switching and live authentication remain open.
+
 - Selecting Chat in a Profiles overlay now returns to the retained Chat workspace
   instead of pushing a duplicate shell that could leave the transcript blank.
   Standalone Profiles keeps its existing Chat/Back behavior. The

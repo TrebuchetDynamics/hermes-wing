@@ -314,10 +314,59 @@ automatic focus after owner-changing actions, saved-secret isolation or live Age
 The explicit replacement cancels its old client subscription. Physical keyboard,
 OS resizing, Android, full-suite and fresh browser checks were not performed.
 
+## Native saved-host replacement during streaming
+
+The production HTTP/SSE matrix now includes three wide (1280 logical pixels,
+200% text) saved-host replacement journeys, alongside the eighteen existing
+Settings/Profiles journeys. Seeded empty-credential endpoints use distinct
+synthetic loopback origins. The rendered original contact, Settings → Connections
+→ replacement host → Connect chat controls select canonical replacement history
+while the original server stream remains pending. Only then does the fixture
+complete and read back the original reply. Reopened Settings and Close, Escape or
+framework Back retain the replacement Chat/history without stale reply controls.
+Only the original deliberate Send writes; the replacement server receives no
+mutations, and endpoint storage receives no saves.
+
+The journey reproduced an unbounded loading-list layout inside Connections' parent
+scrollable. `WingSkeletonList` now shrink-wraps its bounded placeholder rows; the
+new nested-scrollable regression failed before the fix. All five production callers
+retain the same loading semantics and reduced-motion behavior.
+
+Executed on Flutter 3.44.2/Dart 3.12.2:
+
+```bash
+flutter analyze --no-pub
+dart format --output=none --set-exit-if-changed integration_test/linux_chat_workspace_stream_test.dart lib/shared/widgets/wing_skeleton.dart test/shared/widgets/wing_skeleton_test.dart
+flutter test --no-pub --concurrency=1 test/shared/widgets/wing_skeleton_test.dart test/router/chat_workspace_overlay_test.dart test/integration/linux_chat_workspace_overlay_runner_test.dart --reporter expanded
+python3 -B integration_test/run_linux_chat_workspace_stream.py
+git diff --check
+```
+
+All 34 focused tests and 21 GTK journeys pass. Native receipt:
+`overlay-native-connection-sse-408/native-zd900q3u/verification.json` under local
+`.task-evidence/`; manifest SHA-256
+`71343c6b7af8c032980dd22debec0073e0ad899afaaf999b7724db69f38483e9`.
+All 802 frozen inputs match the candidate. The runner verifies native PID,
+dependencies, process-group teardown and isolated-state removal. Earlier selector,
+layout and interrupted attempts remain failed/unqualified receipts. Independent
+native-source review approved all four changed implementation/test blobs and ran
+the strict receipt self-check; it did not duplicate native execution.
+
+Planner's call: keep the existing live authentication/provider-ceiling gates on
+PARITY-LIVE-WORKFLOW and deliver this independent WING-TASK-408 slice. Compact
+saved-contact Chat lacks shell navigation during streaming and hides local command
+suggestions; no programmatic navigation substitutes for its unavailable controls.
+Compact connection switching, saved-secret isolation, cancelled old terminal-event
+consumption and detached recovery remain unqualified. The retained Chat assertion
+concerns the replacement workspace across its reopened modal, not original workspace
+identity across an explicit host change. No fresh browser/full-suite/device check
+or live Agent inference was performed.
+
 ## Remaining acceptance
 
-Native connection replacement, cancelled old-terminal consumption and Android
-remain unqualified. Native HTTP/SSE through Settings and populated Profiles is
+Compact native connection replacement, cancelled old-terminal consumption and
+Android remain unqualified. Native HTTP/SSE through Settings, populated Profiles
+and wide saved-host replacement is
 bounded to these synthetic session-chat matrices, not live Agent, provider inference,
 authentication, saved secrets or detached-run persistence.
 The separate browser receipt qualifies

@@ -10,6 +10,26 @@ Widget _host(Widget child, {bool disableAnimations = false}) => MaterialApp(
 );
 
 void main() {
+  testWidgets('loading rows fit inside a parent scrollable', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        ListView(
+          children: const [
+            WingSkeletonList(rows: 2, semanticLabel: 'Loading connections'),
+          ],
+        ),
+        disableAnimations: true,
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(WingSkeletonRow), findsNWidgets(2));
+    expect(
+      tester.getSize(find.byKey(const ValueKey('wing-skeleton-list'))).height,
+      greaterThan(0),
+    );
+  });
+
   testWidgets('renders the requested number of placeholder rows', (
     tester,
   ) async {

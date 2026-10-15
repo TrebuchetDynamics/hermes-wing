@@ -61,9 +61,17 @@ distinct empty-credential synthetic hosts. Reopen and Back/Forward/Escape/Close
 must retain the new session/history and exclude old history, with zero mutations.
 Compact contact Chat uses local Settings; wide Chat uses its shell. See
 [rendered saved-host evidence](quality/chat-workspace-overlay-browser.md#rendered-saved-host-switching).
-Keep active-run connection switching, saved-secret isolation and native streaming
-open under WING-TASK-408. Browser and
-in-memory GTK fixtures are not Android, physical-input or live acceptance.
+Run `python3 -B integration_test/run_linux_chat_workspace_stream.py` for the
+production HTTP/SSE GTK matrix: eighteen Settings/populated Profiles cases at both
+widths and three wide saved-host replacement cases, all at 200% text. The saved-host
+cases must settle canonical replacement history before original-server completion,
+then retain the replacement through reopened Close/Escape/framework Back, with one
+original Send and zero replacement writes or endpoint saves. Require nested loading
+rows to render without an unbounded-viewport error. See the
+[native saved-host receipt](quality/chat-workspace-overlay-native.md#native-saved-host-replacement-during-streaming).
+Keep compact active-run connection controls, saved-secret isolation and cancelled
+old terminal-event consumption open under WING-TASK-408. Browser and synthetic GTK
+fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery
 

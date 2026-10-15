@@ -4065,6 +4065,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408 wide saved-host streaming: 21 synthetic Linux GTK journeys, 34 focused tests, Flutter 3.44.2 analysis/formatting and independent native-source review pass; docs/quality/chat-workspace-overlay-native.md#native-saved-host-replacement-during-streaming. Compact saved-host controls, saved secrets, cancelled terminal consumption, Android and live Agent NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING-TASK-408: python3 -B integration_test/run_linux_chat_workspace_overlay.py — all36 Linux GTK journeys pass, twelve Tab/Enter shell entries including compact More; Flutter3.44.2/Dart3.12.2, 390/1280 logical pixels and200% text; typed receipts/source/dependencies and teardown verified. flutter analyze --no-pub and28 focused router/receipt/shell tests pass; independent native-source review approved. docs/quality/chat-workspace-overlay-native.md. Automatic shell return focus, owner replacement, native HTTP/SSE, Android and live Agent NOT_CHECKED.",
           "result": "pass"
         },

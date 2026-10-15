@@ -9,6 +9,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -54,12 +55,38 @@ void main() {
     final journeys = <Map<String, Object?>>[];
     for (final width in [390.0, 1280.0]) {
       await binding.setSurfaceSize(Size(width, 900));
-      for (final destination in ['settings', 'profiles', 'profile-switch']) {
+      for (final destination in [
+        'settings',
+        'profiles',
+        'profile-switch',
+        'connection-switch',
+      ]) {
+        if (width < 600 && destination == 'connection-switch') continue;
         for (final dismissal in ['close', 'escape', 'back']) {
           SharedPreferences.setMockInitialValues({});
           final fixture = (await tester.runAsync(_StreamFixture.start))!;
+          final replacement = destination == 'connection-switch'
+              ? (await tester.runAsync(
+                  () => _StreamFixture.start(replacement: true),
+                ))!
+              : null;
           final channel = HermesApiChannel();
-          final store = FakeHermesEndpointStore();
+          final store = FakeHermesEndpointStore(
+            profiles: [
+              if (replacement != null) ...[
+                HermesEndpointConfig(
+                  id: 'original',
+                  label: 'Synthetic original host',
+                  baseUrl: fixture.origin,
+                ),
+                HermesEndpointConfig(
+                  id: 'replacement',
+                  label: 'Synthetic replacement host',
+                  baseUrl: replacement.origin,
+                ),
+              ],
+            ],
+          );
           final container = ProviderContainer(
             overrides: [
               hermesChannelProvider.overrideWithValue(channel),
@@ -87,6 +114,7 @@ void main() {
                   supportedLocales: AppLocalizations.supportedLocales,
                   builder: (context, child) => MediaQuery(
                     data: MediaQuery.of(context).copyWith(
+                      size: Size(width, 900),
                       textScaler: TextScaler.linear(2),
                       disableAnimations: true,
                     ),
@@ -96,6 +124,24 @@ void main() {
               ),
             );
             await settle();
+            if (replacement != null) {
+              final original = find.byKey(
+                const ValueKey('gateway-contact-original-default'),
+              );
+              await until(() => original.evaluate().isNotEmpty);
+              await tester.ensureVisible(original);
+              await settle();
+              await tester.tap(original);
+              await until(
+                () =>
+                    container
+                        .read(hermesGatewayDirectoryProvider)
+                        .activeContactId
+                        ?.gatewayId ==
+                    'original',
+              );
+              await settle();
+            }
             final chat = tester.state(find.byType(HermesChatScreen));
             final field = find.byKey(const ValueKey('hermes-composer-field'));
             await tester.enterText(field, _StreamFixture.prompt);
@@ -124,17 +170,19 @@ void main() {
                 find.descendant(
                   of: find.byType(NavigationBar),
                   matching: find.text(
-                    destination == 'settings' ? 'More' : 'Profiles',
+                    (destination == 'settings' || replacement != null)
+                        ? 'More'
+                        : 'Profiles',
                   ),
                 ),
               );
               await settle();
-              if (destination == 'settings') {
+              if ((destination == 'settings' || replacement != null)) {
                 await tester.tap(find.text('Settings').last);
               }
             } else {
               await tester.tap(
-                destination == 'settings'
+                (destination == 'settings' || replacement != null)
                     ? find.bySemanticsLabel('Settings')
                     : find.byKey(const ValueKey('desktop-manage-profiles')),
               );
@@ -144,7 +192,7 @@ void main() {
               const ValueKey('chat-workspace-overlay-close'),
             );
             expect(close, findsOneWidget);
-            if (destination != 'settings') {
+            if (destination != 'settings' && replacement == null) {
               expect(
                 find.byKey(const ValueKey('agent-chat-coder')),
                 findsOneWidget,
@@ -174,6 +222,139 @@ void main() {
               HermesTurnStatus.streaming,
             );
             expect(close, findsOneWidget);
+            if (replacement != null) {
+              final connections = find.descendant(
+                of: find.byType(ListTile),
+                matching: find.text('Connections'),
+              );
+              await tester.ensureVisible(connections);
+              await settle();
+              await tester.tap(connections);
+              await settle();
+              final row = find.byKey(
+                const ValueKey('connection-host-replacement'),
+              );
+              await until(() => row.evaluate().isNotEmpty);
+              await tester.ensureVisible(row);
+              await settle();
+              expect(row.hitTestable(), findsOneWidget);
+              await tester.tap(row);
+              await settle();
+              final connect = find.byKey(
+                const ValueKey('gateway-connect-chat-button'),
+              );
+              await tester.ensureVisible(connect);
+              await settle();
+              expect(connect.hitTestable(), findsOneWidget);
+              await tester.tap(connect);
+              await until(
+                () =>
+                    channel.state.connectedBaseUrl == replacement.origin &&
+                    channel.state.activeSessionId == 'replacement_session' &&
+                    channel.state.activeMessages.length == 1 &&
+                    channel.state.activeMessages.single.id ==
+                        'replacement-reply',
+              );
+              // Keep the original server pending until the exact new owner settles.
+              expect(fixture.completed, isFalse);
+              expect(replacement.replacementHistoryReads, greaterThan(0));
+              final chatAction = find.descendant(
+                of: find.byKey(const ValueKey('desktop-sidebar')),
+                matching: find.bySemanticsLabel('Chat'),
+              );
+              await tester.tap(chatAction);
+              await settle();
+              final replacementChat = tester.state(
+                find.byType(HermesChatScreen),
+              );
+              expect(
+                find.text(_StreamFixture.replacementReply),
+                findsOneWidget,
+              );
+              expect(find.text(_StreamFixture.reply), findsNothing);
+              await tester.runAsync(fixture.complete);
+              final canonical = await tester.runAsync(() async {
+                final client = HttpClient();
+                try {
+                  final request = await client.getUrl(
+                    Uri.parse('${fixture.origin}/api/sessions/sess_1/messages'),
+                  );
+                  final response = await request.close();
+                  return jsonDecode(await utf8.decoder.bind(response).join())
+                      as Map<String, dynamic>;
+                } finally {
+                  client.close(force: true);
+                }
+              });
+              expect(canonical!['session_id'], 'sess_1');
+              expect((canonical['data'] as List).last, {
+                'id': 'canonical-reply',
+                'session_id': 'sess_1',
+                'role': 'assistant',
+                'content': _StreamFixture.reply,
+              });
+              await settle();
+              await tester.tap(find.bySemanticsLabel('Settings'));
+              await settle();
+              expect(close, findsOneWidget);
+              if (dismissal == 'close') {
+                await tester.tap(close);
+              } else if (dismissal == 'escape') {
+                await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+              } else {
+                await tester.binding.handlePopRoute();
+              }
+              await settle();
+              expect(close, findsNothing);
+              expect(channel.state.connectedBaseUrl, replacement.origin);
+              expect(channel.state.activeSessionId, 'replacement_session');
+              expect(
+                channel.state.activeMessages.single.id,
+                'replacement-reply',
+              );
+              expect(
+                channel.state.activeMessages.single.status,
+                HermesTurnStatus.completed,
+              );
+              expect(channel.state.errorMessage, isNull);
+              expect(
+                find.text(_StreamFixture.replacementReply),
+                findsOneWidget,
+              );
+              expect(find.text(_StreamFixture.reply), findsNothing);
+              expect(find.text('Synthetic progressive'), findsNothing);
+              expect(
+                tester.state(find.byType(HermesChatScreen)),
+                same(replacementChat),
+              );
+              expect(fixture.writes, ['POST /api/sessions/sess_1/chat/stream']);
+              expect(replacement.writes, isEmpty);
+              expect(fixture.unexpected, isEmpty);
+              expect(replacement.unexpected, isEmpty);
+              expect(store.saveCalls, isEmpty);
+              expect(tester.takeException(), isNull);
+              journeys.add({
+                'width': width,
+                'destination': destination,
+                'dismissal': dismissal,
+                'text_scale': 2,
+                'progressive_chunks': 2,
+                'canonical_reply': true,
+                'chat_retained': true,
+                'sends': fixture.writes.length,
+                'unexpected_requests':
+                    fixture.unexpected.length + replacement.unexpected.length,
+                'endpoint_saves': store.saveCalls.length,
+                'selected_session': 'replacement_session',
+                'distinct_origin': replacement.origin != fixture.origin,
+                'replacement_history_read':
+                    replacement.replacementHistoryReads > 0,
+                'replacement_writes': replacement.writes.length,
+                'old_completed_after_replacement': fixture.completed,
+                'stale_reply_absent': true,
+              });
+              continue;
+            }
             if (destination == 'profile-switch') {
               final action = find.byKey(const ValueKey('agent-chat-coder'));
               await tester.ensureVisible(action);
@@ -331,6 +512,11 @@ void main() {
             container.dispose();
             channel.dispose();
             await tester.runAsync(() => fixture.server.close(force: true));
+            if (replacement != null) {
+              await tester.runAsync(
+                () => replacement.server.close(force: true),
+              );
+            }
           }
         }
       }
@@ -347,22 +533,26 @@ void main() {
 }
 
 class _StreamFixture {
-  _StreamFixture(this.server);
+  _StreamFixture(this.server, {this.replacement = false});
+  final bool replacement;
   final HttpServer server;
   HttpResponse? stream;
   final writes = <String>[];
   final unexpected = <String>[];
   var historyReads = 0;
   var coderHistoryReads = 0;
+  var replacementHistoryReads = 0;
   var completed = false;
   static const prompt = 'Synthetic native streaming request';
   static const reply = 'Synthetic progressive reply.';
   static const coderReply = 'Synthetic coding profile history.';
+  static const replacementReply = 'Synthetic replacement host history.';
   String get origin => 'http://127.0.0.1:${server.port}';
 
-  static Future<_StreamFixture> start() async {
+  static Future<_StreamFixture> start({bool replacement = false}) async {
     final fixture = _StreamFixture(
       await HttpServer.bind(InternetAddress.loopbackIPv4, 0),
+      replacement: replacement,
     );
     fixture.server.listen(fixture.handle);
     return fixture;
@@ -430,7 +620,14 @@ class _StreamFixture {
         body = {
           'object': 'list',
           'data': [
-            if (request.uri.queryParameters['profile'] == 'coder')
+            if (replacement)
+              {
+                'id': 'replacement_session',
+                'source': 'api_server',
+                'title': 'Synthetic replacement host',
+                'message_count': 1,
+              }
+            else if (request.uri.queryParameters['profile'] == 'coder')
               {
                 'id': 'coder_session',
                 'source': 'api_server',
@@ -444,6 +641,21 @@ class _StreamFixture {
                 'title': 'Synthetic native stream',
                 'message_count': completed ? 2 : 0,
               },
+          ],
+        };
+      case 'GET /api/sessions/replacement_session/messages':
+        replacementHistoryReads++;
+        if (!replacement) unexpected.add(route);
+        body = {
+          'object': 'list',
+          'session_id': 'replacement_session',
+          'data': [
+            {
+              'id': 'replacement-reply',
+              'session_id': 'replacement_session',
+              'role': 'assistant',
+              'content': replacementReply,
+            },
           ],
         };
       case 'GET /api/sessions/coder_session/messages':

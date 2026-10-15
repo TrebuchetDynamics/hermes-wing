@@ -9,13 +9,20 @@ from run_linux_persona_conflict import no_preferences
 def expected_journeys():
     rows = []
     for width in (390.0, 1280.0):
-        for destination in ('settings', 'profiles', 'profile-switch'):
+        for destination in ('settings', 'profiles', 'profile-switch', 'connection-switch'):
+            if width < 600 and destination == 'connection-switch':
+                continue
             for dismissal in ('close', 'escape', 'back'):
                 row = dict(width=width, destination=destination, dismissal=dismissal,
                            text_scale=2, progressive_chunks=2, canonical_reply=True,
                            chat_retained=True, exact_location_retained=True, sends=1,
                            unexpected_requests=0, endpoint_saves=0)
-                if destination == 'profile-switch':
+                if destination == 'connection-switch':
+                    del row['exact_location_retained']
+                    row.update(selected_session='replacement_session', distinct_origin=True,
+                               replacement_history_read=True, replacement_writes=0,
+                               old_completed_after_replacement=True, stale_reply_absent=True)
+                elif destination == 'profile-switch':
                     row.update(selected_profile='coder', selected_session='coder_session',
                                replacement_history_reads=1)
                 else:
@@ -59,7 +66,7 @@ if __name__ == '__main__':
         self_check()
     else:
         assert not sys.argv[1:], 'No target or credential arguments accepted'
-        run(card='overlay-native-profile-sse-408',
+        run(card='overlay-native-connection-sse-408',
             target='integration_test/linux_chat_workspace_stream_test.dart',
             receipt_name='chat-workspace-stream.json', validate_receipt=validate,
             artifact_name='chat-workspace-stream-receipt.json',

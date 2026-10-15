@@ -52,6 +52,7 @@ class _WingSkeletonListState extends State<WingSkeletonList>
             end: 0.75,
           ).animate(CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)),
           child: ListView(
+            shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             children: [
               for (var i = 0; i < widget.rows; i++) WingSkeletonRow(index: i),

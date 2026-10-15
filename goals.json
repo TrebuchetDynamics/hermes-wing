@@ -4045,6 +4045,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408 active-run rendered saved-host switching: rebuilt 42 Chromium overlay cases, 26 router regressions, flutter analyze --no-pub and locked offline resolution pass; independent native-source review approved c6ce8bcd38e6b812e596151299813dae595f7b97. Both negative-control cases reject inert gateway switching. docs/quality/chat-workspace-overlay-browser.md#active-run-rendered-saved-host-switching. Synthetic empty-credential hosts only; native HTTP/SSE, cancelled terminal consumption, saved-secret isolation and live qualification NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING-TASK-408 browser shell-return focus: rebuilt Flutter 3.44.2/Dart 3.12.2 main_e2e, Node22.5.1 Chromium 20 overlay cases with zero retries at390/1280px and200% text; automatic named focus after Back/Forward-Escape/Close, compact Settings returns More. flutter analyze --no-pub and24 router tests pass; independent native-source review approved spec SHA256327c7cd144d0055755c94aeba32d8979be0db14429eb01d28fe5eb1198479061. docs/quality/chat-workspace-overlay-browser.md#browser-shell-return-focus-follow-through. No production changes; parent acceptance remains open.",
           "result": "pass"
         },

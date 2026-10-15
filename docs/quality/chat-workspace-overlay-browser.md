@@ -358,6 +358,37 @@ This qualifies rendered switching between empty-credential synthetic saved hosts
 not saved-secret isolation, cross-origin credential reuse, active-run connection
 switching, GTK HTTP/SSE or live authentication. Parent acceptance remains open.
 
+## Active-run rendered saved-host switching
+
+Two additional Chromium cases exercise the same public saved-host selection while
+an original synthetic reasoning run is visibly streaming. At 390/1280px and 200%
+text, Settings → Connections → saved host → **Connect chat** must settle the distinct
+replacement session and history before the controller releases the original run.
+Readback requires the exact original run/session, completed output and persisted
+assistant message. Back, Forward/Escape and Close then retain replacement ownership
+and history, excluding the original reply and reasoning controls. Exactly one
+browser `POST /v1/runs` is permitted; switching/navigation cannot replay or cancel it.
+No new fixture, production API, connection hook or dependency is introduced.
+
+The first compact attempt timed out looking for a slash suggestion while streaming.
+The rendered shell's More tab was available; entry now uses that shell when visible
+and retains the existing local suggestion path when the selected-contact view hides
+it. This is a harness correction, not a product change. A temporary production
+mutation made Connections' gateway switch inert; both new cases failed the exact
+replacement-session barrier, still observing the original session. The mutation was
+removed byte-for-byte before the final rebuild. Independent native-source review
+approved test blob `c6ce8bcd38e6b812e596151299813dae595f7b97`.
+
+The rebuilt application passes all 42 Chromium overlay cases with zero retries,
+skips or flaky outcomes on Flutter 3.44.2/Dart 3.12.2, Node.js 22.5.1 and system
+Chromium. Locked offline resolution, `flutter analyze --no-pub`, all 26 router
+regressions, JavaScript syntax and staged whitespace checks pass. Production,
+fixture and dependency bytes are unchanged.
+
+This qualifies new-owner retention after original **server** completion, not client
+consumption of cancelled terminal events, switch-back/detached recovery, saved-secret
+isolation, native HTTP/SSE or live authentication. Parent acceptance remains open.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -373,5 +404,6 @@ suggestion recovery are covered above; browser direct Tab completion remains
 unsupported by its native-only shortcut gate. Android, physical keyboard/IME,
 screen readers and live Agent/provider behavior remain unqualified. The shared
 focus change was separately [requalified in GTK](chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification).
-Keep the original task open; next qualify active-run rendered connection switching
-without repeating delivered matrices.
+Keep the original task open; next qualify native HTTP/SSE retained streaming
+through Settings navigation, separate from the in-memory GTK journeys and these
+browser owner-switch cases. Do not repeat delivered matrices.

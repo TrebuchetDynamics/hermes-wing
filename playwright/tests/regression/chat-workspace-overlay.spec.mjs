@@ -231,8 +231,9 @@ for (const width of [390, 1280]) {
 
   for (const destination of ['Settings', 'Profiles']) {
     for (const rendered of destination === 'Settings' ? [false, true] : [false]) {
-    test(`${destination} retains replacement connection${rendered ? ' via rendered saved-host selection' : ''} through overlay history at ${width}px/200% text`, async ({ page, request }) => {
-      expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
+    for (const activeRun of rendered ? [false, true] : [false]) {
+    test(`${destination} retains replacement connection${rendered ? ' via rendered saved-host selection' : ''}${activeRun ? ' during active run' : ''} through overlay history at ${width}px/200% text`, async ({ page, request }) => {
+      expect((await request.post(`${APP}e2e/hermes/${activeRun ? 'reasoning-disclosure' : 'reset'}`)).ok()).toBe(true);
       const replacementOrigin = new URL(APP);
       replacementOrigin.hostname = 'localhost';
       const session = 'synthetic-replacement-host-session';
@@ -298,7 +299,7 @@ for (const width of [390, 1280]) {
       expect(await state(page)).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false });
       const location = page.url();
       const open = async () => {
-        if (rendered && width < 600) {
+        if (rendered && width < 600 && !await page.getByRole('tab', { name: 'More', exact: true }).isVisible()) {
           await page.getByRole('textbox').last().click();
           await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
           await page.keyboard.type('/settings');
@@ -307,6 +308,15 @@ for (const width of [390, 1280]) {
           await expect(closeButton(page)).toBeVisible();
         } else await shellOpen(page, width, destination);
       };
+      const prompt = 'Synthetic connection switch pending run';
+      if (activeRun) {
+        await page.getByRole('textbox').last().click();
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await page.keyboard.type(prompt);
+        await page.getByRole('button', { name: 'Send', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).toBeVisible();
+        expect(await state(page)).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', last_turn_status: 'streaming', has_error: false });
+      }
       await open();
       if (rendered) {
         // Leave Settings through Connections and explicitly activate the saved host.
@@ -324,8 +334,23 @@ for (const width of [390, 1280]) {
       await expect(closeButton(page)).toBeVisible();
       const replacement = await state(page);
       expect(replacement).toMatchObject({ status: 'connected', active_session_id: session, has_error: false });
+      if (activeRun) {
+        // Release the original run only after the replacement host has settled.
+        const completed = await request.post(`${APP}e2e/hermes/reasoning-disclosure/complete`);
+        expect(completed.ok()).toBe(true);
+        expect(await completed.json()).toEqual({ run_id: 'run_1', session_id: 'e2e-hermes-session' });
+        const canonical = await request.get(`${APP}v1/runs/run_1`);
+        expect(canonical.ok()).toBe(true);
+        expect(await canonical.json()).toMatchObject({ run_id: 'run_1', session_id: 'e2e-hermes-session', status: 'completed', output: `Hermes echo: ${prompt}` });
+        const history = await request.get(`${APP}api/sessions/e2e-hermes-session/messages`);
+        expect(history.ok()).toBe(true);
+        expect((await history.json()).data).toContainEqual(expect.objectContaining({ session_id: 'e2e-hermes-session', role: 'assistant', content: `Hermes echo: ${prompt}` }));
+      }
       const assertChat = async () => {
         await expect(closeButton(page)).not.toBeVisible();
+        await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).not.toBeVisible();
+        await expect(page.getByRole('button', { name: 'Thought', exact: true })).not.toBeVisible();
+        await expect(page.getByRole('group', { name: new RegExp(`Hermes echo: ${prompt}$`) })).not.toBeVisible();
         await expect(page.getByRole('group', { name: /Synthetic replacement host history\.$/ })).toBeVisible();
         await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).not.toBeVisible();
         expect(await state(page)).toEqual(replacement);
@@ -342,9 +367,10 @@ for (const width of [390, 1280]) {
       await assertChat();
       expect(replacementReads).toContain('/api/sessions');
       expect(replacementReads).toContain(`/api/sessions/${session}/messages`);
-      expect(writes).toEqual([]);
+      expect(writes).toEqual(activeRun ? [{ method: 'POST', route: '/v1/runs' }] : []);
       expect(errors).toEqual([]);
     });
+    }
     }
 
     test(`${destination} keyboard shell entry retains chat through Back/Forward, Escape and Close at ${width}px/200% text`, async ({ page, request }, testInfo) => {

@@ -708,7 +708,14 @@ before their goals can become `met`.
   assertion; exact source was restored before final qualification. Independent
   native-source review approved exact candidate `9e31d196`; no required fixes.
   See [native HTTP/SSE evidence](docs/quality/chat-workspace-overlay-native.md#native-production-httpsse-through-settings).
-  Next action: qualify native HTTP/SSE through Profiles and native owner replacement.
+  Native Profiles streaming follow-through extends the same production HTTP/SSE
+  fixture to twelve GTK journeys: Settings/Profiles at both widths/200% text with
+  Close, Escape and framework Back. All twelve and 30 focused regressions plus
+  analysis pass; independent native-source review approved. Profiles uses its
+  capability-limited surface, not populated inventory or profile switching.
+  Production code is unchanged. See
+  [Profiles streaming scope](docs/quality/chat-workspace-overlay-native.md#native-profiles-streaming-follow-through).
+  Next action: qualify native populated Profiles and owner replacement during streaming.
   Saved-secret isolation and cancelled terminal consumption remain unqualified.
   Keep parent acceptance open; do not repeat delivered matrices.
 

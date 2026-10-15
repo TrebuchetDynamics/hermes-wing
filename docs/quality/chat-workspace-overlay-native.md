@@ -218,12 +218,61 @@ verification. An attempted reuse of the traversal helper's `pumpAndSettle` waite
 until stream idle timeout; streaming now uses only bounded frame pumps. These
 attempts remain failed receipts and do not qualify behavior.
 
+## Native Profiles streaming follow-through
+
+The same synthetic session-chat fixture now runs twelve GTK journeys:
+Settings/Profiles × 390/1280 logical pixels × Close/Escape/framework Back, all at
+200% text. Profiles opens through its rendered compact tab or wide manage action.
+Both flushed chunks, streaming-before-release, canonical completion under the
+modal, retained workspace/controller/draft/owner/URL, and completion focus checks
+are unchanged. The receipt validator now requires each destination explicitly;
+its malformed-proof self-check is exercised by the existing runner-test target.
+There is no production code change or new dependency.
+
+This deliberately qualifies retention beneath the capability-limited Profiles
+surface only. The synthetic server advertises session chat, not profiles inventory;
+this does not qualify populated Profiles, selecting a new profile or switching an
+active run's owner. Planner's call: leave live qualification under the existing
+PARITY-LIVE-WORKFLOW external gates and extend this independent WING-TASK-408 native
+fixture rather than retry unavailable authentication or provider-budget contracts.
+
+Commands executed on the candidate based on `ce51499c`:
+
+```bash
+flutter pub get --offline
+python3 -B integration_test/run_linux_chat_workspace_stream.py --self-check
+python3 -B integration_test/run_linux_chat_workspace_stream.py
+flutter analyze --no-pub
+flutter test --no-pub --concurrency=1 \
+  test/router/chat_workspace_overlay_test.dart \
+  test/integration/linux_chat_workspace_overlay_runner_test.dart --reporter expanded
+```
+
+All twelve native journeys, 30 focused tests, analysis and runner self-check passed.
+Flutter 3.44.2/Dart 3.12.2 and the unchanged lockfile were used. The runner verified
+native process identity, source/dependencies, teardown and isolated-state removal.
+Local receipt: `overlay-native-profile-sse-408/native-g560b0oi/verification.json`
+under `.task-evidence/`; source manifest SHA-256
+`e5079c51dbde273f477c741a0fa447690f1914ef1fb0f751890f8e761e746847`.
+The initial attempt failed before GTK launch because the fresh worktree lacked
+package configuration; offline package resolution repaired it without lockfile
+changes. That failed receipt remains retained, not reclassified as passed.
+
+Independent native-source review approved Dart blob
+`73080c8f52e2b896c190825ad5adb5f57dbd52cb` and runner blob
+`7171f747b666980efa926ba1ff7c4db925532e91`, checked the production Profiles route
+and shell callers, and reran the receipt self-check. No required fixes. The reviewer
+did not run a second GTK gate. No new mutation control or full suite was run for
+this matrix extension; the earlier focus-defect negative control remains historical
+evidence, not a fresh Profiles-specific mutation run.
+
 ## Remaining acceptance
 
-Native HTTP/SSE through Profiles, profile/connection replacement and late old-run
+Populated native Profiles, profile/connection replacement and late old-run
 completion in GTK, and Android remain unqualified. Native HTTP/SSE through
-Settings is bounded to the synthetic session-chat matrix above, not live Agent,
-provider inference, authentication, saved secrets or detached-run persistence.
+Settings and capability-limited Profiles is bounded to the synthetic session-chat
+matrices above, not live Agent, provider inference, authentication, saved secrets
+or detached-run persistence.
 The separate browser receipt qualifies
 its bounded shell focus, replacement-owner and late-completion cases; it is not
 native evidence. The chat-local composer and GTK shell focus matrices are separate.

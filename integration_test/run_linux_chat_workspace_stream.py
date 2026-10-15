@@ -7,12 +7,13 @@ from run_linux_persona_conflict import no_preferences
 
 
 def expected_journeys():
-    return [dict(width=width, dismissal=dismissal, text_scale=2,
+    return [dict(width=width, destination=destination, dismissal=dismissal, text_scale=2,
                  progressive_chunks=2, completed_under_overlay=True,
                  canonical_reply=True, chat_retained=True, draft_retained=True,
                  exact_owner_retained=True, exact_location_retained=True,
                  sends=1, history_reads=2, unexpected_requests=0, endpoint_saves=0)
             for width in (390.0, 1280.0)
+            for destination in ('settings', 'profiles')
             for dismissal in ('close', 'escape', 'back')]
 
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
         self_check()
     else:
         assert not sys.argv[1:], 'No target or credential arguments accepted'
-        run(card='overlay-native-sse-408',
+        run(card='overlay-native-profile-sse-408',
             target='integration_test/linux_chat_workspace_stream_test.dart',
             receipt_name='chat-workspace-stream.json', validate_receipt=validate,
             artifact_name='chat-workspace-stream-receipt.json',

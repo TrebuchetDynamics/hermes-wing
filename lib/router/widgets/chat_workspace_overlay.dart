@@ -12,7 +12,11 @@ class ChatWorkspaceOverlay extends StatelessWidget {
 
   final Widget child;
 
-  static void open(BuildContext context, String location) {
+  static Future<void> open(
+    BuildContext context,
+    String location, {
+    FocusNode? returnFocus,
+  }) async {
     final path = Uri.parse(location).path;
     final isOverlay =
         path == AppRoutes.profiles ||
@@ -20,7 +24,10 @@ class ChatWorkspaceOverlay extends StatelessWidget {
         path == AppRoutes.settingsVoice ||
         path == AppRoutes.settingsDiagnostics;
     if (isOverlay && GoRouterState.of(context).uri.path == AppRoutes.hermes) {
-      context.push(location);
+      await context.push<void>(location);
+      if (context.mounted && ModalRoute.of(context)?.isCurrent == true) {
+        returnFocus?.requestFocus();
+      }
     } else {
       context.go(location);
     }

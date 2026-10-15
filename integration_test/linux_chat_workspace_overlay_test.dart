@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/core/hermes/models/hermes_profile.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -40,10 +41,29 @@ void main() {
 
     for (final width in [390.0, 1280.0]) {
       await binding.setSurfaceSize(Size(width, 900));
-      for (final destination in ['settings', 'profiles']) {
+      for (final (entry, destination) in [
+        ('shell', 'settings'),
+        ('shell', 'profiles'),
+        ('slash', 'settings'),
+        ('slash', 'profiles'),
+        ('completion', 'settings'),
+        ('manage', 'profiles'),
+      ]) {
         for (final dismissal in ['close', 'escape', 'back']) {
           SharedPreferences.setMockInitialValues({});
-          final channel = FakeHermesChannel();
+          final channel = entry == 'manage'
+              ? FakeHermesChannel(
+                  profiles: const [
+                    HermesProfile(
+                      id: 'active',
+                      displayName: 'Current',
+                      revision: '1',
+                    ),
+                  ],
+                  selectedProfileId: 'active',
+                  connectedBaseUrl: 'https://example.invalid',
+                )
+              : FakeHermesChannel();
           final store = FakeHermesEndpointStore();
           final turn = HermesChatTurn(
             id: 'synthetic-overlay-turn',
@@ -86,7 +106,31 @@ void main() {
           await tester.enterText(field, 'Synthetic unsent native draft');
           final controller = tester.widget<TextField>(field).controller;
           final session = channel.state.activeSessionId;
-          if (width < 600) {
+          final expectedDraft = entry == 'shell' || entry == 'manage'
+              ? 'Synthetic unsent native draft'
+              : '';
+          if (entry == 'manage') {
+            await tester.tap(
+              find.byKey(const ValueKey('hermes-profile-switcher')),
+            );
+            await settle();
+            await tester.tap(find.byKey(const ValueKey('chat-profile-manage')));
+          } else if (entry != 'shell') {
+            await tester.enterText(
+              field,
+              entry == 'completion' ? '/sett' : '/$destination',
+            );
+            await tester.pump();
+            if (entry == 'completion') {
+              await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+            } else {
+              final action = find.byKey(
+                ValueKey('hermes-local-command-$destination'),
+              );
+              await tester.ensureVisible(action);
+              await tester.tap(action);
+            }
+          } else if (width < 600) {
             final label = destination == 'settings' ? 'More' : 'Profiles';
             await tester.tap(
               find.descendant(
@@ -160,7 +204,15 @@ void main() {
           );
           expect(tester.state(find.byType(HermesChatScreen)), same(chat));
           expect(tester.widget<TextField>(field).controller, same(controller));
-          expect(controller!.text, 'Synthetic unsent native draft');
+          expect(controller!.text, expectedDraft);
+          if (entry != 'shell') {
+            expect(
+              tester.widget<TextField>(field).focusNode!.hasFocus,
+              isTrue,
+              reason:
+                  '$entry $destination $dismissal must restore composer focus',
+            );
+          }
           expect(channel.state.activeSessionId, session);
           expect(channel.state.activeMessages, [turn]);
           expect(
@@ -178,6 +230,7 @@ void main() {
           expect(tester.takeException(), isNull);
           journeys.add({
             'width': width,
+            'entry': entry,
             'destination': destination,
             'dismissal': dismissal,
             'text_scale': 2,
@@ -186,6 +239,7 @@ void main() {
             'transcript_retained': true,
             'exact_location_retained': true,
             'close_keyboard_focus': true,
+            'composer_focus_restored': entry != 'shell',
             'mutations': 0,
           });
           semantics.dispose();
@@ -198,9 +252,11 @@ void main() {
       }
     }
     await binding.setSurfaceSize(null);
-    File(
-      '$root/cache/chat-workspace-overlay.json',
-    ).writeAsStringSync(jsonEncode({'native_pid': pid, 'journeys': journeys}));
+    final receipt = File('$root/cache/chat-workspace-overlay.json.pending');
+    receipt.writeAsStringSync(
+      jsonEncode({'native_pid': pid, 'journeys': journeys}),
+    );
+    receipt.renameSync('$root/cache/chat-workspace-overlay.json');
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 500)),
     );

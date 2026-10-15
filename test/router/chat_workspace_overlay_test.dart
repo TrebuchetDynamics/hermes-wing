@@ -157,6 +157,7 @@ void main() {
         expect(router.routeInformationProvider.value.uri.toString(), location);
         expect(tester.state(find.byType(HermesChatScreen)), same(chat));
         expect(tester.widget<TextField>(field).controller, same(controller));
+        expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
         expect(
           controller.text,
           trigger == 'manage' ? 'unsent synthetic draft' : '',
@@ -182,6 +183,22 @@ void main() {
           expect(
             find.byKey(const ValueKey('chat-profile-search')),
             findsOneWidget,
+          );
+        }
+        if (trigger == 'settings') {
+          await tester.enterText(field, '/settings');
+          await tester.pump();
+          await tester.tap(
+            find.byKey(const ValueKey('hermes-local-command-settings')),
+          );
+          await settleRoutes(tester);
+          expect(find.byKey(close), findsOneWidget);
+          router.go(AppRoutes.tools);
+          await settleRoutes(tester);
+          expect(find.byType(HermesChatScreen), findsNothing);
+          expect(
+            router.routeInformationProvider.value.uri.path,
+            AppRoutes.tools,
           );
         }
         expect(tester.takeException(), isNull);

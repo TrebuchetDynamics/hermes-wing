@@ -94,6 +94,21 @@ assertion. The production source was restored byte-for-byte before final rebuild
 This proves that the owner precondition is meaningful, not coverage of every
 possible stale-route or asynchronous-response bug.
 
+## Chat-local focus follow-through
+
+Four additional compiled cases exercise rendered Settings/Profiles slash suggestions
+at both widths and 200% text. Each checks Close, Escape and browser Back; the
+actual DOM editor must regain focus with its consumed command text empty, without
+a compensating composer click. The exact return URL and complete channel summary
+stay unchanged, with zero observed API mutations and page errors.
+
+The rebuilt Flutter 3.44.2/Dart 3.12.2 app passed all 20 overlay browser cases under
+Node.js 22.5.1 and system Chromium, with no retries. The first four new cases failed
+on an incorrect text selector: Flutter exposes a button whose accessible name
+includes the slash command and its description. Switching to that actual button
+role/name fixed the harness; it did not change production behavior. The preceding
+16 browser cases already passed on the same compiled app.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -101,8 +116,9 @@ shell entries and retained draft/transcript through keyboard Close/Escape and
 framework Back, with an in-memory channel. It does not promote this browser's
 HTTP/SSE evidence to native transport proof.
 
-Profile/connection replacement, late old-run completion after replacement,
-chat-local slash/Manage entries, automatic focus restoration, native streaming,
+Profile/connection replacement, late old-run completion after replacement, shell
+return focus and native streaming remain unqualified. GTK now separately covers
+chat-local slash/Tab-completion/Manage focus return; browser Manage/Tab-completion,
 Android, physical keyboard/IME, screen readers and live Agent/provider behavior
-remain unqualified. Keep the original task and its acceptance open; next qualify
-automatic return focus and native chat-local entries, retaining owner-switching cases.
+remain unqualified. Keep the original task and acceptance open; next qualify
+remaining owner-switching and shell-focus behavior, without repeating these matrices.

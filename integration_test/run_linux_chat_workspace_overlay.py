@@ -7,12 +7,15 @@ from run_linux_persona_conflict import no_preferences
 
 
 def expected_journeys():
-    return [dict(width=width, destination=destination, dismissal=dismissal,
+    return [dict(width=width, entry=entry, destination=destination, dismissal=dismissal,
                  text_scale=2, chat_retained=True, draft_retained=True,
                  transcript_retained=True, exact_location_retained=True,
-                 close_keyboard_focus=True, mutations=0)
+                 close_keyboard_focus=True, composer_focus_restored=entry != 'shell',
+                 mutations=0)
             for width in (390.0, 1280.0)
-            for destination in ('settings', 'profiles')
+            for entry, destination in (('shell', 'settings'), ('shell', 'profiles'),
+                                       ('slash', 'settings'), ('slash', 'profiles'),
+                                       ('completion', 'settings'), ('manage', 'profiles'))
             for dismissal in ('close', 'escape', 'back')]
 
 

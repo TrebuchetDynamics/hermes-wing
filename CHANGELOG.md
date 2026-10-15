@@ -15,6 +15,11 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Chat-local Settings and Profiles overlays now restore composer focus on return,
+  including slash completion and the profile picker's Manage action. Returning
+  after navigating away does not focus a disposed or hidden Chat. See the
+  [bounded Linux and browser checks](docs/quality/chat-workspace-overlay-native.md).
+
 - Production HTTP run Chat now retires exact approvals settled elsewhere and
   drops approvals when their owned run is retired. Reattachment processes
   `approval.responded` instead of leaving historical requests actionable.

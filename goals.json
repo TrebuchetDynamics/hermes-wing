@@ -4280,6 +4280,11 @@
         },
         {
           "kind": "executed",
+          "ref": "python3 -B integration_test/run_linux_chat_workspace_overlay.py: 36 isolated GTK journeys pass, including 24 chat-local slash/Tab-completion/Manage focus returns; flutter test --no-pub --concurrency=1 test/router/chat_workspace_overlay_test.dart test/integration/linux_chat_workspace_overlay_runner_test.dart: 25 pass; rebuilt compiled Chromium overlay suite: 20 pass, zero retries; docs/quality/chat-workspace-overlay-native.md#chat-local-focus-follow-through. Shell focus, native HTTP/SSE, owner replacement, Android and live Agent NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "python3 -B integration_test/run_linux_chat_workspace_overlay.py: twelve isolated Linux GTK shell-entry journeys at 390/1280 logical widths and 200% text retain mounted Chat, draft, transcript and exact URL via keyboard Close/Escape and framework Back. In-memory channel, zero fake mutations; restored-source negative control rejected destructive go navigation. docs/quality/chat-workspace-overlay-native.md; native HTTP/SSE, automatic return focus, physical input, Android and live Agent NOT_CHECKED.",
           "result": "pass"
         },

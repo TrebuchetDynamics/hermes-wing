@@ -81,6 +81,38 @@ for (const width of [390, 1280]) {
       expect(errors).toEqual([]);
     });
 
+    test(`${destination} restores composer focus after local slash entry at ${width}px/200% text`, async ({ page, request }) => {
+      expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-focus-overlay`);
+      await ready(page);
+      await page.evaluate(() => globalThis.wingE2EHermesConnect());
+      const composer = page.getByRole('textbox', { name: 'Message Hermes…', exact: true });
+      await expect(composer).toBeVisible();
+      await composer.click();
+      const writes = [], errors = [];
+      page.on('pageerror', error => errors.push(error.name));
+      page.on('request', request => {
+        const route = new URL(request.url()).pathname;
+        if (/^\/(api|v1)\//.test(route) && request.method() !== 'GET') writes.push({ method: request.method(), route });
+      });
+      const location = page.url(), before = await state(page);
+      for (const dismissal of ['close', 'escape', 'back']) {
+        await page.locator('input:focus, textarea:focus').fill(`/${destination.toLowerCase()}`);
+        await page.getByRole('button', { name: new RegExp(`^/${destination.toLowerCase()} `) }).click();
+        await expect(closeButton(page)).toBeVisible();
+        if (dismissal === 'close') await closeButton(page).click();
+        else if (dismissal === 'escape') await page.keyboard.press('Escape');
+        else await page.goBack();
+        await expect(closeButton(page)).not.toBeVisible();
+        await expect(page.locator('input:focus, textarea:focus')).toHaveValue('');
+        expect(page.url()).toBe(location);
+        expect(await state(page)).toEqual(before);
+      }
+      expect(writes).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+
     test(`${destination} receives stream completion while hidden at ${width}px/200% text`, async ({ page, request }) => {
       expect((await request.post(`${APP}e2e/hermes/reasoning-disclosure`)).ok()).toBe(true);
       const writes = [], errors = [];

@@ -2117,14 +2117,26 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       case 'clear':
         break;
       case 'settings':
-        ChatWorkspaceOverlay.open(context, AppRoutes.settings);
+        unawaited(
+          ChatWorkspaceOverlay.open(
+            context,
+            AppRoutes.settings,
+            returnFocus: _composerFocusNode,
+          ),
+        );
       case 'tools' || 'skills':
         context.go(AppRoutes.tools);
       case 'gateway':
         context.go(AppRoutes.gateway);
 
       case 'profiles':
-        ChatWorkspaceOverlay.open(context, AppRoutes.profiles);
+        unawaited(
+          ChatWorkspaceOverlay.open(
+            context,
+            AppRoutes.profiles,
+            returnFocus: _composerFocusNode,
+          ),
+        );
       case 'providers' || 'model':
         context.go(AppRoutes.providers);
       case 'schedules':

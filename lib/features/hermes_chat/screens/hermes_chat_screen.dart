@@ -1084,7 +1084,13 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       );
       if (!context.mounted || !admitted()) return;
       if (manage) {
-        ChatWorkspaceOverlay.open(context, AppRoutes.profiles);
+        unawaited(
+          ChatWorkspaceOverlay.open(
+            context,
+            AppRoutes.profiles,
+            returnFocus: _composerFocusNode,
+          ),
+        );
       } else if (chosen != null &&
           channel.state.profiles.any((p) => p.id == chosen)) {
         switching = _switchProfile(context, channel, chosen);

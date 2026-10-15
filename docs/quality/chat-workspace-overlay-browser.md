@@ -17,9 +17,10 @@ layout errors must remain empty in connected journeys.
 
 Bootstrap alone uses the existing synthetic HTTP-channel connection hook; the
 profile remains explicitly unselected (`selected_profile_id: null`). Navigation,
-dismissal and draft entry use real rendered controls. The test does not claim
-that clicking a shell entry is a keyboard-only entry journey, or that clicking
-the composer proves automatic return focus.
+dismissal and draft entry use real rendered controls. The shell-history cases now traverse and activate shell entries by Tab/Enter,
+including compact Settings through More. Bootstrap and draft entry still use
+test hooks and a composer click; these are not end-to-end keyboard-only journeys.
+Clicking the composer after return does not prove automatic shell return focus.
 
 The suite is included in `playwright/scripts/run_tests.sh` so normal `npm run
 web:e2e` execution retains the regression. To run it alone after rebuilding:
@@ -108,6 +109,27 @@ on an incorrect text selector: Flutter exposes a button whose accessible name
 includes the slash command and its description. Switching to that actual button
 role/name fixed the harness; it did not change production behavior. The preceding
 16 browser cases already passed on the same compiled app.
+
+## Keyboard shell-entry follow-through
+
+The four shell-history cases now reach the actual rendered Settings/Profiles
+control using the existing keyboard actor, assert its exact role/name and focus
+inside the viewport, and activate it with Enter. Compact Settings first reaches
+More, then the sheet's Settings action. Both initial entry and deliberate reopen
+use this path; the other overlay cases retain pointer-entry coverage.
+
+On the unchanged production app based on `b451d87e`, the rebuilt deterministic
+Flutter 3.44.2/Dart 3.12.2 application passed all 20 overlay cases under Node.js
+22.5.1 and system Chromium, with zero retries. Analyzer and 25 focused router/
+receipt tests passed. The first browser attempt passed 17 cases and failed three
+because the new helper incorrectly assumed every control had an `aria-label`.
+Using the same rendered-text fallback as the keyboard actor corrected the test;
+no production code or capability changed. Independent read-only review approved
+the exact test source.
+
+This qualifies keyboard shell entry and existing modal keyboard dismissal in
+Chromium, not automatic shell return focus, visible focus styling, keyboard-only
+bootstrap, Linux GTK keyboard entry or physical input.
 
 ## Remaining acceptance
 

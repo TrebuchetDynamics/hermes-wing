@@ -4030,6 +4030,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408: rebuilt lib/main_e2e.dart on b451d87e; 20 compiled Chromium overlay cases pass, four with Tab/Enter shell entry including compact More at 390/1280px and 200% text; flutter analyze --no-pub and 25 focused router/receipt tests pass; keyboard-shell-entry source independently approved; automatic shell return focus/native/live remain unqualified. docs/quality/chat-workspace-overlay-browser.md#keyboard-shell-entry-follow-through",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING_APP_URL=http://127.0.0.1:8977/ CHROME_EXECUTABLE=/usr/bin/chromium npx playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-modal.spec.mjs --workers=1 --output=build/global-session-modal-browser",
           "result": "pass"
         },

@@ -13,19 +13,30 @@ async function ready(page) {
   await enableFlutterAccessibility(page, { delay: 0 });
 }
 
-async function shellOpen(page, width, destination) {
+async function shellOpen(page, width, destination, actor) {
+  const activate = async control => {
+    if (!actor) return control.click();
+    const role = await control.getAttribute('role');
+    const name = (await control.getAttribute('aria-label') ?? await control.textContent() ?? '').replace(/\s+/g, ' ').trim();
+    expect(name).toBeTruthy();
+    await actor.reach(role, name);
+    await actor.press('Enter');
+  };
   if (width < 600) {
-    await page.getByRole('tab', { name: destination === 'Settings' ? 'More' : 'Profiles', exact: true }).click();
-    if (destination === 'Settings') await page.getByText('Settings', { exact: true }).last().click();
+    await activate(page.getByRole('tab', { name: destination === 'Settings' ? 'More' : 'Profiles', exact: true }));
+    if (destination === 'Settings') {
+      if (actor) await activate(page.getByRole('button', { name: 'Settings', exact: true }));
+      else await page.getByText('Settings', { exact: true }).last().click();
+    }
   } else {
-    await page.getByRole('button', { name: destination === 'Settings' ? /^Settings(?: Settings)?$/ : 'Profiles', exact: true }).click();
+    await activate(page.getByRole('button', { name: destination === 'Settings' ? /^Settings(?: Settings)?$/ : 'Profiles', exact: true }));
   }
   await expect(closeButton(page)).toBeVisible();
 }
 
 for (const width of [390, 1280]) {
   for (const destination of ['Settings', 'Profiles']) {
-    test(`${destination} retains chat through Back/Forward, Escape and Close at ${width}px/200% text`, async ({ page, request }, testInfo) => {
+    test(`${destination} keyboard shell entry retains chat through Back/Forward, Escape and Close at ${width}px/200% text`, async ({ page, request }, testInfo) => {
       expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
       const errors = [], writes = [], trace = [];
       page.on('pageerror', error => errors.push(error.name));
@@ -50,7 +61,7 @@ for (const width of [390, 1280]) {
       expect(before).toMatchObject({ status: 'connected', selected_profile_id: null, active_session_id: 'e2e-hermes-session', has_error: false });
       const location = page.url();
       const length = await page.evaluate(() => history.length);
-      await shellOpen(page, width, destination);
+      await shellOpen(page, width, destination, actor);
       await expect.poll(() => page.evaluate(() => history.length)).toBe(length + 1);
       await actor.assertFocus('button', 'Close');
       await actor.press('Tab');
@@ -69,7 +80,7 @@ for (const width of [390, 1280]) {
       await page.keyboard.press('Escape');
       await expect(closeButton(page)).not.toBeVisible();
       await expect(composer).toBeVisible();
-      await shellOpen(page, width, destination);
+      await shellOpen(page, width, destination, actor);
       await actor.assertFocus('button', 'Close');
       await actor.press('Enter');
       await expect(closeButton(page)).not.toBeVisible();

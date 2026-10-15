@@ -16,7 +16,8 @@ Rebuild `lib/main_e2e.dart`, start the deterministic loopback fixture, then run
 `npx playwright test playwright/tests/regression/chat-workspace-overlay.spec.mjs
 --workers=1 --retries=0`. The default `npm run web:e2e` runner also selects it.
 The [bounded browser receipt](quality/chat-workspace-overlay-browser.md) records
-Settings/Profiles shell entry, Back/Forward, Escape/Close, retained draft/transcript,
+Settings/Profiles Tab/Enter shell entry (including compact More), Back/Forward,
+Escape/Close, retained draft/transcript,
 zero API mutations and disconnected deep links at compact/wide widths and 200%
 Flutter text. Compiled coverage also retains an active synthetic SSE stream through
 completion and same-endpoint/session replacement. Local slash entries must return
@@ -25,8 +26,9 @@ Run `python3 -B integration_test/run_linux_chat_workspace_overlay.py` for the se
 [isolated GTK receipt](quality/chat-workspace-overlay-native.md): shell, slash,
 Tab-completion and profile-Manage entries, all three dismissal seams and 200% text.
 Widget tests additionally replace the route before the overlay future completes;
-no disposed composer may regain focus. Keep profile/connection replacement, late
-old-run completion and native streaming open under WING-TASK-408. Browser and
+no disposed composer may regain focus. Keep automatic shell return focus,
+GTK keyboard-only shell entry, profile/connection replacement, late old-run
+completion and native streaming open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

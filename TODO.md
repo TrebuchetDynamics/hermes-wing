@@ -602,10 +602,13 @@ before their goals can become `met`.
   compact/wide widths and 200% text; included in the default browser suite.
   Four additional compiled cases retain the pending reasoning SSE stream through
   Back/Forward and consume completion while the overlay stays visible; one deliberate
-  Send is the only browser mutation. No production behavior changed. Owner replacement,
-  chat-local entries, automatic return focus and the isolated Linux journey remain
-  unqualified. Next action: qualify owner replacement in the same production-path
-  suite, then execute the native journey; do not repeat the delivered browser matrix.
+  Send is the only browser mutation. Four more cases replace the session through the
+  existing production-channel test seam while the overlay stays open; exact server-
+  returned identity survives Back/Forward/Escape with no navigation-triggered writes.
+  No production behavior changed. Profile/connection replacement, late old-run
+  completion, chat-local entries, automatic return focus and Linux remain unqualified.
+  Next action: execute the isolated Linux overlay journey; retain remaining owner-
+  switching acceptance and do not repeat the delivered browser matrix.
 
 ### Terminal working-directory files (planned)
 

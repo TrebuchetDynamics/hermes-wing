@@ -72,10 +72,33 @@ Three streaming cases rejected the lost return URL; compact Settings remained
 green. Source was restored byte-for-byte before rebuilding the final application.
 This detects navigation loss, not every possible stream interruption.
 
+## Session-owner replacement follow-through
+
+Four additional compiled cases replace the active session while Settings or
+Profiles remains open, at both widths and 200% text. The existing E2E create-session
+hook invokes the production channel; the test binds the replacement to the exact
+session ID returned by the synthetic server, rather than accepting transient null
+selection as a different owner. Browser Back, Forward and Escape must retain that
+new identity, return URL and empty transcript. The old history and Thinking control
+must stay absent. Exactly one deliberate session creation is allowed; no prompt,
+Stop or approval is sent by overlay navigation.
+
+This is **session replacement within the same endpoint/profile**, driven through
+an existing test seam, not rendered profile/connection switching. It does not
+qualify late completion of a replaced active run or cross-endpoint credentials.
+No production behavior, hook or fixture protocol changed.
+
+A rebuilt negative control deliberately retained the previous active session after
+successful creation. All four new cases failed at the exact returned-session ID
+assertion. The production source was restored byte-for-byte before final rebuild.
+This proves that the owner precondition is meaningful, not coverage of every
+possible stale-route or asynchronous-response bug.
+
 ## Remaining acceptance
 
-Owner replacement, chat-local slash/Manage entries, automatic focus restoration,
-the isolated Linux app journey, Android, physical keyboard/IME, screen readers and
-live Agent/provider behavior remain unqualified. Existing widget evidence is not
-promoted to those targets. Keep the original task and its acceptance open; next
-qualify owner replacement and execute the separate native journey.
+Profile/connection replacement, late old-run completion after replacement,
+chat-local slash/Manage entries, automatic focus restoration, the isolated Linux
+app journey, Android, physical keyboard/IME, screen readers and live Agent/provider
+behavior remain unqualified. Existing widget evidence is not promoted to those
+targets. Keep the original task and its acceptance open; next execute the separate
+native overlay journey and retain the remaining owner-switching cases.

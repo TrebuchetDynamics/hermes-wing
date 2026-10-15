@@ -1361,6 +1361,12 @@ patches, personal credential discovery, service restarts or provider spending.
   reproduced a successful post-disposal connection before the fix and now rejects
   it without touching the forward or Agent channel. This bounded offline repair
   leaves all native/durable acceptance and ticket-authenticated chat work open.
+  Teardown admission follow-through: Connect now rejects without acquiring fresh
+  credentials while cancellation is still retiring the Agent/forwarding lease.
+  Two regressions cover pending teardown and retry after success or failure.
+  Planner's call: fix this reproduced concurrent-retry collision before extending
+  forwarded chat; retain PARITY-LIVE-WORKFLOW's existing external gates separately.
+  No automatic retry or native/durable qualification is implied; parent stays open.
   Next action: qualify the ticket-authenticated chat lifecycle against the current
   SSH lease and captured profile/session without saving the ephemeral origin.
   Keep Android/native/durable acceptance and PARITY-LIVE-WORKFLOW external gates

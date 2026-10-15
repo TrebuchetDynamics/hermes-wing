@@ -104,6 +104,13 @@ while lease cleanup is pending. Route disposal alone still retains an adopted
 app-scoped connection; this change does not turn transport teardown into Stop.
 Cleanup remains in `finally` if channel disconnection fails.
 
+Controller cancellation also holds Connect admission closed until Agent and
+forwarding teardown settle. A rapid second panel cannot capture fresh credentials
+or collide with the still-retiring adapter. Deliberate retry becomes available
+after cleanup, including a reported cleanup failure; no retry is queued or replayed.
+Two deterministic regressions cover pending cleanup and its success/failure exit.
+This does not qualify native SSH, durable restoration or forwarded chat.
+
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path does not
 yet save that SSH target/trust mapping or implement cold-relaunch restoration.**

@@ -25,6 +25,7 @@ class ManagedSshConnectionController {
   final HermesChannel channel;
   ManagedSshTunnel? _tunnel;
   bool _pending = false;
+  bool _cancelling = false;
   bool _disposed = false;
   void Function()? _clearAuthentication;
   bool _adopting = false;
@@ -40,7 +41,7 @@ class ManagedSshConnectionController {
     required ManagedSshHostKeyVerifier verifyHostKey,
     bool serveReads = false,
   }) async {
-    if (_disposed || _pending || _tunnel != null) return false;
+    if (_disposed || _cancelling || _pending || _tunnel != null) return false;
     final generation = ++_generation;
     _pending = true;
     _replacement = false;
@@ -178,6 +179,7 @@ class ManagedSshConnectionController {
   Future<void> cancel({int? attemptId}) async {
     if (attemptId != null && attemptId != _generation) return;
     if (!_pending && _tunnel == null) return;
+    _cancelling = true;
     ++_generation;
     _clearAuthentication?.call();
     _clearAuthentication = null;
@@ -200,10 +202,14 @@ class ManagedSshConnectionController {
         await channel.disconnect();
       }
     } finally {
-      if (tunnel != null) {
-        await tunnel.dispose();
-      } else {
-        await forward.disconnect();
+      try {
+        if (tunnel != null) {
+          await tunnel.dispose();
+        } else {
+          await forward.disconnect();
+        }
+      } finally {
+        _cancelling = false;
       }
     }
   }

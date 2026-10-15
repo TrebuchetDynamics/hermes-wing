@@ -141,6 +141,60 @@ class _ServeReadChannel extends HermesApiChannel {
 }
 
 void main() {
+  for (final cleanupFails in [false, true]) {
+    test(
+      'Connect waits for cancelled lease teardown; cleanupFails=$cleanupFails',
+      () async {
+        final channel = FakeChannel();
+        final forward = FakeForward();
+        final controller = ManagedSshConnectionController(forward, channel);
+        final closing = Completer<void>();
+        final release = Completer<void>();
+        final first = controller.connectSsh(
+          input,
+          verifyHostKey: (_, _) async => true,
+        );
+        forward.waiting.complete(
+          ManagedSshTunnel(
+            agentUri: Uri.parse('http://127.0.0.1:45678'),
+            done: forward.ended.future,
+            close: () async {
+              closing.complete();
+              await release.future;
+              if (cleanupFails) throw StateError('Synthetic cleanup failure');
+            },
+          ),
+        );
+        expect(await first, isTrue);
+        final cancellation = controller.cancel();
+        await closing.future;
+        final retiredCredentials = forward.credentials;
+        forward.waiting = Completer<ManagedSshTunnel>();
+        final duringCleanup = controller.connectSsh(
+          input,
+          verifyHostKey: (_, _) async => true,
+        );
+        expect(forward.credentials, same(retiredCredentials));
+        expect(await duringCleanup, isFalse);
+        final settled = cleanupFails
+            ? expectLater(cancellation, throwsStateError)
+            : cancellation;
+        release.complete();
+        await settled;
+        final retry = controller.connectSsh(
+          input,
+          verifyHostKey: (_, _) async => true,
+        );
+        forward.ready();
+        expect(await retry, isTrue);
+        expect(channel.disconnects, 1);
+        await controller.cancel();
+        controller.dispose();
+        channel.dispose();
+      },
+    );
+  }
+
   test(
     'disposed controller rejects late Connect before acquiring credentials',
     () async {

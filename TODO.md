@@ -89,7 +89,7 @@ Generated from `goals.json` by `goals.py render`. `met` requires an executed, pa
 | M4-PLATFORMS: Administer messaging gateways through typed per-platform operations | unmet | inspection <code>docs/product/hermes-desktop-parity.md#statuses</code> → pass | DOC-M4-HOST-LIFECYCLE-EVIDENCE, DOC-M4-PLATFORM-CONTRACT |
 | M4-SCHEDULES: Create/edit/pause/resume/run/delete scheduled jobs and delivery targets | partial | inspection <code>docs/product/hermes-desktop-parity.md#statuses</code> → pass | DOC-M4-SCHEDULE-CONTRACT, DOC-M4-SCHEDULE-DELIVERY-CONTRACT |
 | M5: Qualify native output and accessible interaction | partial | inspection <code>ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction</code> → pass | DOC-M5-ANDROID-FIXTURE, DOC-M5-LARGE-TEXT-EVIDENCE |
-| M6: Qualify exact artifacts, integrated install, upgrade and recovery | unverified | inspection <code>ROADMAP.md#m6--deliver-an-integrated-qualified-alpha</code> → pass; inspection <code>docs/quality/2026-10-06-m6-artifact-evidence.md</code> → pass; inspection <code>docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs</code> → pass; inspection <code>docs/runbooks/offline-release-candidate-comparison.md (four source fingerprints match .task-evidence/t_bef84284/validation.json; 120 retained synthetic passes; same-card review and actual candidate unverified)</code> → pass; inspection <code>docs/runbooks/release-alpha.md#local-artifact-verification</code> → pass; inspection <code>docs/test-plan.md#android-private-release-verification (isolated signing/package guard inspected; artifact receipt is not named-device install/upgrade/recovery proof)</code> → pass | DOC-M6-CHECKER-NODE22, DOC-M6-INTEGRATED-RECEIPT-GAP |
+| M6: Qualify exact artifacts, integrated install, upgrade and recovery | unverified | executed <code>Node.js v22.22.2: runbook three node --check commands exit 0; node --test test/tooling/compare_release_candidate_test.mjs test/tooling/release_evidence_test.mjs: 97 passed, 0 failed/skipped. Four input hashes unchanged; docs/runbooks/offline-release-candidate-comparison.md#executed-nodejs-22-baseline. Synthetic only; actual release/signatures/M1-M5/install/recovery NOT_CHECKED.</code> → pass; inspection <code>ROADMAP.md#m6--deliver-an-integrated-qualified-alpha</code> → pass; inspection <code>docs/quality/2026-10-06-m6-artifact-evidence.md</code> → pass; inspection <code>docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs</code> → pass; inspection <code>docs/runbooks/offline-release-candidate-comparison.md (four source fingerprints match .task-evidence/t_bef84284/validation.json; 120 retained synthetic passes; same-card review and actual candidate unverified)</code> → pass; inspection <code>docs/runbooks/release-alpha.md#local-artifact-verification</code> → pass; inspection <code>docs/test-plan.md#android-private-release-verification (isolated signing/package guard inspected; artifact receipt is not named-device install/upgrade/recovery proof)</code> → pass | DOC-M6-INTEGRATED-RECEIPT-GAP |
 | ACCOUNT: Qualify account/OAuth/pools/credits/wallet authority before exposure | unmet | inspection <code>docs/product/hermes-desktop-parity.md#statuses</code> → pass | DOC-ACCOUNT-CONTRACT, DOC-ACCOUNT-REVOCATION-EVIDENCE |
 | API-CONFORMANCE: Verify owned code-first HTTP contract against handlers | unverified | executed <code>python3 .task-evidence/t_f2b5c61e/check_discovery.py; receipt: .task-evidence/t_f2b5c61e/validation.json and docs/quality/2026-10-06-wing-link-api-conformance.md (GET /meta and GET /healthz only; all 20 source hashes match; full API conformance unverified)</code> → pass; inspection <code>docs/api/wing-link.openapi.yaml</code> → pass | DOC-API-DEVICE-SELF-CONFORMANCE, DOC-API-PROTOCOL-ERROR-EVIDENCE |
 | NATIVE-INTEGRATION: Review bounded host-local integration before privileged implementation | unverified | inspection <code>docs/adr/client.md#decision</code> → pass | DOC-NATIVE-DESIGN-REVIEW, DOC-NATIVE-FAILURE-BOUNDARY |
@@ -159,8 +159,16 @@ needs its own exact capability, ownership and qualification evidence.
   QA authentication alone cannot enable the driver. The existing
   [authentication question](BLOCKERS.md#blk-20261007-w04--separate-disposable-qa-authentication-for-live-desktop)
   affects actual-Agent checks only; budget/orchestration work proceeds independently.
-  Dependencies: supported QA authentication, exact operation grants and native
-  prerequisites. Target-strategy question [BLK-20261006-W01](BLOCKERS.md#blk-20261006-w01--agent-target-for-the-live-desktop-workflow-qualification)
+  Checks: after the external gates below are satisfied, execute the production
+  two-process native journey and canonical readback described in the workflow
+  acceptance matrix; retain source-bound operation counts, exact restored identities,
+  native process/teardown receipts and nearest regressions for any reproduced fix.
+  Existing refusal/fixture checks are not live acceptance and need not be repeated
+  on unchanged inputs.
+  Dependencies: None.
+  External gates: supported QA authentication, exact operation grants, native
+  prerequisites and a supported authoritative provider-call ceiling covering
+  retries, continuations and auxiliary work. Target-strategy question [BLK-20261006-W01](BLOCKERS.md#blk-20261006-w01--agent-target-for-the-live-desktop-workflow-qualification)
   is answered, not proof of a provisioned or authenticated target.
   Ownership: Wing performs implementation and QA. Ask only for authentication or
   permissions Wing cannot complete safely, or spending beyond the approved limit.
@@ -207,7 +215,9 @@ needs its own exact capability, ownership and qualification evidence.
   by source, not semantic graph. See the plan for inventory and coverage limits.
   [CONN-2](docs/product/prd.md#connection-path-requirements),
   [verification](docs/test-plan.md#connection-path-verification).
-  Dependencies: none. Section: Now. Ownership: in progress under the existing
+  Dependencies: None.
+  Section: Now.
+  Ownership: in progress under the existing
   removal owner; coordinate Local layout/l10n, discovery and browser-matrix inputs.
   Historical candidate continuation (superseded; preserved receipt, not current
   next action): [Profiles Agent-only removal](docs/quality/profiles-agent-only-follow-through.md)
@@ -1204,23 +1214,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: none for this bounded evidence/contract slice. Any later runtime
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
-
-- [ ] **DOC-M6-CHECKER-NODE22** — Goal: M6. Section: Next. Prove the delivered offline
-  candidate comparator on the documented Node.js 22 baseline.
-  Payoff: distinguish the retained Node v26.7.0 synthetic pass from baseline support.
-  Sources: [2026-09-04-release-evidence](docs/superpowers/plans/2026-09-04-release-evidence.md) (historical planning context);
-   [checkout checks](docs/runbooks/offline-release-candidate-comparison.md#checkout-delivery-and-verification)
-  and [candidate admission](docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs).
-  Scope: existing comparator/verifier and their isolated synthetic tests using
-  already available user-space tooling. Exclude installs, public-candidate search,
-  private state, artifact extraction/execution, signing, network and publication.
-  Acceptance: record the actual Node version, run the runbook's three syntax checks
-  and both test files on Node.js 22, and retain exits, counts and input fingerprints.
-  If that runtime is absent, inspect baseline compatibility and identify the exact
-  unexecuted check without relabeling another version's pass. Keep candidate,
-  signatures, M1–M5 and installed recovery unverified; record their next proof slice.
-  Dependencies: DOC-M6-OFFLINE-CHECKER (done). Ownership: unclaimed in this index;
-  check existing tracker ownership before execution.
 
 - [ ] **DOC-M6-INTEGRATED-RECEIPT-GAP** — Goal: M6. Section: Next. Map one same-artifact install-to-recovery receipt gap.
   Payoff: preserve a distinct remaining proof slice after the current task.

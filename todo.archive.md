@@ -5423,3 +5423,35 @@ Source section: Now / Next
   Completion: [four isolated Linux GTK journeys](docs/quality/persona-native-conflict.md) passed at 390/1280 and 200% text; 121 focused regressions and analysis passed. Independent host-native source review approved `6309a494f14a5a427a1574c68f1ca96458308aad`. The standing isolated-QA authority covered this synthetic target; no live access was used. PERSONA/live acceptance remains under VERIFY-PERSONA-LIVE-COMPATIBILITY.
 
 <!-- End of archived native Persona recovery task. -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M6-CHECKER-NODE22** — Goal: M6. Section: Next. Prove the delivered offline
+  candidate comparator on the documented Node.js 22 baseline.
+  Payoff: distinguish the retained Node v26.7.0 synthetic pass from baseline support.
+  Sources: [2026-09-04-release-evidence](docs/superpowers/plans/2026-09-04-release-evidence.md) (historical planning context);
+   [checkout checks](docs/runbooks/offline-release-candidate-comparison.md#checkout-delivery-and-verification)
+  and [candidate admission](docs/quality/2026-10-06-m6-candidate-admission.md#required-public-inputs).
+  Scope: existing comparator/verifier and their isolated synthetic tests using
+  already available user-space tooling. Exclude installs, public-candidate search,
+  private state, artifact extraction/execution, signing, network and publication.
+  Acceptance: record the actual Node version, run the runbook's three syntax checks
+  and both test files on Node.js 22, and retain exits, counts and input fingerprints.
+  If that runtime is absent, inspect baseline compatibility and identify the exact
+  unexecuted check without relabeling another version's pass. Keep candidate,
+  signatures, M1–M5 and installed recovery unverified; record their next proof slice.
+  Checks: the runbook's three `node --check` commands and its two-file
+  `node --test` command on Node.js 22; capture exits, test totals and fingerprints
+  of both production modules and both test files.
+  Evidence: [executed Node.js 22 baseline](docs/runbooks/offline-release-candidate-comparison.md#executed-nodejs-22-baseline):
+  three syntax checks exited 0; both test files passed 97 tests, no failures or skips,
+  on Node.js v22.22.2 with four unchanged source fingerprints. Synthetic checks only;
+  actual candidate, signatures, M1–M5 and installed recovery remain unverified.
+  Dependencies: DOC-M6-OFFLINE-CHECKER.
+  Ownership: unclaimed in this index;
+  check actual writer activity and retained continuation before execution.
+
+<!-- End DOC-M6-CHECKER-NODE22 archived contract. -->

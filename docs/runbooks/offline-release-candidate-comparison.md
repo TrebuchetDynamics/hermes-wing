@@ -104,6 +104,26 @@ environment, separate source/bundle trees, byte snapshots before/after every
 invocation, matching inputs and discriminating failure cases. They are not
 observed releases or platform qualification.
 
+### Executed Node.js 22 baseline
+
+`DOC-M6-CHECKER-NODE22`: on Linux x86_64, Node.js **v22.22.2**, the three
+syntax commands above exited 0 and the combined test command passed **97 tests**,
+zero failures, cancellations or skips. The tested source base was
+`caaff7803e4b2abebbf03557d0f12b166530b2ab`; all four inputs were unchanged after
+execution. The existing user-space runtime was used without installation or
+network access. SHA-256 inputs:
+
+- `scripts/compare_release_candidate.mjs`: `2490316191285d19b37468f2a8800c65ebbe6b12c2130f4dc839f076979e925c`
+- `scripts/release_evidence.mjs`: `3a55e27bb7d1a75a2b6cb4f309a775dc57c43059918e8bf243d851fca0755d96`
+- `test/tooling/compare_release_candidate_test.mjs`: `f8ab12bf39e573da99e3eb8c9659a225ab31216b505eda90dbcb80891066d164`
+- `test/tooling/release_evidence_test.mjs`: `409b1ccb1ac412b360a6fde7764efb28efd735bfabb85af655f3ed0fe5e2ba38`
+
+This qualifies the synthetic comparator/verifier checks on Node.js 22, not an
+actual release candidate or the earlier 120-test historical input. Signatures,
+M1–M5, installed upgrade/recovery and M6 remain unverified. The next proof slice
+is `DOC-M6-INTEGRATED-RECEIPT-GAP`: identify the first missing same-artifact
+Android workflow binding without acquiring, building, installing or signing it.
+
 Historical service-bearing manifests and bootstrap payloads are not accepted by
 the current client-only comparison contract. Preserve their receipts as history,
 not as evidence for a new release. No legacy release mode is offered.

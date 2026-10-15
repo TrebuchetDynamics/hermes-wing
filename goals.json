@@ -5457,6 +5457,11 @@
       "depends_on": [],
       "evidence": [
         {
+          "kind": "executed",
+          "ref": "Node.js v22.22.2: runbook three node --check commands exit 0; node --test test/tooling/compare_release_candidate_test.mjs test/tooling/release_evidence_test.mjs: 97 passed, 0 failed/skipped. Four input hashes unchanged; docs/runbooks/offline-release-candidate-comparison.md#executed-nodejs-22-baseline. Synthetic only; actual release/signatures/M1-M5/install/recovery NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
           "kind": "inspection",
           "ref": "ROADMAP.md#m6--deliver-an-integrated-qualified-alpha",
           "result": "pass"
@@ -7135,16 +7140,6 @@
     },
     {
       "depends_on": [
-        "DOC-M6-OFFLINE-CHECKER"
-      ],
-      "goal": "M6",
-      "id": "DOC-M6-CHECKER-NODE22",
-      "section": "Next",
-      "status": "open",
-      "title": "Run the offline candidate comparator checks on Node.js 22"
-    },
-    {
-      "depends_on": [
         "DOC-M6-CHECKER-NODE22"
       ],
       "goal": "M6",
@@ -7945,6 +7940,16 @@
       "section": "Done",
       "status": "done",
       "title": "Prepare the offline exact-candidate comparison and negative-case oracle"
+    },
+    {
+      "depends_on": [
+        "DOC-M6-OFFLINE-CHECKER"
+      ],
+      "goal": "M6",
+      "id": "DOC-M6-CHECKER-NODE22",
+      "section": "Done",
+      "status": "done",
+      "title": "Run the offline candidate comparator checks on Node.js 22"
     },
     {
       "depends_on": [

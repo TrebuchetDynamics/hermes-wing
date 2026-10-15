@@ -96,9 +96,13 @@ possible stale-route or asynchronous-response bug.
 
 ## Remaining acceptance
 
+The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
+shell entries and retained draft/transcript through keyboard Close/Escape and
+framework Back, with an in-memory channel. It does not promote this browser's
+HTTP/SSE evidence to native transport proof.
+
 Profile/connection replacement, late old-run completion after replacement,
-chat-local slash/Manage entries, automatic focus restoration, the isolated Linux
-app journey, Android, physical keyboard/IME, screen readers and live Agent/provider
-behavior remain unqualified. Existing widget evidence is not promoted to those
-targets. Keep the original task and its acceptance open; next execute the separate
-native overlay journey and retain the remaining owner-switching cases.
+chat-local slash/Manage entries, automatic focus restoration, native streaming,
+Android, physical keyboard/IME, screen readers and live Agent/provider behavior
+remain unqualified. Keep the original task and its acceptance open; next qualify
+automatic return focus and native chat-local entries, retaining owner-switching cases.

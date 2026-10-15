@@ -1356,6 +1356,11 @@ patches, personal credential discovery, service restarts or provider spending.
   implemented: API remains default, profiles/history use the owned lease, stale
   adoption/loss cannot retarget the channel, and chat/persistent recovery stay off.
   Planner's call: deliver read-only selection separately from chat qualification.
+  Disposed-controller follow-through: reject late Connect before forwarding or
+  credential acquisition and make disposal idempotent. The new panel regression
+  reproduced a successful post-disposal connection before the fix and now rejects
+  it without touching the forward or Agent channel. This bounded offline repair
+  leaves all native/durable acceptance and ticket-authenticated chat work open.
   Next action: qualify the ticket-authenticated chat lifecycle against the current
   SSH lease and captured profile/session without saving the ephemeral origin.
   Keep Android/native/durable acceptance and PARITY-LIVE-WORKFLOW external gates

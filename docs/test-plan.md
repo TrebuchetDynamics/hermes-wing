@@ -147,6 +147,13 @@ disconnect, leaves the replacement untouched and sends no retired serve credenti
 to its origin. Failed serve reads still allow deliberate same-origin Retry.
 These checks do not qualify native SSH, Android or live Agent authentication.
 
+The managed SSH panel regression also disposes an idle controller twice and
+attempts a late Connect. It must return false without invoking the forward,
+capturing credentials or changing the Agent channel. Existing cancellation and
+replacement tests retain their separate teardown oracles. Run
+`flutter test --no-pub test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`;
+this deterministic lifecycle check is not native SSH qualification.
+
 WING-TASK-407 restores deliberately enabled Linux loopback serve conversations
 through the production channel. The [source-bound restoration receipt](quality/local-serve-restoration.md#recovered-delivery-gate)
 records the guard repair, independent review, full Flutter suite, compiled browser,

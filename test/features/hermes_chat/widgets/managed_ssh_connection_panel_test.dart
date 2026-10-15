@@ -141,6 +141,29 @@ class _ServeReadChannel extends HermesApiChannel {
 }
 
 void main() {
+  test(
+    'disposed controller rejects late Connect before acquiring credentials',
+    () async {
+      final channel = FakeChannel();
+      final forward = FakeForward()..ready();
+      final controller = ManagedSshConnectionController(forward, channel);
+      addTearDown(channel.dispose);
+      addTearDown(controller.cancel);
+      controller.dispose();
+      controller.dispose();
+
+      expect(
+        await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+        isFalse,
+      );
+      expect(forward.config, isNull);
+      expect(forward.credentials, isNull);
+      expect(channel.token, isNull);
+      expect(channel.state.isConnected, isFalse);
+      expect(channel.disconnects, 0);
+    },
+  );
+
   for (final forwarded in [true, false]) {
     testWidgets(
       'serve chat entry respects forwarded read-only mode $forwarded',

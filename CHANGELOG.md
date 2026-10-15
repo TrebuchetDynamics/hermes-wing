@@ -23,6 +23,10 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Disposed managed SSH controllers now reject late Connect callbacks before
+  acquiring credentials or opening a tunnel. Disposal is idempotent; ordinary
+  cancellation remains retryable on a live controller.
+
 - Explicit serve connection now claims ownership before secure recovery cleanup.
   Cancellation, abandoned setup and newer API/serve connections prevent obsolete
   reads; storage failures stay sanitized without enabling credential Retry.

@@ -72,12 +72,27 @@ class FakeChannel extends ChangeNotifier implements HermesChannel {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _HeldDisconnectChannel extends FakeChannel {
+  final disconnectEntered = Completer<void>();
+  final disconnectRelease = Completer<void>();
+
+  @override
+  Future<void> disconnect() async {
+    if (!disconnectEntered.isCompleted) {
+      disconnectEntered.complete();
+      await disconnectRelease.future;
+    }
+    await super.disconnect();
+  }
+}
+
 class _HeldClearStore implements HermesServeRecoveryStore {
   final entered = Completer<void>();
   final release = Completer<void>();
+  bool hold = true;
   @override
   Future<void> clear() async {
-    if (!entered.isCompleted) {
+    if (hold && !entered.isCompleted) {
       entered.complete();
       await release.future;
     }
@@ -141,6 +156,115 @@ class _ServeReadChannel extends HermesApiChannel {
 }
 
 void main() {
+  test(
+    'tunnel loss blocks SSH retry during production secure cleanup',
+    () async {
+      final store = _HeldClearStore()..hold = false;
+      final reads = <String>[];
+      var mutations = 0;
+      final channel = HermesApiChannel(
+        serveRecoveryStore: store,
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            reads.add(uri.origin);
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' =>
+                '''{
+              "object":"hermes.api_server.capabilities",
+              "platform":"test","model":"test",
+              "auth":{"type":"bearer","required":true,"granted_scopes":[]},
+              "features":{},"endpoints":{}
+            }''',
+              '/api/sessions' => '{"sessions":[],"total":0}',
+              _ => throw StateError('Unexpected read'),
+            };
+          },
+          post: (uri, headers, body) async {
+            mutations++;
+            throw StateError('Unexpected mutation');
+          },
+        ),
+      );
+      final forward = FakeForward()..ready();
+      final controller = ManagedSshConnectionController(forward, channel);
+      addTearDown(() async {
+        if (!store.release.isCompleted) store.release.complete();
+        await Future<void>.delayed(Duration.zero);
+        await controller.cancel();
+        controller.dispose();
+        channel.dispose();
+      });
+      expect(
+        await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+        isTrue,
+      );
+      final retiredCredentials = forward.credentials;
+      final originalReads = reads.length;
+      store.hold = true;
+      forward.ended.complete();
+      await store.entered.future;
+      expect(
+        await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+        isFalse,
+      );
+      expect(forward.credentials, same(retiredCredentials));
+      expect(reads.length, originalReads);
+      store.release.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect(channel.state.status, HermesConnectionStatus.disconnected);
+      expect(forward.closes, 1);
+      expect(mutations, 0);
+    },
+  );
+
+  test('tunnel loss blocks SSH retry until Agent retirement settles', () async {
+    final channel = _HeldDisconnectChannel();
+    final forward = FakeForward()..ready();
+    final controller = ManagedSshConnectionController(forward, channel);
+    addTearDown(() async {
+      if (!channel.disconnectRelease.isCompleted) {
+        channel.disconnectRelease.complete();
+      }
+      await Future<void>.delayed(Duration.zero);
+      await controller.cancel();
+      controller.dispose();
+      channel.dispose();
+    });
+    expect(
+      await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+      isTrue,
+    );
+    final retiredCredentials = forward.credentials;
+    forward.ended.complete();
+    await channel.disconnectEntered.future;
+    forward.waiting = Completer<ManagedSshTunnel>()
+      ..complete(
+        ManagedSshTunnel(
+          agentUri: Uri.parse('http://127.0.0.1:45679'),
+          done: Completer<void>().future,
+          close: () async {},
+        ),
+      );
+    expect(
+      await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+      isFalse,
+    );
+    expect(forward.credentials, same(retiredCredentials));
+    channel.disconnectRelease.complete();
+    await Future<void>.delayed(Duration.zero);
+    expect(channel.state.isConnected, isFalse);
+    expect(channel.disconnects, 1);
+    expect(forward.closes, 1);
+    expect(
+      await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+      isTrue,
+    );
+    expect(channel.state.connectedBaseUrl, 'http://127.0.0.1:45679');
+    expect(channel.disconnects, 1);
+  });
+
   for (final cleanupFails in [false, true]) {
     test(
       'Connect waits for cancelled lease teardown; cleanupFails=$cleanupFails',

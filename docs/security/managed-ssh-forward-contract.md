@@ -110,6 +110,10 @@ or collide with the still-retiring adapter. Deliberate retry becomes available
 after cleanup, including a reported cleanup failure; no retry is queued or replayed.
 Two deterministic regressions cover pending cleanup and its success/failure exit.
 This does not qualify native SSH, durable restoration or forwarded chat.
+Unexpected loss of an already-adopted tunnel uses the same cancellation path,
+including its admission barrier while Agent retirement/secure cleanup is pending.
+Two deterministic regressions cover that window and deliberate retry afterward;
+the production-channel case asserts no fresh reads or mutations during retirement.
 
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path does not

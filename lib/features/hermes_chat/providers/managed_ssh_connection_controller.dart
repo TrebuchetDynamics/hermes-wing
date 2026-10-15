@@ -96,11 +96,7 @@ class ManagedSshConnectionController {
             if (_sawConnecting) unawaited(cancel(attemptId: generation));
             return;
           }
-          _tunnel = null;
-          _adopted = false;
-          if (channel.state.connectedBaseUrl == tunnel.agentUri.toString()) {
-            unawaited(channel.disconnect());
-          }
+          unawaited(cancel(attemptId: generation));
         }),
       );
       if (serveReads) {

@@ -1367,6 +1367,13 @@ patches, personal credential discovery, service restarts or provider spending.
   Planner's call: fix this reproduced concurrent-retry collision before extending
   forwarded chat; retain PARITY-LIVE-WORKFLOW's existing external gates separately.
   No automatic retry or native/durable qualification is implied; parent stays open.
+  Unexpected-loss follow-through: an adopted tunnel's loss now uses that same
+  serialized cancellation path. Two deterministic regressions cover delayed Agent
+  retirement and production secure cleanup, rejecting fresh forwarding/credentials
+  until teardown settles and preserving deliberate retry afterward.
+  Planner's call: fix this reproduced retry race before extending forwarded chat;
+  skip live workflow gates already retained in PARITY-LIVE-WORKFLOW, not its
+  acceptance. Native/device/durable and authenticated chat proof remain open.
   Next action: qualify the ticket-authenticated chat lifecycle against the current
   SSH lease and captured profile/session without saving the ephemeral origin.
   Keep Android/native/durable acceptance and PARITY-LIVE-WORKFLOW external gates

@@ -13,6 +13,8 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
     required this.onSubmit,
     required this.onCancel,
     this.busy = false,
+    this.serveReads = false,
+    this.transportSelection,
     this.sanitizedError,
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
@@ -23,19 +25,24 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
   final ManagedSshKeyPicker pickKey;
   final ManagedSshGeneratedKeyStore? generatedKeyStore;
   final bool busy;
+  final bool serveReads;
+  final Widget? transportSelection;
   final String? sanitizedError;
 
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     return ManagedSshConnectionForm(
+      transportSelection: transportSelection,
       labels: ManagedSshConnectionLabels(
         host: strings.managedSshHostLabel,
         sshPort: strings.managedSshPortLabel,
         username: strings.managedSshUsernameLabel,
         password: strings.managedSshPasswordLabel,
         agentPort: strings.managedSshAgentPortLabel,
-        agentToken: strings.managedSshAgentTokenLabel,
+        agentToken: serveReads
+            ? strings.localServeTokenLabel
+            : strings.managedSshAgentTokenLabel,
         connect: strings.managedSshConnectAction,
         connecting: strings.managedSshConnectingAction,
         cancel: strings.cancelAction,

@@ -18,7 +18,8 @@ extension _ServeChatExtension on HermesApiChannel {
   Future<void> _qualifyServeChat() async {
     final reader = _serveReader;
     final session = _state.activeSessionId;
-    if (reader == null ||
+    if (!canEnableLocalServeChat ||
+        reader == null ||
         session == null ||
         !_state.isConnected ||
         _state.isSelectingProfile ||

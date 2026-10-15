@@ -79,6 +79,7 @@ class HermesApiChannel extends ChangeNotifier
   int _serveRecoveryGeneration = 0;
   bool _serveRestorationPending = false;
   String? _serveCredential;
+  bool _serveForwarded = false;
   Future<void> _servePersistenceTail = Future.value();
   final Duration streamIdleTimeout;
   final Duration runStatusReconcileInterval;
@@ -320,6 +321,21 @@ class HermesApiChannel extends ChangeNotifier
     );
   }
 
+  /// Explicit serve reads through an owned SSH lease; never save its local port.
+  Future<void> connectForwardedServeReads({
+    required String baseUrl,
+    required String credential,
+    required bool Function() canAccept,
+  }) => _connectServeReads(
+    baseUrl,
+    credential,
+    canAccept: canAccept,
+    forgetRecovery: true,
+    forwarded: true,
+  );
+
+  bool get canEnableLocalServeChat => !_serveForwarded;
+
   Future<void> enableLocalServeChat() => _qualifyServeChat();
   Future<bool> restoreSavedLocalServeConversation() =>
       _restoreSavedServeConversation();
@@ -329,7 +345,11 @@ class HermesApiChannel extends ChangeNotifier
     } else if (_serveRecovery != null) {
       await _retryServeRecovery();
     } else if (_serveCredential != null && _state.connectedBaseUrl != null) {
-      await _connectServeReads(_state.connectedBaseUrl!, _serveCredential!);
+      await _connectServeReads(
+        _state.connectedBaseUrl!,
+        _serveCredential!,
+        forwarded: _serveForwarded,
+      );
     } else {
       await _restoreSavedServeConversation();
     }

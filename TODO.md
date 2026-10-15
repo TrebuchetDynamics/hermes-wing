@@ -1352,8 +1352,14 @@ patches, personal credential discovery, service restarts or provider spending.
   preserves replacement ownership. Four new regressions and the focused SSH/channel
   union pass (403 passed, eight opt-in SSH skips); independent native source review
   approved. Native/live SSH, Android tunneled-serve selection and durable relaunch
-  remain open. Next action: implement the owner-bound Android serve selection
-  described in the contract without persisting the ephemeral origin.
+  remain open in that receipt. The explicit forwarded serve-read selection is now
+  implemented: API remains default, profiles/history use the owned lease, stale
+  adoption/loss cannot retarget the channel, and chat/persistent recovery stay off.
+  Planner's call: deliver read-only selection separately from chat qualification.
+  Next action: qualify the ticket-authenticated chat lifecycle against the current
+  SSH lease and captured profile/session without saving the ephemeral origin.
+  Keep Android/native/durable acceptance and PARITY-LIVE-WORKFLOW external gates
+  open; Linux-hosted fixture tests are not native SSH or live Agent evidence.
   Credential-lifetime prerequisite: the shared channel now retires serve read
   credentials on disconnect and API replacement. Three deterministic regressions
   prove that explicit serve Retry leaves the replacement origin/owner untouched

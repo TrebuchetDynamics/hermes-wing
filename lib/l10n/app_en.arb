@@ -1,4 +1,6 @@
 {
+  "managedSshServeReads": "Read Hermes serve through SSH",
+  "managedSshServeReadsBody": "Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history only; chat enablement and saved SSH restoration are not available here. No automatic protocol fallback.",
   "localServeReadsLabel": "Read an already-running Hermes serve backend",
   "localServeReadsBody": "Linux loopback only. Enter this backend's host-provided session token, not API_SERVER_KEY or a provider key. Reads profiles, sessions and history. Chat requires a separately authenticated ticket connection; legacy local tokens may allow reads only. No launch or credential discovery. This connection and token are not saved; enter them again after relaunch.",
   "localServeEnableChat": "Enable chat on this session",

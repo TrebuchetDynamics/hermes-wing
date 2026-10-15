@@ -125,7 +125,64 @@ class FakeForward extends ManagedSshForward {
   }
 }
 
+class _ServeReadChannel extends HermesApiChannel {
+  _ServeReadChannel({required this.forwarded});
+  final bool forwarded;
+  @override
+  bool get canEnableLocalServeChat => !forwarded;
+  @override
+  HermesChannelState get state => const HermesChannelState(
+    status: HermesConnectionStatus.connected,
+    isServeReadOnly: true,
+    connectedBaseUrl: 'http://127.0.0.1:45678',
+    selectedProfileId: 'default',
+    activeSessionId: 'synthetic-session',
+  );
+}
+
 void main() {
+  for (final forwarded in [true, false]) {
+    testWidgets(
+      'serve chat entry respects forwarded read-only mode $forwarded',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final channel = _ServeReadChannel(forwarded: forwarded);
+        final store = FakeHermesEndpointStore();
+        final directory = HermesGatewayDirectory(
+          store: store,
+          cache: FakeGatewayContactCache(),
+          loader: FakeGatewaySummaryLoader({}),
+          activeChannel: channel,
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              hermesChannelProvider.overrideWithValue(channel),
+              hermesEndpointStoreProvider.overrideWithValue(
+                FakeHermesEndpointStore(),
+              ),
+              hermesGatewayDirectoryProvider.overrideWith((_) => directory),
+              hermesVoiceCaptureServiceProvider.overrideWithValue(null),
+              hermesTextToSpeechServiceProvider.overrideWithValue(null),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const HermesChatScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('hermes-local-serve-chat')),
+          forwarded ? findsNothing : findsOneWidget,
+        );
+        await tester.pumpWidget(const SizedBox.shrink());
+        channel.dispose();
+      },
+    );
+  }
+
   Future<void> mount(
     WidgetTester tester,
     ManagedSshConnectionController controller, {
@@ -154,6 +211,21 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('serve selection changes only its explicit credential label', (
+    tester,
+  ) async {
+    final channel = FakeChannel();
+    final controller = ManagedSshConnectionController(FakeForward(), channel);
+    await mount(tester, controller);
+    expect(find.text('Hermes serve session token'), findsNothing);
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    expect(find.text('Hermes serve session token'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+    channel.dispose();
+  });
 
   Future<void> submit(WidgetTester tester) async {
     for (final field in {

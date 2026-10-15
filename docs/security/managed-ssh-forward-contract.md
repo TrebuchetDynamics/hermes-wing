@@ -120,10 +120,11 @@ The explicit serve entry now claims its connection generation before awaiting
 secure recovery cleanup, matching the API adoption fence. Disconnect, newer
 API/serve intent and abandoned admission prevent obsolete credential-bearing reads.
 Storage failure stays sanitized and leaves no credential available for Retry.
-Five production-channel regressions cover this shared prerequisite; this does not
-select serve in the SSH controller or enable Android transport support.
+Five production-channel regressions cover that prerequisite alone; they did not
+select a transport or qualify Android. The explicit read selection below is a
+separate implementation slice.
 
-The current controller calls `HermesChannel.connect` with the forwarded origin
+In default API mode, the controller calls `HermesChannel.connect` with the forwarded origin
 and separately supplied Agent credential. Production `HermesApiChannel` uses its
 advertised health/capabilities/session REST contract. Supported profile/history,
 Send, approval and Stop operations depend on that exact connected contract;
@@ -137,19 +138,30 @@ exclusive-submit support, server-request negotiation and captured runtime/stored
 session identity. REST credentials/reads are not an RPC grant. Its
 [channel integration](../../lib/core/hermes/channel/api_channel/hermes_api_channel_serve_chat.dart)
 correlates approvals and reconciles uncertain sessions without resending mutations.
-Production entry and cold restoration are currently Linux-scoped; the SSH
-controller does not select this reader or lifecycle on Android.
+The SSH form now offers an explicit serve-read switch, off by default, with a
+separate session-token label. The controller binds that selection to its current
+lease and uses the fixed loopback reader on Android as well as other native
+clients. API mode never guesses serve after failure. Forwarded mode loads
+profiles, sessions and exact-session history only: its chat action is hidden and
+channel qualification refuses it. No ticket, Send, approval or Stop is issued.
+Existing local Linux chat entry remains unchanged. Forwarded origins and
+credentials are never saved as local-conversation recovery pointers.
 
-Planner's call for BACKEND-SSH-CONNECT: reuse those fixed reader/lifecycle seams
-for a separately qualified Android tunneled-serve path rather than inventing a
-second transport or widening `HermesChannel.connect` to guess protocols. Before
-enabling it, bind acquisition and every async completion to the current SSH lease,
-explicit profile/session and transient origin, retain deliberate transport
-selection, and test ticket denial, profile/owner mismatch, stale adoption and loss
-with zero implicit Send/approval/Stop. A fresh ticket must use the existing
-secret-safe transport, never Desktop's credential-in-URL technique. Keep Linux
-behavior unchanged. This is the next implementation contract, not enabled Android
-support, a new advertised operation, or permission to remove Linux gates alone.
+Planner's call for BACKEND-SSH-CONNECT: deliver the bounded read-only selection
+before Android chat qualification. The production-channel fixture tests exercise
+profile switching, credential denial, pending-read tunnel loss and replacement
+with Android platform selection on a Linux host; they do not authenticate real
+SSH or qualify an Android device. Shared serve adoption publishes one connecting
+transition while retiring its previous transport, so the controller does not
+mistake its own cleanup for an external disconnect. UI regressions check explicit
+token labeling and absence of the chat action for forwarded reads.
+
+Next: qualify the separately authenticated chat lifecycle against the current SSH
+lease, captured profile/session and transient origin, including ticket denial,
+owner mismatch, stale results and interruption with zero implicit mutations.
+A fresh ticket must use the existing secret-safe transport, never Desktop's
+credential-in-URL technique. Keep forwarded chat unavailable until that slice is
+verified. Durable SSH mapping, device/native/live acceptance remain open.
 
 ## Failure oracles and qualification
 

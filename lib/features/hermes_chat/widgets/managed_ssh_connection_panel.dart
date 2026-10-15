@@ -33,6 +33,7 @@ class _ManagedSshConnectionPanelState
     extends ConsumerState<ManagedSshConnectionPanel> {
   ManagedSshConnectionController? _controller;
   bool _busy = false;
+  bool _serveReads = false;
   bool _adopted = false;
   int _generation = 0;
   int? _attemptId;
@@ -52,6 +53,7 @@ class _ManagedSshConnectionPanelState
     try {
       final connecting = controller.connectSsh(
         input,
+        serveReads: _serveReads,
         verifyHostKey: (config, key) async {
           if (!mounted || generation != _generation) return false;
           final accepted = await reviewManagedSshHostKey(
@@ -119,7 +121,17 @@ class _ManagedSshConnectionPanelState
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) return Text(AppLocalizations.of(context).managedSshUnsupported);
+    final strings = AppLocalizations.of(context);
     return LocalizedManagedSshConnectionForm(
+      transportSelection: SwitchListTile(
+        title: Text(strings.managedSshServeReads),
+        subtitle: Text(strings.managedSshServeReadsBody),
+        value: _serveReads,
+        onChanged: _busy
+            ? null
+            : (value) => setState(() => _serveReads = value),
+      ),
+      serveReads: _serveReads,
       onSubmit: _submit,
       pickKey: widget.pickKey,
       generatedKeyStore: widget.generatedKeyStore,

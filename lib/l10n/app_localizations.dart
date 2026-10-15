@@ -94,6 +94,18 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @managedSshServeReads.
+  ///
+  /// In en, this message translates to:
+  /// **'Read Hermes serve through SSH'**
+  String get managedSshServeReads;
+
+  /// No description provided for @managedSshServeReadsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history only; chat enablement and saved SSH restoration are not available here. No automatic protocol fallback.'**
+  String get managedSshServeReadsBody;
+
   /// No description provided for @localServeReadsLabel.
   ///
   /// In en, this message translates to:

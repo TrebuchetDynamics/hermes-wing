@@ -15,6 +15,7 @@ extension _ServeRecoveryExtension on HermesApiChannel {
     HermesServeLifecycle lifecycle, {
     bool uncertain = false,
   }) async {
+    if (_serveForwarded) return;
     final c = lifecycle.recovery;
     final selection = HermesServeRecoverySelection(
       HermesWebRecovery(

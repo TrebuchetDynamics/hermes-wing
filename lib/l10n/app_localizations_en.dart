@@ -9,6 +9,13 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get managedSshServeReads => 'Read Hermes serve through SSH';
+
+  @override
+  String get managedSshServeReadsBody =>
+      'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history only; chat enablement and saved SSH restoration are not available here. No automatic protocol fallback.';
+
+  @override
   String get localServeReadsLabel =>
       'Read an already-running Hermes serve backend';
 

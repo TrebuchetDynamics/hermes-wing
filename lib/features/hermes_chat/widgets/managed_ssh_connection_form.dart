@@ -83,9 +83,11 @@ class ManagedSshConnectionForm extends StatefulWidget {
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
     this.generatedKeyLabels,
+    this.transportSelection,
   });
   final ManagedSshGeneratedKeyStore? generatedKeyStore;
   final ManagedSshGeneratedKeyLabels? generatedKeyLabels;
+  final Widget? transportSelection;
   final ManagedSshConnectionLabels labels;
   final ManagedSshKeyPicker pickKey;
   final Future<void> Function(SshConnectionRequest) onSubmit;
@@ -485,6 +487,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (widget.transportSelection != null) widget.transportSelection!,
               LayoutBuilder(
                 builder: (context, constraints) {
                   final host = _field('host', l.host, _host);

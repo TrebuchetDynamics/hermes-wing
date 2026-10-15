@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/channel/hermes_api_channel.dart';
 import '../../../core/hermes/ssh/managed_ssh.dart';
 import '../../../core/hermes/ssh/ssh_connection_request.dart';
 import 'hermes_channel_provider.dart';
@@ -36,6 +37,7 @@ class ManagedSshConnectionController {
   Future<bool> connectSsh(
     SshConnectionRequest input, {
     required ManagedSshHostKeyVerifier verifyHostKey,
+    bool serveReads = false,
   }) async {
     if (_pending || _tunnel != null) return false;
     final generation = ++_generation;
@@ -99,7 +101,26 @@ class ManagedSshConnectionController {
           }
         }),
       );
-      await channel.connect(baseUrl: tunnel.agentUri.toString(), apiKey: token);
+      if (serveReads) {
+        final target = channel;
+        if (target is! HermesApiChannel || token == null) {
+          throw const ManagedSshException(ManagedSshFailure.connection);
+        }
+        await target.connectForwardedServeReads(
+          baseUrl: tunnel.agentUri.toString(),
+          credential: token!,
+          canAccept: () =>
+              generation == _generation &&
+              identical(_tunnel, tunnel) &&
+              !_tunnelLost &&
+              !_replacement,
+        );
+      } else {
+        await channel.connect(
+          baseUrl: tunnel.agentUri.toString(),
+          apiKey: token,
+        );
+      }
       if (generation != _generation) return false;
       if (!channel.state.isConnected ||
           channel.state.connectedBaseUrl != tunnel.agentUri.toString()) {

@@ -8,20 +8,21 @@ extension _ServeReadsExtension on HermesApiChannel {
     String profile = 'default',
     String? storedSession,
     bool forgetRecovery = false,
+    bool forwarded = false,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
-    final disconnected = _disconnect();
+    final disconnected = _disconnect(
+      nextState: const HermesChannelState(
+        status: HermesConnectionStatus.connecting,
+        isServeReadOnly: true,
+      ),
+    );
     final generation = _connectionGeneration;
     await disconnected;
     if (generation != _connectionGeneration || !(canAccept?.call() ?? true)) {
       return;
     }
-    _setState(
-      const HermesChannelState(
-        status: HermesConnectionStatus.connecting,
-        isServeReadOnly: true,
-      ),
-    );
+    _serveForwarded = forwarded;
     HermesWebReadClient? reader;
     bool current() =>
         generation == _connectionGeneration &&

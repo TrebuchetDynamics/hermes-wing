@@ -353,6 +353,16 @@ successor own this gap; no credential mutation or new runtime check ran here.
 
 ## SSH private-key qualification
 
+Forwarded serve-read selection has six production-channel/controller fixture cases
+in `test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart`:
+explicit Android-mode profile/history reads, API default without fallback,
+credential denial, pending-read loss, replacement ownership, and blocked chat plus
+no saved ephemeral origin. The same test retains a positive local-chat/persistence
+control. Three panel/screen regressions cover token-label selection and chat-action
+visibility. Run these with the channel/client/SSH/control union when changing the
+boundary; actual Android SSH authentication and ticket-qualified chat remain open.
+These checks use synthetic HTTP and a fake forward on Linux, not an SSH target.
+
 The shared serve entry also has five production-channel cleanup regressions in
 `test/core/hermes/channel/hermes_serve_cleanup_ownership_test.dart`: disconnect,
 new API/serve ownership and abandoned setup prevent obsolete reads after storage

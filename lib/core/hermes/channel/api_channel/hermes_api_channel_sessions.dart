@@ -1,7 +1,9 @@
 part of '../hermes_api_channel.dart';
 
 extension _SessionsExtension on HermesApiChannel {
-  Future<void> _disconnect() async {
+  Future<void> _disconnect({
+    HermesChannelState nextState = const HermesChannelState(),
+  }) async {
     _retireServeChat();
     _serveReader?.disconnect();
     _serveReader = null;
@@ -13,7 +15,7 @@ extension _SessionsExtension on HermesApiChannel {
     _deletingSessionOperations.clear();
     _forkingSessionOperations.clear();
     _clearActiveRunTracking();
-    _setState(const HermesChannelState());
+    _setState(nextState);
   }
 
   Future<bool> _restoreSession(

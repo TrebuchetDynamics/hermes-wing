@@ -4,6 +4,14 @@ All notable user-visible changes will be documented here.
 
 ## Unreleased
 
+### Added
+
+- The managed SSH form can explicitly select Hermes serve profile/session/history
+  reads using the host-provided session token. API mode remains the default;
+  forwarded serve chat and saved SSH restoration remain unavailable. Cancellation,
+  tunnel loss and replacement fence obsolete reads without saving the local port.
+  This implementation has fixture coverage, not Android/native/live qualification.
+
 ### Removed
 
 - Removed Wing Link client/service, setup and pairing entry, installers and bundled

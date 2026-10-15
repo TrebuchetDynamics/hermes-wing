@@ -5406,3 +5406,20 @@ Source section: Now / Next
   WING-TASK-408 and full PARITY-COMPOSITION remain open.
 
 <!-- End of archived task batch. -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **VERIFY-PERSONA-NATIVE-CONFLICT** — Goal: PERSONA. Section: Next. Qualify persona conflict recovery through native public controls without mutation replay.
+  Payoff: separate passing widget oracles from usable native persona recovery.
+  Sources: [conflict evidence](docs/quality/persona-conflict-evidence.md#qualification-boundary), [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: existing standalone Persona and Profiles modal controls on an approved isolated native Linux target with deterministic Agent transport. Reuse current owner/revision fixtures; no live saves, provider inference, Agent edits, new draft mechanism or installed personal app changes.
+  Acceptance: keyboard-operable compact/enlarged-text ordinary failure retains draft; 412 shows bounded messaging and authoritative newer text before explicit retry using the new revision. Owner replacement rejects stale completion; request counts prove no automatic mutation replay. Record exact source/toolchain/target and distinguish synthetic transport from live server concurrency. Rejected-draft preservation across 412, Android, screen-reader and live compatibility remain unqualified unless separately evidenced.
+  Checks: nearest five-target persona widget suite plus the native public-control journey on the approved target; target/access availability must be verified before execution.
+  Dependencies: DOC-PERSONA-CONFLICT-EVIDENCE.
+  Ownership: unclaimed; offline closure does not supply native target/access approval.
+  Completion: [four isolated Linux GTK journeys](docs/quality/persona-native-conflict.md) passed at 390/1280 and 200% text; 121 focused regressions and analysis passed. Independent host-native source review approved `6309a494f14a5a427a1574c68f1ca96458308aad`. The standing isolated-QA authority covered this synthetic target; no live access was used. PERSONA/live acceptance remains under VERIFY-PERSONA-LIVE-COMPATIBILITY.
+
+<!-- End of archived native Persona recovery task. -->

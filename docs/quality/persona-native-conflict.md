@@ -5,7 +5,11 @@ Task: `VERIFY-PERSONA-NATIVE-CONFLICT`; goal: `PERSONA`.
 The isolated Linux GTK journey passes for standalone Persona and the actual
 Profiles editor modal, at 390 and 1280 logical pixels and 200% text scale.
 This qualifies synthetic-transport native recovery, not deployed Agent compatibility.
-Independent source review and coordinator delivery are separate from this run.
+Independent host-native source review approved commit
+`6309a494f14a5a427a1574c68f1ca96458308aad`, tree
+`79422d06f86f68cfd2682baa9d33633cb5474d06`. The reviewer independently matched
+all 789 archived inputs to that commit and verified native/regression receipts.
+Coordinator delivery is separate from source review.
 
 ## Executed behavior
 
@@ -67,8 +71,8 @@ python3 -B integration_test/run_linux_persona_conflict.py
 
 The seven-target regression union passed 121 tests. Native execution passed four
 journeys and teardown, exit 0, runner duration 88.877 seconds. Changed Dart
-formatting and staged whitespace checks passed. Final changed-input analysis and
-review remain separately recorded by the coordinator.
+formatting and staged whitespace checks passed. Final changed-input analysis
+reported no issues; independent source review is recorded above.
 
 ## Retained failures and qualification boundary
 

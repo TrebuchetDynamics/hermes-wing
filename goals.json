@@ -389,6 +389,11 @@
           "result": "pass"
         },
         {
+          "kind": "executed",
+          "ref": "python3 -B integration_test/run_linux_persona_conflict.py: four isolated Linux GTK journeys pass, 390/1280 logical widths and 200% text, production router/client with synthetic HTTP; 121 focused regressions, analysis and locked resolution pass. Independent host-native source review approved 6309a494f14a5a427a1574c68f1ca96458308aad. docs/quality/persona-native-conflict.md; live Agent, Android, physical keyboard/IME and screen readers NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
           "kind": "inspection",
           "ref": "docs/product/hermes-desktop-parity.md#statuses",
           "result": "pass"
@@ -406,6 +411,7 @@
       "tasks": [
         "DOC-PERSONA-CONFLICT-EVIDENCE",
         "DOC-PERSONA-EVIDENCE",
+        "VERIFY-PERSONA-LIVE-COMPATIBILITY",
         "VERIFY-PERSONA-NATIVE-CONFLICT"
       ],
       "title": "Qualify standalone and embedded profile persona fidelity"
@@ -6728,7 +6734,6 @@
       "CONNECTION-LINK-REMOVAL",
       "CONNECTION-SAVED-WORKFLOWS",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
-      "VERIFY-PERSONA-NATIVE-CONFLICT",
       "M1-MOBILE-AWAY-STATUS",
       "M1-NOTIFICATION-CONTRACT",
       "MT-RERUN-TRAIN",
@@ -6790,6 +6795,7 @@
       "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
       "LANDING-PRODUCT-PROOF",
+      "VERIFY-PERSONA-LIVE-COMPATIBILITY",
       "VERIFY-M4-LIVE-INVENTORY",
       "VERIFY-SHELL-NATIVE-INPUT",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
@@ -7355,16 +7361,6 @@
     },
     {
       "depends_on": [
-        "DOC-PERSONA-CONFLICT-EVIDENCE"
-      ],
-      "goal": "PERSONA",
-      "id": "VERIFY-PERSONA-NATIVE-CONFLICT",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify persona conflict recovery through native public controls without mutation replay"
-    },
-    {
-      "depends_on": [
         "DOC-SLASH-DENIAL-EVIDENCE"
       ],
       "goal": "SLASH-CATALOG",
@@ -7460,6 +7456,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Qualify scheduled-job inventory on an authenticated native Agent target"
+    },
+    {
+      "depends_on": [
+        "VERIFY-PERSONA-NATIVE-CONFLICT"
+      ],
+      "goal": "PERSONA",
+      "id": "VERIFY-PERSONA-LIVE-COMPATIBILITY",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify Persona revision-aware saves and conflict recovery against an authorized deployed Agent"
     },
     {
       "depends_on": [
@@ -8619,6 +8625,16 @@
       "section": "Done",
       "status": "done",
       "title": "Re-select a model explicitly after native restart and send once to the restored exact session"
+    },
+    {
+      "depends_on": [
+        "DOC-PERSONA-CONFLICT-EVIDENCE"
+      ],
+      "goal": "PERSONA",
+      "id": "VERIFY-PERSONA-NATIVE-CONFLICT",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify persona conflict recovery through native public controls without mutation replay"
     },
     {
       "depends_on": [

@@ -15,6 +15,11 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Managed SSH now revokes Agent connection adoption if its tunnel is lost during
+  preflight or health loading, clears attempt credential callbacks and preserves
+  replacement connections. Deterministic regressions cover the race; native SSH
+  and Android tunneled-serve qualification remain open.
+
 - Chat's existing overflow menu now opens Settings while a compact saved-contact
   stream is active. Returning restores the retained Chat and composer focus.
   [Bounded Linux fixture checks](docs/quality/chat-workspace-overlay-native.md#compact-settings-during-active-saved-contact-chat)

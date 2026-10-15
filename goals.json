@@ -5674,6 +5674,11 @@
         },
         {
           "kind": "executed",
+          "ref": "BACKEND-SSH-CONNECT adoption-loss follow-through: flutter test --no-pub --concurrency=1 test/core/hermes/ssh test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/providers/managed_ssh_provider_test.dart test/features/hermes_chat/widgets/managed_ssh_generated_key_ui_test.dart test/core/hermes/channel/hermes_api_channel_test.dart (403 passed, 8 opt-in SSH skips); flutter analyze --no-pub clean; independent native source review approved controller SHA256 8d88148cf82c896c6051a43d9dbc00aa3e4e90a2287a81155357a429385a298f and panel-test SHA256 5c71887ec253cc68325c3e6ade4cf39c5a00636168e940cc55ecf86fc9b6891a. docs/security/managed-ssh-forward-contract.md. Native/live/Android serve/durable restoration NOT_CHECKED.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "flutter analyze --no-pub; no issues, key implementation plus native harness",
           "result": "pass"
         },

@@ -76,6 +76,16 @@ its owned transport on route/mode replacement. It must not disconnect a newer
 unrelated Agent connection. SSH teardown is not Agent Stop or authoritative run
 completion. Agent-owned work remains uncertain until authoritative readback.
 
+Adoption-loss follow-through: the controller now watches lease loss before Agent
+connection completes, including its asynchronous preflight. Loss clears attempt
+credential callbacks and revokes the owning connection; late health completion
+cannot advance to inventory or connected state. Replacement connections are not
+disconnected and the retired lease is disposed once. Four new deterministic
+regressions cover preflight/health loss and replacement ownership. The focused
+SSH/form/provider/generated-key/channel union passes 403 tests with eight opt-in
+SSH tests skipped; independent native source review approved the source/test
+hashes. These are Linux-hosted Dart/widget checks, not native SSH qualification.
+
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path does not
 yet save that SSH target/trust mapping or implement cold-relaunch restoration.**

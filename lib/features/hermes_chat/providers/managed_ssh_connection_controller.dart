@@ -28,6 +28,7 @@ class ManagedSshConnectionController {
   bool _adopting = false;
   bool _adopted = false;
   bool _sawConnecting = false;
+  bool _tunnelLost = false;
   bool _replacement = false;
   int _generation = 0;
   int get attemptId => _generation;
@@ -41,6 +42,7 @@ class ManagedSshConnectionController {
     _pending = true;
     _replacement = false;
     _sawConnecting = false;
+    _tunnelLost = false;
     String? password = input.password;
     String? privateKey = input.privateKey;
     String? passphrase = input.passphrase;
@@ -79,11 +81,26 @@ class ManagedSshConnectionController {
       }
       _tunnel = tunnel;
       _adopting = true;
+      // Loss must revoke pending Agent adoption, not only an already-connected lease.
+      unawaited(
+        tunnel.done.then((_) {
+          if (!identical(_tunnel, tunnel)) return;
+          if (_adopting) {
+            _tunnelLost = true;
+            clearAuthentication();
+            // connect may still be awaiting preflight; revoke its first connecting state.
+            if (_sawConnecting) unawaited(cancel(attemptId: generation));
+            return;
+          }
+          _tunnel = null;
+          _adopted = false;
+          if (channel.state.connectedBaseUrl == tunnel.agentUri.toString()) {
+            unawaited(channel.disconnect());
+          }
+        }),
+      );
       await channel.connect(baseUrl: tunnel.agentUri.toString(), apiKey: token);
-      if (generation != _generation) {
-        await tunnel.dispose();
-        return false;
-      }
+      if (generation != _generation) return false;
       if (!channel.state.isConnected ||
           channel.state.connectedBaseUrl != tunnel.agentUri.toString()) {
         await cancel();
@@ -91,17 +108,6 @@ class ManagedSshConnectionController {
       }
       _adopting = false;
       _adopted = true;
-      unawaited(
-        tunnel.done.then((_) {
-          if (identical(_tunnel, tunnel)) {
-            _tunnel = null;
-            _adopted = false;
-            if (channel.state.connectedBaseUrl == tunnel.agentUri.toString()) {
-              unawaited(channel.disconnect());
-            }
-          }
-        }),
-      );
       return true;
     } catch (error) {
       if (generation == _generation) await cancel();
@@ -128,6 +134,7 @@ class ManagedSshConnectionController {
       if (state.status == HermesConnectionStatus.connecting &&
           !_sawConnecting) {
         _sawConnecting = true;
+        if (_tunnelLost) unawaited(cancel());
       } else if (state.status == HermesConnectionStatus.connecting ||
           (state.isConnected &&
               state.connectedBaseUrl != tunnel.agentUri.toString()) ||

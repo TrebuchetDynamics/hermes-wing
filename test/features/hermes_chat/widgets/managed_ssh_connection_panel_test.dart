@@ -14,6 +14,8 @@ import '../support/fake_hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/widgets/managed_ssh_connection_panel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
+import 'package:wing/core/hermes/hermes_api.dart';
 import 'package:wing/core/hermes/ssh/managed_ssh.dart';
 import 'package:wing/features/hermes_chat/providers/managed_ssh_connection_controller.dart';
 import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
@@ -812,6 +814,87 @@ void main() {
       channel.dispose();
     },
   );
+  for (final duringHealth in [false, true]) {
+    test(
+      'production channel rejects lost tunnel; duringHealth=$duringHealth',
+      () async {
+        final health = Completer<String>();
+        final entered = Completer<void>();
+        final reads = <String>[];
+        var mutations = 0;
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, headers) async {
+              reads.add(uri.path);
+              if (uri.path == '/health') {
+                entered.complete();
+                return health.future;
+              }
+              throw StateError('Unexpected read after lost tunnel');
+            },
+            post: (uri, headers, body) async {
+              mutations++;
+              throw StateError('Unexpected mutation');
+            },
+          ),
+        );
+        final forward = FakeForward();
+        final controller = ManagedSshConnectionController(forward, channel);
+        final result = controller.connectSsh(
+          input,
+          verifyHostKey: (_, _) async => true,
+        );
+        forward.ready();
+        if (duringHealth) await entered.future;
+        forward.ended.complete();
+        await Future<void>.delayed(Duration.zero);
+        expect(channel.state.status, HermesConnectionStatus.disconnected);
+        health.complete('{"status":"ok"}');
+        expect(await result, isFalse);
+        expect(channel.state.status, HermesConnectionStatus.disconnected);
+        expect(reads, everyElement('/health'));
+        expect(mutations, 0);
+        expect(forward.closes, 1);
+        controller.dispose();
+        channel.dispose();
+      },
+    );
+  }
+  for (final replacement in [false, true]) {
+    test(
+      'tunnel loss during adoption fences credentials; replacement=$replacement',
+      () async {
+        final channel = FakeChannel()..pending = Completer<void>();
+        final forward = FakeForward();
+        final controller = ManagedSshConnectionController(forward, channel);
+        final result = controller.connectSsh(
+          input,
+          verifyHostKey: (_, _) async => true,
+        );
+        forward.ready();
+        await Future<void>.delayed(Duration.zero);
+        expect(channel.state.status, HermesConnectionStatus.connecting);
+        if (replacement) {
+          channel.set(
+            const HermesChannelState(
+              status: HermesConnectionStatus.connected,
+              connectedBaseUrl: 'https://replacement.invalid',
+            ),
+          );
+        }
+        forward.ended.complete();
+        await Future<void>.delayed(Duration.zero);
+        expect(await forward.credentials!.password!(), isNull);
+        expect(channel.disconnects, replacement ? 0 : 1);
+        expect(forward.closes, 1);
+        channel.pending!.complete();
+        expect(await result, isFalse);
+        controller.dispose();
+        channel.dispose();
+      },
+    );
+  }
   test('tunnel loss disconnects only the owning Agent', () async {
     final channel = FakeChannel();
     final forward = FakeForward();

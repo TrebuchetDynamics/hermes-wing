@@ -346,6 +346,13 @@ successor own this gap; no credential mutation or new runtime check ran here.
 
 ## SSH private-key qualification
 
+The [adoption-loss follow-through](security/managed-ssh-forward-contract.md#forwarding-and-lifecycle)
+records four new controller/production-channel regressions: loss before and during
+health loading cannot adopt a dead tunnel, credentials are cleared, replacements
+remain untouched and recovery performs no mutations. The 403-test focused union
+passes with eight opt-in SSH tests skipped. Native SSH, Android tunneled-serve
+selection and durable relaunch remain separate pending checks.
+
 The later [generation/Help receipt](quality/connection-key-generation-help.md)
 records a clean full analyzer and 132 passing focused-union tests, including
 production generated-key consent, public-only clipboard, secure-store readback,

@@ -715,7 +715,16 @@ before their goals can become `met`.
   capability-limited surface, not populated inventory or profile switching.
   Production code is unchanged. See
   [Profiles streaming scope](docs/quality/chat-workspace-overlay-native.md#native-profiles-streaming-follow-through).
-  Next action: qualify native populated Profiles and owner replacement during streaming.
+  Populated native Profiles follow-through passes eighteen GTK HTTP/SSE journeys:
+  the retained twelve-case matrix now renders advertised profile inventory, and
+  six additional cases select Coding profile while the original stream is pending.
+  Exact new profile/session/history survive old server stream closure and reopened
+  Close/Escape/framework Back; only the original deliberate Send writes. Analysis,
+  30 focused regressions and independent native-source re-review pass; a selection
+  no-op negative control fails the exact new-owner barrier and is restored.
+  Production code and lockfile are unchanged. See
+  [populated native Profiles](docs/quality/chat-workspace-overlay-native.md#native-populated-profiles-and-active-run-replacement).
+  Next action: qualify native rendered connection replacement during streaming.
   Saved-secret isolation and cancelled terminal consumption remain unqualified.
   Keep parent acceptance open; do not repeat delivered matrices.
 

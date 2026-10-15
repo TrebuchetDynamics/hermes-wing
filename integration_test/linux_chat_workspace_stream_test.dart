@@ -54,7 +54,7 @@ void main() {
     final journeys = <Map<String, Object?>>[];
     for (final width in [390.0, 1280.0]) {
       await binding.setSurfaceSize(Size(width, 900));
-      for (final destination in ['settings', 'profiles']) {
+      for (final destination in ['settings', 'profiles', 'profile-switch']) {
         for (final dismissal in ['close', 'escape', 'back']) {
           SharedPreferences.setMockInitialValues({});
           final fixture = (await tester.runAsync(_StreamFixture.start))!;
@@ -73,6 +73,8 @@ void main() {
             );
             expect(channel.state.isConnected, isTrue);
             expect(channel.state.activeSessionId, 'sess_1');
+            await tester.runAsync(() => channel.selectProfile('default'));
+            expect(channel.state.selectedProfileId, 'default');
             const location = '/hermes?session=sess_1&filter=all#tail';
             router.go(location);
             await tester.pumpWidget(
@@ -142,6 +144,13 @@ void main() {
               const ValueKey('chat-workspace-overlay-close'),
             );
             expect(close, findsOneWidget);
+            if (destination != 'settings') {
+              expect(
+                find.byKey(const ValueKey('agent-chat-coder')),
+                findsOneWidget,
+              );
+              expect(find.text('Coding profile'), findsOneWidget);
+            }
             expect(chat.mounted, isTrue);
             expect(
               navigation.flag(tester, close, focused: true),
@@ -165,6 +174,86 @@ void main() {
               HermesTurnStatus.streaming,
             );
             expect(close, findsOneWidget);
+            if (destination == 'profile-switch') {
+              final action = find.byKey(const ValueKey('agent-chat-coder'));
+              await tester.ensureVisible(action);
+              await settle();
+              expect(action.hitTestable(), findsOneWidget);
+              await tester.tap(action);
+              await until(
+                () =>
+                    channel.state.selectedProfileId == 'coder' &&
+                    channel.state.activeSessionId == 'coder_session' &&
+                    channel.state.activeMessages.isNotEmpty,
+              );
+              await settle();
+              expect(close, findsNothing);
+              expect(find.text(_StreamFixture.coderReply), findsOneWidget);
+              expect(tester.state(find.byType(HermesChatScreen)), same(chat));
+              await tester.runAsync(fixture.complete);
+              await settle();
+              if (width < 600) {
+                await tester.tap(
+                  find.descendant(
+                    of: find.byType(NavigationBar),
+                    matching: find.text('Profiles'),
+                  ),
+                );
+              } else {
+                await tester.tap(
+                  find.byKey(const ValueKey('desktop-manage-profiles')),
+                );
+              }
+              await settle();
+              expect(close, findsOneWidget);
+              if (dismissal == 'close') {
+                await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+              } else if (dismissal == 'escape') {
+                await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+              } else {
+                await tester.binding.handlePopRoute();
+              }
+              await settle();
+              expect(close, findsNothing);
+              expect(channel.state.selectedProfileId, 'coder');
+              expect(channel.state.activeSessionId, 'coder_session');
+              expect(channel.state.connectedBaseUrl, fixture.origin);
+              expect(channel.state.activeMessages.single.id, 'coder-reply');
+              expect(find.text(_StreamFixture.coderReply), findsOneWidget);
+              expect(find.text(_StreamFixture.reply), findsNothing);
+              expect(
+                channel.state.activeMessages.single.status,
+                HermesTurnStatus.completed,
+              );
+              expect(channel.state.errorMessage, isNull);
+              expect(tester.state(find.byType(HermesChatScreen)), same(chat));
+              expect(
+                router.routeInformationProvider.value.uri.toString(),
+                location,
+              );
+              expect(fixture.writes, ['POST /api/sessions/sess_1/chat/stream']);
+              expect(fixture.unexpected, isEmpty);
+              expect(fixture.coderHistoryReads, 1);
+              expect(store.saveCalls, isEmpty);
+              expect(tester.takeException(), isNull);
+              journeys.add({
+                'width': width,
+                'destination': destination,
+                'dismissal': dismissal,
+                'text_scale': 2,
+                'progressive_chunks': 2,
+                'selected_profile': 'coder',
+                'selected_session': 'coder_session',
+                'canonical_reply': true,
+                'chat_retained': true,
+                'exact_location_retained': true,
+                'sends': fixture.writes.length,
+                'replacement_history_reads': fixture.coderHistoryReads,
+                'unexpected_requests': fixture.unexpected.length,
+                'endpoint_saves': store.saveCalls.length,
+              });
+              continue;
+            }
             await tester.runAsync(fixture.complete);
             await until(
               () => channel.state.activeMessages.last.id == 'canonical-reply',
@@ -215,7 +304,7 @@ void main() {
             expect(channel.state.errorMessage, isNull);
             expect(fixture.writes, ['POST /api/sessions/sess_1/chat/stream']);
             expect(fixture.unexpected, isEmpty);
-            expect(fixture.historyReads, 2);
+            expect(fixture.historyReads, 3);
             expect(store.saveCalls, isEmpty);
             expect(tester.takeException(), isNull);
             journeys.add({
@@ -264,9 +353,11 @@ class _StreamFixture {
   final writes = <String>[];
   final unexpected = <String>[];
   var historyReads = 0;
+  var coderHistoryReads = 0;
   var completed = false;
   static const prompt = 'Synthetic native streaming request';
   static const reply = 'Synthetic progressive reply.';
+  static const coderReply = 'Synthetic coding profile history.';
   String get origin => 'http://127.0.0.1:${server.port}';
 
   static Future<_StreamFixture> start() async {
@@ -303,24 +394,72 @@ class _StreamFixture {
           'object': 'hermes.api_server.capabilities',
           'platform': 'hermes-agent',
           'model': 'hermes-agent',
-          'auth': {'type': 'bearer', 'required': false},
+          'auth': {
+            'type': 'bearer',
+            'required': false,
+            'granted_scopes': ['profiles:read'],
+          },
+          'profile_context': {
+            'type': 'query',
+            'name': 'profile',
+            'required': true,
+            'default_profile_id': 'default',
+          },
           'features': {'session_chat_streaming': true},
           'endpoints': {
+            'profiles': {
+              'method': 'GET',
+              'path': '/api/profiles',
+              'profile_scoped': false,
+              'required_scopes': ['profiles:read'],
+            },
             'session_chat_stream': {
               'method': 'POST',
               'path': '/api/sessions/{session_id}/chat/stream',
             },
           },
         };
+      case 'GET /api/profiles':
+        body = {
+          'data': [
+            {'id': 'default', 'name': 'Home profile', 'revision': 'r1'},
+            {'id': 'coder', 'name': 'Coding profile', 'revision': 'r2'},
+          ],
+        };
       case 'GET /api/sessions':
         body = {
           'object': 'list',
           'data': [
+            if (request.uri.queryParameters['profile'] == 'coder')
+              {
+                'id': 'coder_session',
+                'source': 'api_server',
+                'title': 'Synthetic coding session',
+                'message_count': 1,
+              }
+            else
+              {
+                'id': 'sess_1',
+                'source': 'api_server',
+                'title': 'Synthetic native stream',
+                'message_count': completed ? 2 : 0,
+              },
+          ],
+        };
+      case 'GET /api/sessions/coder_session/messages':
+        coderHistoryReads++;
+        if (request.uri.queryParameters['profile'] != 'coder') {
+          unexpected.add('Missing coder context');
+        }
+        body = {
+          'object': 'list',
+          'session_id': 'coder_session',
+          'data': [
             {
-              'id': 'sess_1',
-              'source': 'api_server',
-              'title': 'Synthetic native stream',
-              'message_count': completed ? 2 : 0,
+              'id': 'coder-reply',
+              'session_id': 'coder_session',
+              'role': 'assistant',
+              'content': coderReply,
             },
           ],
         };

@@ -266,13 +266,60 @@ did not run a second GTK gate. No new mutation control or full suite was run for
 this matrix extension; the earlier focus-defect negative control remains historical
 evidence, not a fresh Profiles-specific mutation run.
 
+## Native populated Profiles and active-run replacement
+
+The production HTTP/SSE fixture now advertises the existing synthetic profile-read
+contract, including both required and granted `profiles:read` scopes and mandatory
+query context. An explicit default-profile inventory bootstrap precedes UI input;
+that deliberate read accounts for a third original-session history read. No Agent,
+provider, credential, production code or dependency was changed.
+
+Eighteen GTK journeys cover 390/1280 logical pixels and 200% text. Twelve retain
+the existing Settings/Profiles completion matrix, now with populated Profiles;
+the Profiles cases require the rendered Coding profile and its Chat action. Six
+additional cases tap that rendered action while two progressive chunks have been
+consumed and the original stream is still pending. The new profile/session and
+canonical coding history must settle before the synthetic server closes its old
+stream. Reopened Profiles and Close/Escape/framework Back must retain the new
+owner, exact full Chat URL and same mounted workspace, exclude the old reply, and
+issue only the original deliberate Send. Each requires exactly one replacement
+history read, zero unexpected requests and zero endpoint saves. This does not
+assert that the old draft belongs to the replacement profile.
+
+Planner's call: reuse the existing WING-TASK-408 native fixture and leave the
+already-separated PARITY-LIVE-WORKFLOW authentication/provider-ceiling gates open.
+No live inference or repeated live preflight is needed for this bounded slice.
+
+Executed checks: `flutter analyze --no-pub`; the same two-target focused
+`flutter test --no-pub --concurrency=1` command above (30 passed); runner self-check;
+and the isolated native runner (18 passed on Flutter 3.44.2/Dart 3.12.2).
+The unchanged lockfile and native PID/source/dependency/teardown checks passed.
+Source-bound local receipt: `overlay-native-profile-sse-408/native-4cpioeh_/verification.json`,
+manifest SHA-256 `3aef8a9f1f6dfaaaf79d920f7944d289ff63f3b02563653cfe7c1e11161ec214`.
+Independent native-source re-review approved Dart blob
+`4d6a093fc2ed66e13696da24d8d3d59bddebe707` and runner blob
+`6951560a3ce94af91424a91ae04de19aff7151c9` after the missing-scope fixture correction.
+
+A temporary production mutation made Coding profile selection a no-op. The rebuilt
+native test failed its exact replacement-owner barrier in
+`overlay-native-profile-sse-408/native-hp28jkbo/native.log`; the production file was
+restored byte-for-byte. Earlier harness failures retained missing advertised scopes,
+a two-versus-three history-read expectation, and an offscreen tap before the scroll
+frame settled. The final test settles scrolling and requires a hit-testable action;
+no assertion or production guard was bypassed.
+
+This qualifies new-owner retention after **server-side stream closure**, not Flutter
+consumption of cancelled old terminal events, switch-back/detached recovery,
+automatic focus after owner-changing actions, saved-secret isolation or live Agent.
+The explicit replacement cancels its old client subscription. Physical keyboard,
+OS resizing, Android, full-suite and fresh browser checks were not performed.
+
 ## Remaining acceptance
 
-Populated native Profiles, profile/connection replacement and late old-run
-completion in GTK, and Android remain unqualified. Native HTTP/SSE through
-Settings and capability-limited Profiles is bounded to the synthetic session-chat
-matrices above, not live Agent, provider inference, authentication, saved secrets
-or detached-run persistence.
+Native connection replacement, cancelled old-terminal consumption and Android
+remain unqualified. Native HTTP/SSE through Settings and populated Profiles is
+bounded to these synthetic session-chat matrices, not live Agent, provider inference,
+authentication, saved secrets or detached-run persistence.
 The separate browser receipt qualifies
 its bounded shell focus, replacement-owner and late-completion cases; it is not
 native evidence. The chat-local composer and GTK shell focus matrices are separate.

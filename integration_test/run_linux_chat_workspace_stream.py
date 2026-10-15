@@ -7,14 +7,22 @@ from run_linux_persona_conflict import no_preferences
 
 
 def expected_journeys():
-    return [dict(width=width, destination=destination, dismissal=dismissal, text_scale=2,
-                 progressive_chunks=2, completed_under_overlay=True,
-                 canonical_reply=True, chat_retained=True, draft_retained=True,
-                 exact_owner_retained=True, exact_location_retained=True,
-                 sends=1, history_reads=2, unexpected_requests=0, endpoint_saves=0)
-            for width in (390.0, 1280.0)
-            for destination in ('settings', 'profiles')
-            for dismissal in ('close', 'escape', 'back')]
+    rows = []
+    for width in (390.0, 1280.0):
+        for destination in ('settings', 'profiles', 'profile-switch'):
+            for dismissal in ('close', 'escape', 'back'):
+                row = dict(width=width, destination=destination, dismissal=dismissal,
+                           text_scale=2, progressive_chunks=2, canonical_reply=True,
+                           chat_retained=True, exact_location_retained=True, sends=1,
+                           unexpected_requests=0, endpoint_saves=0)
+                if destination == 'profile-switch':
+                    row.update(selected_profile='coder', selected_session='coder_session',
+                               replacement_history_reads=1)
+                else:
+                    row.update(completed_under_overlay=True, draft_retained=True,
+                               exact_owner_retained=True, history_reads=3)
+                rows.append(row)
+    return rows
 
 
 def validate(receipt):

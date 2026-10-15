@@ -15,6 +15,11 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Leaving a serve connection now retires its in-memory read credential, including
+  direct switches to the Agent API transport. A later serve Retry cannot replace
+  the new connection using the retired token; same-origin failed-read Retry remains
+  available. This is a shared-channel fix, not Android SSH qualification.
+
 - Managed SSH now revokes Agent connection adoption if its tunnel is lost during
   preflight or health loading, clears attempt credential callbacks and preserves
   replacement connections. Deterministic regressions cover the race; native SSH

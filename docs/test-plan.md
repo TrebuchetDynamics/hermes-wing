@@ -140,6 +140,13 @@ Android and live authentication require named-target evidence.
 
 ## Production serve restoration delivery gate
 
+Run `flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_serve_credential_lifetime_test.dart`
+when changing transport teardown or serve Retry. The deterministic loopback
+regressions verify that switching to the Agent API, with or without an explicit
+disconnect, leaves the replacement untouched and sends no retired serve credential
+to its origin. Failed serve reads still allow deliberate same-origin Retry.
+These checks do not qualify native SSH, Android or live Agent authentication.
+
 WING-TASK-407 restores deliberately enabled Linux loopback serve conversations
 through the production channel. The [source-bound restoration receipt](quality/local-serve-restoration.md#recovered-delivery-gate)
 records the guard repair, independent review, full Flutter suite, compiled browser,

@@ -1354,6 +1354,14 @@ patches, personal credential discovery, service restarts or provider spending.
   approved. Native/live SSH, Android tunneled-serve selection and durable relaunch
   remain open. Next action: implement the owner-bound Android serve selection
   described in the contract without persisting the ephemeral origin.
+  Credential-lifetime prerequisite: the shared channel now retires serve read
+  credentials on disconnect and API replacement. Three deterministic regressions
+  prove that explicit serve Retry leaves the replacement origin/owner untouched
+  while preserving same-origin failed-read Retry. Planner's call: fix this
+  reproduced boundary defect before exposing tunneled serve selection; retain
+  the Android/native/durable acceptance and next action above. The existing
+  PARITY-LIVE-WORKFLOW task continues to hold live authentication/provider-ceiling
+  acceptance; no inference or new live target is required for this offline fix.
   Dependencies: DOC-BACKEND-CONTRACT.
   Section: Next.
   Ownership: unclaimed in this index. Verify live tracker/continuation leases.

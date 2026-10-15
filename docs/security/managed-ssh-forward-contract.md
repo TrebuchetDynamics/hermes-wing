@@ -93,6 +93,13 @@ Do not save a forwarded port as an ordinary endpoint or attach its credential to
 later unrelated listener. BACKEND-SSH-CONNECT and DOC-BACKEND-DISCONNECT-CONTRACT
 retain durable mapping, interruption and no-replay acceptance.
 
+The shared Agent channel now clears its in-memory serve read credential on
+disconnect or API-transport replacement. Explicit serve Retry cannot reuse the
+retired credential against a replacement API origin or change its owner. Three
+deterministic regressions cover both switch paths and retained same-origin Retry
+after a failed serve read. This prerequisite does not enable Android serve or
+persist an SSH mapping.
+
 ## Android Agent transport boundary
 
 The current controller calls `HermesChannel.connect` with the forwarded origin

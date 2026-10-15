@@ -32,6 +32,7 @@ extension _ConnectionExtension on HermesApiChannel {
     _retireServeChat();
     _serveReader?.disconnect();
     _serveReader = null;
+    _serveCredential = null;
     final generation = _connectionGeneration + 1;
     _connectionGeneration = generation;
     _sessionSelectionGeneration += 1;

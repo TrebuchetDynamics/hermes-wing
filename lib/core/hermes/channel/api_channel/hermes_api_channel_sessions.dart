@@ -5,6 +5,7 @@ extension _SessionsExtension on HermesApiChannel {
     _retireServeChat();
     _serveReader?.disconnect();
     _serveReader = null;
+    _serveCredential = null;
     _client = null;
     _connectionGeneration += 1;
     _sessionSelectionGeneration += 1;

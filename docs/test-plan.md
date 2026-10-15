@@ -30,8 +30,11 @@ to the originating shell control (More for compact Settings), without extra inpu
 Widget tests additionally replace the route before the overlay future completes;
 no disposed composer may regain focus. The compiled keyboard shell cases assert
 actual return focus before input after Back, Forward/Escape and Close; compact
-Settings returns to More. Keep profile/connection replacement, late old-run
-completion and native streaming open under WING-TASK-408. Browser and
+Settings returns to More. The late-completion cases wait for the original run's
+canonical reply ID/status in the background channel cache before history navigation;
+the replacement session must remain selected and free of old reply/reasoning UI.
+Allow only one deliberate send and one session creation. Keep profile/connection
+replacement and native streaming open under WING-TASK-408. Browser and
 in-memory GTK fixtures are not Android, physical-input or live acceptance.
 
 ## Persona native conflict recovery

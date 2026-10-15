@@ -4040,6 +4040,11 @@
         },
         {
           "kind": "executed",
+          "ref": "WING-TASK-408: rebuilt deterministic Chromium overlay matrix 24 passed (390/1280px,200% text), flutter analyze --no-pub and 24 router tests passed. Late old-run completion waits for exact canonical reply ID/status in background channel before Back/Forward/Escape; replacement owner remains selected. docs/quality/chat-workspace-overlay-browser.md#late-old-run-completion-after-session-replacement. E2E-only summary; profile/connection switching, native HTTP/SSE and live acceptance remain open.",
+          "result": "pass"
+        },
+        {
+          "kind": "executed",
           "ref": "WING-TASK-408: rebuilt lib/main_e2e.dart on b451d87e; 20 compiled Chromium overlay cases pass, four with Tab/Enter shell entry including compact More at 390/1280px and 200% text; flutter analyze --no-pub and 25 focused router/receipt tests pass; keyboard-shell-entry source independently approved; automatic shell return focus/native/live remain unqualified. docs/quality/chat-workspace-overlay-browser.md#keyboard-shell-entry-follow-through",
           "result": "pass"
         },

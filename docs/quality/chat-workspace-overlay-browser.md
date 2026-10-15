@@ -157,6 +157,37 @@ detected by the four cases. These are bounded sensitivity checks, not exhaustive
 focus-defect coverage. Production source was restored byte-for-byte for the final
 rebuild and browser run.
 
+## Late old-run completion after session replacement
+
+Four additional compiled cases start a pending reasoning SSE run with rendered
+Send, open Settings or Profiles, then replace the session through the existing
+production-channel seam. Only after the exact returned replacement ID is selected
+does the test release the original run. The server's completed run and original
+session history must contain the expected reply. A read-only deterministic-entry
+session summary then waits for the original session's exact canonical reply ID
+and completed status in the production channel's background cache. This is the
+client reconciliation barrier; downloading SSE alone is not sufficient.
+
+The modal stays visible throughout completion. Back, Forward and Escape retain
+the replacement session, empty active transcript and original return URL; old
+reply/reasoning controls do not become visible. Exactly one deliberate run
+submission and one deliberate session creation are allowed, with no navigation
+Stop, approval or extra send. The original four non-streaming replacement cases
+remain in the same parameterized matrix. All 24 compiled Chromium cases pass at
+390/1280px and 200% text, with zero retries. Analysis and the 24 router tests pass.
+The new summary exists only in `lib/main_e2e.dart`, exposes IDs/status without
+content, and neither selects a session nor changes production channel behavior.
+
+This qualifies same-endpoint/profile background completion, not profile or
+connection replacement, reconnect, native streaming or a live Agent.
+
+Independent host-native source review approved after adding the exact client
+reconciliation barrier. A compiled negative control changed only final background
+history reconciliation to reselect its old session. Compact Settings failed the
+new post-barrier owner assertion; three cases were not run after the failure
+limit. The mutation was restored byte-for-byte before the final rebuild. This
+checks owner-hijack sensitivity, not every possible late-response failure.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
@@ -164,8 +195,8 @@ shell entries and retained draft/transcript through keyboard Close/Escape and
 framework Back, with an in-memory channel. It does not promote this browser's
 HTTP/SSE evidence to native transport proof.
 
-Profile/connection replacement, late old-run completion after replacement and
-native streaming remain unqualified. GTK now separately covers shell and
+Profile/connection replacement and native streaming remain unqualified. GTK now
+separately covers shell and
 chat-local slash/Tab-completion/Manage focus return; browser Manage/Tab-completion,
 Android, physical keyboard/IME, screen readers and live Agent/provider behavior
 remain unqualified. Keep the original task and acceptance open; next qualify

@@ -180,54 +180,89 @@ for (const width of [390, 1280]) {
       expect(errors).toEqual([]);
     });
 
-    test(`${destination} does not restore the previous session after owner replacement at ${width}px/200% text`, async ({ page, request }) => {
-      expect((await request.post(`${APP}e2e/hermes/reset`)).ok()).toBe(true);
-      const writes = [], errors = [];
-      page.on('pageerror', error => errors.push(error.name));
-      page.on('request', request => {
-        const route = new URL(request.url()).pathname;
-        if (/^\/(api|v1)\//.test(route) && request.method() !== 'GET') writes.push({ method: request.method(), route });
+    for (const lateCompletion of [false, true]) {
+      test(`${destination} does not restore the previous session after owner replacement${lateCompletion ? ' and late old-run completion' : ''} at ${width}px/200% text`, async ({ page, request }) => {
+        expect((await request.post(`${APP}e2e/hermes/${lateCompletion ? 'reasoning-disclosure' : 'reset'}`)).ok()).toBe(true);
+        const writes = [], errors = [];
+        page.on('pageerror', error => errors.push(error.name));
+        page.on('request', request => {
+          const route = new URL(request.url()).pathname;
+          if (/^\/(api|v1)\//.test(route) && request.method() !== 'GET') writes.push({ method: request.method(), route });
+        });
+        await page.setViewportSize({ width, height: 1000 });
+        await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-owner-overlay`);
+        await ready(page);
+        await page.evaluate(() => globalThis.wingE2EHermesConnect());
+        const composer = page.getByRole('textbox', { name: 'Message Hermes…', exact: true });
+        await expect(composer).toBeVisible();
+        const before = await state(page);
+        expect(before).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false });
+        let stream;
+        const prompt = 'Synthetic replaced overlay run';
+        if (lateCompletion) {
+          const response = page.waitForResponse(response => new URL(response.url()).pathname === '/v1/runs/run_1/events');
+          await composer.click();
+          await page.locator('input:focus, textarea:focus').fill(prompt);
+          await page.getByRole('button', { name: 'Send', exact: true }).click();
+          await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).toBeVisible();
+          expect(await state(page)).toMatchObject({ active_session_id: before.active_session_id, last_turn_status: 'streaming', has_error: false });
+          stream = await response;
+        }
+        const location = page.url();
+        await shellOpen(page, width, destination);
+        // Drive an external session replacement through the existing production-channel seam.
+        const createdResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/sessions' && response.request().method() === 'POST');
+        await page.evaluate(() => globalThis.wingE2EHermesCreateSession('Synthetic overlay replacement'));
+        const response = await createdResponse;
+        expect(response.ok()).toBe(true);
+        const created = (await response.json()).session;
+        expect(created.id).toEqual(expect.any(String));
+        expect(created.id).not.toBe(before.active_session_id);
+        await expect.poll(async () => (await state(page)).active_session_id).toBe(created.id);
+        const replacement = await state(page);
+        expect(replacement).toMatchObject({ status: 'connected', has_error: false, last_turn_status: null });
+        expect(replacement.active_session_id).toEqual(expect.any(String));
+        if (lateCompletion) {
+          // Complete the original server-owned run only after replacement has settled.
+          const completed = await request.post(`${APP}e2e/hermes/reasoning-disclosure/complete`);
+          expect(completed.ok()).toBe(true);
+          expect(await completed.json()).toEqual({ run_id: 'run_1', session_id: before.active_session_id });
+          expect(await stream.finished()).toBeNull();
+          const canonical = await request.get(`${APP}v1/runs/run_1`);
+          expect(canonical.ok()).toBe(true);
+          expect(await canonical.json()).toMatchObject({ run_id: 'run_1', session_id: before.active_session_id, status: 'completed', output: `Hermes echo: ${prompt}` });
+          const history = await request.get(`${APP}api/sessions/${before.active_session_id}/messages`);
+          expect(history.ok()).toBe(true);
+          const messages = (await history.json()).data;
+          const reply = messages.find(message => message.role === 'assistant' && message.content === `Hermes echo: ${prompt}`);
+          expect(reply).toMatchObject({ session_id: before.active_session_id, id: expect.any(String) });
+          // A canonical turn ID appears only after the production channel's final history reconciliation.
+          await expect.poll(() => page.evaluate(id => JSON.parse(globalThis.wingE2EHermesSessionSummary(id)), before.active_session_id)).toEqual({ session_id: before.active_session_id, last_turn_id: reply.id, last_turn_status: 'completed' });
+          expect(await state(page)).toEqual(replacement);
+        }
+        await expect(closeButton(page)).toBeVisible();
+        await page.goBack();
+        await expect(closeButton(page)).not.toBeVisible();
+        await expect(composer).toBeVisible();
+        expect(await state(page)).toEqual(replacement);
+        await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).not.toBeVisible();
+        await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).not.toBeVisible();
+        if (lateCompletion) {
+          await expect(page.getByRole('group', { name: new RegExp(`Hermes echo: ${prompt}$`) })).not.toBeVisible();
+          await expect(page.getByRole('button', { name: 'Thought', exact: true })).not.toBeVisible();
+        }
+        await page.goForward();
+        await expect(closeButton(page)).toBeVisible();
+        expect(await state(page)).toEqual(replacement);
+        await page.keyboard.press('Escape');
+        await expect(closeButton(page)).not.toBeVisible();
+        await expect(composer).toBeVisible();
+        expect(await state(page)).toEqual(replacement);
+        expect(page.url()).toBe(location);
+        expect(writes).toEqual([...(lateCompletion ? [{ method: 'POST', route: '/v1/runs' }] : []), { method: 'POST', route: '/api/sessions' }]);
+        expect(errors).toEqual([]);
       });
-      await page.setViewportSize({ width, height: 1000 });
-      await page.goto(`${APP}?e2eTextScale=2#/hermes?view=synthetic-owner-overlay`);
-      await ready(page);
-      await page.evaluate(() => globalThis.wingE2EHermesConnect());
-      const composer = page.getByRole('textbox', { name: 'Message Hermes…', exact: true });
-      await expect(composer).toBeVisible();
-      const before = await state(page);
-      expect(before).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false });
-      const location = page.url();
-      await shellOpen(page, width, destination);
-      // Drive an external session replacement through the existing production-channel seam.
-      const createdResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/sessions' && response.request().method() === 'POST');
-      await page.evaluate(() => globalThis.wingE2EHermesCreateSession('Synthetic overlay replacement'));
-      const response = await createdResponse;
-      expect(response.ok()).toBe(true);
-      const created = (await response.json()).session;
-      expect(created.id).toEqual(expect.any(String));
-      expect(created.id).not.toBe(before.active_session_id);
-      await expect.poll(async () => (await state(page)).active_session_id).toBe(created.id);
-      const replacement = await state(page);
-      expect(replacement).toMatchObject({ status: 'connected', has_error: false, last_turn_status: null });
-      expect(replacement.active_session_id).toEqual(expect.any(String));
-      await expect(closeButton(page)).toBeVisible();
-      await page.goBack();
-      await expect(closeButton(page)).not.toBeVisible();
-      await expect(composer).toBeVisible();
-      expect(await state(page)).toEqual(replacement);
-      await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).not.toBeVisible();
-      await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).not.toBeVisible();
-      await page.goForward();
-      await expect(closeButton(page)).toBeVisible();
-      expect(await state(page)).toEqual(replacement);
-      await page.keyboard.press('Escape');
-      await expect(closeButton(page)).not.toBeVisible();
-      await expect(composer).toBeVisible();
-      expect(await state(page)).toEqual(replacement);
-      expect(page.url()).toBe(location);
-      expect(writes).toEqual([{ method: 'POST', route: '/api/sessions' }]);
-      expect(errors).toEqual([]);
-    });
+    }
 
     test(`direct ${destination} deep link returns to disconnected chat at ${width}px/200% text`, async ({ page }, testInfo) => {
       const writes = [];

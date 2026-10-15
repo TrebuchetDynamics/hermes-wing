@@ -34,6 +34,9 @@ external set _wingE2EHermesSubmitVoice(JSFunction callback);
 @JS('wingE2EHermesStateSummary')
 external set _wingE2EHermesStateSummary(JSFunction callback);
 
+@JS('wingE2EHermesSessionSummary')
+external set _wingE2EHermesSessionSummary(JSFunction callback);
+
 @JS('wingE2EReduceMotion')
 external set _wingE2EReduceMotion(JSFunction callback);
 
@@ -211,6 +214,16 @@ void main() {
       'last_turn_status': last?.status.name,
       'last_turn_text_length': last?.text.length ?? 0,
       'has_unreconciled_run': hermesChannel.state.hasUnreconciledRun,
+    }).toJS;
+  }).toJS;
+  // Observe background canonical reconciliation without selecting its session.
+  _wingE2EHermesSessionSummary = ((JSString sessionId) {
+    final messages = hermesChannel.state.messages[sessionId.toDart];
+    final last = messages == null || messages.isEmpty ? null : messages.last;
+    return jsonEncode({
+      'session_id': sessionId.toDart,
+      'last_turn_id': last?.id,
+      'last_turn_status': last?.status.name,
     }).toJS;
   }).toJS;
   _wingE2EReduceMotion = (() {

@@ -1557,6 +1557,7 @@ patches, personal credential discovery, service restarts or provider spending.
   even if the conditional CPU proof supplies a finite envelope.
   Sources: [unchanged prerequisites](docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md#outcome-and-exactly-one-conditional-next-proof-seam)
   and [synthetic contract](docs/quality/2026-10-06-m2-synthetic-isolation-contract.md).
+  Touches: docs/quality/2026-10-06-m2-inode-policy-evidence.md, .task-evidence/<task-card>/
   Scope: source-only inode-accounting and descendant/cleanup policy review.
   Exclude adapter implementation, control execution, APKs, provisioning, private
   state, runtime activation and authority or limit changes.

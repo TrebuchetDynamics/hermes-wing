@@ -1,3 +1,5 @@
+<a href="assets/branding/README.md"><img src="assets/branding/wing-logo-256.png" width="80" height="80" alt="Hermes Wing logo"></a>
+
 # Hermes Wing
 
 Chat with your Hermes assistant, follow its tool activity, and approve or stop its

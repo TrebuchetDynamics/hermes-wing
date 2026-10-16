@@ -1,0 +1,436 @@
+{
+  "source": "assets/branding/wing-logo-original.jpg",
+  "source_sha256": "dec52fa872aa4c09e5c5bdfd7e0ae0b550e07846cdde581da8a38f1506a13cc5",
+  "source_size": [
+    1254,
+    1254
+  ],
+  "designation": "Owner supplied as actual Wing logo and app icon; no third-party origin or license claim",
+  "compatibility_note": "Existing runtime asset filename retained so all callers use approved pixels without an API/path migration",
+  "transparent_master": "assets/branding/wing-logo-master.png",
+  "transparent_master_sha256": "414eff510d686e28c54dd09e24b9d2b5b969528903817e3a8c144b62b5199dd2",
+  "opaque_background_rgb": [
+    0,
+    33,
+    126
+  ],
+  "background_policy": "Transparent artwork for app/docs/README, Android, Windows and ordinary web icons; source-edge blue behind artwork for Apple/ web maskable icons; never add white corners",
+  "outputs": [
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "size": [
+        72,
+        72
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "d8c4fa1443e140b638fbd7502a3ba8371013bc774b0d75c6a92cd22de8541320"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "size": [
+        48,
+        48
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "b9f5f12cf9090deb3077d9568154b99ff8bf3726ff3d7eaa9e09b511052a999d"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "size": [
+        96,
+        96
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "50925c0a58331a95517572ceca0f5f217fb1f10e6217ca16b5b4713265e300c0"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "size": [
+        144,
+        144
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "db22fe0b3d7e0fa125749a80c077f1a174c462d767c2534fe27f24910280c83e"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "size": [
+        192,
+        192
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "f12ae16a7ecf9b0129bd30c2393be8535529b6f6a4bd9f9a6745d4c6461c64a7"
+    },
+    {
+      "path": "assets/branding/hermes-emblem.png",
+      "size": [
+        512,
+        512
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "7bceeabed27fb20f0136378546ad5c7c6974f69ea2ce885ad968edae4dee3ffa"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "2eabc38aaf1c0bb1a6b8e1c751cea5cac7a198b9b1aa2bb4c7f583c811a870d6"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png",
+      "size": [
+        20,
+        20
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "14824d2bd87c9c551cd54596997b252171ea759c0d142f2635a12d735b7338c8"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png",
+      "size": [
+        40,
+        40
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "7fac2333d5d15934328d33010b0e53ce270d6e1ad1b9bb97d1b39fc41ffcf356"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png",
+      "size": [
+        60,
+        60
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "e3e3924347bedec6ff9293486e1d71e268f03d90d9ce9f6b3a63e0322c48f4cd"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png",
+      "size": [
+        29,
+        29
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "82a619926b6540e4f0cd805b9921cf475c80c5c2c7fa28a84cd59edb31dc6840"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png",
+      "size": [
+        58,
+        58
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "11a5a11f53697bf8096f7f33c5f6331b21cd437b302d9fe2b38c73c031372cc7"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png",
+      "size": [
+        87,
+        87
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "ef07a5775733dca6618e9d4c03e1c03270f83bf0f7d6f5fb9f749c268eb55a94"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png",
+      "size": [
+        40,
+        40
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "7fac2333d5d15934328d33010b0e53ce270d6e1ad1b9bb97d1b39fc41ffcf356"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png",
+      "size": [
+        80,
+        80
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "a3609fa2e443a9f2511eca971488a2d1e7f7af718a1f2b625476f779b0b3721b"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png",
+      "size": [
+        120,
+        120
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "ac20981758db3769d643758c9dc708c201d81afa500f9779a53352c53ac81dbd"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png",
+      "size": [
+        120,
+        120
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "ac20981758db3769d643758c9dc708c201d81afa500f9779a53352c53ac81dbd"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png",
+      "size": [
+        180,
+        180
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "b7e59bab240bf6c7885f558abb603cb2216db672a4ee0b8b8afaad8b05c11f99"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png",
+      "size": [
+        76,
+        76
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "51c8d5ba2a611717fdc73c5e6aeab42d27a93539e9f06d9a1623710e7b60d1a2"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png",
+      "size": [
+        152,
+        152
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "3fdaaeae3b060212f7051e7a3afa6523fd94dc168b1237bc0cc145f754014aef"
+    },
+    {
+      "path": "ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png",
+      "size": [
+        167,
+        167
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "d9d0271f1f4dc60f9580ee761b72a7940d445c419922c6c3d39d684c74d16b4b"
+    },
+    {
+      "path": "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "2eabc38aaf1c0bb1a6b8e1c751cea5cac7a198b9b1aa2bb4c7f583c811a870d6"
+    },
+    {
+      "path": "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png",
+      "size": [
+        128,
+        128
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "19af7ba8925b7b28c0009f0889d1211f542974763a6d82e7b44b00964128e561"
+    },
+    {
+      "path": "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_16.png",
+      "size": [
+        16,
+        16
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "512d56b26b57390decfa99e33a6e6b74784cc97df6e37f7ba64f9fd427186de6"
+    },
+    {
+      "path": "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png",
+      "size": [
+        256,
+        256
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "898ba8855740f7751d097ff17dcc1257eff50ff2e96a08bb8eb9e81394438548"
+    },
+    {
+      "path": "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_32.png",
+      "size": [
+        32,
+        32
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "94ecbbacda880e9fb24b5948c7fc66e16e6e44078781e917bf6aee992ad33cc4"
+    },
+    {
+      "path": "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_512.png",
+      "size": [
+        512,
+        512
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "0fab349037fdbf45f21820b12324deb679b17ff3b7ccccaf466bbf614af8a250"
+    },
+    {
+      "path": "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_64.png",
+      "size": [
+        64,
+        64
+      ],
+      "transform": "transparent artwork composited on source-edge blue for opaque Apple icon",
+      "alpha": "opaque",
+      "sha256": "4be0b116a3d7aa22baa05c884d34c69873ea6b14a9a3563e31697452825f38a4"
+    },
+    {
+      "path": "web/favicon.png",
+      "size": [
+        32,
+        32
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "8d9126eaaafe834539741389f0732f958e5eeec3a5a021a1c2eaf11c096cf39e"
+    },
+    {
+      "path": "web/icons/Icon-192.png",
+      "size": [
+        192,
+        192
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "f12ae16a7ecf9b0129bd30c2393be8535529b6f6a4bd9f9a6745d4c6461c64a7"
+    },
+    {
+      "path": "web/icons/Icon-512.png",
+      "size": [
+        512,
+        512
+      ],
+      "transform": "transparent Lanczos resize; no crop or recolor",
+      "alpha": "transparent",
+      "sha256": "7bceeabed27fb20f0136378546ad5c7c6974f69ea2ce885ad968edae4dee3ffa"
+    },
+    {
+      "path": "web/icons/Icon-maskable-192.png",
+      "size": [
+        192,
+        192
+      ],
+      "transform": "full transparent artwork centered in 56% safe-area square on source-edge blue; opaque",
+      "alpha": "opaque",
+      "sha256": "2a0d6f14a841a60ef420a7a505248c48e557c0d9f06c78251e2bf7f382e02d6b"
+    },
+    {
+      "path": "web/icons/Icon-maskable-512.png",
+      "size": [
+        512,
+        512
+      ],
+      "transform": "full transparent artwork centered in 56% safe-area square on source-edge blue; opaque",
+      "alpha": "opaque",
+      "sha256": "0f1230e6ac19756250104062c4b6dd54fcc19b19d1d9c5325b00e5889b6b465e"
+    },
+    {
+      "path": "windows/runner/resources/app_icon.ico",
+      "sizes": [
+        [
+          16,
+          16
+        ],
+        [
+          32,
+          32
+        ],
+        [
+          48,
+          48
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "transform": "transparent Lanczos resize; preserve ICO frame sizes",
+      "alpha": "transparent",
+      "sha256": "a6c35c88f82b297456a183cc6ff85c01333d92fe0f798ec6256d19405cc8a4d3"
+    },
+    {
+      "path": "assets/branding/wing-logo-256.png",
+      "size": [
+        256,
+        256
+      ],
+      "transform": "transparent Lanczos resize; lossless encoding",
+      "alpha": "transparent",
+      "sha256": "372313a3e83d7007d385df7684ed6549cd71a3317309b186d19c47fa86ce127f"
+    },
+    {
+      "path": "assets/branding/wing-logo-512.webp",
+      "size": [
+        512,
+        512
+      ],
+      "transform": "transparent Lanczos resize; lossless encoding",
+      "alpha": "transparent",
+      "sha256": "043bb2ee2f5b0eafa5765a60c8326059e1a6133990e34b1bb387f3e71b307911"
+    },
+    {
+      "path": "site/assets/app-icon.png",
+      "size": [
+        96,
+        96
+      ],
+      "transform": "transparent Lanczos resize; lossless encoding",
+      "alpha": "transparent",
+      "sha256": "50925c0a58331a95517572ceca0f5f217fb1f10e6217ca16b5b4713265e300c0"
+    },
+    {
+      "path": "assets/branding/wing-logo.ico",
+      "sizes": [
+        [
+          16,
+          16
+        ],
+        [
+          32,
+          32
+        ],
+        [
+          48,
+          48
+        ],
+        [
+          64,
+          64
+        ],
+        [
+          128,
+          128
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "transform": "transparent Lanczos ICO frames",
+      "alpha": "transparent",
+      "sha256": "1d59ce1fcf293825c2a4ad12c199b9c92d9231aeca71282d5717fed301018293"
+    }
+  ]
+}

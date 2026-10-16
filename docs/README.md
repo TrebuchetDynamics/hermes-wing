@@ -1,3 +1,5 @@
+<a href="../assets/branding/README.md"><img src="../assets/branding/wing-logo-256.png" width="64" height="64" alt="Hermes Wing logo"></a>
+
 # Hermes Wing Docs
 
 The only Desktop product reference is [Nous Research Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop),

@@ -10,6 +10,26 @@ Status: verification strategy, not an execution receipt.
 verification methods. The [evidence matrix](quality/evidence-matrix.md) records
 qualification; individual receipts must identify the source, target and limits.
 
+## Branding assets and placement
+
+Run `flutter test --no-pub test/tooling/wing_branding_assets_test.dart` after any
+logo replacement. Require the approved original/transparent-master hashes,
+complete manifest output set, decoded image dimensions, transparent corners for
+runtime/Android/ordinary web/docs images, opaque source-blue corners for Apple
+and maskable icons, and preserved ICO frame sizes. Retain full source-transform
+pixel checks rather than blessing new hashes alone. See
+[logo usage and provenance](../assets/branding/README.md).
+
+For placement, render the real welcome widget and local README/docs index on
+light/dark backgrounds at compact/wide widths. The current pass has 42 focused
+branding/tooling/enrollment/presentation tests and seven capture-mode cases;
+360/1280px Markdown previews and the actual static landing load all images without
+horizontal overflow. Markdown previews are CommonMark approximations, not the
+GitHub renderer: a preview-only long-path wrap correction was confirmed against
+pristine docs, and lazy landing images were explicitly decoded. The published
+site, new APK, native launcher masks, Apple signing and installed-device behavior
+are not qualified by those checks.
+
 ## Chat workspace overlay navigation
 
 Rebuild `lib/main_e2e.dart`, start the deterministic loopback fixture, then run

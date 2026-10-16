@@ -15,6 +15,12 @@ All notable user-visible changes will be documented here.
 
 ### Fixed
 
+- Wing now uses its owner-provided portrait logo in the app, launcher resources,
+  README, docs index and landing page. Transparent formats preserve the artwork
+  without outside white corners; opaque Apple/maskable resources use a blue
+  background. See [logo assets and usage](assets/branding/README.md). Native
+  launcher/store qualification remains separate.
+
 - Loading placeholders now fit inside parent scrollables, including saved
   Connections during a host switch. The nested-scrollable regression and
   [wide Linux streaming journey](docs/quality/chat-workspace-overlay-native.md#native-saved-host-replacement-during-streaming)

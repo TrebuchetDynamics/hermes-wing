@@ -188,6 +188,7 @@ needs its own exact capability, ownership and qualification evidence.
   then remaining consumers/fixtures and packaging handoff. Do not spend another
   occurrence on broad parity discovery or README polishing instead of this outcome.
   Payoff: connect directly without a second service, pairing, wing-cli or Link token.
+  Touches: lib/router/, lib/features/enrollment/, lib/features/local_setup/, lib/features/profiles/, lib/features/providers/, lib/features/gateway/, lib/core/hermes/, android/app/src/, test/router/, test/features/enrollment/, test/features/local_setup/, test/features/profiles/, test/features/providers/, test/features/gateway/, test/core/, test/fixtures/, integration_test/, lib/l10n/app_en.arb, lib/l10n/app_localizations*.dart, docs/product/enrollment.md, docs/product/desktop-connection-paths.md, docs/product/routes.md, docs/adr/product.md
   Scope: enrollment, Local platform flow, profile/catalog callers, Connections and
   nearest production-control tests. Retire explicit pairing/handoff payloads and
   routes, Local/Termux bootstrap, dormant builders/directory adapters and legacy

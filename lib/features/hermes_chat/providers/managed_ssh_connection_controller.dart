@@ -26,6 +26,7 @@ class ManagedSshConnectionController {
   ManagedSshTunnel? _tunnel;
   bool _pending = false;
   bool _cancelling = false;
+  Future<void>? _cancellation;
   bool _disposed = false;
   void Function()? _clearAuthentication;
   bool _adopting = false;
@@ -172,10 +173,27 @@ class ManagedSshConnectionController {
     }
   }
 
-  Future<void> cancel({int? attemptId}) async {
-    if (attemptId != null && attemptId != _generation) return;
-    if (!_pending && _tunnel == null) return;
+  Future<void> cancel({int? attemptId}) {
+    if (attemptId != null && attemptId != _generation) {
+      return Future<void>.value();
+    }
+    final cancellation = _cancellation;
+    if (cancellation != null) return cancellation;
+    if (!_pending && _tunnel == null) return Future<void>.value();
     _cancelling = true;
+    // Publish before disconnect synchronously notifies reentrant callers.
+    final completion = Completer<void>();
+    _cancellation = completion.future;
+    completion.complete(
+      _cancel().whenComplete(() {
+        _cancellation = null;
+        _cancelling = false;
+      }),
+    );
+    return completion.future;
+  }
+
+  Future<void> _cancel() async {
     ++_generation;
     _clearAuthentication?.call();
     _clearAuthentication = null;
@@ -198,14 +216,10 @@ class ManagedSshConnectionController {
         await channel.disconnect();
       }
     } finally {
-      try {
-        if (tunnel != null) {
-          await tunnel.dispose();
-        } else {
-          await forward.disconnect();
-        }
-      } finally {
-        _cancelling = false;
+      if (tunnel != null) {
+        await tunnel.dispose();
+      } else {
+        await forward.disconnect();
       }
     }
   }

@@ -1397,6 +1397,14 @@ patches, personal credential discovery, service restarts or provider spending.
   capture, late old completion and deliberate retry after cleanup. Planner's call:
   repair this remaining teardown race before durable target/session recovery;
   retain native/full-app qualification and the live gates in PARITY-LIVE-WORKFLOW.
+  Cancellation completion: concurrent unscoped cancel callers now join the owned
+  teardown and observe its success/failure, rather than return before the listener
+  closes. Stale attempt IDs remain inert; Connect stays blocked until settlement.
+  Planner's call: fix the reproduced premature completion in this existing SSH
+  lifecycle seam; keep PARITY-LIVE-WORKFLOW's external gates and this parent's
+  native/durable acceptance open. Four deterministic regressions cover delayed
+  and synchronous-listener cancellation, held cleanup and shared failure without
+  duplicate disconnect or lease close.
   Next action: durable SSH target and exact profile/session reconnect under
   DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
   Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.

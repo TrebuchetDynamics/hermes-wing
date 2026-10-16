@@ -128,6 +128,14 @@ assert no fresh credential capture or replacement mutation, complete the old lea
 late, then prove deliberate retry after cleanup. These checks do not establish
 native transport or durable restoration.
 
+Concurrent unscoped cancellation callers await that same teardown, including its
+failure, instead of observing completion while the owned listener is still closing.
+Stale attempt-scoped cancellation remains inert and cannot join or revoke a newer
+owner. Four deterministic regressions cover delayed and synchronous-listener
+cancellation, hold lease cleanup pending, check that only one Agent disconnect/
+lease close occurs, and prove shared success/failure settlement.
+Connect remains blocked until settlement; no automatic retry is added.
+
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path saves a
 host-key pin, but not the SSH target/Agent-credential/profile/session mapping or

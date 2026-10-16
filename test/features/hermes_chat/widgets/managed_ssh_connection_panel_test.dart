@@ -160,6 +160,82 @@ class _ServeReadChannel extends HermesApiChannel {
 void main() {
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
+  for (final scenario in [
+    (failCleanup: false, reentrant: false),
+    (failCleanup: true, reentrant: false),
+    (failCleanup: false, reentrant: true),
+    (failCleanup: true, reentrant: true),
+  ]) {
+    final failCleanup = scenario.failCleanup;
+    test('repeated cancel awaits owned teardown; $scenario', () async {
+      final forward = FakeForward();
+      final closing = Completer<void>();
+      final release = Completer<void>();
+      forward.waiting.complete(
+        ManagedSshTunnel(
+          agentUri: Uri.parse('http://127.0.0.1:45678'),
+          done: forward.ended.future,
+          close: () async {
+            forward.closes++;
+            closing.complete();
+            await release.future;
+            if (failCleanup) throw StateError('synthetic cleanup failure');
+          },
+        ),
+      );
+      final channel = FakeChannel();
+      final controller = ManagedSshConnectionController(forward, channel);
+      addTearDown(() {
+        controller.dispose();
+        channel.dispose();
+      });
+      expect(
+        await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+        isTrue,
+      );
+      final attempt = controller.attemptId;
+      var settled = false;
+      Object? secondError;
+      Future<void> joinCancellation() => controller.cancel().then<void>(
+        (_) {
+          settled = true;
+        },
+        onError: (Object e) {
+          secondError = e;
+          settled = true;
+        },
+      );
+      late Future<void> second;
+      if (scenario.reentrant) {
+        channel.addListener(() => second = joinCancellation());
+      }
+      Object? firstError;
+      final first = controller.cancel(attemptId: attempt).catchError((
+        Object e,
+      ) {
+        firstError = e;
+      });
+      await closing.future;
+      if (!scenario.reentrant) second = joinCancellation();
+      // A stale panel still cannot join or cancel the current generation.
+      await controller.cancel(attemptId: attempt);
+      await Future<void>.delayed(Duration.zero);
+      expect(settled, isFalse);
+      expect(channel.disconnects, 1);
+      expect(forward.closes, 1);
+      expect(
+        await controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+        isFalse,
+      );
+      release.complete();
+      await Future.wait([first, second]);
+      expect(settled, isTrue);
+      expect(firstError, failCleanup ? isStateError : isNull);
+      expect(secondError, same(firstError));
+      expect(forward.closes, 1);
+    });
+  }
+
   for (final replaced in [false, true]) {
     test(
       'channel owner loss serializes SSH teardown; replaced=$replaced',

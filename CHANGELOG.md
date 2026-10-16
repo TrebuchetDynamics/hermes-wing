@@ -8,8 +8,11 @@ All notable user-visible changes will be documented here.
 
 - The managed SSH form can explicitly select Hermes serve profile/session/history
   reads using the host-provided session token. API mode remains the default;
-  forwarded serve chat and saved SSH restoration remain unavailable. Cancellation,
-  tunnel loss and replacement fence obsolete reads without saving the local port.
+  chat requires separate ticket/operation negotiation. Explicitly saved serve SSH
+  destinations now retain their settled profile/conversation in secure storage;
+  deliberate Connect with fresh credentials restores canonical history on a new
+  port. No automatic connection or mutation replay is added. Cancellation, tunnel
+  loss and replacement fence obsolete reads without saving the local port.
   This implementation has fixture coverage, not Android/native/live qualification.
 
 ### Removed

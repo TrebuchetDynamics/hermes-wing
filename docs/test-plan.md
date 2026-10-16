@@ -360,6 +360,20 @@ successor own this gap; no credential mutation or new runtime check ran here.
 
 ## SSH private-key qualification
 
+Saved-destination owner recovery extends
+`test/core/hermes/ssh/secure_managed_ssh_target_store_test.dart` and
+`test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart`.
+Recreated controllers use real isolated HTTP readers and mocked secure storage to
+restore the exact non-recent profile/session after deliberate fresh authentication
+and a changed local port. Changed destination fields cannot import that owner;
+storage denial and cancellation during load cannot start forwarding. Original
+five-field records still load. Invalid owner extensions remain untouched. Run
+these with the SSH/channel/form union and analyzer. This is deterministic Linux
+host execution with Android platform selection, not native process-death, keyring,
+real SSH or live Agent proof. The
+[contract](security/managed-ssh-forward-contract.md#saved-conversation-pointer)
+retains those qualification gaps.
+
 Forwarded serve-read selection has six production-channel/controller fixture cases
 in `test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart`:
 explicit Android-mode profile/history reads, API default without fallback,

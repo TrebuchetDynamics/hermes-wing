@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:wing/core/hermes/ssh/secure_managed_ssh_target_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/ssh/managed_ssh.dart';
@@ -56,6 +58,7 @@ class _Forward extends ManagedSshForward {
   String origin;
   Completer<void> lost = Completer<void>();
   int closes = 0;
+  int connects = 0;
 
   @override
   Future<ManagedSshTunnel> connect({
@@ -64,6 +67,7 @@ class _Forward extends ManagedSshForward {
     ManagedSshHostKeyVerifier? verifyHostKey,
     Duration timeout = const Duration(seconds: 20),
   }) async {
+    connects++;
     lost = Completer<void>();
     return ManagedSshTunnel(
       agentUri: Uri.parse(origin),
@@ -76,12 +80,44 @@ class _Forward extends ManagedSshForward {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  const storageChannel = MethodChannel(
+    'plugins.it_nomads.com/flutter_secure_storage',
+  );
+  const slot = 'hermes_wing.managed_ssh.target.v1';
+  const store = SecureManagedSshTargetStore();
+  final values = <String, String>{};
+  Completer<void>? holdStorage;
+  Completer<void>? storageRequested;
+  var failStorage = false;
   late _Fixture first, replacement;
   late HermesApiChannel channel;
   late _Forward forward;
   late ManagedSshConnectionController controller;
 
   setUp(() async {
+    // These are isolated loopback HTTP fixtures, not widget-test HTTP mocks.
+    HttpOverrides.global = null;
+    values.clear();
+    holdStorage = null;
+    storageRequested = null;
+    failStorage = false;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(storageChannel, (call) async {
+          final key = call.arguments['key'] as String;
+          if (key != slot) return null;
+          if (!(storageRequested?.isCompleted ?? true)) {
+            storageRequested!.complete();
+          }
+          await holdStorage?.future;
+          if (failStorage) {
+            throw PlatformException(code: 'synthetic-storage-failure');
+          }
+          if (call.method == 'write') {
+            values[key] = call.arguments['value'] as String;
+          }
+          return call.method == 'read' ? values[key] : null;
+        });
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     first = _Fixture();
     replacement = _Fixture();
@@ -92,6 +128,9 @@ void main() {
     controller = ManagedSshConnectionController(forward, channel);
   });
   tearDown(() async {
+    if (!(holdStorage?.isCompleted ?? true)) {
+      holdStorage!.complete();
+    }
     if (!(replacement.holdHistory?.isCompleted ?? true)) {
       replacement.holdHistory!.complete();
     }
@@ -101,6 +140,8 @@ void main() {
     await first.close();
     await replacement.close();
     debugDefaultTargetPlatformOverride = null;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(storageChannel, null);
   });
 
   Future<bool> connect({
@@ -127,6 +168,157 @@ void main() {
     await channel.selectSession('demo-session');
     expect(channel.state.activeSessionId, 'demo-session');
   }
+
+  Future<void> enablePersistence() async {
+    controller.dispose();
+    controller = ManagedSshConnectionController(
+      forward,
+      channel,
+      targetStore: store,
+    );
+    await store.save(
+      ManagedSshTarget(
+        config: ManagedSshConfig(
+          host: 'example.invalid',
+          username: 'tester',
+          agentPort: 8642,
+        ),
+        serveReads: true,
+      ),
+    );
+  }
+
+  Future<void> awaitSavedOwner() async {
+    for (var i = 0; i < 1000; i++) {
+      if ((await store.load())?.selection?.session == 'demo-session') return;
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+    }
+    fail('settled owner was not saved');
+  }
+
+  Future<void> recreate() async {
+    await controller.cancel();
+    controller.dispose();
+    channel.dispose();
+    channel = HermesApiChannel();
+    forward = _Forward(replacement.origin);
+    controller = ManagedSshConnectionController(
+      forward,
+      channel,
+      targetStore: store,
+    );
+  }
+
+  test(
+    'recreated controller restores secure exact owner after a new authenticated lease',
+    () async {
+      await enablePersistence();
+      await selectOwner();
+      await awaitSavedOwner();
+      expect(values[slot], isNot(contains(first.origin)));
+      expect(values[slot], isNot(contains(LocalServeReadFixture.token)));
+      await recreate();
+      expect(replacement.requests, isEmpty);
+      expect(await connect(), isTrue);
+      expect(channel.state.selectedProfileId, 'demo');
+      expect(channel.state.activeSessionId, 'demo-session');
+      expect(channel.state.activeMessages.last.text, 'demo fixture answer');
+      expect(channel.state.serveChat, isNull);
+      expect(forward.connects, 1);
+      expect(replacement.requests, [
+        'GET /api/profiles',
+        'GET /api/sessions',
+        'GET /api/sessions/demo-session/messages',
+      ]);
+    },
+  );
+
+  for (final changed in ['host', 'port', 'username', 'agentPort']) {
+    test(
+      'recreated controller cannot import saved owner after $changed changes',
+      () async {
+        await enablePersistence();
+        await selectOwner();
+        await awaitSavedOwner();
+        final raw = values[slot];
+        await recreate();
+        expect(
+          await connect(
+            host: changed == 'host' ? 'other.invalid' : 'example.invalid',
+            sshPort: changed == 'port' ? 2222 : 22,
+            username: changed == 'username' ? 'other' : 'tester',
+            agentPort: changed == 'agentPort' ? 8643 : 8642,
+          ),
+          isTrue,
+        );
+        expect(channel.state.selectedProfileId, 'default');
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(values[slot], raw);
+      },
+    );
+  }
+
+  test(
+    'cancel during secure recovery cannot dial or replace a newer owner',
+    () async {
+      await enablePersistence();
+      holdStorage = Completer<void>();
+      storageRequested = Completer<void>();
+      final pending = connect();
+      await storageRequested!.future;
+      await controller.cancel();
+      await channel.connectLocalServeReads(
+        baseUrl: replacement.origin,
+        credential: LocalServeReadFixture.token,
+      );
+      holdStorage!.complete();
+      expect(await pending, isFalse);
+      expect(forward.connects, 0);
+      expect(channel.state.connectedBaseUrl, replacement.origin);
+    },
+  );
+
+  for (final missing in ['profile', 'session']) {
+    test(
+      'recreated controller preserves missing exact $missing for explicit retry',
+      () async {
+        await enablePersistence();
+        await selectOwner();
+        await awaitSavedOwner();
+        final raw = values[slot];
+        await recreate();
+        if (missing == 'profile') {
+          replacement.profiles.remove('demo');
+        }
+        replacement.denyHistory = missing == 'session';
+        expect(await connect(), isFalse);
+        expect(values[slot], raw);
+        expect(channel.state.isConnected, isFalse);
+        if (missing == 'profile') {
+          replacement.profiles.add('demo');
+        }
+        replacement.denyHistory = false;
+        expect(await connect(), isTrue);
+        expect(channel.state.selectedProfileId, 'demo');
+        expect(channel.state.activeSessionId, 'demo-session');
+      },
+    );
+  }
+
+  test(
+    'unavailable secure owner refuses before forwarding and preserves saved bytes',
+    () async {
+      await enablePersistence();
+      final raw = values[slot];
+      failStorage = true;
+      await expectLater(connect(), throwsA(isA<ManagedSshException>()));
+      expect(forward.connects, 0);
+      expect(first.requests, isEmpty);
+      expect(values[slot], raw);
+      failStorage = false;
+      expect(await connect(), isTrue);
+    },
+  );
 
   for (final lost in [false, true]) {
     test(

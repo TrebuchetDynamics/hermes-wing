@@ -146,8 +146,9 @@ it adds no automatic reconnect, persisted target or native qualification.
 
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path saves a
-host-key pin and explicitly saved SSH destination/transport settings, but not an
-Agent-credential/profile/session mapping or automatic cold-relaunch restoration.**
+host-key pin and explicitly saved SSH destination/transport settings with a
+settled serve profile/session pointer, but no Agent credential or automatic
+cold-relaunch connection.**
 Do not save a forwarded port as an ordinary endpoint or attach its credential to a
 later unrelated listener. BACKEND-SSH-CONNECT and DOC-BACKEND-DISCONNECT-CONTRACT
 retain durable mapping, interruption and no-replay acceptance.
@@ -225,9 +226,9 @@ before adding exact profile/session recovery. The production SSH form offers
 **Save SSH settings** and **Use saved SSH settings**. Saving validates only the
 host, SSH port, username and remote Agent port; it also retains the explicit API
 versus serve selection. It does not test SSH or authenticate Agent. One separate
-versioned secure-storage slot holds only these five values, not passwords, keys,
-key paths, Agent credentials, trust decisions, profile/session IDs or ephemeral
-forwarded origins. Saving replaces only this slot after explicit intent and
+versioned secure-storage slot holds these five values and, in serve mode, the
+last settled profile/session pointer described below. It never holds passwords,
+keys, key paths, Agent credentials, trust decisions or ephemeral forwarded origins. Saving replaces only this slot after explicit intent and
 verifies readback; no legacy data is read or removed and no plaintext fallback
 exists. App-isolate writes are serialized, not cross-process transactions.
 
@@ -243,9 +244,10 @@ still verifies the host key and requires fresh permitted authentication.
 Deterministic tests exercise save/load across store and form recreation, mode
 restoration, secret exclusion/clearing, readback failure and delayed results. This
 is Linux-hosted mocked secure storage and Flutter widget evidence, not native
-keystore, cold-process restoration or actual SSH qualification. Exact durable
-profile/session recovery remains open in DOC-BACKEND-DISCONNECT-CONTRACT; no
-canonical Bot Chat pointer or replacement domain state is introduced.
+keystore, cold-process restoration or actual SSH qualification. The saved pointer
+below adds deterministic recovery; native full-app qualification stays open in
+DOC-BACKEND-DISCONNECT-CONTRACT. No canonical Bot Chat pointer or replacement
+domain state is introduced.
 
 ## Same-process exact-owner reconnect
 
@@ -263,7 +265,8 @@ secure recovery record. Teardown still clears attempt authentication. Reconnect
 performs REST reads only, leaves chat disabled until deliberate negotiation and
 never replays Send, approval or Stop. Cancellation/newer ownership fences held
 history; returning to the screen does not itself reconnect. API-mode behavior is
-unchanged. Cold-process recovery and native/full-app SSH acceptance stay open.
+unchanged. Saved-destination recovery extends this memory-only path below;
+native/full-app SSH acceptance stays open.
 
 Linux-hosted production-controller/channel fixtures exercise a replaced loopback
 port, explicit disconnect and unexpected tunnel loss, exact non-recent session,
@@ -273,6 +276,39 @@ The existing upstream reader contract remains unchanged: read-only Agent
 `hermes_cli/web_routers/sessions.py` scopes history to the explicit `profile` and
 session ID; Wing validates returned owner identities rather than accepting a
 redirected session. No new Agent route, mutation or grant is introduced.
+
+## Saved conversation pointer
+
+Planner's call: extend the existing secure destination record, not the local-serve
+credential/origin checkpoint or a second session catalog. Only an explicitly saved
+matching serve destination is updated with its last settled profile/session. The
+original five-value record remains readable; the optional two-value extension is
+bounded and identity-validated. API mode cannot carry this extension. Exact host
+text, SSH port, username, Agent port and transport must all match. Unsaved or
+changed destinations never create or overwrite the remembered owner.
+
+The app-scoped production controller loads that pointer only on deliberate serve
+Connect, before forwarding. Storage denial/corruption fails closed with the existing
+sanitized connection error; cancellation or newer channel intent fences late loads.
+A new controller/channel can then authenticate a fresh SSH/Agent lease, reread the
+exact saved profile/session through the existing reader and leave chat disabled
+until explicit negotiation. Missing identities fail closed, without choosing a
+replacement conversation. No credential, local port, transcript, run state,
+mutation or automatic connection is persisted or replayed.
+
+Settled owner updates use the destination store's existing serialized write lane
+and readback. They cannot replace a different explicitly saved destination. An
+in-flight settled save may complete after disconnect. Failed background writes
+leave the live conversation usable and are not a durability claim; abrupt process
+exit can recover only the last successfully saved selection. Explicit Save settings
+replaces the record and clears its previous pointer. Cross-process storage writers
+and native keychain/process-death behavior remain unqualified.
+
+Recreated-controller tests use real isolated HTTP with a fake forward and mocked
+secure storage, not real SSH or two native processes. They verify a non-recent
+session on a changed local port, destination isolation, cancellation while loading,
+storage refusal and zero recovery mutations. Native Linux/Android full-app restore
+and interrupted live work remain acceptance in the existing parent tasks.
 
 ## Remembered host trust
 

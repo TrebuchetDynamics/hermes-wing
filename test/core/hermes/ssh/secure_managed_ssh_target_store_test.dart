@@ -88,6 +88,79 @@ void main() {
   });
 
   test(
+    'only an exact explicitly saved destination remembers its owner',
+    () async {
+      final selected = ManagedSshTarget(
+        config: target.config,
+        serveReads: true,
+        selection: (profile: 'demo', session: 'demo-session'),
+      );
+      const store = SecureManagedSshTargetStore();
+      await store.rememberSelection(selected);
+      expect(values, isEmpty);
+      await store.save(target);
+      await store.rememberSelection(selected);
+      expect(
+        (await const SecureManagedSshTargetStore().load())!.selection,
+        selected.selection,
+      );
+      final raw = values[slot];
+      await store.rememberSelection(
+        ManagedSshTarget(
+          config: ManagedSshConfig(
+            host: 'other.invalid',
+            username: 'tester',
+            agentPort: 8642,
+          ),
+          serveReads: true,
+          selection: (profile: 'other', session: null),
+        ),
+      );
+      expect(values[slot], raw);
+      await store.save(
+        ManagedSshTarget(config: target.config, serveReads: false),
+      );
+      await store.rememberSelection(selected);
+      expect((await store.load())!.selection, isNull);
+    },
+  );
+
+  test(
+    'invalid owner extensions fail closed without touching saved bytes',
+    () async {
+      const store = SecureManagedSshTargetStore();
+      for (final selection in [
+        (profile: '', session: 'session'),
+        (profile: 'demo', session: '../session'),
+        (profile: 'x' * 129, session: null),
+      ]) {
+        final raw = jsonEncode([
+          'example.invalid',
+          22,
+          'tester',
+          8642,
+          true,
+          selection.profile,
+          selection.session,
+        ]);
+        values[slot] = raw;
+        await expectLater(store.load(), throwsFormatException);
+        await expectLater(
+          store.save(
+            ManagedSshTarget(
+              config: target.config,
+              serveReads: true,
+              selection: selection,
+            ),
+          ),
+          throwsFormatException,
+        );
+        expect(values[slot], raw);
+      }
+    },
+  );
+
+  test(
     'secure storage failure and failed readback never report save success',
     () async {
       fail = true;

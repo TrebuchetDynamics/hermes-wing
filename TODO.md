@@ -1429,9 +1429,19 @@ patches, personal credential discovery, service restarts or provider spending.
   negotiation; it never replays Send, approval or Stop. Planner's call: deliver
   this positive reconnect path with the existing channel reader, not a second
   domain store. PARITY-LIVE-WORKFLOW retains its unavailable external gates.
-  Next action: secure cold-process profile/session recovery under
-  DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
-  Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.
+  Saved-owner recovery: the existing secure destination slot now optionally retains
+  a settled serve profile/session for that exact explicitly saved destination.
+  Production Connect loads it under the attempt-generation fence, authenticates a
+  fresh lease and rereads canonical history; changed targets cannot inherit it.
+  No credential, local port, transcript or mutation is saved. Planner's call: extend
+  this existing record and reader rather than introduce a second domain store;
+  keep PARITY-LIVE-WORKFLOW's external gates and consumed budgets unchanged.
+  Recreated-controller/secure-store fixtures verify this offline behavior, not
+  actual process death, native secure storage or SSH authentication. Parent stays
+  open; abrupt exit can recover only the last successfully persisted selection.
+  Next action: qualify the saved-target and exact-owner journey through isolated
+  native full-app relaunch, then separately authorized real SSH/Linux/Android proof.
+  See [saved conversation pointer](docs/security/managed-ssh-forward-contract.md#saved-conversation-pointer).
   Credential-lifetime prerequisite: the shared channel now retires serve read
   credentials on disconnect and API replacement. Three deterministic regressions
   prove that explicit serve Retry leaves the replacement origin/owner untouched

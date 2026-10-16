@@ -16,7 +16,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get managedSshTargetBody =>
-      'Save one SSH destination and Agent transport on this device. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.';
+      'Save one SSH destination and Agent transport on this device. Serve mode also remembers the last settled profile and conversation for this saved destination. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.';
 
   @override
   String get managedSshTargetSaved =>

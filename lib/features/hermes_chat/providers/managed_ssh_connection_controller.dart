@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/channel/hermes_api_channel.dart';
 import '../../../core/hermes/ssh/managed_ssh.dart';
+import '../../../core/hermes/ssh/secure_managed_ssh_target_store.dart';
 import '../../../core/hermes/ssh/ssh_connection_request.dart';
 import 'hermes_channel_provider.dart';
 import 'managed_ssh_provider.dart';
@@ -11,6 +12,7 @@ final managedSshConnectionControllerProvider = Provider((ref) {
   final controller = ManagedSshConnectionController(
     ref.watch(managedSshForwardProvider),
     ref.watch(hermesChannelProvider),
+    targetStore: const SecureManagedSshTargetStore(),
   );
   ref.onDispose(controller.dispose);
   return controller;
@@ -18,11 +20,16 @@ final managedSshConnectionControllerProvider = Provider((ref) {
 
 /// Owns only an ephemeral forwarding lease, never a saved Agent endpoint.
 class ManagedSshConnectionController {
-  ManagedSshConnectionController(this.forward, this.channel) {
+  ManagedSshConnectionController(
+    this.forward,
+    this.channel, {
+    this.targetStore,
+  }) {
     channel.addListener(_changed);
   }
   final ManagedSshForward forward;
   final HermesChannel channel;
+  final SecureManagedSshTargetStore? targetStore;
   ManagedSshTunnel? _tunnel;
   bool _pending = false;
   bool _cancelling = false;
@@ -34,8 +41,7 @@ class ManagedSshConnectionController {
   bool _sawConnecting = false;
   bool _tunnelLost = false;
   bool _replacement = false;
-  ({String host, int sshPort, String username, int agentPort, bool serveReads})?
-  _destination;
+  ManagedSshTarget? _destination;
   ({String profile, String? session})? _selection;
   int _generation = 0;
   int get attemptId => _generation;
@@ -46,16 +52,19 @@ class ManagedSshConnectionController {
     bool serveReads = false,
   }) async {
     if (_disposed || _cancelling || _pending || _tunnel != null) return false;
-    final destination = (
-      host: input.host,
-      sshPort: input.sshPort,
-      username: input.username,
-      agentPort: input.agentPort,
+    final destination = ManagedSshTarget(
+      config: ManagedSshConfig(
+        host: input.host,
+        sshPort: input.sshPort,
+        username: input.username,
+        agentPort: input.agentPort,
+      ),
       serveReads: serveReads,
     );
-    if (_destination != destination) _selection = null;
+    if (!(_destination?.sameDestination(destination) ?? false)) {
+      _selection = null;
+    }
     _destination = destination;
-    final selection = _selection;
     final generation = ++_generation;
     _pending = true;
     _replacement = false;
@@ -74,6 +83,14 @@ class ManagedSshConnectionController {
 
     _clearAuthentication = clearAuthentication;
     try {
+      if (serveReads && _selection == null && targetStore != null) {
+        final saved = await targetStore!.load();
+        if (generation != _generation) return false;
+        if (saved != null && saved.sameDestination(destination)) {
+          _selection = saved.selection;
+        }
+      }
+      final selection = _selection;
       final tunnel = await forward.connect(
         configuration: ManagedSshConfig(
           host: input.host,
@@ -199,9 +216,25 @@ class ManagedSshConnectionController {
         !state.isSelectingProfile &&
         state.selectedProfileId != null) {
       // Retain identity only; a new lease must authenticate and reread history.
-      _selection = (
+      final selection = (
         profile: state.selectedProfileId!,
         session: state.activeSessionId,
+      );
+      if (_selection == selection) return;
+      _selection = selection;
+      final destination = _destination!;
+      unawaited(
+        targetStore
+            ?.rememberSelection(
+              ManagedSshTarget(
+                config: destination.config,
+                serveReads: true,
+                selection: selection,
+              ),
+            )
+            .catchError((Object _) {
+              // Keep the live owner usable; failed secure writes never imply durability.
+            }),
       );
     }
   }

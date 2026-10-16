@@ -76,7 +76,7 @@ async function openWingPage(browser, viewport) {
   );
   await enableFlutterAccessibility(page, { delay: 500 });
   await page.evaluate(() => globalThis.wingE2EHermesConnect());
-  await page.getByRole("heading", { name: "Gateway readiness" }).waitFor();
+  await page.getByRole("heading", { name: "Sample repository summary" }).waitFor();
   return { context, failures, page };
 }
 
@@ -103,12 +103,14 @@ async function captureProductFrames(browser) {
   await seedPresentation();
   const desktop = await openWingPage(browser, { width: 1280, height: 800 });
   await desktop.page.evaluate(() =>
-    globalThis.wingE2EHermesSendText("Check gateway readiness."),
+    globalThis.wingE2EHermesSendText(
+      "Summarize the sample demo repository structure; do not modify files, run commands, or read secrets.",
+    ),
   );
   await desktop.page.getByRole("button", { name: "Approve once" }).click();
   await desktop.page
     .getByRole("group", {
-      name: "Gateway is healthy. Profiles, skills, and toolsets are ready.",
+      name: "The sample notes app keeps its interface in src/, tests in test/, and setup notes in README.md.",
       exact: true,
     })
     .waitFor();
@@ -120,7 +122,7 @@ async function captureProductFrames(browser) {
   const desktopPath = path.join(scratch, "desktop.png");
   await desktop.page.screenshot({
     path: desktopPath,
-    clip: { x: 0, y: 0, width: 1280, height: 754 },
+    clip: { x: 530, y: 280, width: 750, height: 466 },
     animations: "disabled",
   });
   await desktop.context.close();
@@ -128,7 +130,9 @@ async function captureProductFrames(browser) {
   await seedPresentation();
   const mobile = await openWingPage(browser, { width: 390, height: 720 });
   await mobile.page.evaluate(() =>
-    globalThis.wingE2EHermesSendText("Check gateway readiness."),
+    globalThis.wingE2EHermesSendText(
+      "Summarize the sample demo repository structure; do not modify files, run commands, or read secrets.",
+    ),
   );
   await mobile.page.getByRole("button", { name: "Review" }).click();
   await mobile.page.getByText("Review Hermes approval").waitFor();
@@ -188,14 +192,14 @@ h1{position:absolute;left:42px;top:58px;margin:0;font-size:34px;line-height:1.1;
 .caption{position:absolute;left:42px;bottom:35px;color:#8f96a3;font:13px ui-monospace,monospace;letter-spacing:.25px}
 </style></head><body>
 <div class="eyebrow">DEMO DATA · SIMULATED SESSION</div>
-<h1>Follow the run. Step in from your phone.</h1>
+<h1>A repository summary. A decision on your phone.</h1>
 <div class="meta">ONE FLUTTER CLIENT</div>
-<div class="label desktop-label">DESKTOP · GATEWAY READINESS</div>
-<div class="label mobile-label">MOBILE · APPROVAL</div>
+<div class="label desktop-label">DESKTOP · SAMPLE REPOSITORY</div>
+<div class="label mobile-label">MOBILE · FILE READ REVIEW</div>
 <div class="frame desktop"><img alt="" src="data:image/png;base64,${desktopBytes.toString("base64")}"></div>
 <div class="frame mobile"><img alt="" src="data:image/png;base64,${mobileBytes.toString("base64")}"></div>
-<div class="proof"><span>SIMULATED RUN</span><span>TOOL ACTIVITY</span><span>APPROVAL ON MOBILE</span></div>
-<div class="caption">Two views of the same sample scenario — not live synchronization.</div>
+<div class="proof"><span>SIMULATED SUMMARY</span><span>READ-ONLY FILE REVIEW</span><span>PHONE APPROVAL</span></div>
+<div class="caption">Synthetic sample workflow — not a live Agent or cross-device synchronization.</div>
 </body></html>`);
   await page.screenshot({ path: path.join(assets, "showcase.png") });
   await page.close();
@@ -204,7 +208,7 @@ h1{position:absolute;left:42px;top:58px;margin:0;font-size:34px;line-height:1.1;
 function heroSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="410" viewBox="0 0 1200 410" role="img" aria-labelledby="title desc">
   <title id="title">Control Hermes Agent from your phone</title>
-  <desc id="desc">DEMO DATA · SIMULATED SESSION. Authored illustration, not a live capture.</desc>
+  <desc id="desc">DEMO DATA · SIMULATED SESSION. Authored illustration of a synthetic repository summary and tool activity, not a live capture.</desc>
   <rect width="1200" height="410" rx="26" fill="#0c0e12"/>
   <path d="M670 32V378" stroke="#23262e"/>
   <g transform="translate(58 48)">
@@ -223,16 +227,16 @@ function heroSvg() {
     <circle cx="30" cy="86" r="8" fill="#13151a" stroke="#20e6e6" stroke-width="2"/>
     <rect x="54" y="62" width="352" height="56" rx="12" fill="#1b1d21" stroke="#30343b"/>
     <text x="70" y="75" dominant-baseline="hanging" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" letter-spacing="1.2">CONNECTED</text>
-    <text x="70" y="94" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">Hermes capability contract accepted</text>
+    <text x="70" y="94" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">Sample repository selected</text>
     <circle cx="30" cy="166" r="8" fill="#3b82f6"/>
     <rect x="54" y="136" width="352" height="66" rx="12" fill="#1b1d21" stroke="#30343b"/>
     <text x="70" y="149" dominant-baseline="hanging" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" letter-spacing="1.2">TOOL COMPLETE</text>
-    <text x="70" y="169" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">read_file · Gateway checks complete</text>
+    <text x="70" y="169" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">read_file · Sample repository summarized</text>
     <text x="390" y="169" dominant-baseline="hanging" text-anchor="end" fill="#8f96a3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">verified</text>
     <circle cx="30" cy="260" r="8" fill="#20e6e6"/>
     <rect x="54" y="220" width="352" height="102" rx="12" fill="#102527" stroke="#208f94"/>
     <text x="70" y="235" dominant-baseline="hanging" fill="#9ff7f4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" letter-spacing="1.2">RUN COMPLETE</text>
-    <text x="70" y="257" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">Healthy summary streamed to this session</text>
+    <text x="70" y="257" dominant-baseline="hanging" fill="#f4f4f5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="14" font-weight="650">Demo repository structure summarized</text>
     <rect x="70" y="286" width="92" height="22" rx="11" fill="none" stroke="#20e6e6"/>
     <text x="116" y="291" dominant-baseline="hanging" text-anchor="middle" fill="#9ff7f4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700">COMPLETED</text>
     <text x="390" y="291" dominant-baseline="hanging" text-anchor="end" fill="#7dd3fc" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" font-weight="700">REPLY STREAMED</text>

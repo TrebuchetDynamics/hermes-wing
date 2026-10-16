@@ -62,7 +62,7 @@ void main() {
               source.contains('Native Android or Linux'),
           isTrue,
         );
-        expect(source, contains('/v1/capabilities'));
+        expect(source.toLowerCase(), contains('streaming'));
         expect(source, contains('Do not use any tools.'));
         expect(
           source.indexOf('Do not use any tools.'),
@@ -101,7 +101,57 @@ void main() {
       expect(guide, isNot(contains('fake endpoint storage')));
       expect(guide, contains('Browser SSH and OAuth sign-in are unsupported'));
       expect(guide, contains('not silently resend prompts'));
-      expect(guide, contains('Native GTK simulated journey'));
+      expect(guide, contains('Linux GTK simulated'));
+      expect(
+        guide,
+        contains(
+          '| Outcome | User-facing UI | Simulated / native checks | Authenticated live evidence |',
+        ),
+      );
+      expect(
+        guide,
+        contains(
+          '| SSH | Android/Linux native interface; browser unsupported |',
+        ),
+      );
+      expect(readme, contains('session chat and streaming'));
+    },
+  );
+
+  test(
+    'README assets use a synthetic repository story, not e2e status proof',
+    () {
+      final readme = File('README.md').readAsStringSync();
+      final fixture = File('serve_web.mjs').readAsStringSync();
+      final generator = File(
+        'scripts/generate_readme_assets.mjs',
+      ).readAsStringSync();
+      expect(readme.split('\n').length - 1, inInclusiveRange(160, 180));
+      expect(
+        readme.indexOf('[Set up your first chat]'),
+        lessThan(readme.indexOf('## Choose a path')),
+      );
+      final paths = [
+        '### Preview the connection screen',
+        '### Connect an existing Hermes Agent',
+        '### Build a native client',
+      ];
+      for (var i = 1; i < paths.length; i++) {
+        expect(
+          readme.indexOf(paths[i - 1]),
+          lessThan(readme.indexOf(paths[i])),
+        );
+      }
+      expect(fixture, contains('Sample repository summary'));
+      expect(fixture, contains('read_file README.md'));
+      expect(fixture, contains('README summary: src/ contains the app'));
+      expect(generator, contains('Sample repository summary'));
+      expect(generator, contains('read_file · Sample repository summarized'));
+      expect(generator, isNot(contains('Gateway readiness')));
+      expect(generator, contains('Synthetic sample workflow'));
+      expect(generator, contains('clip: { x: 530, y: 280, width: 750'));
+      expect(generator, isNot(contains('Office')));
+      expect(generator, isNot(contains('echo e2e')));
     },
   );
 
@@ -120,7 +170,7 @@ void main() {
 
     expect(generator.existsSync(), isTrue);
     expect(fixture, contains('/e2e/hermes/presentation'));
-    expect(fixture, contains('Gateway readiness'));
+    expect(fixture, contains('Sample repository summary'));
 
     expect(hero, contains('RUN COMPLETE'));
     expect(hero, isNot(contains('APPROVAL REQUIRED')));
@@ -146,7 +196,7 @@ void main() {
     expect(generatorSource, contains('name: "Review"'));
     expect(generatorSource, contains('Review Hermes approval'));
     expect(generatorSource, contains('name: "Approve once"'));
-    expect(generatorSource, contains('MOBILE · APPROVAL'));
+    expect(generatorSource, contains('MOBILE · FILE READ REVIEW'));
     expect(generatorSource, contains('"_no_installed_skill_match_"'));
     expect(
       generatorSource,
@@ -168,12 +218,12 @@ void main() {
           'Move the pointer off transient controls before the settling delay.',
     );
     expect(readme, contains('[Preview the connection screen]'));
-    expect(readme, contains('interface, not a working assistant.'));
+    expect(readme, contains('This is an interface, not a working assistant;'));
     expect(readme, contains('authenticated Agent and configured provider.'));
     expect(readme, contains('docs/getting-started.md'));
     expect(readme, contains('showcase-mobile.png'));
     expect(readme, contains('runs the assistant,'));
-    expect(readme, contains('conversations, tools, and configuration.'));
+    expect(readme, contains('conversations, tools, and configuration;'));
     expect(gettingStarted, contains('Agent remains the source of truth'));
     expect(readme, isNot(contains('Wing Link')));
     expect(generatorSource, contains('approveOnce.scrollIntoViewIfNeeded()'));
@@ -192,7 +242,7 @@ void main() {
       expect(document, isNot(contains('physical Android device receipt')));
       expect(document, isNot(contains('physical-device QA receipt')));
     }
-    expect(landing, contains('sample scenario, including an approval request'));
+    expect(landing, contains('repository summary and phone approval request'));
     expect(generatorSource, isNot(contains('LIVE RUN')));
     expect(generatorSource, isNot(contains('Wing Link')));
     expect(generatorSource, contains('DEMO DATA · SIMULATED SESSION'));

@@ -304,9 +304,9 @@ async function handleHermesApi(req, res, url) {
   if (req.method === "POST" && url === "/e2e/hermes/presentation") {
     resetHermesState();
     hermesState.presentationMode = true;
-    hermesState.sessions[0].title = "Gateway readiness";
+    hermesState.sessions[0].title = "Sample repository summary";
     hermesState.sessions[0].messages[0].content =
-      "Hermes is connected and ready.";
+      "Demo repository: a small notes app with source, tests, and a README.";
     return json(res, 200, { seeded: true });
   }
   // Fixed, synthetic transcript scenarios; no caller-provided content or paths.
@@ -634,7 +634,7 @@ async function handleHermesApi(req, res, url) {
     const runId = `run_${hermesState.nextRunId++}`;
     const presentation = hermesState.presentationMode;
     const reply = presentation
-      ? "Gateway is healthy. Profiles, skills, and toolsets are ready."
+      ? "The sample notes app keeps its interface in src/, tests in test/, and setup notes in README.md."
       : `Hermes echo: ${body.message}`;
     if (session) {
       session.messages.push({
@@ -721,8 +721,10 @@ async function handleHermesApi(req, res, url) {
     res.write(
       `event: approval.request\ndata: ${JSON.stringify({
         run_id: run.id,
-        command: "echo e2e",
-        description: "Approve e2e browser run?",
+        command: run.presentation ? "read_file README.md" : "echo e2e",
+        description: run.presentation
+          ? "Review the sample repository README summary?"
+          : "Approve e2e browser run?",
         choices: ["once", "session", "always", "deny"],
       })}\n\n`,
     );
@@ -750,10 +752,10 @@ async function handleHermesApi(req, res, url) {
     }
     const tool = run?.presentation ? "read_file" : "bash";
     const toolPreview = run?.presentation
-      ? "health + capabilities"
+      ? "README.md · sample notes app structure"
       : "echo e2e";
     const toolResult = run?.presentation
-      ? "Gateway checks complete"
+      ? "README summary: src/ contains the app; test/ covers note creation; no files changed."
       : "tool complete";
     if (run) run.status = "completed";
     if (run.transcriptOrder) {

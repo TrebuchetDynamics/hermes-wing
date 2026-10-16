@@ -122,6 +122,7 @@ needs its own exact capability, ownership and qualification evidence.
   correlated approval, authoritative Stop and exact restoration in one workflow.
   Sources: [workflow matrix](docs/plans/2026-10-03-desktop-daily-workflow.md)
   and [Wing ownership and limits](docs/plans/2026-10-03-desktop-daily-workflow.md#owner-update--wing-implementation-and-qa).
+  Touches: integration_test/linux_desktop_live_workflow_test.dart, scripts/run_linux_desktop_live_workflow.sh, scripts/support/desktop_live_workflow.py, lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, test/tooling/, docs/quality/
   Scope: isolated QA setup through supported unmodified Agent operations, existing
   production Wing channel/UI, minimal reproduced fixes with regression tests and
   sanitized operation/readback receipts. Keep personal runtime/app state and system

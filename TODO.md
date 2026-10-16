@@ -566,6 +566,7 @@ before their goals can become `met`.
 - [ ] **WING-TASK-408** — Goal: PARITY-COMPOSITION. Keep Chat alive while Settings
   and Profiles overlays open and close in the compiled application.
   Payoff: users inspect settings or profiles without losing their draft or stream.
+  Touches: lib/router/widgets/, lib/router/providers/, lib/shared/widgets/, lib/features/hermes_chat/screens/, lib/features/settings/screens/, test/router/chat_workspace_overlay_test.dart, test/integration/linux_chat_workspace_overlay_runner_test.dart, integration_test/linux_chat_workspace_overlay_test.dart, integration_test/linux_chat_workspace_stream_test.dart, integration_test/run_linux_chat_workspace_stream.py, playwright/tests/regression/chat-workspace-overlay.spec.mjs, docs/quality/chat-workspace-overlay-browser.md, docs/quality/chat-workspace-overlay-native.md
   Scope: `ChatWorkspaceOverlay`, production router/shell callers and deterministic
   browser/native integration tests. Reuse implemented overlays and widget evidence;
   fix only reproduced navigation, focus or retained-workspace defects.

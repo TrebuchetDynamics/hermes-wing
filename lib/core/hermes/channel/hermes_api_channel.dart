@@ -326,10 +326,14 @@ class HermesApiChannel extends ChangeNotifier
     required String baseUrl,
     required String credential,
     required bool Function() canAccept,
+    String profile = 'default',
+    String? storedSession,
   }) => _connectServeReads(
     baseUrl,
     credential,
     canAccept: canAccept,
+    profile: profile,
+    storedSession: storedSession,
     forgetRecovery: true,
     forwarded: true,
   );

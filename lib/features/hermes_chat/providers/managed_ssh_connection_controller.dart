@@ -34,6 +34,9 @@ class ManagedSshConnectionController {
   bool _sawConnecting = false;
   bool _tunnelLost = false;
   bool _replacement = false;
+  ({String host, int sshPort, String username, int agentPort, bool serveReads})?
+  _destination;
+  ({String profile, String? session})? _selection;
   int _generation = 0;
   int get attemptId => _generation;
 
@@ -43,6 +46,16 @@ class ManagedSshConnectionController {
     bool serveReads = false,
   }) async {
     if (_disposed || _cancelling || _pending || _tunnel != null) return false;
+    final destination = (
+      host: input.host,
+      sshPort: input.sshPort,
+      username: input.username,
+      agentPort: input.agentPort,
+      serveReads: serveReads,
+    );
+    if (_destination != destination) _selection = null;
+    _destination = destination;
+    final selection = _selection;
     final generation = ++_generation;
     _pending = true;
     _replacement = false;
@@ -108,6 +121,8 @@ class ManagedSshConnectionController {
         await target.connectForwardedServeReads(
           baseUrl: tunnel.agentUri.toString(),
           credential: token!,
+          profile: selection?.profile ?? 'default',
+          storedSession: selection?.session,
           canAccept: () =>
               generation == _generation &&
               identical(_tunnel, tunnel) &&
@@ -128,6 +143,7 @@ class ManagedSshConnectionController {
       }
       _adopting = false;
       _adopted = true;
+      _rememberSelection();
       return true;
     } catch (error) {
       if (generation == _generation) await cancel();
@@ -144,6 +160,7 @@ class ManagedSshConnectionController {
 
   void _changed() {
     final tunnel = _tunnel;
+    _rememberSelection();
     if (_pending && !_adopting && !_adopted) {
       _replacement = true;
       unawaited(cancel());
@@ -170,6 +187,22 @@ class ManagedSshConnectionController {
       // The channel has moved on; retire only our lease before admitting retry.
       _replacement = true;
       unawaited(cancel());
+    }
+  }
+
+  void _rememberSelection() {
+    final state = channel.state;
+    if (_adopted &&
+        _destination?.serveReads == true &&
+        state.isConnected &&
+        state.connectedBaseUrl == _tunnel?.agentUri.toString() &&
+        !state.isSelectingProfile &&
+        state.selectedProfileId != null) {
+      // Retain identity only; a new lease must authenticate and reread history.
+      _selection = (
+        profile: state.selectedProfileId!,
+        session: state.activeSessionId,
+      );
     }
   }
 

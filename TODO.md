@@ -1421,7 +1421,15 @@ patches, personal credential discovery, service restarts or provider spending.
   PARITY-LIVE-WORKFLOW retains its separate live access/provider-ceiling gates;
   skip those unavailable external gates, not their acceptance. See the
   [saved-settings contract](docs/security/managed-ssh-forward-contract.md#saved-destination-settings).
-  Next action: exact profile/session reconnect for the saved SSH target under
+  Same-process owner recovery: deliberate serve-mode SSH reconnect now restores
+  the last settled profile/session through the new authenticated lease even when
+  its local port changes. Destination identity includes host, SSH port, username,
+  Agent port and transport; changed settings cannot inherit another target's owner.
+  Recovery rereads canonical history and leaves chat disabled until explicit
+  negotiation; it never replays Send, approval or Stop. Planner's call: deliver
+  this positive reconnect path with the existing channel reader, not a second
+  domain store. PARITY-LIVE-WORKFLOW retains its unavailable external gates.
+  Next action: secure cold-process profile/session recovery under
   DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
   Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.
   Credential-lifetime prerequisite: the shared channel now retires serve read

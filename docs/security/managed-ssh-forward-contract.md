@@ -247,6 +247,33 @@ keystore, cold-process restoration or actual SSH qualification. Exact durable
 profile/session recovery remains open in DOC-BACKEND-DISCONNECT-CONTRACT; no
 canonical Bot Chat pointer or replacement domain state is introduced.
 
+## Same-process exact-owner reconnect
+
+A deliberate serve-mode SSH Connect to the same host text, SSH port, username,
+remote Agent port and transport now reuses the app-scoped controller's last
+settled profile/session identity, not its ephemeral origin. It authenticates a new
+lease and rereads that exact profile and session through the existing fixed serve
+reader. Changing any destination component clears the pointer. Pending profile
+selection cannot pair a new profile with old history. A missing profile or denied
+session history fails closed rather than falling back to the default or most recent
+conversation; the pointer remains available for a deliberate retry.
+
+This is a memory-only identity pointer, not a transcript, credential, run cache or
+secure recovery record. Teardown still clears attempt authentication. Reconnect
+performs REST reads only, leaves chat disabled until deliberate negotiation and
+never replays Send, approval or Stop. Cancellation/newer ownership fences held
+history; returning to the screen does not itself reconnect. API-mode behavior is
+unchanged. Cold-process recovery and native/full-app SSH acceptance stay open.
+
+Linux-hosted production-controller/channel fixtures exercise a replaced loopback
+port, explicit disconnect and unexpected tunnel loss, exact non-recent session,
+changed destinations, missing identity, pending profile selection and cancelled
+history. These are not Android device, real SSH, native keystore or Agent evidence.
+The existing upstream reader contract remains unchanged: read-only Agent
+`hermes_cli/web_routers/sessions.py` scopes history to the explicit `profile` and
+session ID; Wing validates returned owner identities rather than accepting a
+redirected session. No new Agent route, mutation or grant is introduced.
+
 ## Remembered host trust
 
 Planner's call for BACKEND-SSH-CONNECT: complete durable host-key comparison in

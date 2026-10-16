@@ -1518,6 +1518,7 @@ patches, personal credential discovery, service restarts or provider spending.
   `README.md`, `docs/getting-started.md`, `site/index.html`, `site/styles.css`,
   `scripts/generate_readme_assets.mjs`, `serve_web.mjs`, `assets/readme/showcase.png`,
   `assets/readme/showcase-mobile.png`, `test/tooling/readme_assets_contract_test.dart`.
+  Touches: README.md, docs/getting-started.md, site/, assets/readme/, scripts/generate_readme_assets.mjs, serve_web.mjs, test/tooling/readme_assets_contract_test.dart, test/tooling/wing_link_docs_contract_test.dart, playwright/tests/regression/pages-landing.spec.mjs
   Scope: first deliver the composed README/tutorial/current-image refinement from
   the Conduit-informed plan, then retain the existing whole landing/shared-asset,
   trust/status/FAQ and share-preview acceptance. Reuse current dark presentation,

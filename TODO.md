@@ -1478,6 +1478,7 @@ patches, personal credential discovery, service restarts or provider spending.
   [Pages quality plan](docs/plans/2026-10-12-wing-landing-onboarding.md#delivery-slices-and-acceptance),
   `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`,
   `test/tooling/pages_workflow_contract_test.dart`, `scripts/generate_readme_assets.mjs`.
+  Touches: site/, assets/readme/, scripts/generate_readme_assets.mjs, .github/workflows/pages.yml, playwright/tests/regression/pages-landing.spec.mjs, playwright.config.mjs, test/tooling/, docs/getting-started.md, docs/quality/
   Scope: preserve the current README/tutorial/images refinement through artifact
   checks without creating a second support matrix or duplicating live-QA work.
   Extend existing candidate artifact checks, relevant workflow inputs,

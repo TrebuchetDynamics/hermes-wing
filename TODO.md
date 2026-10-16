@@ -117,69 +117,6 @@ needs its own exact capability, ownership and qualification evidence.
 
 ### **P4** — Extended experiences and physical qualification
 
-- [ ] **PARITY-LIVE-WORKFLOW** — Goal: M1. Complete and verify the daily-use journey
-  on the owner-selected disposable local QA Agent/profile. Payoff: real generation,
-  correlated approval, authoritative Stop and exact restoration in one workflow.
-  Sources: [workflow matrix](docs/plans/2026-10-03-desktop-daily-workflow.md)
-  and [Wing ownership and limits](docs/plans/2026-10-03-desktop-daily-workflow.md#owner-update--wing-implementation-and-qa).
-  Touches: integration_test/linux_desktop_live_workflow_test.dart, scripts/run_linux_desktop_live_workflow.sh, scripts/support/desktop_live_workflow.py, lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, test/tooling/, docs/quality/
-  Scope: isolated QA setup through supported unmodified Agent operations, existing
-  production Wing channel/UI, minimal reproduced fixes with regression tests and
-  sanitized operation/readback receipts. Keep personal runtime/app state and system
-  packages unchanged. Preserve `t_f098a32e` and `t_38174cb7` without redispatching them.
-  No personal credential discovery/copying, provider substitution, Agent patch,
-  arbitrary host command, external side effect or release.
-  Acceptance: connect, explicit profile/model, actual output, correlated approval,
-  authoritative Stop, native close/relaunch, exact restored identity/history and one deliberate
-  resumed send to that same owner. Automatic pair restoration remains unsupported;
-  explicitly qualify reselection separately, without claiming pair persistence.
-  Prove one submission per deliberate send and zero recovery mutations. Fixtures,
-  isolated UI controls and test totals do not complete this milestone.
-  Limits: at most three short QA generations with separately authorized test access.
-  No unapproved metered spending or purchase. Use harmless QA-workspace test actions
-  by default. Skip unsupported operations and further inference after the usage
-  limit. Report the exact gap and continue independent work without fake success.
-  Current slice: the [live preparation receipt](docs/quality/live-desktop-daily-workflow.md)
-  delivers read-only authorization/preflight and six tested mutation-budget guards.
-  The prepared production Chat driver refuses before network access. A supported
-  provider-call contract must cover retries and continuations before the production
-  two-process live GTK journey and canonical readback can be qualified.
-  The [internal runner](docs/quality/live-two-process-orchestration.md) already has
-  synthetic lifecycle/teardown evidence. The completed
-  [display branch](docs/quality/live-display-isolation.md) adds tested X protocol
-  authorization; those helper/test changes are not integrated into the shared tree.
-  Carry its exact source through integration before credential-bearing execution.
-  The [provider-call assessment](docs/quality/live-provider-call-ceiling.md) completes
-  offline contract tracing and executable refusal on its isolated branch. The
-  inspected unmodified Agent interfaces do not enforce three physical attempts
-  across retries, continuations and auxiliary work. Keep inference disabled until
-  a supported authoritative contract covers that closure. Do not repeat preflight,
-  orchestration, display admission or budget tracing as new live proof.
-  Credential-free native smoke is queued separately below; submission counts are
-  not the inference ceiling.
-  QA authentication alone cannot enable the driver. The existing
-  [authentication question](BLOCKERS.md#blk-20261007-w04--separate-disposable-qa-authentication-for-live-desktop)
-  affects actual-Agent checks only; budget/orchestration work proceeds independently.
-  Checks: after the external gates below are satisfied, execute the production
-  two-process native journey and canonical readback described in the workflow
-  acceptance matrix; retain source-bound operation counts, exact restored identities,
-  native process/teardown receipts and nearest regressions for any reproduced fix.
-  Existing refusal/fixture checks are not live acceptance and need not be repeated
-  on unchanged inputs.
-  Dependencies: None.
-  External gates: supported QA authentication, exact operation grants, native
-  prerequisites and a supported authoritative provider-call ceiling covering
-  retries, continuations and auxiliary work. Target-strategy question [BLK-20261006-W01](BLOCKERS.md#blk-20261006-w01--agent-target-for-the-live-desktop-workflow-qualification)
-  is answered, not proof of a provisioned or authenticated target.
-  Ownership: Wing performs implementation and QA. Ask only for authentication or
-  permissions Wing cannot complete safely, or spending beyond the approved limit.
-  No execution lease is assigned here. Recorded paused job `6f218a559ed2` is unchanged.
-  Section: Now. Remaining: live qualification and canonical-main integration/delivery
-  remain subject to required checks and remote protection. Native fixture restoration
-  and completed worker cards do not prove them. Follow the
-  [vertical-slice contract](docs/product/autogoal-workflows.md#vertical-slice-contract).
-
-
 - [ ] **CONNECTION-LINK-REMOVAL** — Goal: CONNECTION-PATHS. Remove Wing Link
   from all product connection/setup, profile/catalog and management paths, including
   explicit legacy support. No optional legacy mode remains in the removal target.
@@ -1726,4 +1663,14 @@ does not mark any check passed or authorize live actions.
   - No kernel/mount control execution or Android/device qualification was performed; these remain separate M2 admission prerequisites, and M2 remains unverified.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M2-INODE-POLICY-EVIDENCE.
+  Status: open
+
+- [ ] PARITY-LIVE-WORKFLOW-LIVE — Live checks for PARITY-LIVE-WORKFLOW
+  Scope: Run the live checks the offline work for PARITY-LIVE-WORKFLOW left pending.
+  Acceptance: Each check passes on the real target:
+  - Supported authoritative Agent-side physical provider-call admission covering retries, continuations, and auxiliary work.
+  - Separately authorized disposable QA authentication, exact operation grants, and target prerequisites.
+  - Production two-process native GTK journey with actual output, correlated approval, authoritative Stop, close/relaunch restoration, deliberate resumed send, and canonical Agent readback.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITY-LIVE-WORKFLOW.
   Status: open

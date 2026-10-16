@@ -2689,6 +2689,7 @@
         "PARITY-LIVE-PROVIDER-CEILING",
         "PARITY-LIVE-TWO-PROCESS",
         "PARITY-LIVE-WORKFLOW",
+        "PARITY-LIVE-WORKFLOW-LIVE",
         "PARITY-LIVE-WORKFLOW-PREFLIGHT",
         "PARITY-NATIVE-AUTH-RESTART",
         "PARITY-NATIVE-BOOTSTRAP-RESTART",
@@ -6833,7 +6834,6 @@
   "priority_order": {
     "schema": 1,
     "tasks": [
-      "PARITY-LIVE-WORKFLOW",
       "CONNECTION-LINK-REMOVAL",
       "CONNECTION-SAVED-WORKFLOWS",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
@@ -6902,7 +6902,8 @@
       "M2-DEVICE-QUALIFICATION",
       "VERIFY-M6-ANDROID-INTEGRATED",
       "CONNECTION-CRON-ADMISSION-LIVE",
-      "DOC-M2-INODE-POLICY-EVIDENCE-LIVE"
+      "DOC-M2-INODE-POLICY-EVIDENCE-LIVE",
+      "PARITY-LIVE-WORKFLOW-LIVE"
     ]
   },
   "tasks": [
@@ -6923,14 +6924,6 @@
       "section": "Now",
       "status": "in_progress",
       "title": "Complete and prove owner-safe Local/Remote and saved-connection workflows"
-    },
-    {
-      "depends_on": [],
-      "goal": "M1",
-      "id": "PARITY-LIVE-WORKFLOW",
-      "section": "Now",
-      "status": "in_progress",
-      "title": "Qualify actual generation, approval, Stop and restoration together"
     },
     {
       "depends_on": [
@@ -7499,6 +7492,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Owner: run the named-device Android death-to-completion qualification (physical device); agents prepare nothing further until then"
+    },
+    {
+      "depends_on": [
+        "PARITY-LIVE-WORKFLOW"
+      ],
+      "goal": "M1",
+      "id": "PARITY-LIVE-WORKFLOW-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITY-LIVE-WORKFLOW"
     },
     {
       "depends_on": [
@@ -8426,6 +8429,14 @@
       "section": "Done",
       "status": "done",
       "title": "Implement isolated two-process live-workflow orchestration with fail-closed inference gate and synthetic lifecycle regressions"
+    },
+    {
+      "depends_on": [],
+      "goal": "M1",
+      "id": "PARITY-LIVE-WORKFLOW",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify actual generation, approval, Stop and restoration together"
     },
     {
       "depends_on": [],

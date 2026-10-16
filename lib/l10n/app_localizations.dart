@@ -94,6 +94,48 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @managedSshSaveTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Save SSH settings'**
+  String get managedSshSaveTarget;
+
+  /// No description provided for @managedSshLoadTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Use saved SSH settings'**
+  String get managedSshLoadTarget;
+
+  /// No description provided for @managedSshTargetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save one SSH destination and Agent transport on this device. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.'**
+  String get managedSshTargetBody;
+
+  /// No description provided for @managedSshTargetSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH settings saved securely. Authentication is still required.'**
+  String get managedSshTargetSaved;
+
+  /// No description provided for @managedSshTargetLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved SSH settings loaded. Enter credentials, then Connect.'**
+  String get managedSshTargetLoaded;
+
+  /// No description provided for @managedSshTargetMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved SSH settings on this device.'**
+  String get managedSshTargetMissing;
+
+  /// No description provided for @managedSshTargetFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH settings could not be saved or loaded securely.'**
+  String get managedSshTargetFailure;
+
   /// No description provided for @managedSshServeReads.
   ///
   /// In en, this message translates to:
@@ -103,7 +145,7 @@ abstract class AppLocalizations {
   /// No description provided for @managedSshServeReadsBody.
   ///
   /// In en, this message translates to:
-  /// **'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history only; chat enablement and saved SSH restoration are not available here. No automatic protocol fallback.'**
+  /// **'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history. Chat requires separate ticket authentication. SSH settings can be saved separately; credentials and automatic restoration are not saved. No automatic protocol fallback.'**
   String get managedSshServeReadsBody;
 
   /// No description provided for @localServeReadsLabel.

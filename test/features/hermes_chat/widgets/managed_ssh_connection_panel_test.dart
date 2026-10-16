@@ -20,6 +20,7 @@ import 'package:wing/core/hermes/hermes_api.dart';
 import 'package:wing/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
 import 'package:wing/core/hermes/ssh/managed_ssh.dart';
 import 'package:wing/core/hermes/ssh/secure_managed_ssh_host_trust_store.dart';
+import 'package:wing/core/hermes/ssh/secure_managed_ssh_target_store.dart';
 import 'package:wing/features/hermes_chat/providers/managed_ssh_connection_controller.dart';
 import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
 
@@ -576,6 +577,50 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'saved target restores production transport choice without opening SSH',
+    (tester) async {
+      await const SecureManagedSshTargetStore().save(
+        ManagedSshTarget(
+          config: ManagedSshConfig(
+            host: 'saved.invalid',
+            sshPort: 2222,
+            username: 'tester',
+            agentPort: 8643,
+          ),
+          serveReads: true,
+        ),
+      );
+      final channel = FakeChannel();
+      final forward = FakeForward();
+      final controller = ManagedSshConnectionController(forward, channel);
+      await mount(tester, controller);
+      expect(find.text('Hermes serve session token'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('managed-ssh-load-target')));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isTrue,
+      );
+      expect(find.text('Hermes serve session token'), findsOneWidget);
+      expect(
+        tester
+            .widget<TextFormField>(
+              find.byKey(const ValueKey('managed-ssh-host')),
+            )
+            .controller!
+            .text,
+        'saved.invalid',
+      );
+      expect(forward.config, isNull);
+      expect(channel.state.isConnected, isFalse);
+      expect(channel.token, isNull);
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      channel.dispose();
+    },
+  );
 
   testWidgets('serve selection changes only its explicit credential label', (
     tester,

@@ -9,11 +9,36 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get managedSshSaveTarget => 'Save SSH settings';
+
+  @override
+  String get managedSshLoadTarget => 'Use saved SSH settings';
+
+  @override
+  String get managedSshTargetBody =>
+      'Save one SSH destination and Agent transport on this device. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.';
+
+  @override
+  String get managedSshTargetSaved =>
+      'SSH settings saved securely. Authentication is still required.';
+
+  @override
+  String get managedSshTargetLoaded =>
+      'Saved SSH settings loaded. Enter credentials, then Connect.';
+
+  @override
+  String get managedSshTargetMissing => 'No saved SSH settings on this device.';
+
+  @override
+  String get managedSshTargetFailure =>
+      'SSH settings could not be saved or loaded securely.';
+
+  @override
   String get managedSshServeReads => 'Read Hermes serve through SSH';
 
   @override
   String get managedSshServeReadsBody =>
-      'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history only; chat enablement and saved SSH restoration are not available here. No automatic protocol fallback.';
+      'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history. Chat requires separate ticket authentication. SSH settings can be saved separately; credentials and automatic restoration are not saved. No automatic protocol fallback.';
 
   @override
   String get localServeReadsLabel =>

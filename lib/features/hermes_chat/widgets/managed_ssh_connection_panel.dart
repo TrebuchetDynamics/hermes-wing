@@ -157,6 +157,7 @@ class _ManagedSshConnectionPanelState
             : (value) => setState(() => _serveReads = value),
       ),
       serveReads: _serveReads,
+      onServeReadsLoaded: (value) => setState(() => _serveReads = value),
       onSubmit: _submit,
       pickKey: widget.pickKey,
       generatedKeyStore: widget.generatedKeyStore,

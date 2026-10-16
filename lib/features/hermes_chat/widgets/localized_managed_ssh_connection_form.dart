@@ -18,6 +18,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
     this.sanitizedError,
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
+    this.onServeReadsLoaded,
   });
 
   final Future<void> Function(SshConnectionRequest) onSubmit;
@@ -26,6 +27,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
   final ManagedSshGeneratedKeyStore? generatedKeyStore;
   final bool busy;
   final bool serveReads;
+  final ValueChanged<bool>? onServeReadsLoaded;
   final Widget? transportSelection;
   final String? sanitizedError;
 
@@ -33,6 +35,17 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     return ManagedSshConnectionForm(
+      serveReads: serveReads,
+      onServeReadsLoaded: onServeReadsLoaded,
+      targetLabels: ManagedSshTargetLabels(
+        save: strings.managedSshSaveTarget,
+        load: strings.managedSshLoadTarget,
+        body: strings.managedSshTargetBody,
+        saved: strings.managedSshTargetSaved,
+        loaded: strings.managedSshTargetLoaded,
+        missing: strings.managedSshTargetMissing,
+        failure: strings.managedSshTargetFailure,
+      ),
       transportSelection: transportSelection,
       labels: ManagedSshConnectionLabels(
         host: strings.managedSshHostLabel,

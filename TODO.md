@@ -1412,7 +1412,16 @@ patches, personal credential discovery, service restarts or provider spending.
   reentrancy during credential acquisition. Planner's call: repair this shared
   forwarding prerequisite before durable recovery; keep the parent's native/live
   acceptance and PARITY-LIVE-WORKFLOW's external gates open, not duplicated.
-  Next action: durable SSH target and exact profile/session reconnect under
+  Saved-settings delivery: the production SSH form now offers explicit secure
+  Save/Use saved settings for the durable destination and API/serve choice, never
+  passwords, keys, Agent credentials or ephemeral forwarded origins. Loading
+  clears attempt secrets and performs no connection or mutation. Planner's call:
+  deliver this positive remembered-target path while retaining exact profile/session
+  recovery and native full-app acceptance here and in the existing disconnect task.
+  PARITY-LIVE-WORKFLOW retains its separate live access/provider-ceiling gates;
+  skip those unavailable external gates, not their acceptance. See the
+  [saved-settings contract](docs/security/managed-ssh-forward-contract.md#saved-destination-settings).
+  Next action: exact profile/session reconnect for the saved SSH target under
   DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
   Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.
   Credential-lifetime prerequisite: the shared channel now retires serve read

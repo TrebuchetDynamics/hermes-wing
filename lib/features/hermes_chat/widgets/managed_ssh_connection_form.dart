@@ -4,6 +4,8 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/hermes/ssh/secure_managed_ssh_target_store.dart';
+import '../../../core/hermes/ssh/ssh_types.dart';
 import '../ssh_keys/managed_ssh_generated_key_store.dart';
 import '../ssh_keys/managed_ssh_key_selection.dart';
 
@@ -71,6 +73,19 @@ class ManagedSshGeneratedKeyLabels {
   final String copyPublic, copied, storageFailure, selected, generating;
 }
 
+class ManagedSshTargetLabels {
+  const ManagedSshTargetLabels({
+    required this.save,
+    required this.load,
+    required this.body,
+    required this.saved,
+    required this.loaded,
+    required this.missing,
+    required this.failure,
+  });
+  final String save, load, body, saved, loaded, missing, failure;
+}
+
 /// Connections and host trust remain owned by the parent controller.
 class ManagedSshConnectionForm extends StatefulWidget {
   const ManagedSshConnectionForm({
@@ -84,7 +99,15 @@ class ManagedSshConnectionForm extends StatefulWidget {
     this.generatedKeyStore,
     this.generatedKeyLabels,
     this.transportSelection,
+    this.targetLabels,
+    this.targetStore = const SecureManagedSshTargetStore(),
+    this.serveReads = false,
+    this.onServeReadsLoaded,
   });
+  final ManagedSshTargetLabels? targetLabels;
+  final SecureManagedSshTargetStore targetStore;
+  final bool serveReads;
+  final ValueChanged<bool>? onServeReadsLoaded;
   final ManagedSshGeneratedKeyStore? generatedKeyStore;
   final ManagedSshGeneratedKeyLabels? generatedKeyLabels;
   final Widget? transportSelection;
@@ -185,7 +208,69 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   bool _submitting = false;
   bool _failed = false;
   int _generation = 0;
-  bool get _busy => widget.busy || _submitting;
+  bool _targetBusy = false;
+  int _targetGeneration = 0;
+  String? _targetNotice;
+  bool get _busy => widget.busy || _submitting || _targetBusy;
+
+  Future<void> _savedTarget({required bool save}) async {
+    final labels = widget.targetLabels;
+    if (labels == null || _busy || _picking || _keyOperationBusy) return;
+    if (save &&
+        (!_validHost(_host.text.trim()) ||
+            _port(_sshPort.text) == null ||
+            _port(_agentPort.text) == null ||
+            _validate('username', _username.text) != null)) {
+      _form.currentState!.validate();
+      return;
+    }
+    final generation = ++_targetGeneration;
+    final target = save
+        ? ManagedSshTarget(
+            config: ManagedSshConfig(
+              host: _host.text.trim(),
+              sshPort: _port(_sshPort.text)!,
+              username: _username.text.trim(),
+              agentPort: _port(_agentPort.text)!,
+            ),
+            serveReads: widget.serveReads,
+          )
+        : null;
+    setState(() {
+      _targetBusy = true;
+      _targetNotice = null;
+    });
+    try {
+      if (target != null) {
+        await widget.targetStore.save(target);
+        if (mounted && generation == _targetGeneration) {
+          setState(() => _targetNotice = labels.saved);
+        }
+      } else {
+        final loaded = await widget.targetStore.load();
+        if (!mounted || generation != _targetGeneration) return;
+        if (loaded == null) {
+          setState(() => _targetNotice = labels.missing);
+          return;
+        }
+        _clearSecrets();
+        _host.text = loaded.config.host;
+        _sshPort.text = '${loaded.config.sshPort}';
+        _username.text = loaded.config.username;
+        _agentPort.text = '${loaded.config.agentPort}';
+        widget.onServeReadsLoaded?.call(loaded.serveReads);
+        setState(() => _targetNotice = labels.loaded);
+      }
+    } catch (_) {
+      if (mounted && generation == _targetGeneration) {
+        setState(() => _targetNotice = labels.failure);
+      }
+    } finally {
+      if (mounted && generation == _targetGeneration) {
+        setState(() => _targetBusy = false);
+      }
+    }
+  }
 
   Future<void> _submit() async {
     if (_busy ||
@@ -403,6 +488,8 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   }
 
   void _cancel() {
+    ++_targetGeneration;
+    _targetBusy = false;
     ++_generation;
     if (_generatedPublicKey != null) _retainedKeyNotice = true;
     _clearSecrets();
@@ -415,6 +502,12 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   @override
   void didUpdateWidget(covariant ManagedSshConnectionForm oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_targetBusy &&
+        (widget.serveReads != oldWidget.serveReads ||
+            (widget.busy && !oldWidget.busy))) {
+      ++_targetGeneration;
+      _targetBusy = false;
+    }
     if (widget.busy && !oldWidget.busy) _clearKey();
     if (widget.sanitizedError != null &&
         widget.sanitizedError != oldWidget.sanitizedError) {
@@ -430,6 +523,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
 
   @override
   void dispose() {
+    ++_targetGeneration;
     _clearSecrets();
     for (final c in [
       _host,
@@ -488,6 +582,30 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (widget.transportSelection != null) widget.transportSelection!,
+              if (!kIsWeb && widget.targetLabels != null) ...[
+                Text(widget.targetLabels!.body),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    TextButton(
+                      key: const ValueKey('managed-ssh-save-target'),
+                      onPressed: _busy || _picking || _keyOperationBusy
+                          ? null
+                          : () => _savedTarget(save: true),
+                      child: Text(widget.targetLabels!.save),
+                    ),
+                    TextButton(
+                      key: const ValueKey('managed-ssh-load-target'),
+                      onPressed: _busy || _picking || _keyOperationBusy
+                          ? null
+                          : () => _savedTarget(save: false),
+                      child: Text(widget.targetLabels!.load),
+                    ),
+                  ],
+                ),
+                if (_targetNotice != null)
+                  Semantics(liveRegion: true, child: Text(_targetNotice!)),
+              ],
               LayoutBuilder(
                 builder: (context, constraints) {
                   final host = _field('host', l.host, _host);

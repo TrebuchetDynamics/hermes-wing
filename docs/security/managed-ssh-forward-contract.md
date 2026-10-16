@@ -146,8 +146,8 @@ it adds no automatic reconnect, persisted target or native qualification.
 
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path saves a
-host-key pin, but not the SSH target/Agent-credential/profile/session mapping or
-cold-relaunch restoration.**
+host-key pin and explicitly saved SSH destination/transport settings, but not an
+Agent-credential/profile/session mapping or automatic cold-relaunch restoration.**
 Do not save a forwarded port as an ordinary endpoint or attach its credential to a
 later unrelated listener. BACKEND-SSH-CONNECT and DOC-BACKEND-DISCONNECT-CONTRACT
 retain durable mapping, interruption and no-replay acceptance.
@@ -217,6 +217,35 @@ gate. These fixtures do not authenticate real SSH, execute Agent inference or
 qualify an Android device. Native/full-app SSH and durable mapping, trust and
 relaunch acceptance remain open under the existing tasks; reconnect after tunnel
 loss still requires deliberate SSH setup rather than reopening a retired port.
+
+## Saved destination settings
+
+Planner's call for BACKEND-SSH-CONNECT: provide a usable remembered destination
+before adding exact profile/session recovery. The production SSH form offers
+**Save SSH settings** and **Use saved SSH settings**. Saving validates only the
+host, SSH port, username and remote Agent port; it also retains the explicit API
+versus serve selection. It does not test SSH or authenticate Agent. One separate
+versioned secure-storage slot holds only these five values, not passwords, keys,
+key paths, Agent credentials, trust decisions, profile/session IDs or ephemeral
+forwarded origins. Saving replaces only this slot after explicit intent and
+verifies readback; no legacy data is read or removed and no plaintext fallback
+exists. App-isolate writes are serialized, not cross-process transactions.
+
+Loading is deliberate and never initiates network work. It replaces the form's
+settings and clears attempt secrets/key selection before any new Connect. Unknown,
+malformed or unavailable records leave the draft and stored bytes untouched and
+show sanitized status; manual setup stays available. Cancel, disposal or newer
+transport/connection intent fences a delayed load. An explicitly started native
+save may settle after cancellation; its obsolete result cannot change the form.
+Remembered settings confer neither host trust nor Agent authorization: Connect
+still verifies the host key and requires fresh permitted authentication.
+
+Deterministic tests exercise save/load across store and form recreation, mode
+restoration, secret exclusion/clearing, readback failure and delayed results. This
+is Linux-hosted mocked secure storage and Flutter widget evidence, not native
+keystore, cold-process restoration or actual SSH qualification. Exact durable
+profile/session recovery remains open in DOC-BACKEND-DISCONNECT-CONTRACT; no
+canonical Bot Chat pointer or replacement domain state is introduced.
 
 ## Remembered host trust
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
 import 'package:wing/core/hermes/ssh/managed_ssh.dart';
 import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
@@ -156,31 +157,179 @@ void main() {
     expect(fixture.requests, ['GET /api/profiles']);
   });
 
+  test('failed local reads retain the existing explicit Retry entry', () async {
+    fixture.unsupported = true;
+    await channel.connectLocalServeReads(
+      baseUrl: fixture.origin,
+      credential: LocalServeReadFixture.token,
+    );
+    expect(channel.state.isServeReadOnly, isTrue);
+    expect(channel.state.isConnected, isFalse);
+    expect(channel.canEnableLocalServeChat, isTrue);
+    fixture.unsupported = false;
+    await channel.retryLocalServeConversation();
+    expect(channel.state.isConnected, isTrue);
+    expect(channel.state.serveChat, isNull);
+    expect(fixture.minted, 0);
+  });
+
+  Future<void> until(bool Function() condition) async {
+    for (var i = 0; i < 2000 && !condition(); i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+    }
+    expect(condition(), isTrue);
+  }
+
+  for (final replace in [false, true]) {
+    test(
+      'held chat qualification is revoked by lease loss/replacement=$replace',
+      () async {
+        expect(await connect(), isTrue);
+        fixture.holdHistory = Completer<void>();
+        addTearDown(() {
+          if (!fixture.holdHistory!.isCompleted) {
+            fixture.holdHistory!.complete();
+          }
+        });
+        final pending = channel.enableLocalServeChat();
+        await until(() => fixture.count('session.history') == 1);
+        if (replace) {
+          final replacement = LocalServeReadFixture();
+          await replacement.start();
+          addTearDown(replacement.close);
+          await channel.connectLocalServeReads(
+            baseUrl: replacement.origin,
+            credential: LocalServeReadFixture.token,
+          );
+          expect(channel.state.connectedBaseUrl, replacement.origin);
+        } else {
+          forward.lost.complete();
+          await until(() => !channel.state.isConnected);
+        }
+        fixture.holdHistory!.complete();
+        await pending;
+        expect(channel.state.serveChat, isNull);
+        await expectLater(channel.sendText('not sent'), throwsStateError);
+        expect(fixture.count('prompt.submit'), 0);
+        expect(fixture.count('approval.respond'), 0);
+        expect(fixture.count('session.interrupt'), 0);
+        expect(store.saves, 0);
+        await until(() => forward.closes == 1);
+        if (!replace) {
+          await channel.retryLocalServeConversation();
+          expect(fixture.minted, 1);
+          expect(channel.canEnableLocalServeChat, isFalse);
+        }
+      },
+    );
+  }
+
   test(
-    'forwarded reads cannot negotiate chat or persist the ephemeral port',
+    'forwarded approval and Stop retain captured owner and reject stale actions',
     () async {
       expect(await connect(), isTrue);
+      final approvals = <HermesApprovalRequest>[];
+      final subscription = channel.approvalRequests.listen(approvals.add);
+      addTearDown(subscription.cancel);
+      await channel.enableLocalServeChat();
+      await channel.sendText('deliberate fixture');
+      fixture.approval();
+      await until(() => approvals.isNotEmpty);
+      final request = approvals.single;
+      await channel.respondToApproval(
+        approvalId: request.id,
+        decision: HermesApprovalDecision.once,
+        runId: request.runId,
+        origin: request,
+      );
+      final answer = fixture.rpc.singleWhere(
+        (r) => r['method'] == 'approval.respond',
+      );
+      expect(answer['params']['profile'], 'default');
+      expect(answer['params']['session_id'], 'runtime-default-session');
+      final target = channel.activeTurnInterruptionTarget!;
+      expect(await channel.stopTurn(target), isTrue);
+      expect(channel.state.serveChat!.running, isTrue);
+      expect(channel.state.serveChat!.stopRequested, isTrue);
+      await channel.selectProfile('demo');
+      expect(await channel.stopTurn(target), isFalse);
+      await expectLater(
+        channel.respondToApproval(
+          approvalId: request.id,
+          decision: HermesApprovalDecision.once,
+          runId: request.runId,
+          origin: request,
+        ),
+        throwsStateError,
+      );
+      expect(fixture.count('prompt.submit'), 1);
+      expect(fixture.count('approval.respond'), 1);
+      expect(fixture.count('session.interrupt'), 1);
+      expect(store.saves, 0);
+    },
+  );
+
+  test(
+    'forwarded uncertain Send reconciles deliberately without replay or persistence',
+    () async {
+      expect(await connect(), isTrue);
+      await channel.enableLocalServeChat();
+      fixture.dropSubmit = true;
+      await expectLater(
+        channel.sendText('uncertain fixture'),
+        throwsA(isA<Exception>()),
+      );
+      await until(() => channel.state.hasUnreconciledRun);
+      expect(channel.state.serveChat!.canSubmit, isFalse);
+      fixture.dropSubmit = false;
+      await channel.retryLocalServeConversation();
+      expect(channel.state.serveChat!.canSubmit, isTrue);
+      expect(channel.state.activeMessages.single.text, 'uncertain fixture');
+      expect(fixture.minted, 2);
+      expect(fixture.count('prompt.submit'), 1);
+      expect(fixture.count('approval.respond'), 0);
+      expect(fixture.count('session.interrupt'), 0);
+      expect(store.saves, 0);
+    },
+  );
+
+  test(
+    'forwarded chat requires fresh ticket and exact negotiation without persistence',
+    () async {
+      expect(await connect(), isTrue);
+      expect(channel.canEnableLocalServeChat, isTrue);
+      expect(fixture.minted, 0);
       fixture.denyTicket = true;
       await channel.enableLocalServeChat();
+      expect(channel.state.isConnected, isTrue);
       expect(channel.state.serveChat, isNull);
-      expect(store.saves, 0);
+      await expectLater(channel.sendText('not sent'), throwsStateError);
       fixture.denyTicket = false;
+      fixture.exclusive = false;
       await channel.enableLocalServeChat();
       expect(channel.state.serveChat, isNull);
-      expect(channel.canEnableLocalServeChat, isFalse);
-      expect(fixture.requests.every((r) => r.startsWith('GET ')), isTrue);
-      await controller.cancel();
-      await channel.connectLocalServeReads(
-        baseUrl: fixture.origin,
-        credential: LocalServeReadFixture.token,
-      );
-      expect(channel.canEnableLocalServeChat, isTrue);
+      await expectLater(channel.sendText('not sent'), throwsStateError);
+      fixture.exclusive = true;
       await channel.enableLocalServeChat();
       expect(channel.state.serveChat!.canSubmit, isTrue);
-      expect(store.saves, 1);
+      expect(fixture.minted, 2);
       expect(fixture.count('prompt.submit'), 0);
-      expect(fixture.count('approval.respond'), 0);
-      expect(fixture.count('session.stop'), 0);
+      await channel.selectProfile('demo');
+      expect(channel.state.serveChat, isNull);
+      await channel.enableLocalServeChat();
+      await channel.sendText('deliberate fixture');
+      final submit = fixture.rpc.singleWhere(
+        (r) => r['method'] == 'prompt.submit',
+      );
+      expect(submit['params']['profile'], 'demo');
+      expect(submit['params']['session_id'], 'runtime-demo-session');
+      expect(fixture.count('prompt.submit'), 1);
+      expect(store.saves, 0);
+      await controller.cancel();
+      await channel.retryLocalServeConversation();
+      expect(channel.state.isConnected, isFalse);
+      expect(fixture.minted, 3);
+      expect(store.saves, 0);
     },
   );
 }

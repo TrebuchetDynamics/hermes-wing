@@ -141,10 +141,10 @@ class FakeForward extends ManagedSshForward {
 }
 
 class _ServeReadChannel extends HermesApiChannel {
-  _ServeReadChannel({required this.forwarded});
-  final bool forwarded;
+  _ServeReadChannel({required this.canNegotiate});
+  final bool canNegotiate;
   @override
-  bool get canEnableLocalServeChat => !forwarded;
+  bool get canEnableLocalServeChat => canNegotiate;
   @override
   HermesChannelState get state => const HermesChannelState(
     status: HermesConnectionStatus.connected,
@@ -342,12 +342,12 @@ void main() {
     },
   );
 
-  for (final forwarded in [true, false]) {
+  for (final canNegotiate in [true, false]) {
     testWidgets(
-      'serve chat entry respects forwarded read-only mode $forwarded',
+      'serve chat entry respects channel negotiation availability $canNegotiate',
       (tester) async {
         SharedPreferences.setMockInitialValues({});
-        final channel = _ServeReadChannel(forwarded: forwarded);
+        final channel = _ServeReadChannel(canNegotiate: canNegotiate);
         final store = FakeHermesEndpointStore();
         final directory = HermesGatewayDirectory(
           store: store,
@@ -376,7 +376,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(
           find.byKey(const ValueKey('hermes-local-serve-chat')),
-          forwarded ? findsNothing : findsOneWidget,
+          canNegotiate ? findsOneWidget : findsNothing,
         );
         await tester.pumpWidget(const SizedBox.shrink());
         channel.dispose();

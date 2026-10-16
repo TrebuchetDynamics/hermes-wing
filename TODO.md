@@ -1374,10 +1374,17 @@ patches, personal credential discovery, service restarts or provider spending.
   Planner's call: fix this reproduced retry race before extending forwarded chat;
   skip live workflow gates already retained in PARITY-LIVE-WORKFLOW, not its
   acceptance. Native/device/durable and authenticated chat proof remain open.
-  Next action: qualify the ticket-authenticated chat lifecycle against the current
-  SSH lease and captured profile/session without saving the ephemeral origin.
-  Keep Android/native/durable acceptance and PARITY-LIVE-WORKFLOW external gates
-  open; Linux-hosted fixture tests are not native SSH or live Agent evidence.
+  Forwarded chat follow-through: explicit Enable chat now negotiates the existing
+  fresh-ticket, exclusive-submit and approval-request contract on the owned
+  transient connection. REST and SSH success alone do not enable Send. Production
+  channel regressions cover captured-owner Send/approval/Stop, denied negotiation,
+  held qualification during loss/replacement and explicit uncertain-send recovery
+  without replay or ephemeral-port persistence. Planner's call: reuse that fixed
+  lifecycle, leaving native/live/full-app SSH and durable mapping/trust acceptance
+  open; PARITY-LIVE-WORKFLOW retains its separate external gates.
+  Next action: durable SSH identity/trust and exact profile/session reconnect under
+  DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
+  Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.
   Credential-lifetime prerequisite: the shared channel now retires serve read
   credentials on disconnect and API replacement. Three deterministic regressions
   prove that explicit serve Retry leaves the replacement origin/owner untouched

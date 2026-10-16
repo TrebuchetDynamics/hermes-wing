@@ -156,27 +156,37 @@ correlates approvals and reconciles uncertain sessions without resending mutatio
 The SSH form now offers an explicit serve-read switch, off by default, with a
 separate session-token label. The controller binds that selection to its current
 lease and uses the fixed loopback reader on Android as well as other native
-clients. API mode never guesses serve after failure. Forwarded mode loads
-profiles, sessions and exact-session history only: its chat action is hidden and
-channel qualification refuses it. No ticket, Send, approval or Stop is issued.
-Existing local Linux chat entry remains unchanged. Forwarded origins and
-credentials are never saved as local-conversation recovery pointers.
+clients. API mode never guesses serve after failure. Initial forwarded mode loads
+profiles, sessions and exact-session history without mutations. A deliberate
+**Enable chat on this session** action now negotiates the existing fixed chat
+contract: a fresh ticket in WebSocket subprotocols (never URL credentials), exact
+exclusive-submit and approval-request support, then captured profile and durable/
+runtime session identity. Ticket denial or missing negotiation leaves reads
+available and Send disabled. SSH or REST success does not authorize chat.
+Forwarded origins and credentials are never saved as local-conversation recovery
+pointers, including before Send, approval or Stop. Existing local Linux recovery
+persistence stays separate.
 
-Planner's call for BACKEND-SSH-CONNECT: deliver the bounded read-only selection
-before Android chat qualification. The production-channel fixture tests exercise
-profile switching, credential denial, pending-read tunnel loss and replacement
-with Android platform selection on a Linux host; they do not authenticate real
-SSH or qualify an Android device. Shared serve adoption publishes one connecting
-transition while retiring its previous transport, so the controller does not
-mistake its own cleanup for an external disconnect. UI regressions check explicit
-token labeling and absence of the chat action for forwarded reads.
+Planner's call for BACKEND-SSH-CONNECT: extend the existing separately authenticated
+lifecycle rather than introduce another transport or persist an ephemeral port.
+The prior read-only slice remains its historical qualification. Its production
+channel now permits explicit chat negotiation while connected; the shared UI
+uses the same action gate. Authentication and protocol semantics were traced to
+read-only Agent `158fd638da1629c8e62caf9ade1515d162def8ab`:
+`hermes_cli/dashboard_auth/routes.py:485–493` mints session-authenticated single-use
+tickets; `hermes_cli/web_server_chat.py:207–222,299–316` accepts one ticket-bearing
+subprotocol and reflects only the stable protocol. Nearest upstream coverage is
+`tests/hermes_cli/test_dashboard_auth_ws_auth.py`. Agent remains unmodified.
 
-Next: qualify the separately authenticated chat lifecycle against the current SSH
-lease, captured profile/session and transient origin, including ticket denial,
-owner mismatch, stale results and interruption with zero implicit mutations.
-A fresh ticket must use the existing secret-safe transport, never Desktop's
-credential-in-URL technique. Keep forwarded chat unavailable until that slice is
-verified. Durable SSH mapping, device/native/live acceptance remain open.
+Linux-hosted deterministic production-channel checks with Android platform
+selection cover ticket denial, missing exclusive-submit support, exact-owner Send,
+approval and Stop, profile replacement, held qualification during tunnel loss or
+origin replacement, and uncertain-send reconciliation with zero replay. No
+forwarded recovery pointer is saved. Widget checks retain the explicit action
+gate. These fixtures do not authenticate real SSH, execute Agent inference or
+qualify an Android device. Native/full-app SSH and durable mapping, trust and
+relaunch acceptance remain open under the existing tasks; reconnect after tunnel
+loss still requires deliberate SSH setup rather than reopening a retired port.
 
 ## Failure oracles and qualification
 

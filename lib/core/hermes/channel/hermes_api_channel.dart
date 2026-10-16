@@ -334,7 +334,9 @@ class HermesApiChannel extends ChangeNotifier
     forwarded: true,
   );
 
-  bool get canEnableLocalServeChat => !_serveForwarded;
+  // REST success only exposes explicit negotiation; it never authorizes a send.
+  bool get canEnableLocalServeChat =>
+      !_serveForwarded || (_serveReader != null && _state.isConnected);
 
   Future<void> enableLocalServeChat() => _qualifyServeChat();
   Future<bool> restoreSavedLocalServeConversation() =>

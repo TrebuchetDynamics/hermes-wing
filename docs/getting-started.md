@@ -62,16 +62,10 @@ to enable the HTTP API, configure a strong Agent API credential and start its
 listener. The default `127.0.0.1:8642` is on the Agent host, not another device.
 Do not expose a public port or put credentials in commands to work around setup.
 
-Wing discovers `/v1/capabilities` (schema 1) and checks exact method/path,
-every required grant and advertised profile context for each operation. Chat
-needs session inventory/history and an advertised streaming transport: runs
-(`POST /v1/runs` plus `GET /v1/runs/{run_id}/events`, with `run_submission` and
-`run_events_sse`), or session chat (`POST /api/sessions/{session_id}/chat/stream`,
-with `session_chat_streaming`). New conversations also require session creation.
-A healthy listener or working `/v1/chat/completions` alone does not establish
-Wing compatibility.
-Ask the administrator for a compatible unmodified Agent if a required operation
-is unavailable; do not patch Agent or install a management fallback.
+Wing needs an Agent that supports the chat features it uses; a healthy listener
+alone does not prove it can chat. Ask the host administrator if a feature is
+unavailable. Never patch Agent or install a fallback. The
+[connection contract](product/desktop-connection-paths.md) has technical details.
 
 Configure the chosen profile/provider/model through
 [Agent's documentation](https://hermes-agent.nousresearch.com/docs/).
@@ -83,26 +77,21 @@ trusted transport and configured model. Only an actual reply verifies generation
 Have a reachable Hermes Agent API and its approved profile-bound credential.
 Configure Agent and provider access through supported Agent procedures. See [Agent preparation](#prepare-your-agent).
 Do not copy personal credentials or expose an API to a public interface to bypass
-setup. Remote native HTTP requires the existing explicit review and trusted
-encrypted network; browser access requires trusted HTTPS and permitted CORS.
+setup. Never copy credentials into URLs or the clipboard. Remote native HTTP requires
+the existing explicit review and trusted encrypted network; browser access requires
+trusted HTTPS and permitted CORS.
 
-On Android, the fresh welcome offers three separate choices in this order:
+On Android, the fresh welcome offers these choices in order:
 
-1. **Connect via SSH** — connect to Agent on another computer through Wing's
-   native SSH forward. Enter its host, SSH port, username, selected private key or
-   SSH password, Agent API port and separate Agent access token. Compare the host
-   fingerprint with a trusted administrator before choosing **Trust this connection**;
-   cancel if it differs or you cannot verify it. SSH login alone does not prove
-   Agent readiness.
-2. **Connect to Remote Hermes** — enter the full Agent endpoint, including its
-   configured port/profile path, and its separate credential in the masked field.
-   Obtain these from the host administrator; do not guess a URL or embed a token
-   in it. Remote HTTPS and trusted VPN access use the same direct Agent channel.
-3. **Use this phone (Termux)** — follow **This phone** guidance to prepare Agent
-   yourself, or choose **Agent already running — skip guide**. Then type its
-   separate Agent API token and choose **Add Hermes**. Follow the
-   [direct Termux runbook](runbooks/android-termux-local-agent.md); guide completion
-   is not an installation, readiness check or authenticated connection.
+1. **Connect via SSH** — connect to Agent on another computer. Verify the host
+   fingerprint before choosing **Trust this connection**; SSH login alone does not
+   prove Agent readiness. Enter SSH details and the separate Agent token.
+2. **Connect to Remote Hermes** — enter the host-provided Agent endpoint and its
+   credential in the masked field. Do not guess an address or embed a token.
+3. **Use this phone (Termux)** — follow **This phone** guidance or choose
+   **Agent already running — skip guide**, then enter its Agent token and choose
+   **Add Hermes**. The [direct Termux runbook](runbooks/android-termux-local-agent.md)
+   covers manual setup; completion is not installation or readiness proof.
 
 Android has no **Get Started** welcome action. On desktop/web, **Get Started**
 opens Local; SSH and Remote remain separate choices. On Linux, review the default
@@ -113,53 +102,34 @@ Discovery alone does not prove installation, authentication or model readiness.
 Enter the running Agent's loopback endpoint and separate masked Agent API token.
 Web Local cannot inspect host folders; loopback refers to the browser's device.
 
-Local and Remote forms offer **Test connection**, an explicit read-only capability
-discovery check. **Connect step by step** guides preparation, the exact profile
-address, API_SERVER_KEY setup in the official Agent dashboard, browser CORS and
-deliberate Test/Add Hermes/Chat actions. No automatic key registration is available
-through the verified Agent API. Profiles explain that **Generate avatar** is
-unavailable through this API connection: Desktop's separate RPC workflow is not
-a Wing API contract. No generated token or image is presented as registered.
-The test is a read-only capability
-discovery check. It does not save credentials, activate Chat, send a prompt or
-prove generation. Edit or cancel discards late results; retry is deliberate.
-Browser setup shows Wing's exact origin for the Agent CORS allowlist. A browser
-network failure may hide CORS, TLS or mixed-content errors and does not establish
-that the token is wrong. Named-profile gateways may require `/p/<profile>` in the
-Agent base URL; do not append `/v1`. Wing cannot read Agent secrets or reveal vault
-entries, and autofill in one browser does not authenticate another browser.
+Local and Remote forms offer **Test connection**, a read-only capability check.
+It does not save credentials, activate Chat, send a prompt, or prove generation.
+**Connect step by step** guides setup; browser setup shows Wing's exact origin for
+the Agent CORS allowlist. A browser network error may hide CORS/TLS details and
+does not establish that the token is wrong. Named-profile gateways may need
+`/p/<profile>` in the base URL; do not append `/v1`. Wing cannot read Agent secrets.
 
-With a saved connection, choose **Add Hermes** from Chat to open the shared
-Local / SSH / Remote form. **Help** explains how to obtain connection information;
-**Copy instructions** copies public guidance, not connection values or secrets.
-Never copy credentials into URLs or the clipboard. Missing capabilities remain
-unavailable; authentication denial or connection failure requires correction and
-explicit retry or cancel, never a management fallback or automatic mutation replay.
-After connecting, select the configured profile/session and supported model and
-send one deliberate message. A reply, not saved credentials alone, confirms generation.
+With a saved connection, choose **Add Hermes** from Chat. **Help** explains what
+to request from the host; **Copy instructions** copies public guidance only. Missing
+capabilities remain unavailable. Correct denied credentials, then choose explicit retry or cancel.
+Wing never silently replays a mutation. Select a supported profile/session
+and model, then send one deliberate message.
 
-Saved Agent connections are preserved. Old pairing links cannot authenticate;
-use the direct form and your separate Agent credential instead.
-The native SSH form offers Private key and Password. Choose
-a key file/document explicitly and enter its passphrase when required. Selected
-imported keys are attempt-scoped, not saved. Alternatively, choose **Generate SSH key**,
-review consent, then **Copy public key**. Add only that public key to the SSH
-account on the host; never share the private key. Wing retains the generated key
-in secure storage and **Use saved Wing key** deliberately selects it again.
-Existing valid generated keys are reused, not replaced. Storage failure prevents
-selection; there is no plaintext fallback. Cancel does not delete an already-created key.
-Saved SSH connection relaunch is not verified. Browser SSH is unsupported. Real
-full-app SSH authentication on Linux/Android is not verified by the reviewed evidence;
-a terminal login is not proof that Wing can authenticate. See the
-[key-UX plan](product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations).
-Missing Agent APIs leave their features unavailable, not a Wing Link requirement.
+For saved connections, choose **Edit saved Agent connection**. A changed Agent URL
+never reuses the old credential. **Test** is read-only; **Save** confirms local
+persistence, not Agent readiness. Cancel preserves the working connection.
 
-Remote HTTPS and VPN use the Agent access token, not a Wing Link token or provider
-API key. Browser OAuth sign-in is unsupported. An OAuth-only server cannot use
-this flow. If access is denied, confirm the endpoint and Agent token with the
-server administrator. Then retry explicitly or cancel. A denial does not identify
-the server's sign-in method. **Wing Link is not required.** It is retired, not a
-substitute for missing Agent support.
+The native SSH form offers **Private key** and **Password**. Selected imported keys
+are attempt-scoped. A generated key stays in secure storage; share only **Copy public
+key**, never the private key. Storage failure has no plaintext fallback. Browser SSH
+is unsupported. Full-app SSH authentication on Linux/Android is not verified; a
+terminal login is not proof of Wing access. See the
+[SSH key guidance](product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations).
+**Wing Link is not required.** Missing Agent capabilities do not justify a fallback.
+
+Remote HTTPS and VPN use the Agent token, not a provider key. Browser OAuth is
+unsupported; an OAuth-only server cannot use this flow. If access is denied, confirm
+the endpoint and Agent token with the administrator, then retry or cancel.
 
 **Connection success:** the chosen Agent/profile and conversation are available.
 Continue with [Start the conversation](#start-the-conversation), rather than
@@ -262,8 +232,8 @@ whether an action may proceed. Agent owns these resources.
   explicitly permit the Wing website through CORS. Do not bypass browser trust.
 - **Saving failed:** distinguish live connection from confirmed persistence.
   Use the explicit save retry or [saved-connection repair](#repair-a-saved-direct-connection).
-- **Operation unavailable:** inspect the connected Agent's exact capability.
-  Do not install deprecated management software to simulate missing support.
+- **Feature unavailable:** ask the Agent administrator whether it supports that
+  operation. Do not install deprecated management software as a substitute.
 
 [Report a problem](https://github.com/TrebuchetDynamics/hermes-wing/issues) with
 platform, actions and visible result. Keep credentials, private endpoints and
@@ -282,30 +252,31 @@ explicitly. There has been no independent security audit.
 
 ## Platform evidence and limits
 
-This is an alpha, not a platform certification. “Simulated” means tests used
-fake Agent responses, not a real authenticated assistant. The linked records
-identify tested source and target; later builds do not inherit live verification.
+This is an alpha, not a platform certification. Simulated checks use fake Agent
+responses; native UI checks are not authenticated Agent sessions. Live evidence
+must identify the tested build and route; one platform does not qualify another.
 
-| Outcome | Android | Web | Linux | Windows / macOS / iOS |
-| --- | --- | --- | --- | --- |
-| Chat, streaming and tools | Implemented; simulated tests | Implemented; Chromium simulated tests | Implemented; simulated tests | Runtime not verified by reviewed evidence |
-| Approvals and Stop | Implemented; full live journey not verified | Chromium simulated journey | Simulated journeys; full live workflow incomplete | Runtime not verified by reviewed evidence |
-| Local preparation and saved-owner recovery | Simulated tests; native Termux installation/authentication not verified | No host folder discovery | Native GTK simulated journey; OS chooser and real authentication not verified | Runtime not verified by reviewed evidence |
-| SSH | Native interface implemented; full-app real authentication not verified | Unsupported | Native interface implemented; full-app real authentication not verified | Runtime not verified by reviewed evidence |
-| Voice and notifications | Experimental; no blanket reliability claim | Platform-dependent / experimental | Experimental | Runtime not verified by reviewed evidence |
-| Background recovery | Full live workflow incomplete | Full live workflow incomplete | Full live workflow incomplete | Runtime not verified by reviewed evidence |
+| Outcome | User-facing UI | Simulated / native checks | Authenticated live evidence |
+| --- | --- | --- | --- |
+| Chat, streaming, and tools | Android, web, Linux implemented | Android/Linux simulated; Web Chromium simulated | Full chat-to-tool workflow not verified |
+| Approvals and Stop | Android, web, Linux implemented | Android/Linux simulated; Web Chromium journey | Full live journey not verified |
+| Local preparation | Linux metadata-only; Android Termux guide | Android simulated; Linux GTK simulated | Termux install/auth and Linux Agent auth not verified |
+| SSH | Android/Linux native interface; browser unsupported | Contract/UI checks; not full app login | Android/Linux full-app authentication not verified |
+| Voice | Experimental, platform-dependent | UI/platform checks vary | No blanket microphone or acoustic qualification |
+| Notifications | Not a blanket support claim | Platform checks do not prove delivery | Delivery not verified |
+| Background recovery | Recovery UI is partial | Fixture checks only | Full detached-run recovery not verified |
 
 Evidence: [Chat workflow](quality/live-desktop-daily-workflow.md),
 [browser approval/Stop/recovery](runbooks/chat-production-journey.md),
 [Android direct setup](quality/android-direct-setup-enrollment.md),
-[Linux Local native checks](quality/local-setup-enrollment-native.md),
-[SSH contracts and limits](product/desktop-connection-paths.md), and
-[feature/voice route details](product/routes.md).
-Native secure storage varies by platform; [Linux saved-connection storage tests](quality/saved-endpoint-storage-native.md)
-do not certify every backend or Android keystore. Screenshots and compiled builds
-do not prove live authentication, inference, microphone or screen-reader support.
-Fresh on-phone installation/persistent hosting, signed distribution and automatic
-updates are not verified. Wing does not install or start Agent.
+[Linux Local checks](quality/local-setup-enrollment-native.md),
+[SSH route details](product/desktop-connection-paths.md), and
+[voice routes](product/routes.md). Native secure storage varies by platform;
+[Linux storage tests](quality/saved-endpoint-storage-native.md) do not certify
+other backends. Screenshots and builds do not prove live authentication, inference,
+microphone, screen-reader, or notification support. Fresh on-phone hosting, signed
+distribution, and automatic updates remain unverified. Wing does not install or
+start Agent.
 
 [Security policy](../SECURITY.md) · [Threat model](security/threat-model.md) ·
 [Project overview](../README.md) · [All documentation](README.md)

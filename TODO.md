@@ -738,6 +738,7 @@ before their goals can become `met`.
   and [main-only policy](docs/product/autogoal-workflows.md#main-only-execution-policy).
   Graph evidence: partial; no current repository graph. The inspected installed
   autogoal handoff contract explicitly refuses native main-only admission.
+  Touches: docs/quality/
   Scope: separate, scoped hermes-toolset dispatcher repair under its own repository
   instructions, plus Wing's admission proof. Cover workspace setup, task startup,
   edits, review, checked local commit and worker release. Preserve one writer and

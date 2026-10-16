@@ -136,6 +136,14 @@ cancellation, hold lease cleanup pending, check that only one Agent disconnect/
 lease close occurs, and prove shared success/failure settlement.
 Connect remains blocked until settlement; no automatic retry is added.
 
+The low-level adapter now also retains its attempt until socket/listener cleanup
+settles. Concurrent and synchronous reentrant disconnect callers join that cleanup
+instead of returning early, while Connect remains busy until retirement completes.
+Three deterministic regressions cover completion ordering, rejected early redial
+with deliberate retry after settlement, and reentry from socket destruction while
+credential acquisition is pending. This closes the shared transport prerequisite;
+it adds no automatic reconnect, persisted target or native qualification.
+
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path saves a
 host-key pin, but not the SSH target/Agent-credential/profile/session mapping or

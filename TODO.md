@@ -1405,6 +1405,13 @@ patches, personal credential discovery, service restarts or provider spending.
   native/durable acceptance open. Four deterministic regressions cover delayed
   and synchronous-listener cancellation, held cleanup and shared failure without
   duplicate disconnect or lease close.
+  Adapter teardown follow-through: retain the low-level attempt until owned
+  cleanup settles, so concurrent/reentrant disconnect calls join that result and
+  Connect cannot acquire a replacement early. Two regressions reproduced reversed
+  completion and premature redial; a third covers synchronous socket-destroy
+  reentrancy during credential acquisition. Planner's call: repair this shared
+  forwarding prerequisite before durable recovery; keep the parent's native/live
+  acceptance and PARITY-LIVE-WORKFLOW's external gates open, not duplicated.
   Next action: durable SSH target and exact profile/session reconnect under
   DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
   Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.

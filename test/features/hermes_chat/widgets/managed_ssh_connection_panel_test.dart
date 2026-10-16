@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../ssh_keys/synthetic_ssh_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,7 @@ import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/hermes_api.dart';
 import 'package:wing/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
 import 'package:wing/core/hermes/ssh/managed_ssh.dart';
+import 'package:wing/core/hermes/ssh/secure_managed_ssh_host_trust_store.dart';
 import 'package:wing/features/hermes_chat/providers/managed_ssh_connection_controller.dart';
 import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
 
@@ -156,6 +158,8 @@ class _ServeReadChannel extends HermesApiChannel {
 }
 
 void main() {
+  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
   test(
     'tunnel loss blocks SSH retry during production secure cleanup',
     () async {
@@ -515,6 +519,101 @@ void main() {
       },
     );
   }
+  testWidgets('reviewed host key survives panel and controller recreation', (
+    tester,
+  ) async {
+    for (var attempt = 0; attempt < 2; attempt++) {
+      final channel = FakeChannel();
+      final forward = FakeForward();
+      final controller = ManagedSshConnectionController(forward, channel);
+      await mount(tester, controller);
+      await submit(tester);
+      final trust = Future<bool>.sync(
+        () => forward.verify!(
+          forward.config!,
+          ManagedSshHostKey('ssh-ed25519', List.filled(32, 0)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      if (attempt == 0) {
+        expect(find.byType(AlertDialog), findsOneWidget);
+        await tester.tap(
+          find.widgetWithText(FilledButton, 'Trust and remember host'),
+        );
+        await tester.pumpAndSettle();
+      } else {
+        expect(find.byType(AlertDialog), findsNothing);
+      }
+      expect(await trust, isTrue);
+      forward.ready();
+      await tester.pumpAndSettle();
+      expect(channel.state.isConnected, isTrue);
+      await tester.pumpWidget(const SizedBox());
+      await controller.cancel();
+      controller.dispose();
+      channel.dispose();
+    }
+  });
+
+  for (final corrupt in [false, true]) {
+    testWidgets(
+      'remembered host trust blocks changed/corrupt key: corrupt=$corrupt',
+      (tester) async {
+        final target = ManagedSshConfig(
+          host: input.host,
+          username: input.username,
+          sshPort: input.sshPort,
+          agentPort: input.agentPort,
+        );
+        await const SecureManagedSshHostTrustStore().verify(
+          target,
+          ManagedSshHostKey('ssh-ed25519', List.filled(32, 0)),
+          review: () async => true,
+          isCurrent: () => true,
+        );
+        final storage = const FlutterSecureStorage();
+        if (corrupt) {
+          final slots = await storage.readAll();
+          await storage.write(key: slots.keys.single, value: 'malformed-pin');
+        }
+        final before = await storage.readAll();
+        final channel = FakeChannel();
+        final forward = FakeForward();
+        final controller = ManagedSshConnectionController(forward, channel);
+        await mount(tester, controller);
+        await submit(tester);
+        final trust = Future<bool>.sync(
+          () => forward.verify!(
+            forward.config!,
+            ManagedSshHostKey('ssh-ed25519', List.filled(32, 1)),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(await trust, isFalse);
+        expect(find.byType(AlertDialog), findsNothing);
+        forward.waiting.completeError(
+          const ManagedSshException(ManagedSshFailure.hostKeyRejected),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining(
+            corrupt
+                ? 'could not be read or saved securely'
+                : 'differs from the remembered key',
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining('malformed-pin'), findsNothing);
+        expect(channel.token, isNull);
+        expect(channel.state.isConnected, isFalse);
+        expect(await storage.readAll(), before);
+        await tester.pumpWidget(const SizedBox());
+        controller.dispose();
+        channel.dispose();
+      },
+    );
+  }
+
   testWidgets(
     'panel reviews fingerprint then keeps adopted tunnel after route disposal',
     (tester) async {
@@ -543,7 +642,7 @@ void main() {
         findsOneWidget,
       );
       expect(channel.token, isNull);
-      await tester.tap(find.text('Trust this connection'));
+      await tester.tap(find.text('Trust and remember host'));
       await tester.pumpAndSettle();
       expect(await trust, isTrue);
       forward.ready();
@@ -669,7 +768,7 @@ void main() {
         findsOneWidget,
       );
       expect(channel.token, isNull);
-      await tester.tap(find.text('Trust this connection'));
+      await tester.tap(find.text('Trust and remember host'));
       await tester.pumpAndSettle();
       expect(await trust, isTrue);
       forward.ready();

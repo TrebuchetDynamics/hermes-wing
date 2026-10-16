@@ -34,8 +34,12 @@ not import Desktop shell/bootstrap authority or claim OpenSSH-config parity.
 - The verifier receives that attempt's configuration and SHA-256 SSH host-key
   fingerprint. Missing verifier, malformed digest and declined review fail closed.
   Password acquisition is gated on accepted trust. The panel requires deliberate
-  fingerprint confirmation for this connection; persistent known-host trust and
-  changed-key comparison across relaunch are not implemented by this path.
+  fingerprint confirmation for an unknown exact host-text/SSH-port pair, then
+  readback-verified platform secure storage remembers its algorithm and digest.
+  Matching pins can reconnect without another review. A changed algorithm/digest,
+  malformed pin or unavailable storage fails closed; there is no automatic
+  replacement, plaintext fallback or trust-reset control. OpenSSH known_hosts is
+  neither read nor modified. Host-key rotation management remains unavailable.
 - Password, private key/passphrase and Agent credential are distinct attempt
   inputs. SSH success does not authorize Agent requests. No credential may be
   placed in a URL, argv, clipboard, diagnostic or ordinary preference. Public-key
@@ -116,8 +120,9 @@ Two deterministic regressions cover that window and deliberate retry afterward;
 the production-channel case asserts no fresh reads or mutations during retirement.
 
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
-profile/session separately from the ephemeral local origin. **This path does not
-yet save that SSH target/trust mapping or implement cold-relaunch restoration.**
+profile/session separately from the ephemeral local origin. **This path saves a
+host-key pin, but not the SSH target/Agent-credential/profile/session mapping or
+cold-relaunch restoration.**
 Do not save a forwarded port as an ordinary endpoint or attach its credential to a
 later unrelated listener. BACKEND-SSH-CONNECT and DOC-BACKEND-DISCONNECT-CONTRACT
 retain durable mapping, interruption and no-replay acceptance.
@@ -187,6 +192,37 @@ gate. These fixtures do not authenticate real SSH, execute Agent inference or
 qualify an Android device. Native/full-app SSH and durable mapping, trust and
 relaunch acceptance remain open under the existing tasks; reconnect after tunnel
 loss still requires deliberate SSH setup rather than reopening a retired port.
+
+## Remembered host trust
+
+Planner's call for BACKEND-SSH-CONNECT: complete durable host-key comparison in
+its existing production panel without saving an ephemeral Agent endpoint. Official
+Desktop's read-only `electron/ssh-connection.ts:22–24` uses OpenSSH accept-new and
+rejects changed keys; `ssh-connection.test.ts:238–244` tests changed-key error
+classification. Wing instead retains explicit first-use fingerprint review and
+uses its platform secure storage, not subprocesses or the user's known_hosts.
+
+[The store](../../lib/core/hermes/ssh/secure_managed_ssh_host_trust_store.dart)
+keys a separate versioned slot by SHA-256 of the exact host text and SSH port.
+Only the algorithm/digest are stored; usernames, Agent ports, local forwarded
+origins, credentials and session IDs never enter that record. Host aliases are
+separate trust scopes; no DNS/case/IPv6 normalization or migration is implied.
+Concurrent app-isolate confirmations re-read inside the commit lane so a second
+review cannot overwrite a conflicting winner. This is not cross-process CAS;
+multiple writers/isolate-level trust management remain unsupported.
+
+Cancelled/obsolete reads and reviews cannot admit a connection or begin a new
+pin write. Once a current, explicit review has committed a native storage write,
+that reviewed pin may finish saving despite cancellation; the obsolete attempt
+still returns false and cannot authenticate or adopt Agent. Invalid/unreadable
+pins remain untouched. No legacy slots are read, enumerated or deleted.
+
+Deterministic store and production-panel regressions cover remembered trust
+across store/controller recreation, changed keys, host/port isolation, corruption,
+storage failure/readback, concurrent conflict and cancellation. These are mocked
+secure storage plus Linux-hosted Dart/widget execution, not native keystore or
+SSH/relaunch qualification. Native credential acquisition and the complete
+host/profile/session recovery journey remain open under the existing tasks.
 
 ## Failure oracles and qualification
 

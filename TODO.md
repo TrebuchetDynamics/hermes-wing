@@ -1382,7 +1382,15 @@ patches, personal credential discovery, service restarts or provider spending.
   without replay or ephemeral-port persistence. Planner's call: reuse that fixed
   lifecycle, leaving native/live/full-app SSH and durable mapping/trust acceptance
   open; PARITY-LIVE-WORKFLOW retains its separate external gates.
-  Next action: durable SSH identity/trust and exact profile/session reconnect under
+  Remembered trust slice: [secure host pins](docs/security/managed-ssh-forward-contract.md#remembered-host-trust)
+  bind explicit first-use fingerprint review to the exact host text and SSH port.
+  Later matching keys reuse the readback-verified pin; changed keys, malformed pins
+  and storage failure block without overwrite or Agent adoption. No legacy slots,
+  credentials or forwarded origins are saved by this store. Planner's call: complete
+  this bounded durable trust outcome now, retaining the live authentication/provider
+  ceiling in PARITY-LIVE-WORKFLOW and native/full-app SSH in this existing parent.
+  Key rotation/reset remains unavailable; fixture recreation is not native relaunch.
+  Next action: durable SSH target and exact profile/session reconnect under
   DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
   Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.
   Credential-lifetime prerequisite: the shared channel now retires serve read

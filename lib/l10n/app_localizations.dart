@@ -847,13 +847,25 @@ abstract class AppLocalizations {
   /// No description provided for @managedSshHostKeyBody.
   ///
   /// In en, this message translates to:
-  /// **'Compare this fingerprint with the host\'s SSH key before trusting this connection. Cancel if it differs or you cannot verify it.'**
+  /// **'Compare this fingerprint with the host\'s SSH key before trusting it. Wing will remember this host and SSH port securely and block changed keys. Cancel if you cannot verify it.'**
   String get managedSshHostKeyBody;
+
+  /// No description provided for @managedSshHostKeyChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The SSH host key differs from the remembered key. Connection blocked. Verify the change with the host administrator; Wing cannot replace a remembered key here.'**
+  String get managedSshHostKeyChanged;
+
+  /// No description provided for @managedSshHostTrustUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH host trust could not be read or saved securely. Connection blocked. Restore secure storage access before trying again.'**
+  String get managedSshHostTrustUnavailable;
 
   /// No description provided for @managedSshTrustAction.
   ///
   /// In en, this message translates to:
-  /// **'Trust this connection'**
+  /// **'Trust and remember host'**
   String get managedSshTrustAction;
 
   /// No description provided for @managedSshFailed.

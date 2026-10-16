@@ -446,10 +446,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get managedSshHostKeyBody =>
-      'Compare this fingerprint with the host\'s SSH key before trusting this connection. Cancel if it differs or you cannot verify it.';
+      'Compare this fingerprint with the host\'s SSH key before trusting it. Wing will remember this host and SSH port securely and block changed keys. Cancel if you cannot verify it.';
 
   @override
-  String get managedSshTrustAction => 'Trust this connection';
+  String get managedSshHostKeyChanged =>
+      'The SSH host key differs from the remembered key. Connection blocked. Verify the change with the host administrator; Wing cannot replace a remembered key here.';
+
+  @override
+  String get managedSshHostTrustUnavailable =>
+      'SSH host trust could not be read or saved securely. Connection blocked. Restore secure storage access before trying again.';
+
+  @override
+  String get managedSshTrustAction => 'Trust and remember host';
 
   @override
   String get managedSshFailed =>

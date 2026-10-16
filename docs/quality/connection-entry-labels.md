@@ -64,6 +64,22 @@ connection failure. Physical Android system navigation/IME, process-death
 recovery, accessibility-service execution and live SSH remain separate checks.
 The broader Android chat-polish task remains open.
 
+### Termux welcome action refinement
+
+The Android Termux action now uses the same outlined button as Remote, with its
+unchanged setup/readiness help below it, rather than a filled card and chevron.
+The local-setup route, keyboard activation, SSH priority and Linux card are
+unchanged. No logo change or branding approval is part of this refinement.
+
+The button-type regression failed against the original ListTile before
+implementation; matching-width and minimum-target assertions were retained.
+All 49 focused enrollment, actual-router transition and
+compact-presentation tests then passed without retries; `flutter analyze --no-pub`
+and whitespace checks passed. Seven capture-mode cases passed, including 390px
+normal text and 320/1280px at 200% text. The real-widget renders were inspected;
+font-resolution and device-qualification limits above still apply. This narrow
+follow-up does not rebuild an APK or qualify native Android/IME/TalkBack.
+
 ## Delivered boundary
 
 Card `t_68412445` implements `CONNECTION-ENTRY-LABELS` for `CONNECTION-PATHS`.

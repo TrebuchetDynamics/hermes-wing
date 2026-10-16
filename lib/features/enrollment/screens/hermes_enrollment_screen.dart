@@ -132,24 +132,36 @@ class _HermesEnrollmentScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (android || linux)
+        if (android) ...[
+          OutlinedButton.icon(
+            key: const ValueKey('hermes-enrollment-local-setup'),
+            onPressed: () => context.push<void>(AppRoutes.localSetup),
+            icon: const Icon(Icons.phone_android_outlined),
+            label: Text(
+              s.enrollInstallOnPhoneAction,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            s.enrollPhoneHelp,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ] else if (linux)
           Card.filled(
             margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
               key: const ValueKey('hermes-enrollment-local-setup'),
-              contentPadding: EdgeInsets.symmetric(
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: android ? 4 : 12,
+                vertical: 12,
               ),
-              leading: Icon(
-                android
-                    ? Icons.phone_android_outlined
-                    : Icons.computer_outlined,
-              ),
-              title: Text(
-                android ? s.enrollInstallOnPhoneAction : s.localSetupAction,
-              ),
-              subtitle: Text(android ? s.enrollPhoneHelp : s.enrollLinuxHelp),
+              leading: const Icon(Icons.computer_outlined),
+              title: Text(s.localSetupAction),
+              subtitle: Text(s.enrollLinuxHelp),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push<void>(AppRoutes.localSetup),
             ),

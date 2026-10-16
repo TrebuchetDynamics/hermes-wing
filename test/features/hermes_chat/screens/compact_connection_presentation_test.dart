@@ -159,6 +159,17 @@ void main() {
         tester.widget(control('hermes-welcome-remote')),
         isA<OutlinedButton>(),
       );
+      final phone = control('hermes-enrollment-local-setup');
+      expect(tester.widget(phone), isA<OutlinedButton>());
+      expect(
+        find.ancestor(of: phone, matching: find.byType(Card)),
+        findsNothing,
+      );
+      expect(
+        tester.getSize(phone).width,
+        tester.getSize(control('hermes-welcome-remote')).width,
+      );
+      expect(tester.getSize(phone).height, greaterThanOrEqualTo(48));
       expect(find.text('HERMES WING'), findsNothing);
       expect(find.textContaining('self-improving AI assistant'), findsNothing);
       expect(
@@ -170,6 +181,33 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.android),
   );
+
+  for (final width in [320.0, 1280.0]) {
+    testWidgets(
+      'Termux welcome button wraps at 200% text on $width',
+      (tester) async {
+        final boundary = await mount(
+          tester,
+          const HermesEnrollmentScreen(),
+          width: width,
+          scale: 2,
+        );
+        final phone = control('hermes-enrollment-local-setup');
+        await tester.ensureVisible(phone);
+        await tester.pumpAndSettle();
+        expect(tester.widget(phone), isA<OutlinedButton>());
+        expect(tester.getSize(phone).height, greaterThanOrEqualTo(48));
+        expect(
+          tester.getSize(phone).width,
+          tester.getSize(control('hermes-welcome-remote')).width,
+        );
+        expect(tester.getBottomRight(phone).dx, lessThanOrEqualTo(width - 24));
+        await capture(tester, boundary, 'welcome-termux-$width-2x');
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+  }
 
   for (final scale in [1.0, 2.0]) {
     testWidgets(

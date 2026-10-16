@@ -166,9 +166,9 @@ class ManagedSshConnectionController {
         tunnel != null &&
         (!channel.state.isConnected ||
             channel.state.connectedBaseUrl != tunnel.agentUri.toString())) {
-      _adopted = false;
-      _tunnel = null;
-      unawaited(tunnel.dispose());
+      // The channel has moved on; retire only our lease before admitting retry.
+      _replacement = true;
+      unawaited(cancel());
     }
   }
 

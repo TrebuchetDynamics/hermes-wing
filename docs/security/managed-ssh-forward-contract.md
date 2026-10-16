@@ -119,6 +119,15 @@ including its admission barrier while Agent retirement/secure cleanup is pending
 Two deterministic regressions cover that window and deliberate retry afterward;
 the production-channel case asserts no fresh reads or mutations during retirement.
 
+The same admission barrier now covers channel-origin replacement and channel
+connection loss while the SSH lease is still alive. The old direct-dispose path
+admitted Connect before lease cleanup finished. Retirement now marks the channel
+as replaced and uses cancellation to hold retry closed without disconnecting the
+new Agent owner. Two deterministic regressions hold forwarding cleanup pending,
+assert no fresh credential capture or replacement mutation, complete the old lease
+late, then prove deliberate retry after cleanup. These checks do not establish
+native transport or durable restoration.
+
 Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
 profile/session separately from the ephemeral local origin. **This path saves a
 host-key pin, but not the SSH target/Agent-credential/profile/session mapping or

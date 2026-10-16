@@ -1390,6 +1390,13 @@ patches, personal credential discovery, service restarts or provider spending.
   this bounded durable trust outcome now, retaining the live authentication/provider
   ceiling in PARITY-LIVE-WORKFLOW and native/full-app SSH in this existing parent.
   Key rotation/reset remains unavailable; fixture recreation is not native relaunch.
+  Channel-owner-loss prerequisite: channel disconnect/replacement now retires the
+  adopted SSH lease through the existing cancellation admission barrier, without
+  disconnecting the replacement Agent. Two deterministic regressions reproduce
+  premature retry before the fix and cover held lease cleanup, no new credential
+  capture, late old completion and deliberate retry after cleanup. Planner's call:
+  repair this remaining teardown race before durable target/session recovery;
+  retain native/full-app qualification and the live gates in PARITY-LIVE-WORKFLOW.
   Next action: durable SSH target and exact profile/session reconnect under
   DOC-BACKEND-DISCONNECT-CONTRACT, plus separately authorized native full-app proof.
   Linux-hosted fixtures do not qualify Android/native SSH or cold restoration.

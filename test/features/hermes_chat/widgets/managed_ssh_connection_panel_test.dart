@@ -160,6 +160,90 @@ class _ServeReadChannel extends HermesApiChannel {
 void main() {
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
+  for (final replaced in [false, true]) {
+    test(
+      'channel owner loss serializes SSH teardown; replaced=$replaced',
+      () async {
+        final forward = FakeForward();
+        final closing = Completer<void>();
+        final release = Completer<void>();
+        forward.waiting.complete(
+          ManagedSshTunnel(
+            agentUri: Uri.parse('http://127.0.0.1:45678'),
+            done: forward.ended.future,
+            close: () async {
+              forward.closes++;
+              closing.complete();
+              await release.future;
+            },
+          ),
+        );
+        final channel = FakeChannel();
+        final controller = ManagedSshConnectionController(forward, channel);
+        addTearDown(() async {
+          if (!release.isCompleted) release.complete();
+          await Future<void>.delayed(Duration.zero);
+          await controller.cancel();
+          controller.dispose();
+          channel.dispose();
+        });
+        expect(
+          await controller.connectSsh(
+            input,
+            verifyHostKey: (_, _) async => true,
+          ),
+          isTrue,
+        );
+        final retiredCredentials = forward.credentials;
+        final replacement = replaced
+            ? const HermesChannelState(
+                status: HermesConnectionStatus.connected,
+                connectedBaseUrl: 'https://replacement.invalid',
+                selectedProfileId: 'replacement-profile',
+                activeSessionId: 'replacement-session',
+              )
+            : const HermesChannelState();
+        channel.set(replacement);
+        await closing.future;
+        expect(
+          await controller.connectSsh(
+            input,
+            verifyHostKey: (_, _) async => true,
+          ),
+          isFalse,
+        );
+        expect(forward.credentials, same(retiredCredentials));
+        expect(channel.state, same(replacement));
+        expect(channel.disconnects, 0);
+        expect(forward.closes, 1);
+        release.complete();
+        await Future<void>.delayed(Duration.zero);
+        forward.ended.complete();
+        await Future<void>.delayed(Duration.zero);
+        expect(channel.state, same(replacement));
+        expect(channel.disconnects, 0);
+        forward.waiting = Completer<ManagedSshTunnel>();
+        final nextEnded = Completer<void>();
+        forward.waiting.complete(
+          ManagedSshTunnel(
+            agentUri: Uri.parse('http://127.0.0.1:45679'),
+            done: nextEnded.future,
+            close: () async => forward.closes++,
+          ),
+        );
+        expect(
+          await controller.connectSsh(
+            input,
+            verifyHostKey: (_, _) async => true,
+          ),
+          isTrue,
+        );
+        expect(channel.state.connectedBaseUrl, 'http://127.0.0.1:45679');
+        expect(forward.closes, 1);
+      },
+    );
+  }
+
   test(
     'tunnel loss blocks SSH retry during production secure cleanup',
     () async {

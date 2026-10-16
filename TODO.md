@@ -1519,32 +1519,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Next action: apply the selected minimal README/tutorial and synthetic-story
   composition, not a new audit or repeat of completed first-reply/provenance work.
 
-- [ ] **DOC-M2-INODE-POLICY-EVIDENCE** — Goal: M2. Section: Next. Assess the additional scratch
-  inode-policy prerequisite. Payoff: preserve the separate admission obligation
-  even if the conditional CPU proof supplies a finite envelope.
-  Sources: [unchanged prerequisites](docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md#outcome-and-exactly-one-conditional-next-proof-seam)
-  and [synthetic contract](docs/quality/2026-10-06-m2-synthetic-isolation-contract.md).
-  Touches: docs/quality/2026-10-06-m2-inode-policy-evidence.md, .task-evidence/<task-card>/
-  Scope: source-only inode-accounting and descendant/cleanup policy review.
-  Exclude adapter implementation, control execution, APKs, provisioning, private
-  state, runtime activation and authority or limit changes.
-  Acceptance: map the proposed additional inode policy to a reviewed bounded
-  enforcement contract or UNAVAILABLE. Do not equate CPU proof with inode,
-  immutable custody, cleanup or Android qualification. M2 remains unverified.
-  Checks: source-only review of the cited predecessor contract, its proposed inode
-  accounting and descendant/cleanup boundaries; document the fixed source and
-  reviewed-contract or UNAVAILABLE outcome; `git diff --check` and document-link
-  validation. These are required review checks, not runtime execution evidence.
-  Dependencies: DOC-M2-CPU-ENVELOPE-PROOF.
-  Ownership: unclaimed here; verify tracker and continuation leases first.
-  Planner decision: fix the stale queue placement, not the isolation mechanism.
-  The predecessor is done and this existing task authorizes source-only review;
-  no owner choice, new hardware or execution rights are needed to assess it.
-  Move this body to Next, preserving other task order and every safety/admission
-  limit. A completed CPU assessment does not prove a usable CPU bound or approve
-  the inode policy. Next action: review the proposed policy and record either its
-  bounded contract or precise UNAVAILABLE result; do not implement/run controls.
-
 ## Needs decision
 
 - [ ] **DOC-API-DEVICE-SELF-CONFORMANCE** — Goal: API-CONFORMANCE. Section: Needs decision. Verify
@@ -1744,4 +1718,12 @@ does not mark any check passed or authorize live actions.
   - Exercise installed native admission, verify checked local commit and worker release, then perform the separately gated one-occurrence cron canary. Keep the job paused until these proofs exist.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: CONNECTION-CRON-ADMISSION.
+  Status: open
+
+- [ ] DOC-M2-INODE-POLICY-EVIDENCE-LIVE — Live checks for DOC-M2-INODE-POLICY-EVIDENCE
+  Scope: Run the live checks the offline work for DOC-M2-INODE-POLICY-EVIDENCE left pending.
+  Acceptance: Each check passes on the real target:
+  - No kernel/mount control execution or Android/device qualification was performed; these remain separate M2 admission prerequisites, and M2 remains unverified.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M2-INODE-POLICY-EVIDENCE.
   Status: open

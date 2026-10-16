@@ -5200,6 +5200,7 @@
       "status": "partial",
       "tasks": [
         "CONNECTION-CRON-ADMISSION",
+        "CONNECTION-CRON-ADMISSION-LIVE",
         "CONNECTION-CRON-CANARY",
         "CONNECTION-ENTRY-LABELS",
         "CONNECTION-LINK-REMOVAL",
@@ -6808,6 +6809,7 @@
         "DOC-M2-HISTORY-ADMISSION",
         "DOC-M2-HISTORY-IDENTITY",
         "DOC-M2-INODE-POLICY-EVIDENCE",
+        "DOC-M2-INODE-POLICY-EVIDENCE-LIVE",
         "DOC-M2-INSPECTOR-ISOLATION-PREFLIGHT",
         "DOC-M2-ISSUER-EVIDENCE-CONTRACT",
         "DOC-M2-MANIFEST-ASSESSMENT-CONTRACT",
@@ -6851,7 +6853,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "WING-TASK-408",
-      "CONNECTION-CRON-ADMISSION",
       "CONNECTION-CRON-CANARY",
       "CONNECTION-LINK-RETIREMENT",
       "CONNECTION-OWNER-RECONNECT",
@@ -6892,7 +6893,6 @@
       "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
       "LANDING-PRODUCT-PROOF",
-      "DOC-M2-INODE-POLICY-EVIDENCE",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
       "DOC-API-PROTOCOL-ERROR-EVIDENCE",
       "VERIFY-DESKTOP-NATIVE-DELIVERY",
@@ -6900,7 +6900,9 @@
       "VERIFY-M4-LIVE-INVENTORY",
       "VERIFY-SHELL-NATIVE-INPUT",
       "M2-DEVICE-QUALIFICATION",
-      "VERIFY-M6-ANDROID-INTEGRATED"
+      "VERIFY-M6-ANDROID-INTEGRATED",
+      "CONNECTION-CRON-ADMISSION-LIVE",
+      "DOC-M2-INODE-POLICY-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -6949,14 +6951,6 @@
       "section": "Next",
       "status": "open",
       "title": "Exercise full Wing managed-key SSH and recovery on native Linux and Android against the approved host"
-    },
-    {
-      "depends_on": [],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-CRON-ADMISSION",
-      "section": "Next",
-      "status": "open",
-      "title": "Repair and verify hermes-toolset-only full-lifecycle main-only writer admission"
     },
     {
       "depends_on": [
@@ -7051,16 +7045,6 @@
       "section": "Next",
       "status": "open",
       "title": "Implement owner-safe managed SSH disconnect and reconnect"
-    },
-    {
-      "depends_on": [
-        "DOC-M2-CPU-ENVELOPE-PROOF"
-      ],
-      "goal": "M2",
-      "id": "DOC-M2-INODE-POLICY-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Assess the additional scratch inode-policy prerequisite"
     },
     {
       "depends_on": [],
@@ -7470,6 +7454,16 @@
     },
     {
       "depends_on": [
+        "CONNECTION-CRON-ADMISSION"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-CRON-ADMISSION-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for CONNECTION-CRON-ADMISSION"
+    },
+    {
+      "depends_on": [
         "DOC-API-CONFORMANCE"
       ],
       "goal": "API-CONFORMANCE",
@@ -7487,6 +7481,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Map profile-list protocol error precedence"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-INODE-POLICY-EVIDENCE"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-INODE-POLICY-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M2-INODE-POLICY-EVIDENCE"
     },
     {
       "depends_on": [],
@@ -7563,6 +7567,14 @@
       "section": "Done",
       "status": "done",
       "title": "Connect through deliberate private-key selection and encrypted-key passphrase entry on Linux and Android"
+    },
+    {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-CRON-ADMISSION",
+      "section": "Done",
+      "status": "done",
+      "title": "Repair and verify hermes-toolset-only full-lifecycle main-only writer admission"
     },
     {
       "depends_on": [
@@ -7867,6 +7879,16 @@
       "section": "Done",
       "status": "done",
       "title": "Validate canonical history response and compaction lineage before recovery settlement"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CPU-ENVELOPE-PROOF"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-INODE-POLICY-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Assess the additional scratch inode-policy prerequisite"
     },
     {
       "depends_on": [

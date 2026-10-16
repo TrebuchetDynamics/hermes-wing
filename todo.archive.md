@@ -5520,3 +5520,78 @@ Source section: Now / Next
   workspace activity before adoption; this documentation pass assigns no worker.
 
 <!-- End archived WING-TASK-407. -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **CONNECTION-CRON-ADMISSION** — Goal: CONNECTION-PATHS. Section: Next.
+  Repair and verify safe main-only admission without modifying Hermes Agent.
+  Payoff: the existing cron can admit one port writer instead of repeating refusals.
+  Sources: [2026-10-03-desktop-port-goal](docs/plans/2026-10-03-desktop-port-goal.md) (current planning context);
+   [accepted restart plan](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview)
+  and [main-only policy](docs/product/autogoal-workflows.md#main-only-execution-policy).
+  Graph evidence: partial; no current repository graph. The inspected installed
+  autogoal handoff contract explicitly refuses native main-only admission.
+  Touches: docs/quality/
+  Scope: separate, scoped hermes-toolset dispatcher repair under its own repository
+  instructions, plus Wing's admission proof. Cover workspace setup, task startup,
+  edits, review, checked local commit and worker release. Preserve one writer and
+  all current Wing candidate edits. No Agent/runtime patch, new scheduler, branch,
+  worktree substitution, launch-only lock bypass, push or service mutation.
+  Acceptance: reproduce the refusal; prove overlap rejection, stale/crashed-owner
+  recovery and failure cleanup, then independently review the repair and exercise
+  the installed native path. A cooperative lock fixture alone is insufficient.
+  Verification: run the repaired toolset's nearest existing regression commands
+  and record the exact installed admission/task/run/release evidence. If no
+  supported toolset-only hook covers the lifecycle, retain the refusal and paused
+  cron; report the missing contract rather than claiming completion.
+  Current evidence: the actual installed main-only CLI refuses before manifest
+  access or worker launch (exit 2). Six main-only helper tests pass, including
+  native refusal; they do not establish safe admission. The native dispatcher
+  resolves workspaces before spawning, public claim hooks are non-veto observers,
+  review claims do not use that hook, and board locks do not span worker release.
+  No inspected supported toolset-only hook covers the required repository fence.
+  The cron prompt was improved and read back, but the job remains paused. No
+  dispatcher source patch, canary, scheduler resumption or Agent modification
+  occurred. Preserve the refusal rather than supplying a dummy ownership guard.
+  Dependencies: none in the product ledger; supported toolset-only integration
+  and preservation/release of the current chat writer are execution prerequisites.
+  Ownership: unclaimed coordination task; reconcile native owners before any
+  separately authorized implementation. This documentation pass does not dispatch.
+
+
+Owner-action entries retain their existing defaults. Their P label does not
+authorize the action or make them eligible for autonomous selection.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M2-INODE-POLICY-EVIDENCE** — Goal: M2. Section: Next. Assess the additional scratch
+  inode-policy prerequisite. Payoff: preserve the separate admission obligation
+  even if the conditional CPU proof supplies a finite envelope.
+  Sources: [unchanged prerequisites](docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md#outcome-and-exactly-one-conditional-next-proof-seam)
+  and [synthetic contract](docs/quality/2026-10-06-m2-synthetic-isolation-contract.md).
+  Touches: docs/quality/2026-10-06-m2-inode-policy-evidence.md, .task-evidence/<task-card>/
+  Scope: source-only inode-accounting and descendant/cleanup policy review.
+  Exclude adapter implementation, control execution, APKs, provisioning, private
+  state, runtime activation and authority or limit changes.
+  Acceptance: map the proposed additional inode policy to a reviewed bounded
+  enforcement contract or UNAVAILABLE. Do not equate CPU proof with inode,
+  immutable custody, cleanup or Android qualification. M2 remains unverified.
+  Checks: source-only review of the cited predecessor contract, its proposed inode
+  accounting and descendant/cleanup boundaries; document the fixed source and
+  reviewed-contract or UNAVAILABLE outcome; `git diff --check` and document-link
+  validation. These are required review checks, not runtime execution evidence.
+  Dependencies: DOC-M2-CPU-ENVELOPE-PROOF.
+  Ownership: unclaimed here; verify tracker and continuation leases first.
+  Planner decision: fix the stale queue placement, not the isolation mechanism.
+  The predecessor is done and this existing task authorizes source-only review;
+  no owner choice, new hardware or execution rights are needed to assess it.
+  Move this body to Next, preserving other task order and every safety/admission
+  limit. A completed CPU assessment does not prove a usable CPU bound or approve
+  the inode policy. Next action: review the proposed policy and record either its
+  bounded contract or precise UNAVAILABLE result; do not implement/run controls.

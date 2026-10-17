@@ -5218,6 +5218,7 @@
         "CONNECTION-REMOTE-AUTH-STORAGE-RETRY",
         "CONNECTION-SAVED-HOST-OWNER-SAFETY",
         "CONNECTION-SAVED-WORKFLOWS",
+        "CONNECTION-SAVED-WORKFLOWS-LIVE",
         "CONNECTION-SETUP-AUTH-MATRIX",
         "CONNECTION-TWO-HOST-RECOVERY",
         "PORT-DESKTOP-WELCOME",
@@ -6838,7 +6839,6 @@
     "schema": 1,
     "tasks": [
       "CONNECTION-LINK-REMOVAL",
-      "CONNECTION-SAVED-WORKFLOWS",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
       "M1-MOBILE-AWAY-STATUS",
       "M1-NOTIFICATION-CONTRACT",
@@ -6908,7 +6908,8 @@
       "VERIFY-M4-LIVE-INVENTORY",
       "VERIFY-SHELL-NATIVE-INPUT",
       "M2-DEVICE-QUALIFICATION",
-      "VERIFY-M6-ANDROID-INTEGRATED"
+      "VERIFY-M6-ANDROID-INTEGRATED",
+      "CONNECTION-SAVED-WORKFLOWS-LIVE"
     ]
   },
   "tasks": [
@@ -6919,16 +6920,6 @@
       "section": "Now",
       "status": "in_progress",
       "title": "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
-    },
-    {
-      "depends_on": [
-        "CONNECTION-PRIMARY-ENTRY"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-SAVED-WORKFLOWS",
-      "section": "Now",
-      "status": "open",
-      "title": "Complete and prove owner-safe Local/Remote and saved-connection workflows"
     },
     {
       "depends_on": [
@@ -7474,6 +7465,16 @@
     },
     {
       "depends_on": [
+        "CONNECTION-SAVED-WORKFLOWS"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-SAVED-WORKFLOWS-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for CONNECTION-SAVED-WORKFLOWS"
+    },
+    {
+      "depends_on": [
         "DOC-API-CONFORMANCE"
       ],
       "goal": "API-CONFORMANCE",
@@ -7681,6 +7682,16 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify saved-host rename/remove cancellation, storage retry and delayed owner settlement"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-PRIMARY-ENTRY"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-SAVED-WORKFLOWS",
+      "section": "Done",
+      "status": "done",
+      "title": "Complete and prove owner-safe Local/Remote and saved-connection workflows"
     },
     {
       "depends_on": [],

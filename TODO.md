@@ -198,48 +198,6 @@ needs its own exact capability, ownership and qualification evidence.
   its stated named-target acceptance is evidenced. See
   [the acceptance map](docs/quality/link-delivery-retirement.md).
 
-- [ ] **CONNECTION-SAVED-WORKFLOWS** —  Complete and
-  prove owner-safe Local/Remote entry and saved-connection workflows.
-  Goal: CONNECTION-PATHS
-Section: Now.
-  Payoff: a connection choice leads to working setup or authenticated endpoint
-  access, not a label-only screen.
-  Sources: [2026-07-16-multi-gateway-unified-chats](docs/superpowers/plans/2026-07-16-multi-gateway-unified-chats.md) (historical planning context)
-  [2026-09-04-resource-consistency](docs/superpowers/plans/2026-09-04-resource-consistency.md) (historical planning context);
-  [CONN-2/3/5/6](docs/product/prd.md#connection-path-requirements),
-  [enrollment](docs/product/enrollment.md),
-  [verification matrix](docs/test-plan.md#connection-path-verification).
-  Scope: existing setup/enrollment, saved-host controls and owner-fenced channel
-  integration. Add the smallest fixes exposed by production-path regressions.
-  Apply the owner correction: direct Agent use requires no Wing Link installation,
-  pairing or management credential. Preserve Agent authorization and inert legacy records.
-  Exclude new SSH/OAuth authority, remote installs and personal runtime changes.
-  Acceptance: existing-install/setup-needed, cancellation, auth/storage failure,
-  explicit retry, name/edit/test/remove and two-host profile/session collisions
-  pass through public controls. Late old results cannot redirect the replacement.
-  A fresh compiled fixture journey reports saved versus connected readiness.
-  Unsupported OAuth is explained. Native/live checks remain separately attributed.
-  Dependencies: CONNECTION-PRIMARY-ENTRY.
-  Ownership: unclaimed; the owner released the stale claim on 2026-10-16.
-  Partial delivery: `t_90ae659f` qualifies saved-host rename/remove owner safety;
-  see the [source-bound receipt](docs/quality/saved-connection-owner-safety.md).
-  The full workflow acceptance remains open, not completed by this slice.
-  The [first-run receipt](docs/quality/direct-first-run.md) and
-  [native fixture receipt](docs/quality/direct-first-run-native.md) qualify direct
-  Chat/enrollment entry before optional setup/pairing, not live authentication or
-  main delivery. The [saved editor receipt](docs/quality/saved-endpoint-edit.md)
-  adds bounded widget/Chromium edit/Test proof. Preserve the existing workflow
-  owner and M1-SAVED-ENDPOINT-EDIT-NATIVE; do not repeat their delivered subsets.
-  See [current verification](docs/test-plan.md#connection-path-verification).
-  Status: open
-  Touches: lib/core/hermes/, lib/features/enrollment/, lib/features/hermes_chat/,
-  test/core/hermes/, test/features/enrollment/, test/features/hermes_chat/,
-  integration_test/, playwright/tests/, docs/quality/
-  Owner decision: release the claim and keep this task incomplete; preserve
-  acceptance, partial-delivery evidence and native/live access gates. Planning only;
-  no worker, runner or schedule is started by this decision.
-  Checks: `flutter test --no-pub --concurrency=1 test/features/enrollment/ test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`; `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before the existing compiled connection/browser matrix. Reuse matching receipts for unchanged inputs; native/live authentication and OS storage/chooser proof remain separately gated.
-
 - [ ] **VERIFY-SLASH-AUTHORITATIVE-TRANSPORT** — Goal: SLASH-CATALOG. Section: Next. Qualify supported authoritative slash execution and unavailable-action recovery.
   Payoff: match official Desktop command outcomes without treating ordinary chat fallback as command execution.
   Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
@@ -1772,3 +1730,14 @@ does not mark any check passed or authorize live actions.
   predecessor, signature/source binding and same-artifact receipt preparation are
   engineering prerequisites, not a request for the owner to build the release.
   Preserve physical-device and live-authentication distinctions; no spending waiver.
+
+- [ ] CONNECTION-SAVED-WORKFLOWS-LIVE — Live checks for CONNECTION-SAVED-WORKFLOWS
+  Scope: Run the live checks the offline work for CONNECTION-SAVED-WORKFLOWS left pending.
+  Acceptance: Each check passes on the real target:
+  - Requalify the final candidate through named native Linux and Android application journeys; this run exercised Linux-hosted Flutter widgets and compiled Chromium only.
+  - Approved isolated live Hermes Agent authentication and actual Chat/provider readiness remain unexercised; deterministic discovery/history and injected denial are not live authentication or inference.
+  - OS-native secure storage, directory/document chooser, restart persistence, physical input and screen-reader behavior require matching platform evidence; earlier native receipts retain their own frozen-source scope.
+  - Actual manual Termux installation/start and on-phone background survival remain separately qualified, not proved by the Android-targeted setup widget fixture.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: CONNECTION-SAVED-WORKFLOWS.
+  Status: open

@@ -389,21 +389,44 @@ This qualifies new-owner retention after original **server** completion, not cli
 consumption of cancelled terminal events, switch-back/detached recovery, saved-secret
 isolation, native HTTP/SSE or live authentication. Parent acceptance remains open.
 
+## Compact native follow-through: browser requalification
+
+On the WING-TASK-408 candidate based on `6ba1b086`, the unchanged browser suite
+passes all 42 cases at 390/1280px and 200% text, with zero retries or skips.
+`flutter build web --release --no-pub -t lib/main_e2e.dart` rebuilt the application
+before the run. Flutter 3.44.2/Dart 3.12.2 and Chromium 152.0.7977.75 on Linux were
+used; existing dependency Wasm dry-run/font warnings do not qualify Wasm support.
+
+```bash
+# Existing serve_web.mjs: PORT=20130 HERMES_E2E_PORT=20131
+WING_APP_URL=http://127.0.0.1:20130/ CHROME_EXECUTABLE=/usr/bin/chromium \
+  node node_modules/@playwright/test/cli.js test --config=playwright.config.mjs \
+  playwright/tests/regression/chat-workspace-overlay.spec.mjs \
+  --workers=1 --retries=0 --reporter=list,json --output="$TMPDIR/browser-output"
+```
+
+The JSON result is retained as `$TMPDIR/browser-results.json` using
+`PLAYWRIGHT_JSON_OUTPUT_NAME`. Chromium needed a short `/proc/<shell-pid>/fd/<fd>`
+alias for the allocated `$TMPDIR` directory to avoid its Unix socket path limit;
+the first launch failed before executing application behavior. Both fixture servers
+were stopped after the passing run. Production and browser-test bytes are unchanged.
+This rechecks the existing history/focus/owner barriers; it does not add a browser
+compact-contact-menu qualification or turn native framework Back into browser Back.
+The [new compact GTK cases](chat-workspace-overlay-native.md#compact-saved-host-settings-entry-and-replacement)
+are separate native HTTP/SSE evidence, not a browser result.
+
 ## Remaining acceptance
 
-The separate [Linux GTK receipt](chat-workspace-overlay-native.md) now covers
-shell entries and retained draft/transcript through keyboard Close/Escape and
-framework Back, with an in-memory channel. It does not promote this browser's
-HTTP/SSE evidence to native transport proof.
+The separate [Linux GTK receipt](chat-workspace-overlay-native.md) covers the
+in-memory shell/chat-local focus matrix and the production HTTP/SSE streaming,
+populated Profiles and empty-credential saved-host replacement matrices at both
+widths. Those bounded native receipts do not qualify live Agent/provider behavior
+or browser history. The distinct-origin hook and rendered browser cases above
+retain their separate bounds.
 
-Saved-secret switching and native streaming remain unqualified. The distinct-origin
-hook cases and rendered empty-credential saved-host cases above have separate bounds. GTK now
-separately covers shell and
-chat-local slash/Tab-completion/Manage focus return. Browser Manage and keyboard
-suggestion recovery are covered above; browser direct Tab completion remains
-unsupported by its native-only shortcut gate. Android, physical keyboard/IME,
-screen readers and live Agent/provider behavior remain unqualified. The shared
+Saved-secret switching, cancelled client terminal-event consumption, detached
+recovery, Android, physical keyboard/IME and screen readers remain unqualified.
+Browser Manage and keyboard suggestion recovery are covered above; browser direct
+Tab completion remains unsupported by its native-only shortcut gate. The shared
 focus change was separately [requalified in GTK](chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification).
-Keep the original task open; next qualify native HTTP/SSE retained streaming
-through Settings navigation, separate from the in-memory GTK journeys and these
-browser owner-switch cases. Do not repeat delivered matrices.
+Keep the parent acceptance and its live task open. Do not repeat delivered matrices.

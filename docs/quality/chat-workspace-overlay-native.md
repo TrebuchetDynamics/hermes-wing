@@ -362,10 +362,80 @@ concerns the replacement workspace across its reopened modal, not original works
 identity across an explicit host change. No fresh browser/full-suite/device check
 or live Agent inference was performed.
 
+## Compact saved-host Settings entry and replacement
+
+The baseline already includes the compact saved-contact Chat menu's Settings action
+(`3f4059bd`); no additional production fix was needed. This follow-through removes
+only the compact saved-host exclusion from the existing HTTP/SSE journey. The
+matrix now passes 24 GTK journeys at 390/1280 logical pixels and 200% text.
+The three new compact cases use Tab/Enter to activate the rendered **More actions**
+button and **Settings** menu item while the original stream is pending. They assert
+that the compact shell bar is absent: no slash command, navigation hook or direct
+router call substitutes for the contact menu.
+
+Opening Settings retains the original mounted Chat, draft, exact session and
+endpoint with only the deliberate Send recorded. Rendered Connections, host and
+Connect chat controls settle the replacement session/history before old-server
+completion. The rendered compact Chat tab returns to the replacement workspace;
+its contact menu reopens Settings using Tab/Enter again. Keyboard Close (Enter),
+Escape and framework Back retain that replacement workspace, exact return URL and
+canonical history, without old reply controls, extra sends or endpoint saves.
+Connection forms and host selection still use pointer/test input; this is not an
+end-to-end keyboard-only journey. Draft retention applies before the deliberate
+owner change, not across hosts. Saved endpoints contain no credentials.
+
+The reference outcome remains retained chat under routed overlays, not a new
+Desktop feature: read-only official Desktop revision
+`158fd638da1629c8e62caf9ade1515d162def8ab`,
+`apps/desktop/src/app/shell/hooks/use-overlay-routing.ts`. Its return-path cache and
+explicit overlay close are source evidence, not executed Desktop qualification.
+
+Final checks on Flutter 3.44.2/Dart 3.12.2:
+
+```bash
+flutter pub get --offline --enforce-lockfile
+flutter analyze --no-pub
+dart format --output=none --set-exit-if-changed integration_test/linux_chat_workspace_stream_test.dart
+flutter test --no-pub --concurrency=1 test/router/chat_workspace_overlay_test.dart test/integration/linux_chat_workspace_overlay_runner_test.dart --reporter expanded
+python3 -B integration_test/run_linux_chat_workspace_stream.py --self-check
+python3 -B "$TMPDIR/run_stream.py"
+git diff --check
+```
+
+The slot-local adapter `run_stream.py` delegates to the existing isolated runner,
+adding only `WING_OVERLAY_HTTP_PORT=20170` to its otherwise allowlisted environment;
+the replacement fixture uses 20171. It changes no assertion, source snapshot,
+transport or isolation guard. Outside this allocated-port invocation,
+`python3 -B integration_test/run_linux_chat_workspace_stream.py` remains the normal
+entry. Native artifacts were relocated to the worker's `$TMPDIR/evidence` after
+verification; the ignored `.task-evidence/overlay-native-compact-connection-sse-408`
+symlink preserves their original lookup path. Other temporary harness/browser files
+are under `$TMPDIR`. The final source-bound receipt is
+`overlay-native-compact-connection-sse-408/native-lhldakjf/verification.json`:
+24 typed journeys, all 812 frozen inputs unchanged, native PID observed, dependency
+identity checked, process group gone and isolated state removed. Source manifest
+SHA-256: `04b09667bf81e9e2b06829a5e990773eae219bc5419e0bc66168b370f06721e6`.
+
+A rebuilt negative control omitted only the existing Settings menu item; the first
+compact journey rejected its missing hit-testable Settings control
+(`native-6i5syapu/native.log`). Exact production bytes were restored before the
+final passing run. Earlier harness failures used the outer popup's non-focusable
+semantic ancestor or a fixture port already occupied by another service. Neither
+service nor production behavior was changed to resolve those harness failures.
+The shared runner's receipt self-check rejects missing or mistyped compact proof.
+Independent read-only source review approved the bounded slice with no Critical or
+Important findings, verified the source-bound receipts and browser results, and
+identified a minor artifact-location wording issue corrected above. It did not
+repeat native/browser execution.
+
+Compiled Chromium history requalification is recorded [separately](chat-workspace-overlay-browser.md#compact-native-follow-through-browser-requalification).
+No browser test or production source changed in this slice. Saved-secret isolation,
+cancelled client terminal-event consumption, detached recovery, automatic focus
+after an owner-changing action, physical input and Android remain unqualified.
+
 ## Remaining acceptance
 
-Compact native connection replacement, cancelled old-terminal consumption and
-Android remain unqualified. Native HTTP/SSE through Settings, populated Profiles
+Cancelled old-terminal consumption and Android remain unqualified. Native HTTP/SSE through Settings, populated Profiles
 and wide saved-host replacement is
 bounded to these synthetic session-chat matrices, not live Agent, provider inference,
 authentication, saved secrets or detached-run persistence.

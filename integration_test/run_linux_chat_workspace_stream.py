@@ -9,17 +9,15 @@ from run_linux_persona_conflict import no_preferences
 def expected_journeys():
     rows = []
     for width in (390.0, 1280.0):
-        for destination in ('settings', 'profiles', 'profile-switch', 'connection-switch'):
-            if width < 600 and destination == 'connection-switch':
-                continue
+        for destination in ('connection-switch', 'settings', 'profiles', 'profile-switch'):
             for dismissal in ('close', 'escape', 'back'):
                 row = dict(width=width, destination=destination, dismissal=dismissal,
                            text_scale=2, progressive_chunks=2, canonical_reply=True,
                            chat_retained=True, exact_location_retained=True, sends=1,
                            unexpected_requests=0, endpoint_saves=0)
                 if destination == 'connection-switch':
-                    del row['exact_location_retained']
-                    row.update(selected_session='replacement_session', distinct_origin=True,
+                    row.update(settings_entry='keyboard-chat-menu' if width < 600 else 'shell',
+                               selected_session='replacement_session', distinct_origin=True,
                                replacement_history_read=True, replacement_writes=0,
                                old_completed_after_replacement=True, stale_reply_absent=True)
                 elif destination == 'profile-switch':

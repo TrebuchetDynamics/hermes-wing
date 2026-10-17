@@ -51,17 +51,44 @@ void main() {
       expect(ready(), isTrue, reason: 'HTTP/SSE client barrier');
     }
 
+    Future<void> keyboardActivate(Finder target) async {
+      expect(target.hitTestable(), findsOneWidget);
+      for (var i = 0; i < 40; i++) {
+        if (navigation.flag(tester, target, focused: true)) break;
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await settle();
+      }
+      expect(
+        navigation.flag(tester, target, focused: true),
+        isTrue,
+        reason:
+            'keyboard target ${tester.getSemantics(target).getSemanticsData()} '
+            'primary ${FocusManager.instance.primaryFocus}',
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await settle();
+    }
+
+    Future<void> openContactSettings() async {
+      await keyboardActivate(
+        find.descendant(
+          of: find.byKey(const ValueKey('hermes-more-actions-button')),
+          matching: find.byType(IconButton),
+        ),
+      );
+      await keyboardActivate(find.bySemanticsLabel('Settings'));
+    }
+
     final semantics = tester.ensureSemantics();
     final journeys = <Map<String, Object?>>[];
     for (final width in [390.0, 1280.0]) {
       await binding.setSurfaceSize(Size(width, 900));
       for (final destination in [
+        'connection-switch',
         'settings',
         'profiles',
         'profile-switch',
-        'connection-switch',
       ]) {
-        if (width < 600 && destination == 'connection-switch') continue;
         for (final dismissal in ['close', 'escape', 'back']) {
           SharedPreferences.setMockInitialValues({});
           final fixture = (await tester.runAsync(_StreamFixture.start))!;
@@ -165,7 +192,10 @@ void main() {
             final controller = tester.widget<TextField>(field).controller!;
             await settle();
             expect(controller.text, 'Synthetic unsent next draft');
-            if (width < 600) {
+            if (width < 600 && replacement != null) {
+              expect(find.byType(NavigationBar), findsNothing);
+              await openContactSettings();
+            } else if (width < 600) {
               await tester.tap(
                 find.descendant(
                   of: find.byType(NavigationBar),
@@ -200,6 +230,10 @@ void main() {
               expect(find.text('Coding profile'), findsOneWidget);
             }
             expect(chat.mounted, isTrue);
+            expect(controller.text, 'Synthetic unsent next draft');
+            expect(channel.state.connectedBaseUrl, fixture.origin);
+            expect(channel.state.activeSessionId, 'sess_1');
+            expect(fixture.writes, ['POST /api/sessions/sess_1/chat/stream']);
             expect(
               navigation.flag(tester, close, focused: true),
               isTrue,
@@ -258,10 +292,16 @@ void main() {
               // Keep the original server pending until the exact new owner settles.
               expect(fixture.completed, isFalse);
               expect(replacement.replacementHistoryReads, greaterThan(0));
-              final chatAction = find.descendant(
-                of: find.byKey(const ValueKey('desktop-sidebar')),
-                matching: find.bySemanticsLabel('Chat'),
-              );
+              final chatAction = width < 600
+                  ? find.descendant(
+                      of: find.byType(NavigationBar),
+                      matching: find.text('Chat'),
+                    )
+                  : find.descendant(
+                      of: find.byKey(const ValueKey('desktop-sidebar')),
+                      matching: find.bySemanticsLabel('Chat'),
+                    );
+              expect(chatAction.hitTestable(), findsOneWidget);
               await tester.tap(chatAction);
               await settle();
               final replacementChat = tester.state(
@@ -294,11 +334,21 @@ void main() {
                 'content': _StreamFixture.reply,
               });
               await settle();
-              await tester.tap(find.bySemanticsLabel('Settings'));
-              await settle();
+              final replacementLocation = router
+                  .routeInformationProvider
+                  .value
+                  .uri
+                  .toString();
+              if (width < 600) {
+                await openContactSettings();
+              } else {
+                await tester.tap(find.bySemanticsLabel('Settings'));
+                await settle();
+              }
               expect(close, findsOneWidget);
+              expect(navigation.flag(tester, close, focused: true), isTrue);
               if (dismissal == 'close') {
-                await tester.tap(close);
+                await tester.sendKeyEvent(LogicalKeyboardKey.enter);
               } else if (dismissal == 'escape') {
                 await tester.sendKeyEvent(LogicalKeyboardKey.escape);
               } else {
@@ -306,6 +356,10 @@ void main() {
               }
               await settle();
               expect(close, findsNothing);
+              expect(
+                router.routeInformationProvider.value.uri.toString(),
+                replacementLocation,
+              );
               expect(channel.state.connectedBaseUrl, replacement.origin);
               expect(channel.state.activeSessionId, 'replacement_session');
               expect(
@@ -352,6 +406,8 @@ void main() {
                 'replacement_writes': replacement.writes.length,
                 'old_completed_after_replacement': fixture.completed,
                 'stale_reply_absent': true,
+                'exact_location_retained': true,
+                'settings_entry': width < 600 ? 'keyboard-chat-menu' : 'shell',
               });
               continue;
             }
@@ -550,8 +606,14 @@ class _StreamFixture {
   String get origin => 'http://127.0.0.1:${server.port}';
 
   static Future<_StreamFixture> start({bool replacement = false}) async {
+    final portBase = int.parse(
+      Platform.environment['WING_OVERLAY_HTTP_PORT'] ?? '0',
+    );
     final fixture = _StreamFixture(
-      await HttpServer.bind(InternetAddress.loopbackIPv4, 0),
+      await HttpServer.bind(
+        InternetAddress.loopbackIPv4,
+        portBase == 0 ? 0 : portBase + (replacement ? 1 : 0),
+      ),
       replacement: replacement,
     );
     fixture.server.listen(fixture.handle);

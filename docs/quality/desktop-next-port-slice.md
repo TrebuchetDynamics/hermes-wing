@@ -3,15 +3,23 @@
 > Reference correction: [official Desktop authority](official-desktop-reference.md). Prior Desktop source citations and parity conclusions in this document are withdrawn. Wing test results remain historical behavior evidence only.
 
 
-Status: outcome mapping and one implementation contract for `t_78c1227c`,
-`DOC-PARITY-COVERAGE` (goal `PARITY`). No product implementation delivered.
+Status: **historical** outcome mapping and implementation contract for `t_78c1227c`,
+`DOC-PARITY-COVERAGE` (goal `PARITY`). No product implementation delivered by that task.
+The counts, fingerprints, script results and proposed next slice below are retained
+as history, not current instructions or official-source acceptance. Use the
+[rebuilt matrix](../product/hermes-desktop-feature-matrix.md) and
+[rebuild boundaries](official-feature-matrix-rebuild.md) instead.
+`scripts/check_desktop_next_port_slice.py` still targets the retired source/schema;
+it is not a current matrix validation command.
 
 ## Coverage resolution
 
-Reuse the [JSON feature matrix](../product/hermes-desktop-feature-matrix.json)
-and its [human view](../product/hermes-desktop-feature-matrix.md). They already
-map every feature group to an existing goal and task. This receipt does not
-create another all-outcome table or claim an exhaustive control census.
+At the time, the JSON feature matrix and its human view mapped the then-used
+feature groups to existing goals and tasks. That mapping was withdrawn with the
+reference correction. The current [JSON feature matrix](../product/hermes-desktop-feature-matrix.json)
+preserves those task/result associations under `historical_mappings`, separately
+from freshly inspected official groups. The historical totals below are not
+transferred to the rebuilt inventory.
 
 Executed mapping: 46 outcomes, 46 unique IDs, 46 resolved mappings, 29 unique
 goals and 95 unique task IDs. All 56 distinct source/candidate paths exist.

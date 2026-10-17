@@ -145,7 +145,7 @@ This file contains only hard blockers that require user action.
 - Task: approved physical target and capture consent; preparation proceeds
   without recording audio. Ownership: unclaimed; verify tracker before execution
 - Needs: 2 waiting task(s) depend on "approved physical target and capture consent; preparation proceeds without recording audio. Ownership: unclaimed; verify tracker before execution", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T05:39:34Z
+- Since: 2026-10-17T05:41:25Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 ### Q-owned target and
@@ -154,7 +154,7 @@ This file contains only hard blockers that require user action.
 - Task: owned target and
   exclusive build access for execution; static fixture repair can proceed first
 - Needs: 2 waiting task(s) depend on "owned target and exclusive build access for execution; static fixture repair can proceed first", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T05:39:34Z
+- Since: 2026-10-17T05:41:25Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 ### Q-BACKEND-SSH-KEY-NATIVE — USER_DECISION — effort decision — unblocks 1
@@ -212,13 +212,6 @@ This file contains only hard blockers that require user action.
 - Needs: worker reported a blocker: The required plan_backlog_traceability_test cannot pass while TODO.md lacks the task body for CONNECTION-CRON-ADMISSION. The coordinator must restore/repair that backlog metadata; editing TODO.md is explicitly outside this task's Touches. No commit was made.
 - Since: 2026-10-17T05:39:34Z
 - Answer: Answer in LANDING-PAGES-QUALITY's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-LANDING-PRODUCT-PROOF — USER_DECISION — effort investigate — unblocks 0
-
-- Task: LANDING-PRODUCT-PROOF — Goal: LANDING-ONBOARDING. Make Wing's value and
-- Needs: report.json does not match worker commit/files or reports failure
-- Since: 2026-10-17T05:39:34Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/LANDING-PRODUCT-PROOF/), then rescope or split LANDING-PRODUCT-PROOF in its TODO.md entry. The runner reruns it when the entry changes.
 
 <!-- pi-autowork:questions:end -->
 

@@ -2,6 +2,32 @@
 
 # Hermes Wing Docs
 
+**Your agent. Within reach.**
+
+Use Wing to follow your Hermes Agent's conversations and review its work from
+another screen. Bring your own Agent and configured model; Wing is the client,
+not a hosted assistant. Start with a reply, then explore what your Agent supports.
+
+## Start here
+
+- **Have an Agent?** [Set up your first chat](getting-started.md) — open or build Wing, connect deliberately and send a no-tools introduction.
+- **Choosing a route?** [Connect directly](getting-started.md#direct-agent-connection) — native Local/SSH/Remote, browser access or Android's manual Termux path.
+- **No connection or reply?** [Troubleshoot safely](getting-started.md#need-help) or [repair saved access](getting-started.md#repair-a-saved-direct-connection).
+- **Checking support?** [Platform evidence and limits](getting-started.md#platform-evidence-and-limits) — distinguish visible controls, simulated/native checks and authenticated live evidence.
+
+Native clients require a source build. The browser preview needs no credential;
+actual chat needs an authenticated Agent and may incur provider costs. Never put
+credentials in URLs or reports, or bypass certificate and SSH host trust.
+
+## Build and contribute
+
+- [Build and open Wing](getting-started.md#build-and-open-the-client) — browser preview and native Android/Linux prerequisites.
+- [Contributor setup](../CONTRIBUTING.md) — Flutter/Node versions, test commands and scoped changes.
+- [Hermes Agent compatibility](product/hermes-compatibility.md) — the technical connection requirements.
+- [Security policy](../SECURITY.md) and [threat model](security/threat-model.md) — credential handling, boundaries and private reporting.
+
+## Product reference
+
 The only Desktop product reference is [Nous Research Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop),
 locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
 [withdrawn as official parity evidence](quality/official-desktop-reference.md).
@@ -48,19 +74,6 @@ A missing local receipt does not establish a passing check on another checkout.
 The source-study graphs, census and tool checkout are also local artifacts, not
 release evidence. `.repo-docs-drift-ignore` lists the exact monitor findings for
 these intentional references; it does not exempt unrelated broken links.
-
-## Start here
-
-- [Direct Agent connection](getting-started.md#direct-agent-connection) — fresh-launch welcome and saved-owner Add Hermes without Wing Link in the development worktree
-- [Desktop-guided welcome](quality/desktop-welcome.md) — widget/Chromium qualification and explicit differences
-- [Welcome recovery on Linux](quality/desktop-welcome-recovery.md) — keyboard cancellation, explicit retry and process restoration; Android, physical keychain, live authentication and main delivery remain separate
-- [Your first conversation](getting-started.md) — direct connection, client build and explicit recovery
-- [Android and Linux qualification](runbooks/desktop-feature-qualification.md) — isolated QA procedures, not installation or live-authentication proof
-- [Hermes Agent compatibility](product/hermes-compatibility.md)
-- [Security policy](../SECURITY.md) and [threat model](security/threat-model.md)
-
-Use these first when building Wing, connecting directly, troubleshooting a
-connection, or checking the Agent capabilities Wing needs.
 
 ## Product and architecture
 
@@ -137,6 +150,10 @@ connection, or checking the Agent capabilities Wing needs.
 - [Chat session-pin write order](runbooks/chat-session-pin-write-order.md) — serialized same-store commits, coalescing and persistence limits
 
 ## Operations and qualification
+
+- [Desktop-guided welcome](quality/desktop-welcome.md) — widget/Chromium qualification and explicit differences
+- [Welcome recovery on Linux](quality/desktop-welcome-recovery.md) — keyboard cancellation, explicit retry and process restoration; Android, physical keychain, live authentication and main delivery remain separate
+- [Android and Linux qualification](runbooks/desktop-feature-qualification.md) — isolated QA procedures, not installation or live-authentication proof
 
 - [M2 CPU enforcement feasibility](quality/2026-10-06-m2-cpu-enforcement-feasibility.md) —
   source-only finding that the reviewed interfaces do not establish the exact

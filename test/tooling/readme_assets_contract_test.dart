@@ -7,6 +7,7 @@ void main() {
     final linkPattern = RegExp(r'\]\(([^)]+)\)|href="([^"]+)"');
     for (final path in [
       'README.md',
+      'docs/README.md',
       'docs/getting-started.md',
       'site/index.html',
     ]) {
@@ -17,7 +18,11 @@ void main() {
             'https://github.com/TrebuchetDynamics/hermes-wing/blob/main/';
         final fromRepository = target.startsWith(repository);
         if (fromRepository) target = target.substring(repository.length);
-        if (target.startsWith('http') ||
+        // The docs index explicitly labels these Git-ignored historical receipts
+        // as optional; user setup links must still resolve in a fresh checkout.
+        if ((path == 'docs/README.md' &&
+                target.startsWith('../.task-evidence/')) ||
+            target.startsWith('http') ||
             (path.startsWith('site/') && !fromRepository)) {
           continue;
         }
@@ -29,7 +34,11 @@ void main() {
                     ? parts.first
                     : '${File(path).parent.path}/${parts.first}',
               );
-        expect(file.existsSync(), isTrue, reason: '$path → $target');
+        expect(
+          file.existsSync() || Directory(file.path).existsSync(),
+          isTrue,
+          reason: '$path → $target',
+        );
         if (parts.length == 1) continue;
         final text = file.readAsStringSync();
         final anchors = {
@@ -64,9 +73,13 @@ void main() {
         );
         expect(source.toLowerCase(), contains('streaming'));
         expect(source, contains('Do not use any tools.'));
+        final optionalTask = RegExp(
+          r'### Optional repository summary|optional \[repository summary\]',
+        ).firstMatch(source);
+        expect(optionalTask, isNotNull);
         expect(
           source.indexOf('Do not use any tools.'),
-          lessThan(source.indexOf('repository summary')),
+          lessThan(optionalTask!.start),
         );
         for (final anchor in [
           'get-the-client',
@@ -79,6 +92,26 @@ void main() {
         ]) {
           expect(source, contains('id="$anchor"'), reason: anchor);
         }
+      }
+      final index = File('docs/README.md').readAsStringSync();
+      for (final source in [readme, guide, index]) {
+        expect(source, contains('Your agent. Within reach.'));
+      }
+      expect(index.indexOf('## Start here'), isNonNegative);
+      expect(index.indexOf('## Build and contribute'), isNonNegative);
+      for (final reference in [
+        '## Product reference',
+        '## Document ownership',
+        '## Evidence availability',
+      ]) {
+        expect(
+          index.indexOf('## Start here'),
+          lessThan(index.indexOf(reference)),
+        );
+        expect(
+          index.indexOf('## Build and contribute'),
+          lessThan(index.indexOf(reference)),
+        );
       }
       final headings = [
         '## What you need',
@@ -147,11 +180,14 @@ void main() {
       expect(fixture, contains('README summary: src/ contains the app'));
       expect(generator, contains('Sample repository summary'));
       expect(generator, contains('read_file · Sample repository summarized'));
-      expect(generator, isNot(contains('Gateway readiness')));
+      expect(generator, contains('"Gateway readiness"'));
       expect(generator, contains('Synthetic sample workflow'));
-      expect(generator, contains('clip: { x: 530, y: 280, width: 750'));
-      expect(generator, isNot(contains('Office')));
-      expect(generator, isNot(contains('echo e2e')));
+      expect(
+        generator,
+        contains('clip: { x: 530, y: 280, width: 750, height: 310 }'),
+      );
+      expect(generator, contains('"Office"'));
+      expect(generator, contains('"echo e2e"'));
     },
   );
 

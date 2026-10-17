@@ -1,5 +1,6 @@
 # Your first conversation with Hermes Wing
 
+**Your agent. Within reach.** Open Wing, connect your Agent and send a first message.
 Wing connects directly to Hermes Agent. Bring your own Agent, provider and model;
 Wing supplies the client, not a hosted assistant or model credits.
 If the names are unfamiliar, start with [What is Hermes?](../README.md#what-is-hermes-agent).
@@ -74,12 +75,12 @@ trusted transport and configured model. Only an actual reply verifies generation
 
 ## Direct Agent connection
 
-Have a reachable Hermes Agent API and its approved profile-bound credential.
-Configure Agent and provider access through supported Agent procedures. See [Agent preparation](#prepare-your-agent).
-Do not copy personal credentials or expose an API to a public interface to bypass
-setup. Never copy credentials into URLs or the clipboard. Remote native HTTP requires
-the existing explicit review and trusted encrypted network; browser access requires
-trusted HTTPS and permitted CORS.
+Use the endpoint and Agent token from [Agent preparation](#prepare-your-agent).
+Enter the Agent token in Wing, not your provider key.
+Never copy credentials into URLs or the clipboard. Do not open a public port to
+bypass setup. Prefer HTTPS; non-local native HTTP requires explicit consent on an
+authenticated encrypted VPN or isolated trusted LAN. The network is not authentication.
+Browsers need trusted HTTPS and permission from Agent to access it (CORS).
 
 On Android, the fresh welcome offers these choices in order:
 
@@ -94,68 +95,36 @@ On Android, the fresh welcome offers these choices in order:
    covers manual setup; completion is not installation or readiness proof.
 
 Android has no **Get Started** welcome action. On desktop/web, **Get Started**
-opens Local; SSH and Remote remain separate choices. On Linux, review the default
-`~/.hermes` metadata discovery or choose **Choose another Hermes home**. This is
-not a Hermes Project or conversation working directory: it does not start Agent,
-read its files, save/send the chosen path or bind its runtime to that folder.
-Discovery alone does not prove installation, authentication or model readiness.
+opens Local; SSH and Remote remain separate choices. On Linux, review the detected
+Hermes home or choose **Choose another Hermes home**. This is
+not a Hermes Project or conversation working directory: Wing checks only that the
+folder exists, not its files, and does not install or start Agent or save/send the path.
 Enter the running Agent's loopback endpoint and separate masked Agent API token.
 Web Local cannot inspect host folders; loopback refers to the browser's device.
 
-Local and Remote forms offer **Test connection**, a read-only capability check.
-It does not save credentials, activate Chat, send a prompt, or prove generation.
-**Connect step by step** guides setup; browser setup shows Wing's exact origin for
-the Agent CORS allowlist. A browser network error may hide CORS/TLS details and
-does not establish that the token is wrong. Named-profile gateways may need
-`/p/<profile>` in the base URL; do not append `/v1`. Wing cannot read Agent secrets.
+In Local or Remote, **Test connection** checks what Agent makes available without
+saving access or sending a message. **Connect step by step** offers setup help;
+its browser guidance shows the exact Wing origin to allow in Agent's CORS settings.
+If a feature is unavailable, ask the host administrator. A test or saved token is
+not a reply. Correct denied credentials, then choose explicit retry or cancel.
 
-With a saved connection, choose **Add Hermes** from Chat. **Help** explains what
-to request from the host; **Copy instructions** copies public guidance only. Missing
-capabilities remain unavailable. Correct denied credentials, then choose explicit retry or cancel.
-Wing never silently replays a mutation. Select a supported profile/session
-and model, then send one deliberate message.
+Already have a saved connection? Choose **Add Hermes** from Chat to add another.
+For an existing entry, use [saved-connection repair](#repair-a-saved-direct-connection).
+**Help** explains what to ask the host; **Copy instructions** copies public guidance only.
 
-For saved connections, choose **Edit saved Agent connection**. A changed Agent URL
-never reuses the old credential. **Test** is read-only; **Save** confirms local
-persistence, not Agent readiness. Cancel preserves the working connection.
+**SSH status:** browser SSH is unsupported. Full-app SSH authentication on
+Linux/Android is not verified; a terminal login is not proof of Wing access.
+The native form offers **Private key** and **Password**. Share only **Copy public key**,
+never a private key. [SSH key guidance](product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations)
+covers imported/generated keys and secure storage; there is no plaintext fallback.
+Browser OAuth is unsupported; an OAuth-only server cannot use the Agent-token flow.
+**Wing Link is not required.** Missing Agent features do not justify a fallback.
 
-The native SSH form offers **Private key** and **Password**. Selected imported keys
-are attempt-scoped. A generated key stays in secure storage; share only **Copy public
-key**, never the private key. Storage failure has no plaintext fallback. Browser SSH
-is unsupported. Full-app SSH authentication on Linux/Android is not verified; a
-terminal login is not proof of Wing access. See the
-[SSH key guidance](product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations).
-**Wing Link is not required.** Missing Agent capabilities do not justify a fallback.
-
-Remote HTTPS and VPN use the Agent token, not a provider key. Browser OAuth is
-unsupported; an OAuth-only server cannot use this flow. If access is denied, confirm
-the endpoint and Agent token with the administrator, then retry or cancel.
-
-**Connection success:** the chosen Agent/profile and conversation are available.
-Continue with [Start the conversation](#start-the-conversation), rather than
-assuming saved credentials mean the model can reply.
-
-## Repair a saved direct connection
-
-Open **Add Hermes**, then choose
-**Edit saved Agent connection** on the saved row. This does not switch Chat.
-
-1. Edit the Agent endpoint or enter an obscured replacement credential.
-   Saved credentials are not prefilled. A blank replacement retains the credential
-   only when the canonical Agent URL is unchanged. A changed URL never reuses that
-   credential. Supply the new endpoint's credential
-   separately if authentication requires one.
-2. Choose **Test** for direct read-only capabilities discovery. Test does not
-   save, connect Chat or prove generation. Cancel discards late test feedback;
-   it does not recall an already dispatched request.
-3. Choose **Save** to update that saved connection, or **Cancel** to discard the
-   draft. A save error keeps the draft for explicit retry. Successful Save means
-   local persistence, not remote readiness; connect deliberately afterwards.
-
-Guidance and Test/Save outcomes are keyboard focus stops and scroll into view.
-Use Page Down for text beyond the dialog viewport, then Tab to return to actions.
-If saving fails, keep the draft open and retry explicitly; do not delete your
-working connection to diagnose it.
+**Connection success:** your chosen Agent/profile and conversation are available.
+Continue below to get a reply. For a shared gateway, keep the supplied `/p/<profile>`
+prefix in the address; do not append `/v1`. See the
+[connection reference](product/desktop-connection-paths.md) for route details;
+Wing cannot read Agent secrets.
 
 <a id="connect-your-agent"></a>
 <a id="pair-a-phone-or-another-computer"></a>
@@ -174,13 +143,19 @@ connection probe do not prove generation. If no answer appears, use [Need help?]
 
 ### Optional repository summary
 
-Only after the no-tools smoke, deliberately grant a non-sensitive demo repository
-through Agent's supported Project/tools setup. Wing does not create a Project or
-grant filesystem access on your behalf. Understand provider cost and tool permissions
-before sending: “Summarize this demo repository's structure; do not modify files,
-run commands or read secrets.” Review any approval Agent actually requests; cancel
-if its scope differs. Observe tool activity and revisit the same conversation in
-the foreground. This is not a promise of background completion or notifications.
+After your first reply, you can try a small, read-only task:
+
+1. Choose a non-sensitive demo repository already granted through Agent's supported
+   Project/tools setup. Wing does not create a Project or grant file access for you.
+2. Understand provider costs and tool permissions, then send:
+
+   > Summarize this demo repository's structure; do not modify files, run commands or read secrets.
+
+3. Review any approval Agent actually requests; cancel if its scope differs.
+   Follow tool activity, then revisit the same conversation in the foreground.
+
+The images in the README illustrate this task with simulated Agent responses.
+They do not promise background completion, notifications or live synchronization.
 
 ## Common questions
 
@@ -238,6 +213,22 @@ whether an action may proceed. Agent owns these resources.
 [Report a problem](https://github.com/TrebuchetDynamics/hermes-wing/issues) with
 platform, actions and visible result. Keep credentials, private endpoints and
 conversations out of reports.
+
+## Repair a saved direct connection
+
+Open **Add Hermes**, then choose **Edit saved Agent connection** on the saved row.
+This does not switch Chat.
+
+1. Edit the Agent endpoint or enter a masked replacement credential. Saved credentials
+   are not prefilled. A blank replacement retains the credential only for an unchanged
+   Agent URL. A changed URL never reuses the old credential; provide the new one separately.
+2. Choose **Test** to check what Agent makes available without saving or opening Chat.
+   **Cancel** discards late feedback, not a request already sent.
+3. Choose **Save** or **Cancel**. Successful Save confirms local persistence, not Agent
+   readiness; connect deliberately afterwards. If saving fails, keep the draft and retry
+   explicitly rather than deleting your working connection.
+
+Use Tab to reach guidance and actions, and Page Down for text beyond the dialog viewport.
 
 ## Your data and permissions
 

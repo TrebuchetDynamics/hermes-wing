@@ -426,59 +426,74 @@ class _EndpointProfileChips extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final profile in profiles)
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 320),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: InputChip(
-                        key: ValueKey(
-                          'hermes-endpoint-profile-${profile.id ?? profile.baseUrl}',
-                        ),
-                        label: Text(
-                          _safeHermesUiPreview(
-                            profile.displayLabel,
-                            maxLength: 48,
+              Builder(
+                builder: (rowContext) => Focus(
+                  canRequestFocus: false,
+                  onFocusChange: (focused) {
+                    if (!focused) return;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (rowContext.mounted) {
+                        Scrollable.ensureVisible(rowContext);
+                      }
+                    });
+                  },
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: InputChip(
+                            key: ValueKey(
+                              'hermes-endpoint-profile-${profile.id ?? profile.baseUrl}',
+                            ),
+                            label: Text(
+                              _safeHermesUiPreview(
+                                profile.displayLabel,
+                                maxLength: 48,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onPressed: connecting
+                                ? null
+                                : () => onSelect(profile),
+                            onDeleted: connecting || profile.id == null
+                                ? null
+                                : () => onDelete(profile),
+                            deleteIcon: const Icon(Icons.close, size: 18),
+                            tooltip: _safeHermesUiPreview(
+                              profile.baseUrl,
+                              maxLength: 96,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        onPressed: connecting ? null : () => onSelect(profile),
-                        onDeleted: connecting || profile.id == null
-                            ? null
-                            : () => onDelete(profile),
-                        deleteIcon: const Icon(Icons.close, size: 18),
-                        tooltip: _safeHermesUiPreview(
-                          profile.baseUrl,
-                          maxLength: 96,
+                        IconButton(
+                          key: ValueKey(
+                            'hermes-endpoint-profile-edit-${profile.id}',
+                          ),
+                          tooltip: AppLocalizations.of(
+                            context,
+                          ).chatSavedEndpointEdit,
+                          icon: const Icon(Icons.settings_ethernet, size: 18),
+                          onPressed: connecting || profile.id == null
+                              ? null
+                              : () => onEdit(profile),
                         ),
-                      ),
+                        IconButton(
+                          key: ValueKey(
+                            'hermes-endpoint-profile-rename-${profile.id ?? profile.baseUrl}',
+                          ),
+                          tooltip: AppLocalizations.of(
+                            context,
+                          ).chatErrorRenameProfileTooltip,
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          onPressed: connecting || profile.id == null
+                              ? null
+                              : () => onRename(profile),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      key: ValueKey(
-                        'hermes-endpoint-profile-edit-${profile.id}',
-                      ),
-                      tooltip: AppLocalizations.of(
-                        context,
-                      ).chatSavedEndpointEdit,
-                      icon: const Icon(Icons.settings_ethernet, size: 18),
-                      onPressed: connecting || profile.id == null
-                          ? null
-                          : () => onEdit(profile),
-                    ),
-                    IconButton(
-                      key: ValueKey(
-                        'hermes-endpoint-profile-rename-${profile.id ?? profile.baseUrl}',
-                      ),
-                      tooltip: AppLocalizations.of(
-                        context,
-                      ).chatErrorRenameProfileTooltip,
-                      icon: const Icon(Icons.edit_outlined, size: 18),
-                      onPressed: connecting || profile.id == null
-                          ? null
-                          : () => onRename(profile),
-                    ),
-                  ],
+                  ),
                 ),
               ),
           ],

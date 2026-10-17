@@ -229,6 +229,7 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
     await tester.pumpAndSettle();
     expect(router.state.uri.path, '/setup/local');
     if (android) {
+      await activate('platform-local-setup-details');
       expect(localControl('platform-local-package-warning'), findsOneWidget);
       expect(localControl('hermes-api-key-field'), findsNothing);
       expect(localControl('platform-local-home-status'), findsNothing);
@@ -257,6 +258,7 @@ Future<Map<String, Object?>> _runLocalEnrollmentJourney(
     await activate('platform-local-guide-back');
     expect(localControl('hermes-api-key-field'), findsNothing);
     await activate('platform-local-guide-back');
+    await activate('platform-local-setup-details');
     await activate('platform-local-agent-docs');
     expect(localControl('platform-local-docs-error'), findsOneWidget);
     expect(find.textContaining('private-response'), findsNothing);

@@ -292,7 +292,15 @@ class HermesApiChannel extends ChangeNotifier
     String? apiKey,
     bool deferSessionSelection = false,
   }) async {
+    // Cleanup advances recovery ownership synchronously. A later lifecycle
+    // intent must supersede this call before it can acquire network ownership.
+    final recovery = _serveRecoveryGeneration + 1;
+    final connection = _connectionGeneration;
     await _forgetServeRecovery();
+    if (recovery != _serveRecoveryGeneration ||
+        connection != _connectionGeneration) {
+      return;
+    }
     await _connect(
       baseUrl: baseUrl,
       apiKey: apiKey,
@@ -302,8 +310,8 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   Future<void> disconnect() async {
-    await _disconnect();
-    await _forgetServeRecovery();
+    // Reserve both invalidations before yielding to a newer connection intent.
+    await Future.wait([_disconnect(), _forgetServeRecovery()]);
   }
 
   /// Explicit REST-only local serve selection; never falls back to gateway/RPC.
@@ -313,7 +321,13 @@ class HermesApiChannel extends ChangeNotifier
     bool Function()? canAccept,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
+    final recovery = _serveRecoveryGeneration + 1;
+    final connection = _connectionGeneration;
     await _forgetServeRecovery();
+    if (recovery != _serveRecoveryGeneration ||
+        connection != _connectionGeneration) {
+      return;
+    }
     await _connectServeReads(baseUrl, credential, canAccept: canAccept);
   }
 

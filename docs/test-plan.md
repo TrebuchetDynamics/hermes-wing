@@ -160,6 +160,20 @@ Android and live authentication require named-target evidence.
 
 ## Production serve restoration delivery gate
 
+Run `flutter test --no-pub --concurrency=1 test/core/hermes/channel/hermes_serve_credential_lifetime_test.dart`
+when changing transport teardown or serve Retry. The deterministic loopback
+regressions verify that switching to the Agent API, with or without an explicit
+disconnect, leaves the replacement untouched and sends no retired serve credential
+to its origin. Failed serve reads still allow deliberate same-origin Retry.
+These checks do not qualify native SSH, Android or live Agent authentication.
+
+The managed SSH panel regression also disposes an idle controller twice and
+attempts a late Connect. It must return false without invoking the forward,
+capturing credentials or changing the Agent channel. Existing cancellation and
+replacement tests retain their separate teardown oracles. Run
+`flutter test --no-pub test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`;
+this deterministic lifecycle check is not native SSH qualification.
+
 WING-TASK-407 restores deliberately enabled Linux loopback serve conversations
 through the production channel. The [source-bound restoration receipt](quality/local-serve-restoration.md#recovered-delivery-gate)
 records the guard repair, independent review, full Flutter suite, compiled browser,
@@ -365,6 +379,60 @@ fields or new Link adapters. The existing `DOC-M3-PROVIDER-CONTRACT` and removal
 successor own this gap; no credential mutation or new runtime check ran here.
 
 ## SSH private-key qualification
+
+Saved-destination owner recovery extends
+`test/core/hermes/ssh/secure_managed_ssh_target_store_test.dart` and
+`test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart`.
+Recreated controllers use real isolated HTTP readers and mocked secure storage to
+restore the exact non-recent profile/session after deliberate fresh authentication
+and a changed local port. Changed destination fields cannot import that owner;
+storage denial and cancellation during load cannot start forwarding. Original
+five-field records still load. Invalid owner extensions remain untouched. Run
+these with the SSH/channel/form union and analyzer. This is deterministic Linux
+host execution with Android platform selection, not native process-death, keyring,
+real SSH or live Agent proof. The
+[contract](security/managed-ssh-forward-contract.md#saved-conversation-pointer)
+retains those qualification gaps.
+
+Forwarded serve-read selection has six production-channel/controller fixture cases
+in `test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart`:
+explicit Android-mode profile/history reads, API default without fallback,
+credential denial, pending-read loss, replacement ownership, and blocked chat plus
+no saved ephemeral origin. The same test retains a positive local-chat/persistence
+control. Three panel/screen regressions cover token-label selection and chat-action
+visibility. Run these with the channel/client/SSH/control union when changing the
+boundary; actual Android SSH authentication and ticket-qualified chat remain open.
+These checks use synthetic HTTP and a fake forward on Linux, not an SSH target.
+
+The shared serve entry also has five production-channel cleanup regressions in
+`test/core/hermes/channel/hermes_serve_cleanup_ownership_test.dart`: disconnect,
+new API/serve ownership and abandoned setup prevent obsolete reads after storage
+cleanup; storage failure stays sanitized and cannot enable credential Retry.
+The original three ownership cases each made three obsolete reads before the fix.
+These Linux-hosted synthetic HTTP tests do not enable Android tunneled serve or
+qualify native SSH, durable restoration or live Agent access.
+
+Secure-cleanup cancellation adds three production-channel regressions in
+`test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`:
+cancel and controller disposal during held recovery-store cleanup prevent late
+API reads, while replacement reaches only its own origin. The focused channel,
+client, SSH and connection-control union passes 768 tests with eight opt-in SSH
+skips; analyzer and formatting pass on the reviewed source. Linux-hosted tests
+use synthetic transport responses, not a native/device/live SSH target.
+
+Adopted-connection retirement also has three deterministic controller regressions
+in `test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart`:
+explicit cancel and controller disposal disconnect the owned Agent, and a new
+owner opened during lease cleanup is not disconnected. The full panel target
+passes 34 tests on Linux-hosted Flutter. These are not device/SSH authentication,
+durable restore or Agent Stop evidence; route-only disposal retains the tunnel.
+
+The [adoption-loss follow-through](security/managed-ssh-forward-contract.md#forwarding-and-lifecycle)
+records four new controller/production-channel regressions: loss before and during
+health loading cannot adopt a dead tunnel, credentials are cleared, replacements
+remain untouched and recovery performs no mutations. The 403-test focused union
+passes with eight opt-in SSH tests skipped. Native SSH, Android tunneled-serve
+selection and durable relaunch remain separate pending checks.
 
 The later [generation/Help receipt](quality/connection-key-generation-help.md)
 records a clean full analyzer and 132 passing focused-union tests, including

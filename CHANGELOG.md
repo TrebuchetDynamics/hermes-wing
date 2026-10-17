@@ -4,6 +4,17 @@ All notable user-visible changes will be documented here.
 
 ## Unreleased
 
+### Added
+
+- The managed SSH form can explicitly select Hermes serve profile/session/history
+  reads using the host-provided session token. API mode remains the default;
+  chat requires separate ticket/operation negotiation. Explicitly saved serve SSH
+  destinations now retain their settled profile/conversation in secure storage;
+  deliberate Connect with fresh credentials restores canonical history on a new
+  port. No automatic connection or mutation replay is added. Cancellation, tunnel
+  loss and replacement fence obsolete reads without saving the local port.
+  This implementation has fixture coverage, not Android/native/live qualification.
+
 ### Removed
 
 - Removed Wing Link client/service, setup and pairing entry, installers and bundled
@@ -20,6 +31,39 @@ All notable user-visible changes will be documented here.
   without outside white corners; opaque Apple/maskable resources use a blue
   background. See [logo assets and usage](assets/branding/README.md). Native
   launcher/store qualification remains separate.
+
+- Disposed managed SSH controllers now reject late Connect callbacks before
+  acquiring credentials or opening a tunnel. Disposal is idempotent; ordinary
+  cancellation remains retryable on a live controller.
+
+- Explicit serve connection now claims ownership before secure recovery cleanup.
+  Cancellation, abandoned setup and newer API/serve connections prevent obsolete
+  reads; storage failures stay sanitized without enabling credential Retry.
+
+- Cancelling managed SSH while secure recovery cleanup is pending now revokes
+  Agent adoption before API reads begin. Disposing the controller has the same
+  protection, and replacement connections remain untouched.
+
+- Cancelling or disposing an adopted managed SSH connection now disconnects its
+  owned Agent channel before releasing the local forwarding port. A replacement
+  connection opened during teardown stays untouched. This closes stale connected
+  state; it does not qualify Android SSH or durable relaunch.
+
+- Leaving a serve connection now retires its in-memory read credential, including
+  direct switches to the Agent API transport. A later serve Retry cannot replace
+  the new connection using the retired token; same-origin failed-read Retry remains
+  available. This is a shared-channel fix, not Android SSH qualification.
+
+- Managed SSH now revokes Agent connection adoption if its tunnel is lost during
+  preflight or health loading, clears attempt credential callbacks and preserves
+  replacement connections. Deterministic regressions cover the race; native SSH
+  and Android tunneled-serve qualification remain open.
+
+- Chat's existing overflow menu now opens Settings while a compact saved-contact
+  stream is active. Returning restores the retained Chat and composer focus.
+  [Bounded Linux fixture checks](docs/quality/chat-workspace-overlay-native.md#compact-settings-during-active-saved-contact-chat)
+  also cover compact saved-host switching; Android and live authentication remain
+  unqualified.
 
 - Loading placeholders now fit inside parent scrollables, including saved
   Connections during a host switch. The nested-scrollable regression and

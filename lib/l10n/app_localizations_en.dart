@@ -9,6 +9,38 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get managedSshSaveTarget => 'Save SSH settings';
+
+  @override
+  String get managedSshLoadTarget => 'Use saved SSH settings';
+
+  @override
+  String get managedSshTargetBody =>
+      'Save one SSH destination and Agent transport on this device. Serve mode also remembers the last settled profile and conversation for this saved destination. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.';
+
+  @override
+  String get managedSshTargetSaved =>
+      'SSH settings saved securely. Authentication is still required.';
+
+  @override
+  String get managedSshTargetLoaded =>
+      'Saved SSH settings loaded. Enter credentials, then Connect.';
+
+  @override
+  String get managedSshTargetMissing => 'No saved SSH settings on this device.';
+
+  @override
+  String get managedSshTargetFailure =>
+      'SSH settings could not be saved or loaded securely.';
+
+  @override
+  String get managedSshServeReads => 'Read Hermes serve through SSH';
+
+  @override
+  String get managedSshServeReadsBody =>
+      'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history. Chat requires separate ticket authentication. SSH settings can be saved separately; credentials and automatic restoration are not saved. No automatic protocol fallback.';
+
+  @override
   String get localServeReadsLabel =>
       'Read an already-running Hermes serve backend';
 
@@ -446,10 +478,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get managedSshHostKeyBody =>
-      'Compare this fingerprint with the host\'s SSH key before trusting this connection. Cancel if it differs or you cannot verify it.';
+      'Compare this fingerprint with the host\'s SSH key before trusting it. Wing will remember this host and SSH port securely and block changed keys. Cancel if you cannot verify it.';
 
   @override
-  String get managedSshTrustAction => 'Trust this connection';
+  String get managedSshHostKeyChanged =>
+      'The SSH host key differs from the remembered key. Connection blocked. Verify the change with the host administrator; Wing cannot replace a remembered key here.';
+
+  @override
+  String get managedSshHostTrustUnavailable =>
+      'SSH host trust could not be read or saved securely. Connection blocked. Restore secure storage access before trying again.';
+
+  @override
+  String get managedSshTrustAction => 'Trust and remember host';
 
   @override
   String get managedSshFailed =>

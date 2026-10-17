@@ -34,6 +34,15 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     return ManagedSshConnectionForm(
+      targetLabels: ManagedSshTargetLabels(
+        save: strings.managedSshSaveTarget,
+        load: strings.managedSshLoadTarget,
+        body: strings.managedSshTargetBody,
+        saved: strings.managedSshTargetSaved,
+        loaded: strings.managedSshTargetLoaded,
+        missing: strings.managedSshTargetMissing,
+        failure: strings.managedSshTargetFailure,
+      ),
       labels: ManagedSshConnectionLabels(
         host: strings.managedSshHostLabel,
         sshPort: strings.managedSshPortLabel,

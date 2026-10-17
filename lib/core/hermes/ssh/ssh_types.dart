@@ -12,6 +12,8 @@ enum ManagedSshFailure {
   cancelled,
   timeout,
   hostKeyRejected,
+  hostKeyChanged,
+  hostTrustUnavailable,
   authentication,
   connection,
 }

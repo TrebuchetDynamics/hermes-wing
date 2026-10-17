@@ -913,6 +913,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _setState(VoidCallback fn) => setState(fn);
 
+  // Only a controller that adopted a tunnel can need reconnect; reading the
+  // provider would otherwise create an app-scoped channel listener for everyone.
+  bool get _needsSshReconnect =>
+      ref.exists(managedSshConnectionControllerProvider) &&
+      ref.read(managedSshConnectionControllerProvider).needsSshReconnect;
+
   bool get _sessionRestorationUnsettled =>
       _gatewayDirectory.isActivating ||
       _gatewayDirectory.restoringSessionId != null;
@@ -1732,16 +1738,20 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                 tooltip: strings.chatShellMoreActionsTooltip,
                 onSelected: (action) {
                   switch (action) {
+                    case 'settings':
+                      unawaited(
+                        ChatWorkspaceOverlay.open(
+                          context,
+                          AppRoutes.settings,
+                          returnFocus: _composerFocusNode,
+                        ),
+                      );
                     case 'sessions':
                       _showSessionsPanel(context, channel);
                     case 'new-session':
                       unawaited(_createSession(context, channel));
                     case 'copy-transcript':
                       unawaited(_showTranscriptCopyOptions(context, state));
-                    case 'settings':
-                      unawaited(
-                        ChatWorkspaceOverlay.open(context, AppRoutes.settings),
-                      );
                     case 'diagnostics':
                       _showDiagnosticsDialog(context, state);
                     case 'disconnect':
@@ -1749,6 +1759,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                   }
                 },
                 itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'settings',
+                    child: ListTile(
+                      leading: const Icon(Icons.settings_outlined),
+                      title: Text(strings.settingsDestination),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                   PopupMenuItem(
                     value: 'sessions',
                     child: ListTile(
@@ -1772,15 +1790,6 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                       child: ListTile(
                         leading: const Icon(Icons.copy_all_outlined),
                         title: Text(strings.copyTranscriptAction),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  if (activeContact != null)
-                    PopupMenuItem(
-                      value: 'settings',
-                      child: ListTile(
-                        leading: const Icon(Icons.settings_outlined),
-                        title: Text(strings.settingsDestination),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -1831,7 +1840,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       ),
       body: _editingConnection
           ? _buildConnectForm(context, channel, state)
-          : ref.read(managedSshConnectionControllerProvider).needsSshReconnect
+          : _needsSshReconnect
           ? WingEmptyState(
               key: const ValueKey('managed-ssh-interrupted'),
               icon: Icons.link_off,

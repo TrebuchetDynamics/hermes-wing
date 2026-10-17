@@ -489,6 +489,8 @@ void main() {
       expect(controller.recoveryTarget?.uncertain, false);
       channel.clearActiveSession();
       await channel.disconnect();
+      // Connect stays closed until the retired lease finishes teardown.
+      await controller.cancel();
       expect(await connectApi(), true);
       expect(channel.state.activeSessionId, isNull);
       await channel.selectSession('remembered');
@@ -581,18 +583,22 @@ void main() {
         loader: FakeGatewaySummaryLoader({}),
         activeChannel: channel,
       );
+      final container = ProviderContainer(
+        overrides: [
+          managedSshConnectionControllerProvider.overrideWithValue(controller),
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesGatewayDirectoryProvider.overrideWith((_) => directory),
+          hermesEndpointStoreProvider.overrideWithValue(endpoints),
+          hermesVoiceCaptureServiceProvider.overrideWithValue(null),
+          hermesTextToSpeechServiceProvider.overrideWithValue(null),
+        ],
+      );
+      addTearDown(container.dispose);
+      // Production creates the controller through its provider when SSH starts.
+      container.read(managedSshConnectionControllerProvider);
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            managedSshConnectionControllerProvider.overrideWithValue(
-              controller,
-            ),
-            hermesChannelProvider.overrideWithValue(channel),
-            hermesGatewayDirectoryProvider.overrideWith((_) => directory),
-            hermesEndpointStoreProvider.overrideWithValue(endpoints),
-            hermesVoiceCaptureServiceProvider.overrideWithValue(null),
-            hermesTextToSpeechServiceProvider.overrideWithValue(null),
-          ],
+        UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

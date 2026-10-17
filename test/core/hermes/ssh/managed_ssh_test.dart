@@ -166,6 +166,139 @@ void main() {
       expect(late.destroyed, isTrue);
     },
   );
+  test('disconnect callers settle in order after shared teardown', () async {
+    final dial = Completer<SSHSocket>();
+    final service = ManagedSshForward(dial: (_, _, {timeout}) => dial.future);
+    final pending = service.connect(
+      configuration: ManagedSshConfig(
+        host: 'example.invalid',
+        username: 'test',
+        agentPort: 8080,
+      ),
+      authentication: const ManagedSshCredentials(),
+    );
+    final cancelled = expectLater(pending, throwsA(isA<ManagedSshException>()));
+    final settled = <String>[];
+    final first = service.disconnect().then((_) => settled.add('first'));
+    final second = service.disconnect().then((_) => settled.add('second'));
+    await Future.wait([first, second]);
+    await cancelled;
+    expect(settled, ['first', 'second']);
+    dial.complete(FakeSocket());
+    await service.dispose();
+  });
+
+  test('adapter rejects retry until teardown settles', () async {
+    final dial = Completer<SSHSocket>();
+    var calls = 0;
+    final service = ManagedSshForward(
+      dial: (_, _, {timeout}) {
+        calls++;
+        return calls == 1
+            ? dial.future
+            : Future.error(
+                const ManagedSshException(ManagedSshFailure.connection),
+              );
+      },
+    );
+    final config = ManagedSshConfig(
+      host: 'example.invalid',
+      username: 'test',
+      agentPort: 8080,
+    );
+    Future<ManagedSshTunnel> connect() => service.connect(
+      configuration: config,
+      authentication: const ManagedSshCredentials(),
+    );
+    final cancelled = expectLater(
+      connect(),
+      throwsA(isA<ManagedSshException>()),
+    );
+    final closing = service.disconnect();
+    await expectLater(
+      connect(),
+      throwsA(
+        isA<ManagedSshException>().having(
+          (e) => e.failure,
+          'failure',
+          ManagedSshFailure.busy,
+        ),
+      ),
+    );
+    expect(calls, 1);
+    await closing;
+    await cancelled;
+    await expectLater(
+      connect(),
+      throwsA(
+        isA<ManagedSshException>().having(
+          (e) => e.failure,
+          'failure',
+          ManagedSshFailure.connection,
+        ),
+      ),
+    );
+    expect(calls, 2);
+    dial.complete(FakeSocket());
+    await service.dispose();
+  });
+
+  test('socket teardown reentrancy cannot reopen the adapter', () async {
+    final acquiring = Completer<void>();
+    final key = Completer<String?>();
+    final socket = FakeSocket();
+    var calls = 0;
+    final service = ManagedSshForward(
+      dial: (_, _, {timeout}) async {
+        calls++;
+        return socket;
+      },
+    );
+    final config = ManagedSshConfig(
+      host: 'example.invalid',
+      username: 'test',
+      agentPort: 8080,
+    );
+    final pending = service.connect(
+      configuration: config,
+      authentication: ManagedSshCredentials(
+        privateKey: () {
+          acquiring.complete();
+          return key.future;
+        },
+      ),
+    );
+    final cancelled = expectLater(pending, throwsA(isA<ManagedSshException>()));
+    await acquiring.future;
+    Future<void>? reentrant;
+    Future<void>? retry;
+    socket.onDestroy = () {
+      socket.onDestroy = null;
+      reentrant = service.disconnect();
+      retry = expectLater(
+        service.connect(
+          configuration: config,
+          authentication: const ManagedSshCredentials(),
+        ),
+        throwsA(
+          isA<ManagedSshException>().having(
+            (e) => e.failure,
+            'failure',
+            ManagedSshFailure.busy,
+          ),
+        ),
+      );
+    };
+    await service.disconnect();
+    await reentrant;
+    await retry;
+    await cancelled;
+    expect(calls, 1);
+    expect(socket.destroyed, isTrue);
+    key.complete(null);
+    await service.dispose();
+  });
+
   test(
     'configuration rejects URL hosts, control characters and invalid ports',
     () {
@@ -198,9 +331,11 @@ void main() {
 
 class FakeSocket implements SSHSocket {
   bool destroyed = false;
+  void Function()? onDestroy;
   @override
   void destroy() {
     destroyed = true;
+    onDestroy?.call();
   }
 
   @override

@@ -49,6 +49,8 @@ class ManagedSshConnectionController {
   bool get needsSshReconnect => identical(_interruptedState, channel.state);
   ManagedSshTunnel? _tunnel;
   bool _pending = false;
+  bool _cancelling = false;
+  Future<void>? _cancellation;
   void Function()? _clearAuthentication;
   bool _adopting = false;
   bool _adopted = false;
@@ -63,7 +65,7 @@ class ManagedSshConnectionController {
     SshConnectionRequest input, {
     required ManagedSshHostKeyVerifier verifyHostKey,
   }) async {
-    if (_disposed || _pending || _tunnel != null) return false;
+    if (_disposed || _cancelling || _pending || _tunnel != null) return false;
     if (input.transport == SshAgentTransport.serve &&
         (kIsWeb ||
             defaultTargetPlatform != TargetPlatform.android ||
@@ -149,8 +151,6 @@ class ManagedSshConnectionController {
             unawaited(cancel());
           } else {
             final owns = _ownsConnection;
-            _tunnel = null;
-            _adopted = false;
             if (channel is HermesApiChannel && owns != null) {
               (channel as HermesApiChannel).interruptForwardedConnection(owns);
               _interruptedState = channel.state;
@@ -158,7 +158,10 @@ class ManagedSshConnectionController {
                 tunnel.agentUri.toString()) {
               unawaited(channel.disconnect());
             }
-            ++_generation;
+            // Retire the lost lease through cancellation so Connect stays
+            // closed until cleanup settles; the channel was handled above.
+            _replacement = true;
+            unawaited(cancel());
           }
         }),
       );
@@ -188,6 +191,8 @@ class ManagedSshConnectionController {
           baseUrl: tunnel.agentUri.toString(),
           apiKey: token,
           onAcquire: acquired,
+          canAccept: () =>
+              generation == _generation && identical(_tunnel, tunnel),
           deferSessionSelection: saved != null,
           forwardedRunOwner: ManagedSshRecovery.runOwner(
             configuration,
@@ -209,10 +214,8 @@ class ManagedSshConnectionController {
           apiKey: token,
         );
       }
-      if (generation != _generation) {
-        await tunnel.dispose();
-        return false;
-      }
+      // Only cancellation advances the generation here, and it owns disposal.
+      if (generation != _generation) return false;
       if ((channel is HermesApiChannel &&
               !(_ownsConnection?.call() ?? false)) ||
           !channel.state.isConnected ||
@@ -361,15 +364,33 @@ class ManagedSshConnectionController {
         ((channel is HermesApiChannel && !(_ownsConnection?.call() ?? false)) ||
             !channel.state.isConnected ||
             channel.state.connectedBaseUrl != tunnel.agentUri.toString())) {
-      _adopted = false;
-      _tunnel = null;
-      unawaited(tunnel.dispose());
+      // The channel has moved on; retire only our lease before admitting retry.
+      _replacement = true;
+      unawaited(cancel());
     }
   }
 
-  Future<void> cancel({int? attemptId}) async {
-    if (attemptId != null && attemptId != _generation) return;
-    if (!_pending && _tunnel == null) return;
+  Future<void> cancel({int? attemptId}) {
+    if (attemptId != null && attemptId != _generation) {
+      return Future<void>.value();
+    }
+    final pending = _cancellation;
+    if (pending != null) return pending;
+    if (!_pending && _tunnel == null) return Future<void>.value();
+    _cancelling = true;
+    // Publish before disconnect synchronously notifies reentrant callers.
+    final completion = Completer<void>();
+    _cancellation = completion.future;
+    completion.complete(
+      _cancel().whenComplete(() {
+        _cancellation = null;
+        _cancelling = false;
+      }),
+    );
+    return completion.future;
+  }
+
+  Future<void> _cancel() async {
     final cancellation = ++_generation;
     _clearAuthentication?.call();
     _clearAuthentication = null;
@@ -386,8 +407,7 @@ class ManagedSshConnectionController {
     // same-owner status/stream completions. A replacement guard is distinct
     // from immutable informational state equality.
     final disconnect =
-        !_disposed &&
-            cancellation == _generation &&
+        cancellation == _generation &&
             adopting &&
             !_replacement &&
             (channel is HermesApiChannel
@@ -398,13 +418,20 @@ class ManagedSshConnectionController {
                 state.connectedBaseUrl == tunnel?.agentUri.toString())
         ? channel.disconnect()
         : Future<void>.value();
-    await Future.wait([
-      disconnect,
-      tunnel != null ? tunnel.dispose() : forward.disconnect(),
-    ]);
+    // Retire Agent authentication before releasing a reusable local port.
+    try {
+      await disconnect;
+    } finally {
+      if (tunnel != null) {
+        await tunnel.dispose();
+      } else {
+        await forward.disconnect();
+      }
+    }
   }
 
   void dispose() {
+    if (_disposed) return;
     _disposed = true;
     channel.removeListener(_changed);
     unawaited(cancel());

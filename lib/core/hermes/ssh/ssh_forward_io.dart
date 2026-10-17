@@ -221,11 +221,20 @@ class ManagedSshForward {
   Future<void> _stop(
     _Attempt attempt, [
     ManagedSshFailure failure = ManagedSshFailure.cancelled,
-  ]) async {
-    if (identical(_attempt, attempt)) _attempt = null;
+  ]) {
     if (attempt.stopped) return attempt.closed.future;
     attempt.stopped = true;
     attempt.failure = failure;
+    // Retain ownership until cleanup settles; reentrant callers join its result.
+    attempt.closed.complete(
+      _close(attempt).whenComplete(() {
+        if (identical(_attempt, attempt)) _attempt = null;
+      }),
+    );
+    return attempt.closed.future;
+  }
+
+  Future<void> _close(_Attempt attempt) async {
     attempt.cancel.complete();
     attempt.clearSecrets?.call();
     for (final socket in attempt.sockets) {
@@ -239,7 +248,6 @@ class ManagedSshForward {
     attempt.socket?.destroy();
     await attempt.listener?.cancel();
     await attempt.server?.close();
-    attempt.closed.complete();
   }
 
   Future<void> disconnect() async {

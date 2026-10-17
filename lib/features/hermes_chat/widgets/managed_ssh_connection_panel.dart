@@ -118,9 +118,15 @@ class _ManagedSshConnectionPanelState
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) return Text(AppLocalizations.of(context).managedSshUnsupported);
+    final strings = AppLocalizations.of(context);
+    if (kIsWeb) return Text(strings.managedSshUnsupported);
+    if (defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.linux) {
+      return Text(strings.chatLayoutConnectionModeSshUrlHelper);
+    }
     return LocalizedManagedSshConnectionForm(
       onSubmit: _submit,
+      allowServe: defaultTargetPlatform == TargetPlatform.android,
       pickKey: widget.pickKey,
       generatedKeyStore: widget.generatedKeyStore,
       onCancel: _cancel,

@@ -16,6 +16,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
     this.sanitizedError,
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
+    this.allowServe = false,
   });
 
   final Future<void> Function(SshConnectionRequest) onSubmit;
@@ -23,6 +24,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
   final ManagedSshKeyPicker pickKey;
   final ManagedSshGeneratedKeyStore? generatedKeyStore;
   final bool busy;
+  final bool allowServe;
   final String? sanitizedError;
 
   @override
@@ -58,6 +60,8 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
         invalidPassword: strings.managedSshPasswordRequired,
         invalidToken: strings.managedSshInvalidToken,
         failure: strings.managedSshFailed,
+        serveReads: allowServe ? strings.localServeReadsLabel : null,
+        serveToken: allowServe ? strings.localServeTokenLabel : null,
       ),
       generatedKeyLabels: ManagedSshGeneratedKeyLabels(
         generate: strings.managedSshGenerateKey,

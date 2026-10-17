@@ -41,12 +41,14 @@ class RetryNativeChannel extends HermesApiChannel {
     required String baseUrl,
     String? apiKey,
     bool deferSessionSelection = false,
+    void Function(bool Function() isCurrent)? onAcquire,
   }) {
     connects++;
     return super.connect(
       baseUrl: baseUrl,
       apiKey: apiKey,
       deferSessionSelection: deferSessionSelection,
+      onAcquire: onAcquire,
     );
   }
 

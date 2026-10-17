@@ -7,14 +7,26 @@ extension _ServeReadsExtension on HermesApiChannel {
     bool Function()? canAccept,
     String profile = 'default',
     String? storedSession,
+    bool transient = false,
+    void Function(bool Function() isCurrent)? onAcquire,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
+    final generation = _connectionGeneration + 1;
+    final recovery = _serveRecoveryGeneration;
+    onAcquire?.call(
+      () =>
+          generation == _connectionGeneration &&
+          recovery == _serveRecoveryGeneration,
+    );
     final disconnected = _disconnect();
-    final generation = _connectionGeneration;
     await disconnected;
-    if (generation != _connectionGeneration || !(canAccept?.call() ?? true)) {
+    if (generation != _connectionGeneration ||
+        recovery != _serveRecoveryGeneration ||
+        !(canAccept?.call() ?? true)) {
       return;
     }
+    _serveTransient = transient;
+    _serveCanAccept = transient ? canAccept : null;
     _setState(
       const HermesChannelState(
         status: HermesConnectionStatus.connecting,
@@ -22,11 +34,15 @@ extension _ServeReadsExtension on HermesApiChannel {
       ),
     );
     HermesWebReadClient? reader;
-    bool current() =>
+    bool ownsAcquisition() =>
         generation == _connectionGeneration &&
+        recovery == _serveRecoveryGeneration;
+    bool current() =>
+        ownsAcquisition() &&
         identical(_serveReader, reader) &&
         (canAccept?.call() ?? true);
     try {
+      if (generation != _connectionGeneration || !_serveOwnerIsCurrent) return;
       reader = HermesWebReadClient.forLocalReads(
         origin: Uri.parse(baseUrl),
         credential: credential,
@@ -84,11 +100,12 @@ extension _ServeReadsExtension on HermesApiChannel {
         ),
       );
     } finally {
-      // An abandoned form may still own the transport; never leave it connected.
-      if (generation == _connectionGeneration && !(canAccept?.call() ?? true)) {
+      // A replacement intent owns cleanup even while its secure-store clear
+      // is pending; stale reads must not invalidate its reserved generation.
+      if (ownsAcquisition() && !(canAccept?.call() ?? true)) {
         await _disconnect();
       }
-      if (generation == _connectionGeneration &&
+      if (ownsAcquisition() &&
           identical(_serveReader, reader) &&
           !_state.isConnected) {
         reader?.disconnect();
@@ -102,7 +119,9 @@ extension _ServeReadsExtension on HermesApiChannel {
     bool deferSessionSelection = false,
   }) async {
     final previous = _serveReader!;
-    if (!_state.isConnected || !_state.profiles.any((p) => p.id == profile)) {
+    if (!_state.isConnected ||
+        !_serveOwnerIsCurrent ||
+        !_state.profiles.any((p) => p.id == profile)) {
       throw const HermesWebReadException(HermesWebFailureKind.identity);
     }
     final generation = _connectionGeneration;
@@ -113,7 +132,8 @@ extension _ServeReadsExtension on HermesApiChannel {
     bool current() =>
         generation == _connectionGeneration &&
         selection == _profileSelectionGeneration &&
-        identical(_serveReader, previous);
+        identical(_serveReader, previous) &&
+        _serveOwnerIsCurrent;
     try {
       final profiles = await reader.profiles();
       if (!current()) return;
@@ -163,6 +183,7 @@ extension _ServeReadsExtension on HermesApiChannel {
   }) async {
     final reader = _serveReader!;
     if (!_state.isConnected ||
+        !_serveOwnerIsCurrent ||
         _state.isSelectingProfile ||
         !(canAccept?.call() ?? true)) {
       return;
@@ -175,6 +196,7 @@ extension _ServeReadsExtension on HermesApiChannel {
     _setState(_state.copyWith(clearServeChat: true, hasUnreconciledRun: false));
     final history = await reader.history(session);
     if (!identical(_serveReader, reader) ||
+        !_serveOwnerIsCurrent ||
         selection != _sessionSelectionGeneration ||
         _state.isSelectingProfile ||
         !(canAccept?.call() ?? true)) {
@@ -198,7 +220,8 @@ extension _ServeReadsExtension on HermesApiChannel {
 
   Future<void> _loadMoreServeSessions() async {
     final reader = _serveReader!;
-    if (!_state.hasMoreSessions ||
+    if (!_serveOwnerIsCurrent ||
+        !_state.hasMoreSessions ||
         _state.isLoadingMoreSessions ||
         _state.isSelectingProfile) {
       return;
@@ -207,7 +230,11 @@ extension _ServeReadsExtension on HermesApiChannel {
     _setState(_state.copyWith(isLoadingMoreSessions: true));
     try {
       final page = await reader.sessions(offset: offset);
-      if (!identical(_serveReader, reader) || _state.isSelectingProfile) return;
+      if (!identical(_serveReader, reader) ||
+          _state.isSelectingProfile ||
+          !_serveOwnerIsCurrent) {
+        return;
+      }
       final existing = _state.sessions.map((s) => s.id).toSet();
       _setState(
         _state.copyWith(
@@ -231,7 +258,8 @@ extension _ServeReadsExtension on HermesApiChannel {
   Future<void> _loadEarlierServeMessages() async {
     final reader = _serveReader!;
     final session = _state.activeSessionId;
-    if (session == null ||
+    if (!_serveOwnerIsCurrent ||
+        session == null ||
         !_state.hasEarlierActiveMessages ||
         _state.isLoadingEarlierActiveMessages ||
         _state.isSelectingProfile) {
@@ -243,6 +271,7 @@ extension _ServeReadsExtension on HermesApiChannel {
     try {
       final page = await reader.history(session, offset: offset);
       if (!identical(_serveReader, reader) ||
+          !_serveOwnerIsCurrent ||
           selection != _sessionSelectionGeneration ||
           _state.isSelectingProfile) {
         return;

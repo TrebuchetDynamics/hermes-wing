@@ -18,7 +18,8 @@ extension _ServeChatExtension on HermesApiChannel {
   Future<void> _qualifyServeChat() async {
     final reader = _serveReader;
     final session = _state.activeSessionId;
-    if (reader == null ||
+    if (!_serveOwnerIsCurrent ||
+        reader == null ||
         session == null ||
         !_state.isConnected ||
         _state.isSelectingProfile ||
@@ -33,6 +34,7 @@ extension _ServeChatExtension on HermesApiChannel {
     _setState(_state.copyWith(clearServeChat: true, clearErrorMessage: true));
     bool current() =>
         identical(reader, _serveReader) &&
+        _serveOwnerIsCurrent &&
         qualification == _serveQualification &&
         selection == _sessionSelectionGeneration &&
         !_state.isSelectingProfile &&
@@ -79,7 +81,7 @@ extension _ServeChatExtension on HermesApiChannel {
   }
 
   void _syncServeChat(HermesServeLifecycle lifecycle) {
-    if (!identical(lifecycle, _serveLifecycle)) return;
+    if (!identical(lifecycle, _serveLifecycle) || !_serveOwnerIsCurrent) return;
     final session = lifecycle.storedSessionId;
     if (session == null ||
         session != _state.activeSessionId ||
@@ -140,6 +142,7 @@ extension _ServeChatExtension on HermesApiChannel {
   }) async {
     final lifecycle = _serveLifecycle;
     if (lifecycle == null ||
+        !_serveOwnerIsCurrent ||
         !_state.isConnected ||
         _state.isSelectingProfile ||
         _serveSubmissionPending ||
@@ -174,6 +177,7 @@ extension _ServeChatExtension on HermesApiChannel {
     final target = activeTurnInterruptionTarget;
     if (lifecycle == null ||
         target == null ||
+        !_serveOwnerIsCurrent ||
         identical(_serveStopPending, lifecycle) ||
         lifecycle.stopRequested) {
       return false;
@@ -213,6 +217,7 @@ extension _ServeChatExtension on HermesApiChannel {
     final lifecycle = _serveLifecycle;
     if (lifecycle == null ||
         lifecycle.disconnected ||
+        !_serveOwnerIsCurrent ||
         _state.isSelectingProfile ||
         origin == null ||
         !identical(_pendingApprovals[id], origin) ||

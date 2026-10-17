@@ -4,6 +4,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/features/hermes_chat/widgets/localized_managed_ssh_connection_form.dart';
 import 'package:wing/features/hermes_chat/widgets/managed_ssh_connection_form.dart';
 
 const labels = ManagedSshConnectionLabels(
@@ -73,6 +75,47 @@ Future<void> connect(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets(
+    'explicit serve selection clears API token and requires its own credential',
+    (tester) async {
+      SshConnectionRequest? submitted;
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: LocalizedManagedSshConnectionForm(
+              allowServe: true,
+              onCancel: () {},
+              onSubmit: (input) async => submitted = input,
+            ),
+          ),
+        ),
+      );
+      await fillValid(tester);
+      await tester.enterText(field('agent-token'), 'synthetic-api-token');
+      final choice = find.byKey(const ValueKey('managed-ssh-serve-reads'));
+      await tester.ensureVisible(choice);
+      await tester.tap(choice);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextFormField>(field('agent-token')).controller!.text,
+        isEmpty,
+      );
+      final button = find.byType(FilledButton);
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(submitted, isNull);
+      await tester.enterText(field('agent-token'), 'synthetic-serve-token');
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(submitted!.transport, SshAgentTransport.serve);
+      expect(submitted!.agentBearerToken, 'synthetic-serve-token');
+    },
+  );
+
   testWidgets('username and credential validation are bounded', (tester) async {
     var calls = 0;
     await showForm(

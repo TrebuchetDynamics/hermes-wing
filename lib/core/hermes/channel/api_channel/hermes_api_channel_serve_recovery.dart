@@ -15,6 +15,9 @@ extension _ServeRecoveryExtension on HermesApiChannel {
     HermesServeLifecycle lifecycle, {
     bool uncertain = false,
   }) async {
+    if (!_serveOwnerIsCurrent) {
+      throw const HermesWebReadException(HermesWebFailureKind.stale);
+    }
     final c = lifecycle.recovery;
     final selection = HermesServeRecoverySelection(
       HermesWebRecovery(
@@ -29,14 +32,17 @@ extension _ServeRecoveryExtension on HermesApiChannel {
       _serveCredential!,
     );
     _serveRecovery = selection;
+    final persist = !_serveTransient;
     final operation = _servePersistenceTail.then((_) async {
-      if (identical(lifecycle, _serveLifecycle)) {
+      if (persist &&
+          identical(lifecycle, _serveLifecycle) &&
+          _serveOwnerIsCurrent) {
         await _serveRecoveryStore?.save(selection);
       }
     });
     _servePersistenceTail = operation.catchError((Object _) {});
     await operation;
-    if (!identical(lifecycle, _serveLifecycle)) {
+    if (!identical(lifecycle, _serveLifecycle) || !_serveOwnerIsCurrent) {
       throw const HermesWebReadException(HermesWebFailureKind.stale);
     }
   }
@@ -90,7 +96,10 @@ extension _ServeRecoveryExtension on HermesApiChannel {
         selection.credential,
         profile: c.profile,
         storedSession: c.storedSessionId,
-        canAccept: () => identical(selection, _serveRecovery),
+        transient: _serveTransient,
+        canAccept: _serveTransient
+            ? _serveCanAccept
+            : () => identical(selection, _serveRecovery),
       );
       if (!identical(selection, _serveRecovery) ||
           connection != _connectionGeneration) {

@@ -6,6 +6,7 @@ import 'dart:io';
 class LocalServeReadFixture {
   static const token = 'synthetic-serve-owner';
   late HttpServer server;
+  static int _nextPort = 0;
   final requests = <String>[];
   final profiles = ['default', 'demo'];
   bool unsupported = false;
@@ -14,7 +15,11 @@ class LocalServeReadFixture {
   String get origin => 'http://127.0.0.1:${server.port}';
 
   Future<void> start() async {
-    server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final base = int.tryParse(Platform.environment['AUTOWORK_PORT_BASE'] ?? '');
+    server = await HttpServer.bind(
+      InternetAddress.loopbackIPv4,
+      base == null ? 0 : base + (_nextPort++ % 100),
+    );
     server.listen((request) async {
       requests.add('${request.method} ${request.uri.path}');
       if (await handleExtra(request)) return;

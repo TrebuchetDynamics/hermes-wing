@@ -18,6 +18,7 @@ class LocalServeChatFixture extends LocalServeReadFixture {
   bool running = false, denyHistory = false, dropStop = false;
   Completer<void>? holdHistory;
   Completer<void>? submitHeld;
+  String? resumedProfile;
   final canonical = <Map<String, Object>>[];
   int count(String method) => rpc.where((r) => r['method'] == method).length;
 
@@ -102,7 +103,7 @@ class LocalServeChatFixture extends LocalServeReadFixture {
           result = {
             'session_id': 'runtime-$stored',
             'stored_session_id': stored,
-            'info': {'profile_name': profile},
+            'info': {'profile_name': resumedProfile ?? profile},
             'running': running,
           };
         case 'session.history':

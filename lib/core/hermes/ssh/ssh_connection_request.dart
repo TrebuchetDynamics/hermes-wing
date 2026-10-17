@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+/// Deliberate protocol selection; an SSH login never selects or grants an API.
+enum SshAgentTransport { advertisedApi, serve }
+
 /// Ephemeral submission; callers must not log or persist this value. Dart strings
 /// cannot be zeroized; drop references after the attempt completes.
 @immutable
@@ -13,6 +16,7 @@ class SshConnectionRequest {
     this.passphrase,
     required this.agentPort,
     required this.agentBearerToken,
+    this.transport = SshAgentTransport.advertisedApi,
   });
   final String host;
   final int sshPort;
@@ -21,6 +25,7 @@ class SshConnectionRequest {
   final String? privateKey, passphrase;
   final int agentPort;
   final String? agentBearerToken;
+  final SshAgentTransport transport;
 
   @override
   String toString() => 'SshConnectionRequest(<redacted>)';

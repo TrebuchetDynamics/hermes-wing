@@ -73,7 +73,10 @@ async def start(scratch):
                 writer.close()
                 await writer.wait_closed()
 
-        http_server = await asyncio.start_server(http, "127.0.0.1", 0, limit=8192)
+        port_base = int(os.environ.get("AUTOWORK_PORT_BASE", "0"))
+        http_server = await asyncio.start_server(
+            http, "127.0.0.1", port_base + 10 if port_base else 0, limit=8192
+        )
         http_port = http_server.sockets[0].getsockname()[1]
 
         class Server(asyncssh.SSHServer):
@@ -109,7 +112,8 @@ async def start(scratch):
                 return False
 
         ssh_server = await asyncssh.create_server(
-            Server, "127.0.0.1", 0, server_host_keys=[host_key],
+            Server, "127.0.0.1", port_base + 11 if port_base else 0,
+            server_host_keys=[host_key],
             encoding=None, login_timeout=10, config=None,
             allow_scp=False, sftp_factory=None, kbdint_auth=False,
             agent_forwarding=False, x11_forwarding=False, allow_pty=False,

@@ -79,6 +79,9 @@ class HermesApiChannel extends ChangeNotifier
   int _serveRecoveryGeneration = 0;
   bool _serveRestorationPending = false;
   String? _serveCredential;
+  bool _serveTransient = false;
+  bool Function()? _serveCanAccept;
+  bool get _serveOwnerIsCurrent => _serveCanAccept?.call() ?? true;
   Future<void> _servePersistenceTail = Future.value();
   final Duration streamIdleTimeout;
   final Duration runStatusReconcileInterval;
@@ -286,11 +289,14 @@ class HermesApiChannel extends ChangeNotifier
     _sessionStreamGenerations.clear();
   }
 
+  /// [onAcquire] reports actual acquisition, not a pending intent. Its guard
+  /// also expires when a later intent is still waiting for secure storage.
   @override
   Future<void> connect({
     required String baseUrl,
     String? apiKey,
     bool deferSessionSelection = false,
+    void Function(bool Function() isCurrent)? onAcquire,
   }) async {
     // Cleanup advances recovery ownership synchronously. A later lifecycle
     // intent must supersede this call before it can acquire network ownership.
@@ -305,6 +311,7 @@ class HermesApiChannel extends ChangeNotifier
       baseUrl: baseUrl,
       apiKey: apiKey,
       deferSessionSelection: deferSessionSelection,
+      onAcquire: onAcquire,
     );
   }
 
@@ -319,6 +326,34 @@ class HermesApiChannel extends ChangeNotifier
     required String baseUrl,
     required String credential,
     bool Function()? canAccept,
+  }) => _selectServeReads(baseUrl, credential, canAccept: canAccept);
+
+  /// Explicit Android SSH serve selection. The caller owns the authenticated
+  /// lease; its temporary origin/token must never enter durable recovery.
+  Future<void> connectForwardedServeReads({
+    required String baseUrl,
+    required String credential,
+    required bool Function() canAccept,
+    required void Function(bool Function() isCurrent) onAcquire,
+  }) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      throw UnsupportedError('Forwarded serve selection is Android-only.');
+    }
+    await _selectServeReads(
+      baseUrl,
+      credential,
+      canAccept: canAccept,
+      transient: true,
+      onAcquire: onAcquire,
+    );
+  }
+
+  Future<void> _selectServeReads(
+    String baseUrl,
+    String credential, {
+    bool Function()? canAccept,
+    bool transient = false,
+    void Function(bool Function() isCurrent)? onAcquire,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
     final recovery = _serveRecoveryGeneration + 1;
@@ -328,13 +363,23 @@ class HermesApiChannel extends ChangeNotifier
         connection != _connectionGeneration) {
       return;
     }
-    await _connectServeReads(baseUrl, credential, canAccept: canAccept);
+    await _connectServeReads(
+      baseUrl,
+      credential,
+      canAccept: canAccept,
+      transient: transient,
+      onAcquire: onAcquire,
+    );
   }
 
   Future<void> enableLocalServeChat() => _qualifyServeChat();
   Future<bool> restoreSavedLocalServeConversation() =>
       _restoreSavedServeConversation();
   Future<void> retryLocalServeConversation() async {
+    if (!_serveOwnerIsCurrent) {
+      await disconnect();
+      return;
+    }
     if (_serveReader != null) {
       await _qualifyServeChat();
     } else if (_serveRecovery != null) {

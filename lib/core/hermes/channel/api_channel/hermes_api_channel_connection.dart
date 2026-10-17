@@ -28,10 +28,14 @@ extension _ConnectionExtension on HermesApiChannel {
     required String baseUrl,
     String? apiKey,
     bool deferSessionSelection = false,
+    void Function(bool Function() isCurrent)? onAcquire,
   }) async {
     _retireServeChat();
     _serveReader?.disconnect();
     _serveReader = null;
+    _serveCredential = null;
+    _serveCanAccept = null;
+    _serveTransient = false;
     final generation = _connectionGeneration + 1;
     _connectionGeneration = generation;
     _sessionSelectionGeneration += 1;
@@ -42,6 +46,12 @@ extension _ConnectionExtension on HermesApiChannel {
     _detachedRunsLoadFuture = null;
     _detachedRunsLoadFailed = false;
     _client = null;
+    final recovery = _serveRecoveryGeneration;
+    onAcquire?.call(
+      () =>
+          generation == _connectionGeneration &&
+          recovery == _serveRecoveryGeneration,
+    );
     _setState(
       const HermesChannelState(status: HermesConnectionStatus.connecting),
     );

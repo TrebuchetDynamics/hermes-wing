@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
 import '../ssh_keys/synthetic_ssh_keys.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -154,6 +155,34 @@ void main() {
     await tester.tap(button);
     await tester.pump();
   }
+
+  testWidgets('Android SSH offers deliberate serve selection, Linux does not', (
+    tester,
+  ) async {
+    final channel = FakeChannel();
+    final forward = FakeForward();
+    final controller = ManagedSshConnectionController(forward, channel);
+    await mount(tester, controller);
+    final choice = find.byKey(const ValueKey('managed-ssh-serve-reads'));
+    expect(choice, findsOneWidget);
+    await tester.ensureVisible(choice);
+    await tester.tap(choice);
+    await tester.pumpAndSettle();
+    expect(find.text('Hermes serve session token'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    await mount(tester, controller);
+    expect(choice, findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+    await mount(tester, controller);
+    expect(find.byKey(const ValueKey('managed-ssh-host')), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    debugDefaultTargetPlatformOverride = null;
+    controller.dispose();
+    channel.dispose();
+  });
 
   for (final abandon in [false, true]) {
     testWidgets(

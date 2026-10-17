@@ -2674,6 +2674,7 @@
         "M1-DIRECT-FIRST-RUN",
         "M1-DIRECT-FIRST-RUN-NATIVE",
         "M1-MOBILE-AWAY-STATUS",
+        "M1-MOBILE-AWAY-STATUS-LIVE",
         "M1-NATIVE-APPROVAL-RESTORATION",
         "M1-NATIVE-CONNECTION-SAVE-RETRY",
         "M1-NATIVE-INTEGRATED-RESTART",
@@ -6849,7 +6850,6 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "M1-MOBILE-AWAY-STATUS",
       "PARITY-MAESTRO-ANDROID-DEVICE",
       "PARITY-OFFICIAL-MATRIX",
       "CONNECTION-OWNER-RECONNECT",
@@ -6867,7 +6867,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "WING-TASK-408",
       "CONNECTION-LINK-RETIREMENT",
       "CONNECTION-SETUP-AUTH-MATRIX",
       "DOC-M3-CONTRACT-CHECKPOINT",
@@ -6914,7 +6913,8 @@
       "VERIFY-M4-LIVE-INVENTORY",
       "VERIFY-SHELL-NATIVE-INPUT",
       "M2-DEVICE-QUALIFICATION",
-      "VERIFY-M6-ANDROID-INTEGRATED"
+      "VERIFY-M6-ANDROID-INTEGRATED",
+      "M1-MOBILE-AWAY-STATUS-LIVE"
     ]
   },
   "tasks": [
@@ -7314,16 +7314,6 @@
     },
     {
       "depends_on": [
-        "CONNECTION-OFFICIAL-DESKTOP-PORT"
-      ],
-      "goal": "M1",
-      "id": "M1-MOBILE-AWAY-STATUS",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify Android away-and-return Agent job status and repair demonstrated production gaps"
-    },
-    {
-      "depends_on": [
         "M1-MOBILE-AWAY-STATUS"
       ],
       "goal": "M1",
@@ -7497,6 +7487,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M2-INODE-POLICY-EVIDENCE"
+    },
+    {
+      "depends_on": [
+        "M1-MOBILE-AWAY-STATUS"
+      ],
+      "goal": "M1",
+      "id": "M1-MOBILE-AWAY-STATUS-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for M1-MOBILE-AWAY-STATUS"
     },
     {
       "depends_on": [],
@@ -8342,6 +8342,16 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify public direct Local/SSH/Remote first-run keyboard entry and explicit read-denial recovery in isolated native Linux without inference"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-OFFICIAL-DESKTOP-PORT"
+      ],
+      "goal": "M1",
+      "id": "M1-MOBILE-AWAY-STATUS",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify Android away-and-return Agent job status and repair demonstrated production gaps"
     },
     {
       "depends_on": [],

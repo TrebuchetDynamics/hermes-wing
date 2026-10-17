@@ -6149,3 +6149,20 @@ Source section: Now / Next
   Keep parent acceptance open; do not repeat delivered matrices.
   Touches: lib/router/widgets/, lib/router/providers/, lib/shared/widgets/, lib/features/hermes_chat/screens/, lib/features/settings/screens/, test/router/chat_workspace_overlay_test.dart, test/integration/linux_chat_workspace_overlay_runner_test.dart, integration_test/linux_chat_workspace_overlay_test.dart, integration_test/linux_chat_workspace_stream_test.dart, integration_test/run_linux_chat_workspace_stream.py, playwright/tests/regression/chat-workspace-overlay.spec.mjs, docs/quality/chat-workspace-overlay-browser.md, docs/quality/chat-workspace-overlay-native.md
   Preserve archived offline evidence and WING-TASK-408-LIVE; parent acceptance remains incomplete without an acceptance waiver.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **M1-MOBILE-AWAY-STATUS** —  Keep Agent-owned work understandable after Android background/return.
+  Goal: M1
+Section: Next.
+  Payoff: leave Wing and return to the correct conversation and authoritative job outcome without duplicate work.
+  Sources: [2026-09-04-provenance-and-notifications](docs/superpowers/plans/2026-09-04-provenance-and-notifications.md) (historical planning context);
+   [user-demand acceptance](docs/product/prd.md#user-demand-emphasis), [design](docs/spec.md#away-and-return-status-design), [matrix](docs/test-plan.md#away-and-return-status-verification), production Chat lifecycle and existing transcript/restart fixtures.
+  Scope: reuse existing channel, resume/recovery and unread-completion controls; qualify the missing compact Android interactions in isolated Waydroid and repair reproduced Wing defects with regressions. Begin by comparing existing receipts to current source; do not repeat an unchanged completed proof. No new job store, transport, Agent changes, live inference, paired-app replacement or notification infrastructure.
+  Acceptance: while Wing is backgrounded, deterministic Agent work changes from running to completed/failed; production return restores exact host/profile/session/run and canonical history/status. Disconnect shows unknown, explicit Retry reconciles; approval-needed uses current exact grants; late old-owner results are rejected. Assert zero incidental send/create/approval/Stop calls. Record source/APK, Android target, commands and request counts; compact/enlarged-text controls remain usable. Waydroid does not satisfy physical M2 process-death or live-provider proof.
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Ownership: unassigned; preserve existing connection and recovery owners. No worker dispatched by this entry.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Run the linked away/return matrix on the existing isolated Waydroid QA artifact only after authenticated target readiness; record artifact, source, request counts and text-scale results. No inference or physical-device acceptance is supplied by these planned checks.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/

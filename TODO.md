@@ -295,19 +295,6 @@ needs its own exact capability, ownership and qualification evidence.
   compact onboarding; unavailable operations and broader acceptance remain open.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
-- [ ] **M1-MOBILE-AWAY-STATUS** —  Keep Agent-owned work understandable after Android background/return.
-  Goal: M1
-Section: Next.
-  Payoff: leave Wing and return to the correct conversation and authoritative job outcome without duplicate work.
-  Sources: [2026-09-04-provenance-and-notifications](docs/superpowers/plans/2026-09-04-provenance-and-notifications.md) (historical planning context);
-   [user-demand acceptance](docs/product/prd.md#user-demand-emphasis), [design](docs/spec.md#away-and-return-status-design), [matrix](docs/test-plan.md#away-and-return-status-verification), production Chat lifecycle and existing transcript/restart fixtures.
-  Scope: reuse existing channel, resume/recovery and unread-completion controls; qualify the missing compact Android interactions in isolated Waydroid and repair reproduced Wing defects with regressions. Begin by comparing existing receipts to current source; do not repeat an unchanged completed proof. No new job store, transport, Agent changes, live inference, paired-app replacement or notification infrastructure.
-  Acceptance: while Wing is backgrounded, deterministic Agent work changes from running to completed/failed; production return restores exact host/profile/session/run and canonical history/status. Disconnect shows unknown, explicit Retry reconciles; approval-needed uses current exact grants; late old-owner results are rejected. Assert zero incidental send/create/approval/Stop calls. Record source/APK, Android target, commands and request counts; compact/enlarged-text controls remain usable. Waydroid does not satisfy physical M2 process-death or live-provider proof.
-  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Ownership: unassigned; preserve existing connection and recovery owners. No worker dispatched by this entry.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Run the linked away/return matrix on the existing isolated Waydroid QA artifact only after authenticated target readiness; record artifact, source, request counts and text-scale results. No inference or physical-device acceptance is supplied by these planned checks.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
-
 - [ ] **PARITY-MAESTRO-ANDROID-DEVICE** —  Execute the repaired
   approval/Stop/reconnect and deferred attachment-owner-race journeys in the
   owner-selected Waydroid Android environment, then qualify remaining mapped flows.
@@ -1749,3 +1736,12 @@ does not mark any check passed or authorize live actions.
   predecessor, signature/source binding and same-artifact receipt preparation are
   engineering prerequisites, not a request for the owner to build the release.
   Preserve physical-device and live-authentication distinctions; no spending waiver.
+
+- [ ] M1-MOBILE-AWAY-STATUS-LIVE — Live checks for M1-MOBILE-AWAY-STATUS
+  Scope: Run the live checks the offline work for M1-MOBILE-AWAY-STATUS left pending.
+  Acceptance: Each check passes on the real target:
+  - Android acceptance remains NOT_CHECKED. Reestablish authenticated access to the selected isolated Waydroid QA target; verify Android release/API/ABI and existing QA APK/source/entrypoint digest, installed package equality and storage separation without replacing the paired app.
+  - Run this task's full compact/enlarged-text Android away/return matrix: deterministic running-to-completed and running-to-failed while backgrounded, exact host/profile/session/run and canonical history, disconnect unknown then deliberate Retry, current exact approval grants and rejected late old-owner results. Record per-phase send/create/approval/Stop attempt counts; unobserved counts are not zero. Repair only reproduced Wing defects with focused regressions. Existing broad feature/YAML entries do not alone qualify this matrix.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: M1-MOBILE-AWAY-STATUS.
+  Status: open

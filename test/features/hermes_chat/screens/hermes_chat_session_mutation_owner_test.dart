@@ -116,8 +116,8 @@ void main() {
               await tester.pump();
               expect(
                 h.channel.listeners.length,
-                1,
-                reason: 'No task observer may remain after route disposal',
+                2,
+                reason: 'Only the state and SSH controller providers remain',
               );
           }
           await _confirm(tester, operation);
@@ -158,7 +158,7 @@ void main() {
           if (cancel) expect(h.channel.listeners.length, h.listenerBaseline);
           h.page.value = const SizedBox();
           await tester.pump();
-          expect(h.channel.listeners.length, 1);
+          expect(h.channel.listeners.length, 2);
           expect(tester.takeException(), isNull);
         });
       }
@@ -186,7 +186,7 @@ void main() {
           expect(find.byType(SnackBar), findsNothing);
           h.page.value = const SizedBox();
           await tester.pump();
-          expect(h.channel.listeners.length, 1);
+          expect(h.channel.listeners.length, 2);
           expect(tester.takeException(), isNull);
         });
       }

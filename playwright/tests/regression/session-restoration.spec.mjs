@@ -73,7 +73,8 @@ async function openSessions(page, width) {
     await page.getByRole('button', { name: 'More actions', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Sessions', exact: true }).click();
   } else {
-    await page.getByRole('button', { name: 'Sessions', exact: true }).click();
+    // Chat's header action precedes the shell's Loaded sessions shortcut.
+    await page.getByRole('button', { name: 'Sessions', exact: true }).first().click();
   }
   await expect(page.getByRole('textbox', { name: 'Search sessions', exact: true }).last()).toBeVisible();
 }
@@ -91,7 +92,7 @@ async function selectPageTwoThroughUi(page, request, width) {
   const initial = await seeded.json();
   expect(initial.session_ids).toEqual(Array.from({ length: 60 }, (_, i) => idFor(i)));
   expect(initial.counters).toEqual({ lists: 0, metadata: 0, messages: 0, mutations: 0 });
-  await page.setViewportSize({ width, height: 900 });
+  await page.setViewportSize({ width, height: 1100 });
   await page.goto(`${APP}#/hermes/add`);
   await ready(page);
   await fillFlutter(page, page.getByRole('textbox', { name: 'Hermes Agent URL', exact: true }), new URL(APP).origin);
@@ -209,6 +210,14 @@ for (const width of [390, 1280]) {
     expect(retryRead).toMatchObject({ session_id: OLDER, profile: read.profile });
     await parked(request, retryRead.request_id);
     await expectSelection(page, OLDER, owner);
+    await expect(retry).toBeDisabled();
+    const pendingCounts = (await receipt(request)).counters;
+    // Exercise the public semantic handler, including synthetic duplicate input
+    // while Agent metadata is delayed; no second recovery may be admitted.
+    await retry.dispatchEvent('click');
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    expect((await receipt(request)).counters).toEqual(pendingCounts);
+    await parked(request, retryRead.request_id);
     await releaseRead(page, request, retryRead.request_id);
     await expectConversation(page, OLDER);
     await expect(page.getByRole('button', { name: 'Choose session', exact: true })).toHaveCount(0);

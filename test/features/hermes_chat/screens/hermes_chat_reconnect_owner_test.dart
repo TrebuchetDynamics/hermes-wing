@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,7 +46,16 @@ void main() {
         return null;
       };
       await h.channel.loadMoreSessions();
-      h.onRead = null;
+      final entered = Completer<void>();
+      final release = Completer<String?>();
+      h.onRead = (uri) async {
+        if (uri.path == '/api/sessions/older-A/messages' &&
+            !entered.isCompleted) {
+          entered.complete();
+          return release.future;
+        }
+        return null;
+      };
       expect(h.channel.state.errorMessage, isNotNull);
       expect(h.mutations, isEmpty);
 
@@ -84,6 +95,19 @@ void main() {
       final readsBefore = h.reads.length;
       await tester.ensureVisible(reconnect);
       await tester.tap(reconnect);
+      await tester.pump();
+      await entered.future;
+      await tester.pumpAndSettle();
+      final pendingReads = List.of(h.reads);
+      final retry = find.byKey(
+        const ValueKey('hermes-session-restoration-retry'),
+      );
+      expect(retry, findsOneWidget);
+      expect(tester.widget<FilledButton>(retry).onPressed, isNull);
+      await tester.tap(retry);
+      await tester.pump();
+      expect(h.reads, pendingReads);
+      release.complete(null);
       await tester.pumpAndSettle();
 
       final recoveryReads = h.reads.skip(readsBefore).toList();

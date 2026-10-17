@@ -19,6 +19,19 @@ async function receipt(request) {
   return response.json();
 }
 
+async function savedSelection(page) {
+  return page.evaluate(() => {
+    let value = localStorage.getItem('flutter.wing.hermes.gateway_contact_selection.v1');
+    for (let i = 0; i < 2 && typeof value === 'string'; i += 1) value = JSON.parse(value);
+    return value;
+  });
+}
+
+function mutationReceipt(value) {
+  return { submits: value.submits, approvals: value.approvals, stops: value.stops,
+    unexpected: value.unexpected_mutations };
+}
+
 async function fillFlutter(page, field, text, { reactivate = false } = {}) {
   await expect(field).toBeEnabled();
   await field.click();
@@ -41,9 +54,12 @@ async function fillFlutter(page, field, text, { reactivate = false } = {}) {
     await page.waitForTimeout(100);
     await expect(input).toHaveCount(1);
   }
-  // Fill the actual focused editor so Playwright dispatches its input event;
-  // keyboard insertion can hit a replaced semantic bridge after approval.
-  await input.fill(text);
+  // Wait for the focused Flutter editor to settle before typing. Filling the
+  // transient semantic input can change its DOM value without updating Dart.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.type(text);
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await expect(input).toHaveValue(text);
 }
 
@@ -52,7 +68,8 @@ async function selectSession(page, width, title) {
     await page.getByRole('button', { name: 'More actions', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Sessions', exact: true }).click();
   } else {
-    await page.getByRole('button', { name: 'Sessions', exact: true }).click();
+    // Chat's header action precedes the shell's Loaded sessions shortcut.
+    await page.getByRole('button', { name: 'Sessions', exact: true }).first().click();
   }
   await fillFlutter(page, page.getByRole('textbox', { name: 'Search sessions', exact: true }).last(), title);
   await page.getByRole('button', { name: new RegExp(`^${title} `) }).last().click();
@@ -84,7 +101,7 @@ for (const width of [390, 1280]) {
         mutations.push({ method: req.method(), route: url.pathname });
       }
     });
-    await page.setViewportSize({ width, height: 900 });
+    await page.setViewportSize({ width, height: 1100 });
     await page.goto(`${APP}#/hermes/add`);
     await page.waitForFunction(() => typeof globalThis.wingE2EReduceMotion === 'function');
     await page.evaluate(() => globalThis.wingE2EReduceMotion());
@@ -99,7 +116,10 @@ for (const width of [390, 1280]) {
     await expect(turn(page, 'Synthetic isolated history.')).toBeVisible();
     await selectSession(page, width, 'E2E Hermes Session');
     await expect(turn(page, 'E2E Hermes is ready.')).toBeVisible();
-    stages.push({ stage: 'explicit-owner', receipt: await receipt(request) });
+    await expect.poll(async () => (await savedSelection(page))?.sessionId).toBe(SESSION);
+    const owner = await savedSelection(page);
+    expect(owner).toEqual({ gatewayId: expect.any(String), profileId: 'default', sessionId: SESSION });
+    stages.push({ stage: 'explicit-owner', owner, receipt: await receipt(request) });
 
     await send(page, prompts[0]);
     await expect(turn(page, 'Synthetic streamed prelude.')).toBeVisible();
@@ -141,26 +161,36 @@ for (const width of [390, 1280]) {
     }
     expect((await receipt(request)).submits).toHaveLength(3);
     stages.push({ stage: 'acknowledged-not-terminal', receipt: acknowledged });
+    const stopRequestCount = mutations.length;
     // Test-only terminal gate models Agent interruption finishing AFTER acknowledgment.
     const terminal = await request.post(`${CONTROL}/terminal`, { data: { run_id: 'run_3' } });
     expect(terminal.ok()).toBeTruthy();
     await reconnect(page);
     await expect(turn(page, 'Synthetic canonical stopped outcome.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Reconnect', exact: true })).not.toBeVisible();
-    stages.push({ stage: 'terminal-stop-reconciled', receipt: await receipt(request) });
+    await expect.poll(() => savedSelection(page)).toEqual(owner);
+    const stopRecovery = await receipt(request);
+    expect(mutationReceipt(stopRecovery)).toEqual(mutationReceipt(acknowledged));
+    expect(mutations).toHaveLength(stopRequestCount);
+    stages.push({ stage: 'terminal-stop-reconciled', owner: await savedSelection(page), recovery_mutations: mutations.length - stopRequestCount, receipt: stopRecovery });
 
     await send(page, prompts[3]);
     await expect(page.getByRole('button', { name: 'Reconnect', exact: true })).toBeVisible();
     const failed = await receipt(request);
     expect(failed.transport_failures).toEqual([{ run_id: 'run_4', session_id: SESSION, profile_id: 'default', status: 'failed' }]);
     stages.push({ stage: 'transport-eof', receipt: failed });
+    const failedRequestCount = mutations.length;
     const restored = await request.post(`${CONTROL}/recover`);
     expect(restored.ok()).toBeTruthy();
     await reconnect(page);
     await expect(turn(page, 'Synthetic recovered canonical history.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Approve once', exact: true })).not.toBeVisible();
     await expect(page.getByRole('button', { name: 'Reconnect', exact: true })).not.toBeVisible();
-    stages.push({ stage: 'canonical-recovery', receipt: await receipt(request) });
+    await expect.poll(() => savedSelection(page)).toEqual(owner);
+    const canonicalRecovery = await receipt(request);
+    expect(mutationReceipt(canonicalRecovery)).toEqual(mutationReceipt(failed));
+    expect(mutations).toHaveLength(failedRequestCount);
+    stages.push({ stage: 'canonical-recovery', owner: await savedSelection(page), recovery_mutations: mutations.length - failedRequestCount, receipt: canonicalRecovery });
 
     await send(page, prompts[4]);
     await page.getByRole('button', { name: 'Approve once', exact: true }).click();
@@ -187,6 +217,9 @@ for (const width of [390, 1280]) {
     expect(canonical.filter(m => m.role === 'user').map(m => m.content)).toEqual(prompts);
     expect(final.submits[4].history).toEqual(canonical.slice(0, -2).map(({ role, content }) => ({ role, content })));
     expect(mutations.filter(m => !/^\/v1\/runs(?:\/run_[1-5]\/(?:approval|stop))?$/.test(m.route))).toEqual([]);
+    // Count attempted writes too: a rejected duplicate approval is absent from
+    // the fixture's accepted receipts. Five Sends, three answers, one Stop.
+    expect(mutations).toHaveLength(9);
     expect(errors).toEqual([]);
     stages.push({ stage: 'usable-subsequent-prompt', receipt: final });
     const artifact = testInfo.outputPath(`production-chat-journey-${width}.json`);

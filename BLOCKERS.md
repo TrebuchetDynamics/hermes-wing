@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort quick — unblocks 1
+
+- Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link
+- Needs: CONNECTION-LINK-REMOVAL is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
+- Since: 2026-10-17T05:39:34Z
+- Answer: If no one is working on CONNECTION-LINK-REMOVAL, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
+
 ### Q-DOC-ACCOUNT-CONTRACT — USER_DECISION — effort decision — unblocks 2
 
 - Task: DOC-ACCOUNT-CONTRACT — Goal: ACCOUNT. Section: Next. Trace one provider OAuth acquisition contract.
@@ -122,7 +129,7 @@ This file contains only hard blockers that require user action.
 
 - Task: VERIFY-OMNIROUTE-NODE22-CLOSURE — Goal: SECURITY. Section: Next. Verify retired OmniRoute paths and retained dependencies on Node.js 22.
 - Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T07:04:34Z
+- Since: 2026-10-17T07:26:12Z
 - Answer: Fix VERIFY-OMNIROUTE-NODE22-CLOSURE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
 ### Q-approved physical target and capture consent; preparation proceeds
@@ -131,7 +138,7 @@ This file contains only hard blockers that require user action.
 - Task: approved physical target and capture consent; preparation proceeds
   without recording audio. Ownership: unclaimed; verify tracker before execution
 - Needs: 2 waiting task(s) depend on "approved physical target and capture consent; preparation proceeds without recording audio. Ownership: unclaimed; verify tracker before execution", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T07:26:12Z
+- Since: 2026-10-17T07:29:05Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 ### Q-owned target and
@@ -140,7 +147,7 @@ This file contains only hard blockers that require user action.
 - Task: owned target and
   exclusive build access for execution; static fixture repair can proceed first
 - Needs: 2 waiting task(s) depend on "owned target and exclusive build access for execution; static fixture repair can proceed first", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T07:26:12Z
+- Since: 2026-10-17T07:29:05Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 ### Q-BACKEND-SSH-KEY-NATIVE — USER_DECISION — effort decision — unblocks 1
@@ -198,13 +205,6 @@ This file contains only hard blockers that require user action.
 - Needs: not runnable: needs unique Scope, Acceptance and Checks fields
 - Since: 2026-10-17T05:39:34Z
 - Answer: Fix VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-CONNECTION-LINK-REMOVAL — USER_INPUT — effort input — unblocks 1
-
-- Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link
-- Needs: worker reported a blocker: The existing out-of-scope test/tooling/android_pairing_contract_test.dart asserts that Android forwards Intent.EXTRA_TEXT contents and retains the QR image cancellation handler. Those expectations conflict with retiring payload forwarding and QR support. It is outside the authorized Touches paths; the coordinator must either authorize updating that contract test or provide a revised Touches scope …
-- Since: 2026-10-17T05:39:34Z
-- Answer: Answer in CONNECTION-LINK-REMOVAL's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
 ### Q-LANDING-PAGES-QUALITY — USER_INPUT — effort input — unblocks 0
 

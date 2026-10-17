@@ -12,8 +12,10 @@ Keep the Flutter client modular around small replaceable seams. Existing Riverpo
 The owner-accepted priority is a 1:1 Hermes Desktop product port in Flutter, not
 merely equivalent outcomes. Follow Desktop feature coverage, navigation, wording,
 interaction/state transitions and recovery by default; see [product boundaries](product.md).
-The accepted interview baseline is desktop-first on Flutter desktop and wide web,
-with mobile usability preserved. Full local Desktop functionality is the target;
+The earlier interview baseline was desktop-first on Flutter desktop and wide web.
+The [current Android priority](../plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority)
+now leads delivery with Android SSH, profile/bot multi-session chat and touch-first
+polish. Desktop fidelity and cross-platform regression requirements remain intact. Full local Desktop functionality is the target;
 remote mode may expose a smaller exact-capability-gated subset. Wide web is a
 fidelity baseline, not a grant of desktop-local process/filesystem authority.
 Share domain behavior across platforms. Native implementation is not a line-for-line

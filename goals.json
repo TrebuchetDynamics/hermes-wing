@@ -3913,6 +3913,7 @@
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "partial",
       "tasks": [
+        "ANDROID-CHAT-TOUCH-POLISH",
         "DOC-PARITY-COVERAGE",
         "DOC-PARITY-PLATFORM-DEVIATIONS",
         "FILES-TERMINAL-BROWSE",
@@ -5248,6 +5249,7 @@
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "unmet",
       "tasks": [
+        "ANDROID-CANONICAL-BOT-CHAT",
         "DOC-PARITY-TAB-CONTRACT",
         "DOC-PARITY-TAB-RECONNECT-CONTRACT"
       ],
@@ -5738,6 +5740,11 @@
     {
       "depends_on": [],
       "evidence": [
+        {
+          "kind": "inspection",
+          "ref": "docs/plans/2026-10-12-wing-landing-onboarding.md#landing-led-product-identity-across-readme-and-docs [ec91584e plus current README/docs; input-matched local renders inspected; owner keeps landing headline/mascot; planning only]",
+          "result": "pass"
+        },
         {
           "kind": "inspection",
           "ref": "docs/plans/2026-10-12-wing-landing-onboarding.md#located-source-and-delivery",
@@ -6831,11 +6838,20 @@
   "priority_order": {
     "schema": 1,
     "tasks": [
+      "BACKEND-SSH-CONNECT",
+      "DOC-BACKEND-DISCONNECT-CONTRACT",
+      "DOC-PARITY-TAB-CONTRACT",
+      "DOC-PARITY-TAB-RECONNECT-CONTRACT",
+      "ANDROID-CANONICAL-BOT-CHAT",
+      "ANDROID-CHAT-TOUCH-POLISH",
+      "M1-MOBILE-AWAY-STATUS",
+      "PARITY-MAESTRO-ANDROID-DEVICE",
+      "PARITY-OFFICIAL-MATRIX",
+      "CONNECTION-OWNER-RECONNECT",
       "PARITY-LIVE-WORKFLOW",
       "CONNECTION-LINK-REMOVAL",
       "CONNECTION-SAVED-WORKFLOWS",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
-      "M1-MOBILE-AWAY-STATUS",
       "M1-NOTIFICATION-CONTRACT",
       "MT-RERUN-TRAIN",
       "MT-VERIFY-BROWSER-GATES",
@@ -6845,19 +6861,13 @@
       "VERIFY-OMNIROUTE-NODE22-CLOSURE",
       "FILES-TERMINAL-BROWSE",
       "FILES-TERMINAL-DOWNLOAD",
-      "PARITY-MAESTRO-ANDROID-DEVICE",
       "PARITY-NATIVE-LINUX",
-      "PARITY-OFFICIAL-MATRIX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "WING-TASK-408",
       "CONNECTION-CRON-ADMISSION",
-      "CONNECTION-CRON-CANARY",
       "CONNECTION-LINK-RETIREMENT",
-      "CONNECTION-OWNER-RECONNECT",
       "CONNECTION-SETUP-AUTH-MATRIX",
-      "DOC-PARITY-TAB-CONTRACT",
-      "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "DOC-M3-CONTRACT-CHECKPOINT",
       "DOC-M3-ROLLBACK-EVIDENCE",
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
@@ -6880,19 +6890,16 @@
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
       "DOC-M4-MEMORY-CONTRACT",
       "DOC-M4-PLATFORM-CONTRACT",
-      "BACKEND-SSH-CONNECT",
-      "BACKEND-SSH-KEY-NATIVE",
       "DOC-ACCOUNT-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
-      "DOC-BACKEND-CONTRACT",
       "DOC-NATIVE-DESIGN-REVIEW",
       "DOC-NATIVE-FAILURE-BOUNDARY",
-      "DOC-BACKEND-DISCONNECT-CONTRACT",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
       "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
       "LANDING-PRODUCT-PROOF",
-      "DOC-M2-INODE-POLICY-EVIDENCE",
+      "BACKEND-SSH-KEY-NATIVE",
+      "CONNECTION-CRON-CANARY",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
       "DOC-API-PROTOCOL-ERROR-EVIDENCE",
       "VERIFY-DESKTOP-NATIVE-DELIVERY",
@@ -6919,7 +6926,7 @@
       "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-SAVED-WORKFLOWS",
       "section": "Now",
-      "status": "in_progress",
+      "status": "open",
       "title": "Complete and prove owner-safe Local/Remote and saved-connection workflows"
     },
     {
@@ -6929,6 +6936,26 @@
       "section": "Now",
       "status": "in_progress",
       "title": "Qualify actual generation, approval, Stop and restoration together"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY-TABS",
+      "id": "ANDROID-CANONICAL-BOT-CHAT",
+      "section": "Next",
+      "status": "open",
+      "title": "Android canonical bot chat"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY",
+      "id": "ANDROID-CHAT-TOUCH-POLISH",
+      "section": "Next",
+      "status": "open",
+      "title": "Android chat touch polish"
     },
     {
       "depends_on": [
@@ -6960,16 +6987,6 @@
     },
     {
       "depends_on": [
-        "CONNECTION-CRON-ADMISSION"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-CRON-CANARY",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
-    },
-    {
-      "depends_on": [
         "CONNECTION-LINK-REMOVAL"
       ],
       "goal": "CONNECTION-PATHS",
@@ -6995,7 +7012,7 @@
       "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-SETUP-AUTH-MATRIX",
       "section": "Next",
-      "status": "in_progress",
+      "status": "open",
       "title": "Finish Local existing-install/setup-needed enrollment and Remote auth/storage retry; qualify saved endpoint edit/test and explain unsupported OAuth through public controls"
     },
     {
@@ -7033,14 +7050,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map hostile-content rejection for one permitted artifact type"
-    },
-    {
-      "depends_on": [],
-      "goal": "REMOTE-BACKENDS",
-      "id": "DOC-BACKEND-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Define and review the bounded native SSH-forwarding contract"
     },
     {
       "depends_on": [
@@ -7455,8 +7464,18 @@
       "goal": "PARITY-COMPOSITION",
       "id": "WING-TASK-408",
       "section": "Next",
-      "status": "in_progress",
+      "status": "open",
       "title": "Keep Chat alive through compiled Settings and Profiles overlay navigation and recovery"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-CRON-ADMISSION"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-CRON-CANARY",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
     },
     {
       "depends_on": [
@@ -7645,6 +7664,14 @@
       "section": "Done",
       "status": "done",
       "title": "Verify owned code-first HTTP contract against handlers"
+    },
+    {
+      "depends_on": [],
+      "goal": "REMOTE-BACKENDS",
+      "id": "DOC-BACKEND-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Define and review the bounded native SSH-forwarding contract"
     },
     {
       "depends_on": [],

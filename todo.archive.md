@@ -5521,6 +5521,54 @@ Source section: Now / Next
 
 <!-- End archived WING-TASK-407. -->
 
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-BACKEND-CONTRACT** — Goal: REMOTE-BACKENDS. Define and review the
+  bounded native SSH-forwarding contract using the completed Desktop research.
+  Payoff: review the implemented forwarding boundary without repeating research
+  or treating unreviewed source as an approved native contract.
+  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [source comparison](docs/product/desktop-connection-paths.md),
+  [native boundary](docs/adr/client.md#decision),
+  [connection design](docs/spec.md#connection-path-design).
+  Scope: one fixed forwarding operation to an already-configured Agent. Review
+  the existing Dart TCP adapter, typed network bounds, credential acquisition,
+  explicit host-key trust, loopback binding, deadlines, durable host identity, ephemeral port mapping,
+  cancellation/cleanup and supported-platform/removal conditions.
+  Acceptance: reviewed contract and failure oracles preserve direct Agent traffic,
+  separate Wing Link credentials, no shell and immutable Agent source. Resolve
+  local key selection against existing path restrictions rather than assuming an
+  exception. The current key reader's size bounds and picker cancellation fences
+  remain acceptance in BACKEND-SSH-KEY-AUTH. See the
+  [source comparison](docs/quality/graphify-wing-recomparison.md).
+  Keep remote bootstrap and Docker/WSL contracts separate.
+  Do not repeat the completed Desktop trace or substitute another investigation
+  chain. This is the sole open contract task for REMOTE-BACKENDS.
+  Dependencies: None.
+  Section: Done.
+  Ownership: completed by Wing coordinator; independent native source review approved.
+  Checks: `git diff --check`; verify cited source/contract links and exact Android SSH/Agent operation/authentication bounds against the unmodified reference; review existing SSH failure tests without claiming native execution.
+  Android focus: review the existing fixed forward and the actual authenticated
+  chat/profile operation path on Android, not just TCP/health. Keep ticket/RPC versus
+  REST scope explicit and identify the exact safe existing seam before enabling
+  an Android tunneled serve path. Record unsupported operations, not new authority.
+  Next action: review these implemented boundaries and failure oracles once; do not
+  start a fresh research chain or wait for live credentials to review source.
+  Evidence: [bounded contract](docs/security/managed-ssh-forward-contract.md),
+  reviewed against Wing `bfba2dede34612a42d971fd674effdd0f0458815` and the pinned
+  unmodified official Agent reference. Focused adapter/form/panel/provider/key tests
+  passed: 62 passes, 8 opt-in loopback SSH skips. Offline locked dependencies,
+  `flutter analyze --no-pub` and `git diff --check` passed. No runtime implementation
+  changed; native application, durable SSH restoration and Android tunneled-serve
+  qualification remain open.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
 - [x] **DOC-M2-INODE-POLICY-EVIDENCE** — Goal: M2. Section: Next. Assess the additional scratch
   inode-policy prerequisite. Payoff: preserve the separate admission obligation
   even if the conditional CPU proof supplies a finite envelope.
@@ -5550,3 +5598,42 @@ Source section: Now / Next
   Outcome: UNAVAILABLE / `scratch_inode_policy_unavailable`. Two predecessor
   source hashes, four local links/anchors and whitespace checks passed. No
   inode control ran, no limits changed, and physical Android/M2 remain unverified.
+
+## Owner-retired canary contract — not completed
+
+The owner retired CONNECTION-CRON-CANARY without acceptance on 2026-10-16. The original contract is retained below as history, not an execution instruction.
+
+- [ ] **CONNECTION-CRON-CANARY** — Goal: CONNECTION-PATHS. Section: Next.
+  Qualify one implementation canary before restarting the existing cron.
+  Payoff: recurring work produces checked port commits, not status-only success.
+  Sources: [accepted restart plan](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview)
+  and [connection frontier](docs/plans/2026-10-03-desktop-port-goal.md#current-connection-frontier).
+  Graph evidence: partial; source-bound job inspection establishes a paused
+  15-minute job, not installed admission, live ownership or an executed canary.
+  Scope: preserve and finish the current Wing candidate; reconcile existing
+  connection owners; update/read back the existing paused job prompt; qualify
+  one manually triggered occurrence and gated schedule resumption. Use an existing
+  eligible CONNECTION-PATHS implementation task, not duplicate product work.
+  Acceptance: observe safe admission, relevant passing checks, independent review,
+  a scoped implementation commit on canonical main and worker release. Existing
+  chat work, documentation-only commits and job status `ok` do not count. Resume
+  only after all canary evidence passes; read back enabled state and cadence and
+  inspect the first scheduled occurrence. A hard refusal pauses and notifies.
+  Verification: retain exact job/task/run/commit and check receipts; inspect the
+  implementation diff, release proof, scheduler readback and first scheduled result.
+  No fresh worker or scheduler mutation is authorized by this task's creation.
+  Dependencies: CONNECTION-CRON-ADMISSION. Current candidate release and reconciled
+  connection frontier are required before selecting the implementation canary.
+  Ownership: unclaimed coordination task; use the existing job and native task
+  graph. No substitute cron writer, Agent changes, push, release or paid inference.
+
+Current product direction: Wing Link is deprecated, not merely optional. Retained
+legacy tasks and receipts describe existing code, not permission to expand it.
+Implement direct/native replacements or explicit unavailable-capability behavior.
+Do not erase paired state or label removal as feature qualification. Preserve
+active workers and coordinate exact source ownership before dispatch.
+
+
+
+
+<!-- End preserved owner-retired canary contract. -->

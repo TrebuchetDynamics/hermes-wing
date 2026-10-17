@@ -7440,16 +7440,6 @@
     },
     {
       "depends_on": [
-        "CONNECTION-OFFICIAL-DESKTOP-PORT"
-      ],
-      "goal": "PARITY-COMPOSITION",
-      "id": "WING-TASK-408",
-      "section": "Next",
-      "status": "open",
-      "title": "Keep Chat alive through compiled Settings and Profiles overlay navigation and recovery"
-    },
-    {
-      "depends_on": [
         "CONNECTION-CRON-ADMISSION"
       ],
       "goal": "CONNECTION-PATHS",
@@ -8868,6 +8858,16 @@
       "section": "Done",
       "status": "done",
       "title": "Restore the production serve conversation across socket loss and app restart without replay"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-OFFICIAL-DESKTOP-PORT"
+      ],
+      "goal": "PARITY-COMPOSITION",
+      "id": "WING-TASK-408",
+      "section": "Done",
+      "status": "done",
+      "title": "Keep Chat alive through compiled Settings and Profiles overlay navigation and recovery"
     },
     {
       "depends_on": [],

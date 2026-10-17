@@ -5974,3 +5974,178 @@ active workers and coordinate exact source ownership before dispatch.
 
 
 <!-- End preserved owner-retired canary contract. -->
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **WING-TASK-408** — Goal: PARITY-COMPOSITION. Keep Chat alive while Settings
+  and Profiles overlays open and close in the compiled application.
+  Payoff: users inspect settings or profiles without losing their draft or stream.
+  Scope: `ChatWorkspaceOverlay`, production router/shell callers and deterministic
+  browser/native integration tests. Reuse implemented overlays and widget evidence;
+  fix only reproduced navigation, focus or retained-workspace defects.
+  Acceptance: shell and chat-local entries open the intended modal at compact and
+  wide widths. Close, Escape and Back return to the exact retained chat and focus.
+  Draft, transcript and current stream survive; no implicit connection/profile
+  mutation or extra prompt occurs. Browser Back/Forward, direct deep links and
+  owner replacement cannot resurrect stale routes or controls. Verify 200% text
+  and keyboard access in compiled Chromium and an isolated Linux app journey.
+  Record browser history and native evidence separately. Android remains unqualified.
+  Sources: [2026-07-17-settings-information-architecture](docs/superpowers/plans/2026-07-17-settings-information-architecture.md) (historical planning context);
+   [implemented overlay and evidence limits](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
+  [port fidelity scope](docs/product/hermes-desktop-parity.md#current-delivery-assessment).
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT.
+  Section: Next.
+  Checks: `flutter test --no-pub --concurrency=1 test/router/chat_workspace_overlay_test.dart`;
+  `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before compiled Chromium
+  overlay navigation/history checks; run isolated Linux overlay journeys separately.
+  Ownership: unclaimed; the owner released the stale coordinator claim on 2026-10-16.
+  Status: done
+  Touches: lib/router/, lib/features/hermes_chat/, lib/features/profiles/,
+  lib/shared/, test/router/, test/features/hermes_chat/, test/features/profiles/,
+  integration_test/, playwright/tests/, docs/quality/
+  Owner decision: release the claim and keep this task incomplete. Preserve all
+  partial-delivery evidence, outstanding overlay checks and platform limits.
+  This records planning only and does not start a worker, runner or schedule.
+  Partial delivery: [compiled overlay browser evidence](docs/quality/chat-workspace-overlay-browser.md)
+  adds eight Settings/Profiles shell-history and disconnected deep-link cases at
+  compact/wide widths and 200% text; included in the default browser suite.
+  Four additional compiled cases retain the pending reasoning SSE stream through
+  Back/Forward and consume completion while the overlay stays visible; one deliberate
+  Send is the only browser mutation. Four more cases replace the session through the
+  existing production-channel test seam while the overlay stays open; exact server-
+  returned identity survives Back/Forward/Escape with no navigation-triggered writes.
+  The [isolated Linux overlay journey](docs/quality/chat-workspace-overlay-native.md)
+  adds twelve GTK shell-entry journeys at compact/wide widths and 200% text,
+  with keyboard Close/Escape and framework Back. Draft, rendered transcript,
+  mounted workspace and exact return URL survive with zero fake-channel mutations.
+  Focus follow-through fixes chat-local composer return focus through the shared
+  overlay opener, with mounted/current-route checks. The expanded GTK matrix passes
+  36 journeys, including slash, Tab completion and profile Manage; all 24 chat-local
+  journeys restore focus without tapping Chat. Four new compiled slash-entry cases
+  pass Close/Escape/browser Back at both widths; all 20 browser cases pass.
+  Profile/connection replacement, late old-run completion, shell return focus and
+  native streaming remain unqualified; GTK uses an in-memory channel, not HTTP/SSE.
+  Keyboard shell-entry follow-through qualifies Tab/Enter activation of Settings
+  and Profiles at both Chromium widths/200% text, including compact More and
+  deliberate reopen. All 20 overlay cases pass; production code is unchanged.
+  Bootstrap/draft entry still uses hooks/pointer input; automatic shell return
+  focus remains open. The GTK follow-through now qualifies Tab/Enter shell entry
+  (including compact More) in twelve of the 36 native journeys. All 36 pass with
+  typed receipts and verified teardown; analyzer and 28 focused tests pass.
+  Production behavior is unchanged; independent native-source review approved.
+  The GTK shell-return follow-through also asserts automatic semantic focus on
+  the original shell control after Close, Escape and framework Back, without
+  intervening input. Compact Settings returns to More, not the dismissed sheet.
+  All 36 typed GTK journeys and 28 focused regressions pass; independent native
+  source review approved. Production behavior is unchanged; browser shell return
+  focus was qualified separately below.
+  The browser shell-return follow-through captures the original role/name and
+  asserts automatic focus after Back, Forward/Escape and Close before any input;
+  compact Settings returns to More. All 20 rebuilt Chromium cases pass with zero
+  retries at compact/wide widths and 200% text, plus 24 router tests and analysis.
+  Independent native-source review approved; production behavior is unchanged.
+  Late-completion follow-through adds four compiled cases: a pending original run
+  completes only after exact session replacement while the modal remains open.
+  Canonical reply-ID/status in the background channel cache is the client barrier;
+  Back/Forward/Escape retain the new session without old reply/reasoning controls.
+  All 24 Chromium cases pass at both widths/200% text, plus analysis and 24 router
+  tests. Production behavior is unchanged; the read-only summary is E2E-only.
+  Rendered profile-switch follow-through fixes a reproduced blank Chat: Profiles
+  now pops its retained overlay instead of pushing the Chat shell twice. Two new
+  production-router tests preserve the exact mounted workspace/URL; two Chromium
+  cases switch through the actual profile Chat action, then reopen and traverse
+  Back/Forward/Escape with the exact new profile/session/history and zero mutations.
+  All 26 browser cases, 64 focused router/profile tests and analysis pass; the
+  [profile-switch receipt](docs/quality/chat-workspace-overlay-browser.md#rendered-profile-switch-recovery)
+  retains the pre-fix reproduction and bounded synthetic-contract limits.
+  Distinct-connection follow-through adds four compiled cases replacing the
+  production channel through its existing E2E hook while either overlay stays open.
+  A distinct intercepted loopback origin returns new session/history; Back/Forward,
+  Escape and reopen/Close retain that exact owner and exclude old history with
+  zero API mutations. All 30 rebuilt Chromium cases, 26 router tests and analysis
+  pass. A reconnect-no-op negative control fails the exact new-session barrier;
+  temporary production mutation was restored before final rebuild. See the
+  [connection-owner receipt](docs/quality/chat-workspace-overlay-browser.md#distinct-connection-owner-replacement).
+  Chat-local browser recovery fixes history-driven composer focus: seed the
+  caller-owned return target before pushing, keeping the existing post-pop guard.
+  Six new compiled Manage and Tab-traversal/Enter suggestion cases retain automatic
+  focus, draft/transcript and exact state/URL after Close, Escape, Back and
+  Forward/Escape, with zero API mutations. All 36 rebuilt Chromium cases and 84
+  router/shell-focus/profile-picker regressions plus analysis and formatting pass.
+  Direct Tab execution remains native-desktop-only, not browser parity. See the
+  [chat-local recovery receipt](docs/quality/chat-workspace-overlay-browser.md#chat-local-manage-and-keyboard-suggestion-recovery).
+  GTK requalification of the shared browser-focus fix at `285bec1c` passes all
+  36 native journeys, including twelve keyboard-shell and 24 chat-local focus
+  cases, with zero fixture mutations, verified source/dependency identity, app PID
+  and teardown. Locked offline dependencies, analysis and 30 focused tests pass.
+  See [GTK requalification](docs/quality/chat-workspace-overlay-native.md#shared-browser-focus-fix-gtk-requalification).
+  Active-run profile follow-through passes two additional rendered Profiles Chat
+  cases: select a distinct profile/session/history while the original synthetic
+  SSE run is pending, then complete that original run and retain the new owner
+  through reopen/Back/Forward/Escape. All 38 rebuilt Chromium cases, 26 router
+  regressions and analysis pass; the active-selection no-op mutation fails both
+  new cases. Independent native-source review approved. See
+  [active-run profile evidence](docs/quality/chat-workspace-overlay-browser.md#active-run-rendered-profile-switching).
+  Cancelled terminal-event consumption and detached persistence are not qualified.
+  Rendered saved-host follow-through adds two cases: public Add Hermes forms save
+  two empty-credential synthetic hosts; Settings → Connections → saved host →
+  Connect chat selects the distinct session/history. Reopened Settings retains
+  that owner through Back/Forward/Escape/Close with zero API mutations. Compact
+  contact Chat uses the rendered local Settings suggestion; wide Chat uses the
+  shell. All 40 rebuilt Chromium cases at 200% text, 26 router tests and analysis
+  pass. Independent native-source review approved; a gateway-switch no-op makes
+  both new cases fail their exact replacement-session barrier. See
+  [rendered saved-host evidence](docs/quality/chat-workspace-overlay-browser.md#rendered-saved-host-switching).
+  Active-run saved-host follow-through adds two rendered connection cases: switch
+  while the original synthetic run is pending, settle exact replacement history,
+  then complete/read back the original run and persisted reply. Back/Forward,
+  Escape and Close retain the new host without stale controls or replay; only the
+  original Send writes. All 42 rebuilt Chromium cases at both widths/200% text,
+  26 router regressions and analysis pass. Independent native-source review approved;
+  a gateway-switch no-op fails both new owner barriers. See
+  [active-run saved-host evidence](docs/quality/chat-workspace-overlay-browser.md#active-run-rendered-saved-host-switching).
+  Native HTTP/SSE Settings follow-through passes six isolated GTK journeys at
+  both widths/200% text: progressive synthetic chunks before/during the modal,
+  canonical history completion while it remains visible, then Close/Escape/framework
+  Back with exact mounted Chat/controller, draft, owner and URL retained. Only one
+  deliberate Send writes per journey. The production channel/client/native transport
+  are used without injected I/O. A reproduced completion-focus theft is fixed by
+  checking the visible router location before scheduled composer focus; two widget
+  regressions fail before the fix and pass after. All 401 focused tests, analysis,
+  formatting and six streaming plus 36 existing GTK journeys pass. Removing the
+  new guard makes the rebuilt first native journey fail its hidden-composer focus
+  assertion; exact source was restored before final qualification. Independent
+  native-source review approved exact candidate `9e31d196`; no required fixes.
+  See [native HTTP/SSE evidence](docs/quality/chat-workspace-overlay-native.md#native-production-httpsse-through-settings).
+  Native Profiles streaming follow-through extends the same production HTTP/SSE
+  fixture to twelve GTK journeys: Settings/Profiles at both widths/200% text with
+  Close, Escape and framework Back. All twelve and 30 focused regressions plus
+  analysis pass; independent native-source review approved. Profiles uses its
+  capability-limited surface, not populated inventory or profile switching.
+  Production code is unchanged. See
+  [Profiles streaming scope](docs/quality/chat-workspace-overlay-native.md#native-profiles-streaming-follow-through).
+  Populated native Profiles follow-through passes eighteen GTK HTTP/SSE journeys:
+  the retained twelve-case matrix now renders advertised profile inventory, and
+  six additional cases select Coding profile while the original stream is pending.
+  Exact new profile/session/history survive old server stream closure and reopened
+  Close/Escape/framework Back; only the original deliberate Send writes. Analysis,
+  30 focused regressions and independent native-source re-review pass; a selection
+  no-op negative control fails the exact new-owner barrier and is restored.
+  Production code and lockfile are unchanged. See
+  [populated native Profiles](docs/quality/chat-workspace-overlay-native.md#native-populated-profiles-and-active-run-replacement).
+  Native saved-host follow-through fixes loading placeholders nested in Connections'
+  scrollable and adds three wide rendered replacement cases during streaming.
+  All 21 production HTTP/SSE GTK journeys at 200% text and 34 focused regressions
+  pass, with analysis/formatting and independent native-source review approved.
+  Exact replacement history settles before old-server completion; reopened Settings
+  Close/Escape/framework Back retains the new host with only the original Send.
+  See [native saved-host evidence](docs/quality/chat-workspace-overlay-native.md#native-saved-host-replacement-during-streaming).
+  Next action: restore an accessible compact Settings entry during active saved-contact
+  Chat, then qualify rendered compact connection replacement without a navigation hook.
+  Saved-secret isolation and cancelled terminal consumption remain unqualified.
+  Keep parent acceptance open; do not repeat delivered matrices.
+  Touches: lib/router/widgets/, lib/router/providers/, lib/shared/widgets/, lib/features/hermes_chat/screens/, lib/features/settings/screens/, test/router/chat_workspace_overlay_test.dart, test/integration/linux_chat_workspace_overlay_runner_test.dart, integration_test/linux_chat_workspace_overlay_test.dart, integration_test/linux_chat_workspace_stream_test.dart, integration_test/run_linux_chat_workspace_stream.py, playwright/tests/regression/chat-workspace-overlay.spec.mjs, docs/quality/chat-workspace-overlay-browser.md, docs/quality/chat-workspace-overlay-native.md
+  Preserve archived offline evidence and WING-TASK-408-LIVE; parent acceptance remains incomplete without an acceptance waiver.

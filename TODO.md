@@ -198,8 +198,10 @@ needs its own exact capability, ownership and qualification evidence.
   its stated named-target acceptance is evidenced. See
   [the acceptance map](docs/quality/link-delivery-retirement.md).
 
-- [ ] **CONNECTION-SAVED-WORKFLOWS** — Goal: CONNECTION-PATHS. Complete and
+- [ ] **CONNECTION-SAVED-WORKFLOWS** —  Complete and
   prove owner-safe Local/Remote entry and saved-connection workflows.
+  Goal: CONNECTION-PATHS
+Section: Now.
   Payoff: a connection choice leads to working setup or authenticated endpoint
   access, not a label-only screen.
   Sources: [2026-07-16-multi-gateway-unified-chats](docs/superpowers/plans/2026-07-16-multi-gateway-unified-chats.md) (historical planning context)
@@ -217,7 +219,7 @@ needs its own exact capability, ownership and qualification evidence.
   pass through public controls. Late old results cannot redirect the replacement.
   A fresh compiled fixture journey reports saved versus connected readiness.
   Unsupported OAuth is explained. Native/live checks remain separately attributed.
-  Dependencies: CONNECTION-PRIMARY-ENTRY. Section: Now.
+  Dependencies: CONNECTION-PRIMARY-ENTRY.
   Ownership: unclaimed; the owner released the stale claim on 2026-10-16.
   Partial delivery: `t_90ae659f` qualifies saved-host rename/remove owner safety;
   see the [source-bound receipt](docs/quality/saved-connection-owner-safety.md).
@@ -668,7 +670,9 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: CONNECTION-SAVED-WORKFLOWS.
   Section: Next. Ownership: unclaimed backlog only; no board dispatch in this card.
 
-- [ ] **CONNECTION-SETUP-AUTH-MATRIX** — Goal: CONNECTION-PATHS. Finish the
+- [ ] **CONNECTION-SETUP-AUTH-MATRIX** —  Finish the
+  Goal: CONNECTION-PATHS
+Section: Next.
   remaining CONNECTION-SAVED-WORKFLOWS matrix: Local existing-install/setup-needed
   enrollment recovery, remaining native/live saved connection qualification,
   full two-host profile/session collision qualification, and live Remote authentication.
@@ -738,7 +742,7 @@ patches, personal credential discovery, service restarts or provider spending.
   remote installs or personal runtime changes. Native/live checks are separately
   attributed and remain NOT_CHECKED until executed.
   Dependencies:
-  CONNECTION-SAVED-HOST-OWNER-SAFETY. Section: Next.
+  CONNECTION-SAVED-HOST-OWNER-SAFETY.
   Payoff: finish onboarding without repeating delivered rename/remove or Remote retry.
   Delivered subset: CONNECTION-REMOTE-AUTH-STORAGE-RETRY now covers deterministic
   auth rejection, uncertain save and explicit retry; native/live authentication
@@ -774,8 +778,10 @@ patches, personal credential discovery, service restarts or provider spending.
   Planning only; no worker, runner, schedule or live test starts from this answer.
   Checks: `flutter test --no-pub --concurrency=1 test/features/enrollment/ test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`; `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before the existing compiled connection/browser matrix. Reuse matching receipts for unchanged inputs; native/live authentication and OS storage/chooser proof remain separately gated.
 
-- [ ] **DOC-PARITY-TAB-CONTRACT** — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
+- [ ] **DOC-PARITY-TAB-CONTRACT** —  Add owner-safe conversation
   tabs with keyboard switching and explicit close/Stop recovery.
+  Goal: PARITY-TABS
+Section: Next.
   Payoff: preserve distinct conversations without losing drafts or stopping another run.
   Sources: [PARITY-TABS](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary).
   Scope: existing shell/chat composition, channel ownership contracts and nearest
@@ -792,6 +798,8 @@ patches, personal credential discovery, service restarts or provider spending.
   [pinned comparison](docs/quality/graphify-wing-recomparison.md).
   Official source leads: [pane composition and identity findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Imports alone do not establish keyboard/close behavior. Preserve per-pane drafts, reject stale owner events, release request leases on failure and keep expired input inoperable through switch/disconnect/resume. Qualify supported transport behavior without claiming JSON-RPC adoption.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Checks: `flutter analyze --no-pub`; `flutter test --no-pub --concurrency=1 test/features/hermes_chat/ test/router/`; `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Require source-bound independent review of owner isolation, per-tab drafts and close/Stop behavior. Planned checks only, not executed passes; native/live grants remain unchanged.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/router/, lib/app/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/router/, integration_test/, playwright/tests/, docs/quality/
 
 - [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Goal: PARITY-TABS. Section: Next. Implement and
   qualify reconnect for two distinct session-owned conversation tabs.
@@ -1037,8 +1045,10 @@ patches, personal credential discovery, service restarts or provider spending.
   or privileged operation retains its own target, authority and consent gates.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
 
-- [ ] **BACKEND-SSH-CONNECT** — Goal: REMOTE-BACKENDS. Complete and qualify the
+- [ ] **BACKEND-SSH-CONNECT** —  Complete and qualify the
   existing native Dart SSH forwarding to an already-configured authenticated Agent.
+  Goal: REMOTE-BACKENDS
+Section: Next.
   Payoff: replace manual tunnel setup on the admitted native target without
   importing Desktop's remote shell bridge. Retain the existing task ID and review
   dependency; source presence does not close that review.
@@ -1057,7 +1067,7 @@ patches, personal credential discovery, service restarts or provider spending.
   and stale transport results. A controlled native SSH target supplies actual
   full-app connection evidence. Fixture-only results do not qualify native SSH. Unsupported platforms
   retain external-tunnel access. Format, analysis and relevant tests pass.
-  Dependencies: DOC-BACKEND-CONTRACT. Section: Next.
+  Dependencies: DOC-BACKEND-CONTRACT.
   Ownership: unclaimed in this index. Verify live tracker/continuation leases.
   Current implementation: native Dart forwarding and password-form integration
   now exist. Reuse `lib/core/hermes/ssh/` and the app-scoped controller rather than
@@ -1255,8 +1265,10 @@ patches, personal credential discovery, service restarts or provider spending.
   composition, not a new audit or repeat of completed first-reply/provenance work.
   Owner decision: Rework within this same task from current sources; retain candidate 6165289ceb5e419a432a71e80ee568fff2f2c077 and its unqualified report as history. Preserve every acceptance/check and do not rewrite old evidence to pass. Planning only; no runner or schedule operation is authorized.
 
-- [ ] **WING-TASK-408** — Goal: PARITY-COMPOSITION. Keep Chat alive while Settings
+- [ ] **WING-TASK-408** —  Keep Chat alive while Settings
   and Profiles overlays open and close in the compiled application.
+  Goal: PARITY-COMPOSITION
+Section: Next.
   Payoff: users inspect settings or profiles without losing their draft or stream.
   Touches: lib/router/widgets/, lib/router/providers/, lib/shared/widgets/, lib/features/hermes_chat/screens/, lib/features/settings/screens/, test/router/chat_workspace_overlay_test.dart, test/integration/linux_chat_workspace_overlay_runner_test.dart, integration_test/linux_chat_workspace_overlay_test.dart, integration_test/linux_chat_workspace_stream_test.dart, integration_test/run_linux_chat_workspace_stream.py, playwright/tests/regression/chat-workspace-overlay.spec.mjs, docs/quality/chat-workspace-overlay-browser.md, docs/quality/chat-workspace-overlay-native.md
   Scope: `ChatWorkspaceOverlay`, production router/shell callers and deterministic
@@ -1273,7 +1285,6 @@ patches, personal credential discovery, service restarts or provider spending.
    [implemented overlay and evidence limits](docs/analysis/official-desktop-graphify.md#remaining-review-and-qualification),
   [port fidelity scope](docs/product/hermes-desktop-parity.md#current-delivery-assessment).
   Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT.
-  Section: Next
   Checks: `flutter test --no-pub --concurrency=1 test/router/chat_workspace_overlay_test.dart`;
   `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before compiled Chromium
   overlay navigation/history checks; run isolated Linux overlay journeys separately.
@@ -1418,7 +1429,9 @@ patches, personal credential discovery, service restarts or provider spending.
   Saved-secret isolation and cancelled terminal consumption remain unqualified.
   Keep parent acceptance open; do not repeat delivered matrices.
 
-- [ ] **ANDROID-CANONICAL-BOT-CHAT** — Goal: PARITY-TABS. Section: Next.
+- [ ] **ANDROID-CANONICAL-BOT-CHAT** — Android canonical bot chat
+  Goal: PARITY-TABS
+Section: Next.
   Status: open
   Payoff: each bot opens its ongoing Bot Chat without stealing or forking an ordinary conversation.
   Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
@@ -1450,7 +1463,9 @@ patches, personal credential discovery, service restarts or provider spending.
   qualified session seam and add its failure-first regressions, never an Office substitute.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
-- [ ] **ANDROID-CHAT-TOUCH-POLISH** — Goal: PARITY. Section: Next.
+- [ ] **ANDROID-CHAT-TOUCH-POLISH** — Android chat touch polish
+  Goal: PARITY
+Section: Next.
   Status: open
   Payoff: Android SSH chat feels like official Desktop designed for a phone.
   Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),

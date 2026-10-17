@@ -39,6 +39,8 @@ class ManagedSshConnectionLabels {
     required this.invalidPassword,
     required this.invalidToken,
     required this.failure,
+    this.serveReads,
+    this.serveToken,
   });
   final String host, sshPort, username, password, agentPort, agentToken;
   final String connect, connecting, cancel;
@@ -51,6 +53,7 @@ class ManagedSshConnectionLabels {
       selectedKey;
   final String invalidHost, invalidPort, invalidUsername, invalidPassword;
   final String invalidToken, failure;
+  final String? serveReads, serveToken;
 }
 
 @immutable
@@ -104,6 +107,7 @@ class ManagedSshConnectionForm extends StatefulWidget {
 class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   final _form = GlobalKey<FormState>();
   bool _keyAuthentication = false;
+  bool _serveReads = false;
   SelectedManagedSshKey? _selectedKey;
   String? _keyError;
   late final _generatedKeyStore =
@@ -171,8 +175,10 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
             ? null
             : l.invalidPassword;
       case 'agent-token':
-        return v.isEmpty ||
-                (v.length <= 4096 && RegExp(r'^[\x21-\x7e]+$').hasMatch(v))
+        return (!_serveReads && v.isEmpty) ||
+                (v.isNotEmpty &&
+                    v.length <= 4096 &&
+                    RegExp(r'^[\x21-\x7e]+$').hasMatch(v))
             ? null
             : l.invalidToken;
       default:
@@ -220,6 +226,9 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
           : null,
       agentPort: _port(_agentPort.text)!,
       agentBearerToken: _agentToken.text.isEmpty ? null : _agentToken.text,
+      transport: _serveReads
+          ? SshAgentTransport.serve
+          : SshAgentTransport.advertisedApi,
     );
     setState(() {
       _submitting = true;
@@ -628,7 +637,28 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
                 if (_keyError != null) Text(_keyError!),
               ],
               _field('agent-port', l.agentPort, _agentPort, port: true),
-              _field('agent-token', l.agentToken, _agentToken, secret: true),
+              if (l.serveReads != null)
+                CheckboxListTile(
+                  key: const ValueKey('managed-ssh-serve-reads'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l.serveReads!),
+                  value: _serveReads,
+                  onChanged: _busy
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _serveReads = value ?? false;
+                            // Tokens from the two Agent surfaces are not interchangeable.
+                            _agentToken.clear();
+                          });
+                        },
+                ),
+              _field(
+                'agent-token',
+                _serveReads ? l.serveToken! : l.agentToken,
+                _agentToken,
+                secret: true,
+              ),
               if (widget.sanitizedError != null || _failed)
                 Semantics(
                   liveRegion: true,

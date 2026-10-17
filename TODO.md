@@ -232,7 +232,7 @@ needs its own exact capability, ownership and qualification evidence.
   Status: open
   Touches: lib/core/hermes/, lib/features/enrollment/, lib/features/hermes_chat/,
   test/core/hermes/, test/features/enrollment/, test/features/hermes_chat/,
-  integration_test/, playwright/tests/, docs/quality/.
+  integration_test/, playwright/tests/, docs/quality/
   Owner decision: release the claim and keep this task incomplete; preserve
   acceptance, partial-delivery evidence and native/live access gates. Planning only;
   no worker, runner or schedule is started by this decision.
@@ -767,7 +767,7 @@ patches, personal credential discovery, service restarts or provider spending.
   Status: open
   Touches: lib/core/hermes/, lib/features/enrollment/, lib/features/hermes_chat/,
   test/core/hermes/, test/features/enrollment/, test/features/hermes_chat/,
-  integration_test/, playwright/tests/, docs/quality/.
+  integration_test/, playwright/tests/, docs/quality/
   Owner decision: release the claim and keep this task incomplete. Preserve
   authentication, device, secure-storage and provider-call-budget gates, all
   partial-delivery evidence and existing no-spending/no-personal-credential limits.
@@ -1065,7 +1065,7 @@ patches, personal credential discovery, service restarts or provider spending.
   SSH relaunch remain open. Key UI now has passing production-control regressions;
   BACKEND-SSH-KEY-NATIVE owns the remaining platform qualification. This task is not closed by terminal SSH or widget-only evidence.
   Checks: `flutter test --no-pub --concurrency=1 test/core/hermes/ssh/managed_ssh_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/ssh_keys/managed_ssh_key_selection_test.dart`; `flutter analyze --no-pub`; format changed Dart files and `git diff --check`. Native full-app/controlled-target evidence remains mandatory; fixture-only passes do not close this task.
-  Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/.
+  Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
 - [ ] **BACKEND-SSH-KEY-NATIVE** — Goal: REMOTE-BACKENDS. Qualify full-app
   managed-key SSH on native Linux and Android against the approved host.
@@ -1448,7 +1448,7 @@ patches, personal credential discovery, service restarts or provider spending.
   Ownership: wing; open/unclaimed, verify live ownership before implementation.
   Next action: port the pinned canonical lookup/adopt behavior into the existing
   qualified session seam and add its failure-first regressions, never an Office substitute.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
 - [ ] **ANDROID-CHAT-TOUCH-POLISH** — Goal: PARITY. Section: Next.
   Status: open
@@ -1488,7 +1488,7 @@ patches, personal credential discovery, service restarts or provider spending.
   Next action: apply the remaining Desktop-derived touch composition to Chat and
   its profile/session switchers after the existing prerequisite. Preserve the
   compact onboarding; unavailable operations and broader acceptance remain open.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
 ## Needs decision
 

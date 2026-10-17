@@ -6351,3 +6351,30 @@ Source section: Now / Next
   port replacement while retaining the durable saved host/profile/session. No
   implicit resend, approval, Stop or service restart; retain uncertain work until
   Agent readback. Android away/process-death proof belongs to its existing task.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **PARITY-OFFICIAL-MATRIX** — Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons
+  Replace the withdrawn feature mapping with official-source feature groups and
+  per-platform acceptance. Retain Wing receipts as behavior evidence only.
+  Goal: PARITY
+Section: Next.
+  Scope: official Desktop source/tests, feature-matrix JSON/Markdown and existing
+  task mappings. Preserve task IDs, leases and historical test results.
+  Acceptance: every official feature group has a pinned real source, supported/
+  unsupported/unverified Wing outcome and Linux/Android verification path. No
+  old source paths or totals are transferred without reinspection. Runtime cells
+  advance only from named-target execution; no blanket parity certification.
+  Sources: [2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix](docs/plans/2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix.md) (historical planning context)
+  [2026-09-02_162056-hermes-wing-rehabilitation-audit](docs/plans/2026-09-02_162056-hermes-wing-rehabilitation-audit.md) (historical planning context)
+  [2026-08-30-hermes-desktop-parity](docs/superpowers/plans/2026-08-30-hermes-desktop-parity.md) (historical planning context);
+   [withdrawn matrix](docs/product/hermes-desktop-feature-matrix.md),
+  [official reference](docs/quality/official-desktop-reference.md).
+  Knowledge mapping: [official bootstrap/pane/ownership/replay/Stop findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Map only semantically traced outcomes; mark controller/plugin imports and deeper settings/IPC/rollback/Projects/tool/slash/accessibility gaps as unverified. Inspected upstream tests and graph edges do not advance runtime cells.
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Ownership: unclaimed.
+  Checks: Pin the read-only official Agent/Desktop checkout with `git rev-parse HEAD`; recheck every mapped feature source and verification path, run affected existing matrix/tooling tests with `flutter test --no-pub test/tooling/`, validate changed JSON and Markdown targets, then `git diff --check`. Source mapping cannot advance Linux/Android runtime cells.
+  Touches: docs/product/hermes-desktop-feature-matrix.md, docs/quality/, test/tooling/, docs/product/hermes-desktop-feature-matrix.json
+  Touches widened by the runner from worker evidence: docs/product/hermes-desktop-feature-matrix.json

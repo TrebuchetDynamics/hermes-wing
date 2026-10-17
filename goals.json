@@ -3925,7 +3925,8 @@
         "PARITY-MAESTRO-ANDROID-DEVICE",
         "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
         "PARITY-NATIVE-LINUX",
-        "PARITY-OFFICIAL-MATRIX"
+        "PARITY-OFFICIAL-MATRIX",
+        "PARITY-OFFICIAL-MATRIX-LIVE"
       ],
       "title": "Match the remaining Desktop product outcomes explicitly"
     },
@@ -6852,7 +6853,6 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "PARITY-OFFICIAL-MATRIX",
       "CONNECTION-OWNER-RECONNECT",
       "CONNECTION-LINK-REMOVAL",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
@@ -6918,7 +6918,8 @@
       "LANDING-PRODUCT-PROOF-LIVE",
       "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
       "BACKEND-SSH-CONNECT-LIVE",
-      "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE"
+      "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE",
+      "PARITY-OFFICIAL-MATRIX-LIVE"
     ]
   },
   "tasks": [
@@ -7326,16 +7327,6 @@
     },
     {
       "depends_on": [
-        "CONNECTION-OFFICIAL-DESKTOP-PORT"
-      ],
-      "goal": "PARITY",
-      "id": "PARITY-OFFICIAL-MATRIX",
-      "section": "Next",
-      "status": "open",
-      "title": "Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons"
-    },
-    {
-      "depends_on": [
         "VERIFY-OMNIROUTE-NODE22-CLOSURE"
       ],
       "goal": "SECURITY",
@@ -7521,6 +7512,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-MAESTRO-ANDROID-DEVICE"
+    },
+    {
+      "depends_on": [
+        "PARITY-OFFICIAL-MATRIX"
+      ],
+      "goal": "PARITY",
+      "id": "PARITY-OFFICIAL-MATRIX-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITY-OFFICIAL-MATRIX"
     },
     {
       "depends_on": [
@@ -8587,6 +8588,16 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify the existing two-process native relaunch workflow"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-OFFICIAL-DESKTOP-PORT"
+      ],
+      "goal": "PARITY",
+      "id": "PARITY-OFFICIAL-MATRIX",
+      "section": "Done",
+      "status": "done",
+      "title": "Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons"
     },
     {
       "depends_on": [],

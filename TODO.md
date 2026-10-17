@@ -237,29 +237,6 @@ needs its own exact capability, ownership and qualification evidence.
   compact onboarding; unavailable operations and broader acceptance remain open.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
-- [ ] **PARITY-OFFICIAL-MATRIX** — Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons
-  Replace the withdrawn feature mapping with official-source feature groups and
-  per-platform acceptance. Retain Wing receipts as behavior evidence only.
-  Goal: PARITY
-Section: Next.
-  Scope: official Desktop source/tests, feature-matrix JSON/Markdown and existing
-  task mappings. Preserve task IDs, leases and historical test results.
-  Acceptance: every official feature group has a pinned real source, supported/
-  unsupported/unverified Wing outcome and Linux/Android verification path. No
-  old source paths or totals are transferred without reinspection. Runtime cells
-  advance only from named-target execution; no blanket parity certification.
-  Sources: [2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix](docs/plans/2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix.md) (historical planning context)
-  [2026-09-02_162056-hermes-wing-rehabilitation-audit](docs/plans/2026-09-02_162056-hermes-wing-rehabilitation-audit.md) (historical planning context)
-  [2026-08-30-hermes-desktop-parity](docs/superpowers/plans/2026-08-30-hermes-desktop-parity.md) (historical planning context);
-   [withdrawn matrix](docs/product/hermes-desktop-feature-matrix.md),
-  [official reference](docs/quality/official-desktop-reference.md).
-  Knowledge mapping: [official bootstrap/pane/ownership/replay/Stop findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Map only semantically traced outcomes; mark controller/plugin imports and deeper settings/IPC/rollback/Projects/tool/slash/accessibility gaps as unverified. Inspected upstream tests and graph edges do not advance runtime cells.
-  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Ownership: unclaimed.
-  Checks: Pin the read-only official Agent/Desktop checkout with `git rev-parse HEAD`; recheck every mapped feature source and verification path, run affected existing matrix/tooling tests with `flutter test --no-pub test/tooling/`, validate changed JSON and Markdown targets, then `git diff --check`. Source mapping cannot advance Linux/Android runtime cells.
-  Touches: docs/product/hermes-desktop-feature-matrix.md, docs/quality/, test/tooling/, docs/product/hermes-desktop-feature-matrix.json
-  Touches widened by the runner from worker evidence: docs/product/hermes-desktop-feature-matrix.json
-
-
 - [ ] **CONNECTION-OWNER-RECONNECT** —  Restore the same
   saved host/profile/session after disconnect without replaying mutations.
   Goal: CONNECTION-PATHS
@@ -1623,4 +1600,14 @@ does not mark any check passed or authorize live actions.
   - Physical platform secure-storage durability and native document acquisition remain unqualified; fixture substitutions are not keystore/SAF evidence. Android away/process-death proof remains with its existing separate task.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-BACKEND-DISCONNECT-CONTRACT.
+  Status: open
+
+- [ ] PARITY-OFFICIAL-MATRIX-LIVE — Live checks for PARITY-OFFICIAL-MATRIX
+  Scope: Run the live checks the offline work for PARITY-OFFICIAL-MATRIX left pending.
+  Acceptance: Each check passes on the real target:
+  - PARITY-NATIVE-LINUX: execute the rebuilt row-specific acceptance on named owned Linux builds/displays, using recorded guarded launchers where applicable. All rebuilt native runtime cells remain not_run; historical fixtures do not qualify the official mapping.
+  - PARITY-MAESTRO-ANDROID-DEVICE: execute row-specific acceptance on named disposable Android QA installations/devices, including physical input and accessibility paths. All rebuilt Android runtime cells remain not_run.
+  - Separately qualify actual Agent/provider authentication and inference, OS keyring/keystore, audio/IME and assistive technology, and distribution/update/rollback on the named target before making those support claims. Unavailable operations and deeper source/contract gaps remain explicit in the matrix.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITY-OFFICIAL-MATRIX.
   Status: open

@@ -1,4 +1,5 @@
 import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
+import 'package:wing/core/hermes/setup/secure_managed_ssh_recovery_store.dart';
 import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
@@ -83,11 +84,13 @@ class ManagedSshConnectionForm extends StatefulWidget {
     required this.onCancel,
     this.busy = false,
     this.sanitizedError,
+    this.initialTarget,
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
     this.generatedKeyLabels,
   });
   final ManagedSshGeneratedKeyStore? generatedKeyStore;
+  final ManagedSshRecovery? initialTarget;
   final ManagedSshGeneratedKeyLabels? generatedKeyLabels;
   final ManagedSshConnectionLabels labels;
   final ManagedSshKeyPicker pickKey;
@@ -124,6 +127,21 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   final _passphrase = TextEditingController();
   final _agentPort = TextEditingController(text: '8642');
   final _agentToken = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final target = widget.initialTarget;
+    if (target == null) return;
+    _host.text = target.configuration.host;
+    _sshPort.text = '${target.configuration.sshPort}';
+    _username.text = target.configuration.username;
+    _agentPort.text = '${target.configuration.agentPort}';
+    _serveReads =
+        target.transport == SshAgentTransport.serve &&
+        widget.labels.serveReads != null;
+    // Authentication is always reacquired deliberately, never prefilled.
+  }
 
   static int? _port(String text) {
     if (!RegExp(r'^[0-9]{1,5}$').hasMatch(text)) return null;

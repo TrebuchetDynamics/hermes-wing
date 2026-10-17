@@ -125,6 +125,9 @@ class _ManagedSshConnectionPanelState
       return Text(strings.chatLayoutConnectionModeSshUrlHelper);
     }
     return LocalizedManagedSshConnectionForm(
+      initialTarget: ref
+          .read(managedSshConnectionControllerProvider)
+          .recoveryTarget,
       onSubmit: _submit,
       allowServe: defaultTargetPlatform == TargetPlatform.android,
       pickKey: widget.pickKey,

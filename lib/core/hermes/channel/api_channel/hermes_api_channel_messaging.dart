@@ -93,7 +93,14 @@ extension _MessagingExtension on HermesApiChannel {
       _setState(_state.copyWith(errorMessage: message));
       throw StateError(message);
     }
-    final connectedBaseUrl = _state.connectedBaseUrl;
+    if (_hasForwardedUncertainty(sessionId, profileId)) {
+      throw StateError(
+        'Previous SSH work is uncertain. Authoritative run status and history are required before sending.',
+      );
+    }
+    final connectedBaseUrl = _state.connectedBaseUrl == null
+        ? null
+        : _detachedRunBaseUrl(_state.connectedBaseUrl!);
     if (connectedBaseUrl != null &&
         _hasDetachedRun(
           baseUrl: connectedBaseUrl,
@@ -140,6 +147,26 @@ extension _MessagingExtension on HermesApiChannel {
       );
     }
 
+    final persistForwarded = _persistForwardedApiRecovery;
+    if (persistForwarded != null) {
+      if (_forwardedApiSubmission != null) {
+        throw StateError('SSH submission persistence is still pending.');
+      }
+      final submission = Object();
+      _forwardedApiSubmission = submission;
+      try {
+        await persistForwarded(profileId, sessionId, true);
+      } finally {
+        if (identical(_forwardedApiSubmission, submission)) {
+          _forwardedApiSubmission = null;
+        }
+      }
+    }
+    if (!isCurrentProfile() || _state.activeSessionId != sessionId) return;
+    final forwarded = _forwardedRunOwner != null;
+    if (forwarded) {
+      _forwardedUncertainSessions.add((profileId ?? 'default', sessionId));
+    }
     final turns = List<HermesChatTurn>.from(_state.activeMessages);
     final preSendTurnCount = turns.length;
     final now = DateTime.now();
@@ -769,7 +796,7 @@ extension _MessagingExtension on HermesApiChannel {
     }
     if (runId != null) {
       _invalidateApprovalsForRun(runId);
-      if (terminalRunLifecycleReceived) {
+      if (terminalRunLifecycleReceived && !forwarded) {
         await _releaseDetachedRunBestEffort(
           runId: runId,
           sessionId: sessionId,
@@ -808,9 +835,10 @@ extension _MessagingExtension on HermesApiChannel {
                   'Hermes run failed: ${_safeHermesError(recoveredError!)}',
             );
           }
-          if (status.status == HermesRunLifecycle.completed ||
-              status.status == HermesRunLifecycle.failed ||
-              status.status == HermesRunLifecycle.cancelled) {
+          if (!forwarded &&
+              (status.status == HermesRunLifecycle.completed ||
+                  status.status == HermesRunLifecycle.failed ||
+                  status.status == HermesRunLifecycle.cancelled)) {
             await _releaseDetachedRunBestEffort(
               runId: runId,
               sessionId: sessionId,
@@ -918,6 +946,26 @@ extension _MessagingExtension on HermesApiChannel {
             _state.status != HermesConnectionStatus.connected ||
             !isCurrentStream()) {
           return;
+        }
+        if (forwarded &&
+            (terminalRunLifecycleReceived ||
+                (!useRunTransport &&
+                    terminalRunEventReceived &&
+                    !streamFailed))) {
+          await _settleForwardedSession(sessionId, profileId, isCurrentStream);
+          if (!isCurrentStream()) return;
+          if (runId != null) {
+            await _releaseDetachedRunBestEffort(
+              runId: runId,
+              sessionId: sessionId,
+              profileId: profileId,
+              baseUrl: connectedBaseUrl,
+            );
+          }
+          if (!isCurrentStream()) return;
+          _setState(
+            _state.copyWith(hasUnreconciledRun: _activeSessionHasDetachedRun()),
+          );
         }
         serverAssistantReplyObserved =
             _serverHistoryHasAssistantReplyForCurrentTurn(
@@ -2096,6 +2144,8 @@ extension _MessagingExtension on HermesApiChannel {
         clearErrorMessage: successful,
         errorMessage: successful ? null : 'Hermes run did not complete.',
       );
+      await _settleForwardedSession(sessionId, profileId, isCurrentStream);
+      if (!isCurrentStream()) return;
       await _releaseDetachedRunBestEffort(
         runId: runId,
         sessionId: sessionId,
@@ -2218,10 +2268,7 @@ extension _MessagingExtension on HermesApiChannel {
             stillActive = true;
             continue;
           }
-          final key = _detachedRunKey(detached);
-          _detachedRuns.remove(key);
-          _confirmedDetachedRunKeys.remove(key);
-          removedKeys.add(key);
+          removedKeys.add(_detachedRunKey(detached));
         } else {
           _confirmedDetachedRunKeys.add(_detachedRunKey(detached));
           stillActive = true;
@@ -2233,7 +2280,19 @@ extension _MessagingExtension on HermesApiChannel {
         stillActive = true;
       }
     }
+    if (!stillActive && isCurrentOwner()) {
+      try {
+        await _settleForwardedSession(sessionId, profileId, isCurrentOwner);
+      } catch (_) {
+        return true; // Keep recovery handles until the settled pointer is durable.
+      }
+    }
+    if (!isCurrentOwner()) return true;
     if (removedKeys.isNotEmpty) {
+      for (final key in removedKeys) {
+        _detachedRuns.remove(key);
+        _confirmedDetachedRunKeys.remove(key);
+      }
       try {
         await _persistDetachedMutation(removals: removedKeys);
       } catch (_) {
@@ -2265,6 +2324,10 @@ extension _MessagingExtension on HermesApiChannel {
     _setState(
       _state.copyWith(
         messages: {..._state.messages, sessionId: turns},
+        hasUnreconciledRun: isActiveSession && _forwardedRunOwner != null
+            ? _hasForwardedUncertainty(sessionId, _state.selectedProfileId) ||
+                  _activeSessionHasDetachedRun()
+            : null,
         errorMessage: isActiveSession ? errorMessage : null,
         clearErrorMessage: isActiveSession && clearErrorMessage,
       ),
@@ -2317,6 +2380,8 @@ extension _MessagingExtension on HermesApiChannel {
         profileId: profileId,
         canAccept: canAccept,
       );
+      if (!canAccept()) return false;
+      await _settleForwardedSession(sessionId, profileId, canAccept);
       if (!canAccept()) return false;
       _setTurns(sessionId, turns);
     }
@@ -2488,5 +2553,3 @@ bool _isDefinitiveRunSubmissionRejection(Object error) {
       error.statusCode < 500 &&
       error.statusCode != 408;
 }
-
-String _detachedRunBaseUrl(String value) => hermesPublicEndpointBaseUrl(value);

@@ -1,7 +1,20 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
+import 'package:wing/core/hermes/client/hermes_api_client.dart';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wing/core/hermes/setup/secure_managed_ssh_recovery_store.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
+import 'package:wing/l10n/app_localizations.dart';
+import '../support/fake_hermes_endpoint_store.dart';
+import '../support/fake_hermes_gateway_directory.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
@@ -30,23 +43,44 @@ class _RecoveryStore implements HermesServeRecoveryStore {
   }
 }
 
+class _SshStore extends SecureManagedSshRecoveryStore {
+  bool rejectSaves = false;
+  @override
+  Future<void> save(ManagedSshRecovery selection) {
+    if (rejectSaves) throw StateError('synthetic sensitive storage failure');
+    return super.save(selection);
+  }
+}
+
 // Only the SSH network boundary is substituted; Agent HTTP, ticket, RPC,
 // channel/controller ownership and recovery policy are production code.
 class _Forward extends ManagedSshForward {
   _Forward(this.origin);
-  final String origin;
-  final ended = Completer<void>();
+  String origin;
+  var ended = Completer<void>();
+  int fingerprintByte = 0;
   @override
   Future<ManagedSshTunnel> connect({
     required ManagedSshConfig configuration,
     required ManagedSshCredentials authentication,
     ManagedSshHostKeyVerifier? verifyHostKey,
     Duration timeout = const Duration(seconds: 20),
-  }) async => ManagedSshTunnel(
-    agentUri: Uri.parse(origin),
-    done: ended.future,
-    close: disconnect,
-  );
+  }) async {
+    if (!await (verifyHostKey?.call(
+          configuration,
+          ManagedSshHostKey('ssh-ed25519', List.filled(32, fingerprintByte)),
+        ) ??
+        false)) {
+      throw const ManagedSshException(ManagedSshFailure.hostKeyRejected);
+    }
+    if (ended.isCompleted) ended = Completer<void>();
+    return ManagedSshTunnel(
+      agentUri: Uri.parse(origin),
+      done: ended.future,
+      close: disconnect,
+    );
+  }
+
   @override
   Future<void> disconnect() async {
     if (!ended.isCompleted) ended.complete();
@@ -60,15 +94,23 @@ void main() {
   late HermesApiChannel channel;
   late _Forward forward;
   late ManagedSshConnectionController controller;
+  late _SshStore sshStore;
   setUp(() async {
     HttpOverrides.global = null;
+    FlutterSecureStorage.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({});
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     fixture = LocalServeChatFixture();
     await fixture.start();
     store = _RecoveryStore();
     channel = HermesApiChannel(serveRecoveryStore: store);
     forward = _Forward(fixture.origin);
-    controller = ManagedSshConnectionController(forward, channel);
+    sshStore = _SshStore();
+    controller = ManagedSshConnectionController(
+      forward,
+      channel,
+      recoveryStore: sshStore,
+    );
   });
   tearDown(() async {
     controller.dispose();
@@ -225,7 +267,13 @@ void main() {
     'SSH loss after chat qualification revokes only that lease without replay',
     () async {
       expect(await connect(), true);
+      await channel.selectProfile('demo');
       await channel.enableLocalServeChat();
+      fixture.dropSubmit = true;
+      await expectLater(
+        channel.sendText('synthetic uncertain turn'),
+        throwsException,
+      );
       final disconnected = Completer<void>();
       void changed() {
         if (!channel.state.isConnected && !disconnected.isCompleted) {
@@ -237,13 +285,350 @@ void main() {
       await forward.disconnect();
       await disconnected.future;
       channel.removeListener(changed);
+      expect(channel.state.selectedProfileId, 'demo');
+      expect(channel.state.activeSessionId, 'demo-session');
+      expect(channel.state.hasUnreconciledRun, true);
       final requests = List.of(fixture.requests);
       await channel.retryLocalServeConversation();
       expect(fixture.requests, requests);
       expect(channel.state.serveChat, isNull);
+      expect(fixture.count('prompt.submit'), 1);
+      expect(fixture.count('approval.respond'), 0);
+      expect(fixture.count('session.interrupt'), 0);
+      final oldOrigin = fixture.origin;
+      await fixture.close();
+      fixture = LocalServeChatFixture();
+      await fixture.start();
+      expect(fixture.origin, isNot(oldOrigin));
+      forward.origin = fixture.origin;
+      expect(await connect(), true);
+      expect(channel.state.selectedProfileId, 'demo');
+      expect(channel.state.activeSessionId, 'demo-session');
+      expect(channel.state.hasUnreconciledRun, true);
+      await channel.retryLocalServeConversation();
+      expect(channel.state.serveChat?.canSubmit, true);
+      expect(channel.state.hasUnreconciledRun, false);
       expect(fixture.count('prompt.submit'), 0);
       expect(fixture.count('approval.respond'), 0);
       expect(fixture.count('session.interrupt'), 0);
+      expect(store.saved, isEmpty);
+    },
+  );
+
+  test(
+    'advertised SSH restores only the remembered owner without reading default-session history',
+    () async {
+      controller.dispose();
+      channel.dispose();
+      final admitted = <String>[];
+      final histories = <String>[];
+      final capabilities = {
+        'schema_version': 1,
+        'profile_context': {
+          'type': 'query',
+          'name': 'profile',
+          'required': true,
+          'default_profile_id': 'default',
+        },
+        'auth': {
+          'type': 'bearer',
+          'required': true,
+          'granted_scopes': ['profiles:read'],
+        },
+        'features': <String, bool>{},
+        'endpoints': {
+          'profiles': {
+            'method': 'GET',
+            'path': '/api/profiles',
+            'required_scopes': ['profiles:read'],
+          },
+          'session_messages': {
+            'method': 'GET',
+            'path': '/api/sessions/{session_id}/messages',
+            'profile_scoped': true,
+          },
+        },
+      };
+      channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, _) async {
+            if (uri.path.endsWith('/messages')) {
+              histories.add(uri.path);
+              expect(uri.queryParameters['profile'], 'demo');
+              expect(uri.path, '/api/sessions/remembered/messages');
+              return '{"object":"list","session_id":"remembered","data":[]}';
+            }
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => jsonEncode(capabilities),
+              '/api/profiles' =>
+                '{"data":[{"id":"default","name":"Default"},{"id":"demo","name":"Demo"}]}',
+              '/api/sessions' =>
+                '{"data":[{"id":"wrong-default","source":"api_server"},{"id":"remembered","source":"api_server"}],"has_more":false}',
+              _ => throw StateError('Unexpected read'),
+            };
+          },
+        ),
+      );
+      channel.addListener(() {
+        if (channel.state.activeSessionId != null) {
+          admitted.add(channel.state.activeSessionId!);
+        }
+      });
+      final config = ManagedSshConfig(
+        host: 'example.invalid',
+        username: 'synthetic',
+        agentPort: 8642,
+      );
+      await sshStore.save(
+        ManagedSshRecovery(
+          configuration: config,
+          transport: SshAgentTransport.advertisedApi,
+          hostKey: ManagedSshHostKey('ssh-ed25519', List.filled(32, 0)),
+          profile: 'demo',
+          session: 'remembered',
+          uncertain: false,
+        ),
+      );
+      controller = ManagedSshConnectionController(
+        forward,
+        channel,
+        recoveryStore: sshStore,
+      );
+      expect(
+        await controller.connectSsh(
+          const SshConnectionRequest(
+            host: 'example.invalid',
+            sshPort: 22,
+            username: 'synthetic',
+            password: 'synthetic-password',
+            agentPort: 8642,
+            agentBearerToken: LocalServeReadFixture.token,
+          ),
+          verifyHostKey: (_, _) => true,
+        ),
+        true,
+      );
+      expect(admitted, isNotEmpty);
+      expect(admitted.toSet(), {'remembered'});
+      expect(histories, ['/api/sessions/remembered/messages']);
+      expect(channel.state.selectedProfileId, 'demo');
+    },
+  );
+
+  test(
+    'failed SSH stream uncertainty survives navigation and reconnect without resubmission',
+    () async {
+      controller.dispose();
+      channel.dispose();
+      var sends = 0;
+      channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, _) async {
+            if (uri.path.endsWith('/messages')) {
+              return jsonEncode({
+                'object': 'list',
+                'session_id': uri.pathSegments[2],
+                'data': [],
+              });
+            }
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => jsonEncode({
+                'schema_version': 1,
+                'features': {'session_chat_streaming': true},
+                'endpoints': {
+                  'session_chat_stream': {
+                    'method': 'POST',
+                    'path': '/api/sessions/{session_id}/chat/stream',
+                  },
+                  'session_messages': {
+                    'method': 'GET',
+                    'path': '/api/sessions/{session_id}/messages',
+                  },
+                },
+              }),
+              '/api/sessions' =>
+                '{"data":[{"id":"remembered","source":"api_server"},{"id":"other","source":"api_server"}]}',
+              _ => throw StateError('Unexpected read'),
+            };
+          },
+          postStream: (_, _, _) {
+            sends++;
+            // A loses its terminal event; B completes through its own stream.
+            return sends == 1
+                ? const Stream<String>.empty()
+                : Stream.value('data: [DONE]\n\n');
+          },
+        ),
+      );
+      controller = ManagedSshConnectionController(
+        forward,
+        channel,
+        recoveryStore: sshStore,
+      );
+      Future<bool> connectApi() => controller.connectSsh(
+        const SshConnectionRequest(
+          host: 'example.invalid',
+          sshPort: 22,
+          username: 'synthetic',
+          password: 'synthetic-password',
+          agentPort: 8642,
+          agentBearerToken: null,
+        ),
+        verifyHostKey: (_, _) => true,
+      );
+      expect(await connectApi(), true);
+      await channel.sendText('synthetic uncertain work');
+      expect(controller.recoveryTarget?.uncertain, true);
+      expect(channel.state.hasUnreconciledRun, true);
+      await channel.selectSession('other');
+      await channel.sendText('synthetic separate work');
+      expect(controller.recoveryTarget?.uncertain, false);
+      channel.clearActiveSession();
+      await channel.disconnect();
+      expect(await connectApi(), true);
+      expect(channel.state.activeSessionId, isNull);
+      await channel.selectSession('remembered');
+      await expectLater(
+        channel.sendText('must not submit again'),
+        throwsStateError,
+      );
+      expect(channel.state.hasUnreconciledRun, true);
+      expect(sends, 2);
+    },
+  );
+
+  test(
+    'saved SSH owners survive host switches but reject changed fingerprints before Agent reads',
+    () async {
+      expect(await connect(), true);
+      await channel.selectProfile('demo');
+      await channel.disconnect();
+      forward.fingerprintByte = 1;
+      final reads = List.of(fixture.requests);
+      await expectLater(
+        connect(),
+        throwsA(
+          isA<ManagedSshException>().having(
+            (e) => e.failure,
+            'failure',
+            ManagedSshFailure.hostKeyRejected,
+          ),
+        ),
+      );
+      expect(fixture.requests, reads);
+      forward.fingerprintByte = 0;
+      expect(
+        await controller.connectSsh(
+          const SshConnectionRequest(
+            host: 'other.invalid',
+            sshPort: 22,
+            username: 'synthetic',
+            password: 'synthetic-password',
+            agentPort: 8642,
+            agentBearerToken: LocalServeReadFixture.token,
+            transport: SshAgentTransport.serve,
+          ),
+          verifyHostKey: (_, _) => true,
+        ),
+        true,
+      );
+      expect(channel.state.activeSessionId, 'default-session');
+      await channel.disconnect();
+      expect(await connect(), true);
+      expect(channel.state.selectedProfileId, 'demo');
+      expect(channel.state.activeSessionId, 'demo-session');
+      expect(fixture.count('prompt.submit'), 0);
+    },
+  );
+
+  test(
+    'failed secure uncertainty save prevents a forwarded Send until explicit recovery',
+    () async {
+      expect(await connect(), true);
+      await channel.enableLocalServeChat();
+      sshStore.rejectSaves = true;
+      await expectLater(
+        channel.sendText('synthetic not submitted'),
+        throwsStateError,
+      );
+      expect(fixture.count('prompt.submit'), 0);
+      sshStore.rejectSaves = false;
+      await channel.retryLocalServeConversation();
+      await channel.sendText('synthetic deliberate submission');
+      expect(fixture.count('prompt.submit'), 1);
+      expect(fixture.count('approval.respond'), 0);
+      expect(fixture.count('session.interrupt'), 0);
+    },
+  );
+
+  testWidgets(
+    'interrupted SSH Retry reopens the exact target with blank authentication',
+    (tester) async {
+      await tester.runAsync(() async {
+        expect(await connect(), true);
+        channel.clearActiveSession();
+        await Future<void>.delayed(Duration.zero);
+      });
+      expect(controller.recoveryTarget?.session, isNull);
+      final endpoints = FakeHermesEndpointStore();
+      final directory = HermesGatewayDirectory(
+        store: endpoints,
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({}),
+        activeChannel: channel,
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            managedSshConnectionControllerProvider.overrideWithValue(
+              controller,
+            ),
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesGatewayDirectoryProvider.overrideWith((_) => directory),
+            hermesEndpointStoreProvider.overrideWithValue(endpoints),
+            hermesVoiceCaptureServiceProvider.overrideWithValue(null),
+            hermesTextToSpeechServiceProvider.overrideWithValue(null),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const HermesChatScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.runAsync(() async {
+        await forward.disconnect();
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(channel.state.isConnected, false);
+      expect(controller.needsSshReconnect, true);
+      final retry = find.descendant(
+        of: find.byKey(const ValueKey('managed-ssh-interrupted')),
+        matching: find.byType(FilledButton),
+      );
+      expect(retry, findsOneWidget);
+      final requests = List.of(fixture.requests);
+      await tester.tap(retry);
+      await tester.pumpAndSettle();
+      String text(String name) => tester
+          .widget<TextFormField>(find.byKey(ValueKey('managed-ssh-$name')))
+          .controller!
+          .text;
+      expect(text('host'), 'example.invalid');
+      expect(text('username'), 'synthetic');
+      expect(text('password'), isEmpty);
+      expect(text('agent-token'), isEmpty);
+      expect(fixture.requests, requests);
+      expect(await endpoints.loadProfiles(), isEmpty);
+      await tester.pumpWidget(const SizedBox());
+      debugDefaultTargetPlatformOverride = null;
     },
   );
 }

@@ -8,7 +8,10 @@ extension _ServeReadsExtension on HermesApiChannel {
     String profile = 'default',
     String? storedSession,
     bool transient = false,
+    bool deferSessionSelection = false,
     void Function(bool Function() isCurrent)? onAcquire,
+    bool uncertain = false,
+    Future<void> Function(HermesWebRecovery)? persistRecovery,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
     final generation = _connectionGeneration + 1;
@@ -27,6 +30,7 @@ extension _ServeReadsExtension on HermesApiChannel {
     }
     _serveTransient = transient;
     _serveCanAccept = transient ? canAccept : null;
+    _persistForwardedRecovery = transient ? persistRecovery : null;
     _setState(
       const HermesChannelState(
         status: HermesConnectionStatus.connecting,
@@ -57,7 +61,9 @@ extension _ServeReadsExtension on HermesApiChannel {
       }
       final page = await reader.sessions();
       if (!current()) return;
-      final session = storedSession ?? page.sessions.firstOrNull?.id;
+      final session = deferSessionSelection
+          ? null
+          : storedSession ?? page.sessions.firstOrNull?.id;
       final history = session == null ? null : await reader.history(session);
       if (!current()) return;
       _setState(
@@ -68,6 +74,7 @@ extension _ServeReadsExtension on HermesApiChannel {
           connectedWithApiKey: true,
           profiles: profiles,
           selectedProfileId: profile,
+          hasUnreconciledRun: uncertain,
           sessions: [
             ..._serveSessions(page),
             if (session != null && !page.sessions.any((s) => s.id == session))

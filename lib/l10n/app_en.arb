@@ -129,6 +129,8 @@
   "managedSshHostKeyBody": "Compare this fingerprint with the host's SSH key before trusting this connection. Cancel if it differs or you cannot verify it.",
   "managedSshTrustAction": "Trust this connection",
   "managedSshFailed": "Could not establish the SSH connection. Check the host and authentication, then retry.",
+  "managedSshInterruptedTitle": "SSH connection interrupted",
+  "managedSshInterruptedBody": "Retry opens the same SSH target for fresh authentication. Wing retains the selected profile and session, but uncertain work needs Agent readback. Nothing is resent, approved or stopped automatically.",
   "managedSshUnsupported": "Managed SSH is not available in this browser. Use Wing on Android or desktop.",
   "welcomeRemote": "Connect to Remote Hermes",
   "welcomeStorageRetry": "Saved connections could not be read. Retry",

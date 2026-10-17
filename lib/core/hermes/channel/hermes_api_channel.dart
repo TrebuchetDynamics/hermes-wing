@@ -81,6 +81,30 @@ class HermesApiChannel extends ChangeNotifier
   String? _serveCredential;
   bool _serveTransient = false;
   bool Function()? _serveCanAccept;
+  Future<void> Function(HermesWebRecovery)? _persistForwardedRecovery;
+  String? _forwardedOrigin, _forwardedRunOwner;
+  final _forwardedUncertainSessions = <(String, String)>{};
+  Future<void> Function(String?, String, bool)? _persistForwardedApiRecovery;
+  Object? _forwardedApiSubmission;
+
+  bool _hasForwardedUncertainty(String session, String? profile) =>
+      _forwardedUncertainSessions.contains((profile ?? 'default', session));
+
+  Future<void> _settleForwardedSession(
+    String session,
+    String? profile,
+    bool Function() isCurrent,
+  ) async {
+    if (!isCurrent() || !_hasForwardedUncertainty(session, profile)) return;
+    await _persistForwardedApiRecovery?.call(profile, session, false);
+    if (isCurrent()) {
+      _forwardedUncertainSessions.remove((profile ?? 'default', session));
+    }
+  }
+
+  String _detachedRunBaseUrl(String value) => value == _forwardedOrigin
+      ? _forwardedRunOwner ?? hermesPublicEndpointBaseUrl(value)
+      : hermesPublicEndpointBaseUrl(value);
   bool get _serveOwnerIsCurrent => _serveCanAccept?.call() ?? true;
   Future<void> _servePersistenceTail = Future.value();
   final Duration streamIdleTimeout;
@@ -297,7 +321,52 @@ class HermesApiChannel extends ChangeNotifier
     String? apiKey,
     bool deferSessionSelection = false,
     void Function(bool Function() isCurrent)? onAcquire,
+  }) => _connectWithRecovery(
+    baseUrl: baseUrl,
+    apiKey: apiKey,
+    deferSessionSelection: deferSessionSelection,
+    onAcquire: onAcquire,
+  );
+
+  /// Authenticated forward only: run persistence uses a reviewed SSH owner,
+  /// never its local port. No protocol negotiation or fallback is implied.
+  Future<void> connectForwardedApi({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+    void Function(bool Function() isCurrent)? onAcquire,
+    required String forwardedRunOwner,
+    String? uncertainSession,
+    String? uncertainProfile,
+    Set<(String, String)> uncertainSessions = const {},
+    Future<void> Function(String?, String, bool)? persistForwardedRecovery,
+  }) => _connectWithRecovery(
+    baseUrl: baseUrl,
+    apiKey: apiKey,
+    deferSessionSelection: deferSessionSelection,
+    onAcquire: onAcquire,
+    forwardedRunOwner: forwardedRunOwner,
+    uncertainSession: uncertainSession,
+    uncertainProfile: uncertainProfile,
+    uncertainSessions: uncertainSessions,
+    persistForwardedRecovery: persistForwardedRecovery,
+  );
+
+  Future<void> _connectWithRecovery({
+    required String baseUrl,
+    String? apiKey,
+    bool deferSessionSelection = false,
+    void Function(bool Function() isCurrent)? onAcquire,
+    String? forwardedRunOwner,
+    String? uncertainSession,
+    String? uncertainProfile,
+    Set<(String, String)> uncertainSessions = const {},
+    Future<void> Function(String?, String, bool)? persistForwardedRecovery,
   }) async {
+    if (forwardedRunOwner != null &&
+        !RegExp(r'^ssh-forward:[a-f0-9]{64}$').hasMatch(forwardedRunOwner)) {
+      throw ArgumentError('Invalid SSH recovery owner.');
+    }
     // Cleanup advances recovery ownership synchronously. A later lifecycle
     // intent must supersede this call before it can acquire network ownership.
     final recovery = _serveRecoveryGeneration + 1;
@@ -312,6 +381,11 @@ class HermesApiChannel extends ChangeNotifier
       apiKey: apiKey,
       deferSessionSelection: deferSessionSelection,
       onAcquire: onAcquire,
+      forwardedRunOwner: forwardedRunOwner,
+      uncertainSession: uncertainSession,
+      uncertainProfile: uncertainProfile,
+      uncertainSessions: uncertainSessions,
+      persistForwardedRecovery: persistForwardedRecovery,
     );
   }
 
@@ -335,6 +409,11 @@ class HermesApiChannel extends ChangeNotifier
     required String credential,
     required bool Function() canAccept,
     required void Function(bool Function() isCurrent) onAcquire,
+    String profile = 'default',
+    String? storedSession,
+    bool deferSessionSelection = false,
+    bool uncertain = false,
+    Future<void> Function(HermesWebRecovery)? persistRecovery,
   }) async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       throw UnsupportedError('Forwarded serve selection is Android-only.');
@@ -345,6 +424,34 @@ class HermesApiChannel extends ChangeNotifier
       canAccept: canAccept,
       transient: true,
       onAcquire: onAcquire,
+      deferSessionSelection: deferSessionSelection,
+      profile: profile,
+      storedSession: storedSession,
+      uncertain: uncertain,
+      persistRecovery: persistRecovery,
+    );
+  }
+
+  /// Revokes only a captured forwarding owner. No remote Stop or retry occurs.
+  /// The cached selection remains visible but cannot authorize writes.
+  void interruptForwardedConnection(bool Function() ownsConnection) {
+    if (!ownsConnection()) return;
+    final previous = _state;
+    _serveRecovery = null;
+    _serveRecoveryGeneration++;
+    unawaited(_disconnect());
+    _setState(
+      previous.copyWith(
+        status: HermesConnectionStatus.error,
+        clearServeChat: true,
+        hasUnreconciledRun:
+            previous.hasUnreconciledRun ||
+            previous.serveChat?.running == true ||
+            previous.hasStreamingSessions,
+        errorMessage:
+            'SSH connection closed. Reconnect explicitly; do not resend uncertain work.',
+        connectionFailureKind: HermesConnectionFailureKind.network,
+      ),
     );
   }
 
@@ -354,6 +461,11 @@ class HermesApiChannel extends ChangeNotifier
     bool Function()? canAccept,
     bool transient = false,
     void Function(bool Function() isCurrent)? onAcquire,
+    String profile = 'default',
+    String? storedSession,
+    bool deferSessionSelection = false,
+    bool uncertain = false,
+    Future<void> Function(HermesWebRecovery)? persistRecovery,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
     final recovery = _serveRecoveryGeneration + 1;
@@ -369,6 +481,11 @@ class HermesApiChannel extends ChangeNotifier
       canAccept: canAccept,
       transient: transient,
       onAcquire: onAcquire,
+      deferSessionSelection: deferSessionSelection,
+      profile: profile,
+      storedSession: storedSession,
+      uncertain: uncertain,
+      persistRecovery: persistRecovery,
     );
   }
 

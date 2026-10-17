@@ -8,6 +8,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/app/wing_app.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/providers/managed_ssh_connection_controller.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/features/hermes_chat/widgets/managed_ssh_connection_form.dart';
@@ -36,6 +37,9 @@ void main() {
     addTearDown(() => restoreManagedSshDocumentSelector(original));
     final container = ProviderContainer(
       overrides: [
+        managedSshRecoveryStoreProvider.overrideWithValue(
+          ManagedSshFixtureRecoveryStore(),
+        ),
         hermesEndpointStoreProvider.overrideWithValue(
           FakeHermesEndpointStore(),
         ),
@@ -200,11 +204,17 @@ void main() {
       await submit();
       await trust();
       await until(
-        () => channel.state.isConnected,
+        () =>
+            channel.state.isConnected &&
+            (cycle == 0 ||
+                (channel.state.selectedProfileId == 'qa-key' &&
+                    channel.state.activeSessionId == 'qa-history')),
         'SSH/Agent connection failed',
       );
-      await tap(control('hermes-profile-switcher'));
-      await tap(control('chat-profile-row-qa-key'));
+      if (cycle == 0) {
+        await tap(control('hermes-profile-switcher'));
+        await tap(control('chat-profile-row-qa-key'));
+      }
       await until(
         () =>
             channel.state.selectedProfileId == 'qa-key' &&
@@ -228,7 +238,7 @@ void main() {
       expect(connected['mutation_attempts'], 0);
       expect(connected['forbidden_reads'], 0);
       expect(connected['forbidden_ssh'], 0);
-      final exactReads = reads(connected);
+      var exactReads = reads(connected);
       await tester.pump(const Duration(seconds: 1));
       expect(reads(await stats()), exactReads); // No automatic replay/retry.
       final delta = <String, int>{
@@ -239,6 +249,58 @@ void main() {
       expect(delta['GET /api/model/options'], greaterThan(0));
       expect(delta['GET /api/sessions/qa-history/messages'], greaterThan(0));
       cycles.add({'request_delta': delta});
+      if (cycle == 0) {
+        final originalOrigin = channel.state.connectedBaseUrl;
+        await tester.runAsync(() => fixture.control('interrupt'));
+        await until(
+          () => !channel.state.isConnected,
+          'Interrupted SSH remained connected',
+        );
+        expect(channel.state.selectedProfileId, 'qa-key');
+        expect(channel.state.activeSessionId, 'qa-history');
+        await tester.pump(const Duration(seconds: 1));
+        expect(reads(await stats()), exactReads);
+        await tap(
+          find.descendant(
+            of: control('managed-ssh-interrupted'),
+            matching: find.byType(FilledButton),
+          ),
+        );
+        await until(
+          () => form.evaluate().isNotEmpty,
+          'Explicit Retry form missing',
+        );
+        String field(String id) =>
+            tester.widget<TextFormField>(control(id)).controller!.text;
+        if (field('managed-ssh-host') != fixture.host ||
+            field('managed-ssh-ssh-port') != '${fixture.sshPort}' ||
+            field('managed-ssh-username') != fixture.username) {
+          fail('Retry did not retain exact SSH target');
+        }
+        expect(field('managed-ssh-password'), isEmpty);
+        expect(field('managed-ssh-agent-token'), isEmpty);
+        await tap(control('managed-ssh-auth-private-key'));
+        await pick('valid');
+        await submit();
+        await trust();
+        await until(
+          () =>
+              channel.state.isConnected &&
+              channel.state.selectedProfileId == 'qa-key' &&
+              channel.state.activeSessionId == 'qa-history',
+          'Explicit SSH Retry failed',
+        );
+        expect(channel.state.selectedProfileId, 'qa-key');
+        expect(channel.state.activeSessionId, 'qa-history');
+        if (channel.state.connectedBaseUrl == originalOrigin) {
+          fail('Fixture journey did not exercise forwarding port replacement');
+        }
+        final recovered = await stats();
+        expect(recovered['mutation_attempts'], 0);
+        expect(recovered['forbidden_reads'], 0);
+        expect(recovered['forbidden_ssh'], 0);
+        exactReads = reads(recovered);
+      }
       await tap(control('hermes-disconnect-button'));
       await tap(control('hermes-disconnect-confirm'));
       await until(() => !channel.state.isConnected, 'Disconnect failed');
@@ -260,8 +322,8 @@ void main() {
       expect(disconnected['live_ssh'], 0);
       expect(reads(disconnected), exactReads);
     }
-    // Exact per-route equality across the two deliberately identical journeys.
-    expect(cycles[1]['request_delta'], cycles[0]['request_delta']);
+    // Fresh profile selection and exact-owner reconnect are separate journeys;
+    // both retain bounded GET-only receipts, not equal page-zero read counts.
     final result = await stats();
     expect(result['mutation_attempts'], 0);
     expect(result['forbidden_ssh'], 0);

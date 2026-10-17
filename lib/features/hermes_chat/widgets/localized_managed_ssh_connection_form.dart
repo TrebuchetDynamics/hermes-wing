@@ -1,4 +1,5 @@
 import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
+import 'package:wing/core/hermes/setup/secure_managed_ssh_recovery_store.dart';
 import 'package:flutter/material.dart';
 import '../ssh_keys/managed_ssh_key_selection.dart';
 import '../ssh_keys/managed_ssh_generated_key_store.dart';
@@ -14,6 +15,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
     required this.onCancel,
     this.busy = false,
     this.sanitizedError,
+    this.initialTarget,
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
     this.allowServe = false,
@@ -26,6 +28,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
   final bool busy;
   final bool allowServe;
   final String? sanitizedError;
+  final ManagedSshRecovery? initialTarget;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +78,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
         selected: strings.managedSshGeneratedKeySelected,
         generating: strings.managedSshGeneratingKey,
       ),
+      initialTarget: initialTarget,
       onSubmit: onSubmit,
       pickKey: pickKey,
       generatedKeyStore: generatedKeyStore,

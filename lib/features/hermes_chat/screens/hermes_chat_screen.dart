@@ -66,6 +66,7 @@ import '../gateways/hermes_gateway_directory.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../export/hermes_transcript_export.dart';
 import '../providers/hermes_channel_provider.dart';
+import '../providers/managed_ssh_connection_controller.dart';
 import '../session/hermes_session_pin_store.dart';
 import '../widgets/hermes_profile_identity.dart';
 import '../presentation/hermes_rich_text.dart';
@@ -1830,6 +1831,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       ),
       body: _editingConnection
           ? _buildConnectForm(context, channel, state)
+          : ref.read(managedSshConnectionControllerProvider).needsSshReconnect
+          ? WingEmptyState(
+              key: const ValueKey('managed-ssh-interrupted'),
+              icon: Icons.link_off,
+              title: strings.managedSshInterruptedTitle,
+              body: strings.managedSshInterruptedBody,
+              actionLabel: strings.retryAction,
+              onAction: () => unawaited(_reconnect(channel)),
+              liveRegion: true,
+            )
           : showingDirectory
           ? GatewayContactsView(
               contacts: directory.contacts,

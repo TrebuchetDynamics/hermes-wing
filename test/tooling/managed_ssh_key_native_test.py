@@ -29,9 +29,7 @@ class PreparationTests(unittest.TestCase):
 
     def test_snapshot_freezes_inputs_and_refuses_aliases(self):
         m = self.helper()
-        evidence = REPO / '.task-evidence/parallel-key-native'
-        evidence.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(dir=evidence) as temp:
+        with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
             source = root / 'source'
             (source / 'lib').mkdir(parents=True)
@@ -78,6 +76,10 @@ class PreparationTests(unittest.TestCase):
                               'forbidden_reads': 0, 'forbidden_ssh': 0,
                               'auth_denials': 0, 'ssh_auths': 3, 'ssh_denials': 1,
                               'forwards': 2, 'live_ssh': 0}}
+        self.assertEqual(m.validate_result(value, 'linux'), value)
+        # Exact-owner recovery may skip page-zero history/profile reads.
+        value['cycles'] = [{'request_delta': journey},
+                           {'request_delta': dict(journey, **{'GET /api/sessions': 2})}]
         self.assertEqual(m.validate_result(value, 'linux'), value)
         value['private_key'] = 'never retain arbitrary Flutter output'
         with self.assertRaises(ValueError):

@@ -6854,7 +6854,6 @@
       "ANDROID-CHAT-TOUCH-POLISH",
       "PARITY-OFFICIAL-MATRIX",
       "CONNECTION-OWNER-RECONNECT",
-      "CONNECTION-LINK-REMOVAL",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
       "M1-NOTIFICATION-CONTRACT",
       "MT-RERUN-TRAIN",
@@ -6900,6 +6899,7 @@
       "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
       "BACKEND-SSH-KEY-NATIVE",
+      "CONNECTION-LINK-REMOVAL",
       "CONNECTION-CRON-CANARY",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
       "DOC-API-PROTOCOL-ERROR-EVIDENCE",
@@ -6922,14 +6922,6 @@
     ]
   },
   "tasks": [
-    {
-      "depends_on": [],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-LINK-REMOVAL",
-      "section": "Now",
-      "status": "open",
-      "title": "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
-    },
     {
       "depends_on": [
         "DOC-PARITY-TAB-CONTRACT"
@@ -7423,6 +7415,14 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
+    },
+    {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-LINK-REMOVAL",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
     },
     {
       "depends_on": [

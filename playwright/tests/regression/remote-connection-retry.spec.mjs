@@ -64,7 +64,7 @@ for (const width of [390, 1280]) {
     reject = false;
     await save(page, 'fail-next');
     await add(page);
-    await expect(page.getByRole('group', { name: new RegExp(NOTICE.replaceAll('.', '\\.')) })).toBeVisible();
+    await expect(page.getByText(NOTICE, { exact: true })).toBeVisible();
     expect((await state(page)).status).toBe('connected');
     expect(authCalls).toBe(2);
     expect(await save(page)).toEqual({ attempts: 1, completed: 0, pending: false });
@@ -141,7 +141,7 @@ for (const width of [390, 1280]) {
     await expect.poll(async () => (await save(page)).completed).toBe(1);
     expect(await state(page)).toEqual(owner);
     await expect(page.getByRole('button', { name: 'Add Hermes', exact: true })).toBeEnabled();
-    await expect(page.getByRole('group', { name: /Connected to Hermes, but saving/ })).toHaveCount(0);
+    await expect(page.getByText(NOTICE, { exact: true })).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath(`remote-replacement-${width}.png`) });
     expect((await (await request.get(CONTROL)).json()).counters.mutations).toBe(0);
     expect(mutations).toEqual([]);

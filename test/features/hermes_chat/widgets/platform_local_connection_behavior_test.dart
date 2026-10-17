@@ -62,6 +62,7 @@ void main() {
     );
     expect(opened, isEmpty);
     expect(home.calls, isEmpty);
+    await activate(tester, 'platform-local-setup-details');
     await activate(tester, 'platform-local-termux-docs');
     expect(
       opened.single.toString(),
@@ -257,10 +258,11 @@ void main() {
         launcher: (_) async =>
             throw StateError('private docs response /private/home'),
       );
+      await activate(tester, 'platform-local-setup-details');
       await activate(tester, 'platform-local-agent-docs');
       expect(key('platform-local-docs-error'), findsOneWidget);
       expect(find.textContaining('private docs response'), findsNothing);
-      expect(find.text('1. Termux and Agent'), findsOneWidget);
+      expect(key('platform-local-existing-agent'), findsOneWidget);
       expect(key('hermes-api-key-field'), findsNothing);
       debugDefaultTargetPlatformOverride = null;
     },

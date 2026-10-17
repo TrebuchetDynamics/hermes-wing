@@ -3,6 +3,11 @@
 Card: `t_be855c75`. Goal: PARITY, partial. Android outcome: **NOT_CHECKED**.
 The [source-bound receipt](android-approval-attachment-fixture-receipt.json)
 separates executed Flutter widget checks from failed Android driver startup.
+The [2026-10-17 connection preflight](android-maestro-waydroid-connectivity.md)
+records the later isolated attempt: normal Waydroid IP discovery fails with an
+empty DHCP lease file, and Android journeys remain not-run. Only the repaired
+YAMLs and interaction fixture still match this older receipt; its Flutter results
+are historical, not validation of the later source candidate.
 
 ## Delivered
 

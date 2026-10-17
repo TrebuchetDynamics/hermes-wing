@@ -6,19 +6,19 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-M5-ANDROID-FIXTURE — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M5-ANDROID-FIXTURE — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M5-ANDROID-FIXTURE — Goal: M5. Section: Next. Repair only the two reproduced fixture
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M5-ANDROID-FIXTURE — Repair only the two reproduced fixture
+- Needs: DOC-M5-ANDROID-FIXTURE is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T16:04:17Z
-- Answer: Fix DOC-M5-ANDROID-FIXTURE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M5-ANDROID-FIXTURE, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-VOICE-QUALIFICATION — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-VOICE-QUALIFICATION — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-VOICE-QUALIFICATION — Goal: VOICE. Section: Next.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-VOICE-QUALIFICATION — Qualify actual physical capture, speech and acoustic behavior
+- Needs: DOC-VOICE-QUALIFICATION is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T16:04:17Z
-- Answer: Fix DOC-VOICE-QUALIFICATION's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-VOICE-QUALIFICATION, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
 ### Q-M1-NOTIFICATION-CONTRACT — USER_DECISION — effort decision — unblocks 1
 

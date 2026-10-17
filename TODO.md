@@ -118,44 +118,6 @@ needs its own exact capability, ownership and qualification evidence.
 
 ### **P0** — Android SSH, multi-session chat and touch polish
 
-- [ ] **BACKEND-SSH-CONNECT** — Goal: REMOTE-BACKENDS. Complete and qualify the
-  existing native Dart SSH forwarding to an already-configured authenticated Agent.
-  Payoff: replace manual tunnel setup on the admitted native target without
-  importing Desktop's remote shell bridge. Retain the existing task ID and review
-  dependency; source presence does not close that review.
-  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [CONN-4](docs/product/prd.md#connection-path-requirements),
-  [native design boundary](docs/adr/client.md#decision),
-  [connection design](docs/spec.md#connection-path-design).
-  Scope: existing `lib/core/hermes/ssh/` adapter and app-scoped controller,
-  explicit host trust, permitted credential acquisition, typed inputs, bounded
-  network work/deadlines and UI integration. No new OpenSSH subprocess is needed.
-  No arbitrary SSH command, credential in argv/URL, Agent patch, remote install,
-  gateway restart or new Wing Link compatibility authority.
-  Forward directly to Agent without requiring Wing Link installation, pairing or
-  credentials. Unsupported native targets remain explicit; never simulate a tunnel.
-  Acceptance: deterministic tests cover input rejection, unknown/changed host
-  keys, authentication failure, repeated Connect, collision, timeout, cancellation
-  and stale transport results. A controlled native SSH target supplies actual
-  full-app connection evidence. Fixture-only results do not qualify native SSH. Unsupported platforms
-  retain external-tunnel access. Format, analysis and relevant tests pass.
-  Dependencies: DOC-BACKEND-CONTRACT. Section: Next.
-  Ownership: unclaimed in this index. Verify live tracker/continuation leases.
-  Current implementation: native Dart forwarding and password-form integration
-  now exist. Reuse `lib/core/hermes/ssh/` and the app-scoped controller rather than
-  rebuild the adapter. Native full-app qualification and durable
-  SSH relaunch remain open. Key UI now has passing production-control regressions;
-  BACKEND-SSH-KEY-NATIVE owns the remaining platform qualification. This task is not closed by terminal SSH or widget-only evidence.
-  Checks: planned `flutter test --no-pub test/core/hermes/ssh test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/providers/managed_ssh_provider_test.dart`; `flutter analyze`; existing isolated Android SSH fixture journey and separate authorized native-target proof.
-  Android focus: prioritize the production Android SSH form through authenticated
-  Agent profile/history loading and usable chat where the exact operations permit.
-  Reuse implemented forwarding/key controls and existing serve lifecycle; qualify
-  the tunneled origin and platform explicitly, not by removing Linux-only gates.
-  A successful SSH login alone cannot satisfy this outcome. Add deterministic
-  Android transport/auth/owner checks independently of separately gated live proof.
-  Preserve Linux acceptance; do not treat Android planning as either platform passed.
-  Retained checks: `flutter test --no-pub --concurrency=1 test/core/hermes/ssh/managed_ssh_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/ssh_keys/managed_ssh_key_selection_test.dart`; `flutter analyze --no-pub`; format changed Dart files and `git diff --check`. Native full-app/controlled-target evidence remains mandatory; fixture-only passes do not close this task.
-  Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
-
 - [ ] **DOC-BACKEND-DISCONNECT-CONTRACT** — Goal: REMOTE-BACKENDS. Implement
   owner-safe managed SSH disconnect and reconnect. Existing task ID retained.
   Payoff: tunnel interruption cannot lose session identity or replay mutations.
@@ -1660,4 +1622,14 @@ does not mark any check passed or authorize live actions.
   - Separate physical-device M2, TalkBack, native picker/IME, live Agent/provider and authoritative run qualification.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITY-MAESTRO-ANDROID-DEVICE.
+  Status: open
+
+- [ ] BACKEND-SSH-CONNECT-LIVE — Live checks for BACKEND-SSH-CONNECT
+  Scope: Run the live checks the offline work for BACKEND-SSH-CONNECT left pending.
+  Acceptance: Each check passes on the real target:
+  - No Android device/emulator was attached (adb devices -l was empty). Run the existing isolated Android SSH fixture journey and separate authorized controlled already-configured SSH/Agent target proof through the production form: host trust, authentication, explicit serve selection, profile/history loading, deliberate usable chat and transport-loss/no-replay behavior. SSH login or deterministic tests alone cannot qualify this outcome.
+  - Preserve Linux full-app acceptance with a named controlled-target receipt. This run exercised Linux-hosted deterministic tests and SSH trust/authentication/cancellation, not successful native full-app forwarding. The existing key journey covers advertised API reads, not the added serve chat selection; native picker/keystore qualification remains with BACKEND-SSH-KEY-NATIVE.
+  - Retain the task's required native/security review and qualification dependency. Independent offline code review does not close it. Review docs/quality/android-ssh-serve-offline.md for unsupported behavior: per-attempt host trust only, no durable SSH target/profile/session mapping or cold SSH relaunch; unsupported targets retain external-tunnel access.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: BACKEND-SSH-CONNECT.
   Status: open

@@ -6282,3 +6282,46 @@ Section: Next.
   Dependencies: none. Ownership: unclaimed in this index; check tracker.
   Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Follow docs/runbooks/desktop-feature-qualification.md with the existing scripts/run_android_maestro_features.sh, authenticated Waydroid target and matching isolated .qa artifact. Capture per-flow exits, source/build fingerprints and exact send/decision/Stop counters; preserve the paired app and record physical/TalkBack/live-provider gaps separately.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **BACKEND-SSH-CONNECT** — Goal: REMOTE-BACKENDS. Complete and qualify the
+  existing native Dart SSH forwarding to an already-configured authenticated Agent.
+  Payoff: replace manual tunnel setup on the admitted native target without
+  importing Desktop's remote shell bridge. Retain the existing task ID and review
+  dependency; source presence does not close that review.
+  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [CONN-4](docs/product/prd.md#connection-path-requirements),
+  [native design boundary](docs/adr/client.md#decision),
+  [connection design](docs/spec.md#connection-path-design).
+  Scope: existing `lib/core/hermes/ssh/` adapter and app-scoped controller,
+  explicit host trust, permitted credential acquisition, typed inputs, bounded
+  network work/deadlines and UI integration. No new OpenSSH subprocess is needed.
+  No arbitrary SSH command, credential in argv/URL, Agent patch, remote install,
+  gateway restart or new Wing Link compatibility authority.
+  Forward directly to Agent without requiring Wing Link installation, pairing or
+  credentials. Unsupported native targets remain explicit; never simulate a tunnel.
+  Acceptance: deterministic tests cover input rejection, unknown/changed host
+  keys, authentication failure, repeated Connect, collision, timeout, cancellation
+  and stale transport results. A controlled native SSH target supplies actual
+  full-app connection evidence. Fixture-only results do not qualify native SSH. Unsupported platforms
+  retain external-tunnel access. Format, analysis and relevant tests pass.
+  Dependencies: DOC-BACKEND-CONTRACT. Section: Next.
+  Ownership: unclaimed in this index. Verify live tracker/continuation leases.
+  Current implementation: native Dart forwarding and password-form integration
+  now exist. Reuse `lib/core/hermes/ssh/` and the app-scoped controller rather than
+  rebuild the adapter. Native full-app qualification and durable
+  SSH relaunch remain open. Key UI now has passing production-control regressions;
+  BACKEND-SSH-KEY-NATIVE owns the remaining platform qualification. This task is not closed by terminal SSH or widget-only evidence.
+  Checks: planned `flutter test --no-pub test/core/hermes/ssh test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/providers/managed_ssh_provider_test.dart`; `flutter analyze`; existing isolated Android SSH fixture journey and separate authorized native-target proof.
+  Android focus: prioritize the production Android SSH form through authenticated
+  Agent profile/history loading and usable chat where the exact operations permit.
+  Reuse implemented forwarding/key controls and existing serve lifecycle; qualify
+  the tunneled origin and platform explicitly, not by removing Linux-only gates.
+  A successful SSH login alone cannot satisfy this outcome. Add deterministic
+  Android transport/auth/owner checks independently of separately gated live proof.
+  Preserve Linux acceptance; do not treat Android planning as either platform passed.
+  Retained checks: `flutter test --no-pub --concurrency=1 test/core/hermes/ssh/managed_ssh_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/ssh_keys/managed_ssh_key_selection_test.dart`; `flutter analyze --no-pub`; format changed Dart files and `git diff --check`. Native full-app/controlled-target evidence remains mandatory; fixture-only passes do not close this task.
+  Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/

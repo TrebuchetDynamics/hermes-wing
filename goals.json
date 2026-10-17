@@ -5717,6 +5717,7 @@
       "status": "unmet",
       "tasks": [
         "BACKEND-SSH-CONNECT",
+        "BACKEND-SSH-CONNECT-LIVE",
         "BACKEND-SSH-KEY-AUTH",
         "BACKEND-SSH-KEY-NATIVE",
         "DOC-BACKEND-CONTRACT",
@@ -6846,7 +6847,6 @@
   "priority_order": {
     "schema": 1,
     "tasks": [
-      "BACKEND-SSH-CONNECT",
       "DOC-BACKEND-DISCONNECT-CONTRACT",
       "DOC-PARITY-TAB-CONTRACT",
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
@@ -6916,7 +6916,8 @@
       "VERIFY-M6-ANDROID-INTEGRATED",
       "M1-MOBILE-AWAY-STATUS-LIVE",
       "LANDING-PRODUCT-PROOF-LIVE",
-      "PARITY-MAESTRO-ANDROID-DEVICE-LIVE"
+      "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
+      "BACKEND-SSH-CONNECT-LIVE"
     ]
   },
   "tasks": [
@@ -6947,16 +6948,6 @@
       "section": "Next",
       "status": "open",
       "title": "Android chat touch polish"
-    },
-    {
-      "depends_on": [
-        "DOC-BACKEND-CONTRACT"
-      ],
-      "goal": "REMOTE-BACKENDS",
-      "id": "BACKEND-SSH-CONNECT",
-      "section": "Next",
-      "status": "open",
-      "title": "Implement reviewed native SSH forwarding to an already-configured Agent"
     },
     {
       "depends_on": [
@@ -7414,6 +7405,16 @@
     },
     {
       "depends_on": [
+        "BACKEND-SSH-CONNECT"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "BACKEND-SSH-CONNECT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for BACKEND-SSH-CONNECT"
+    },
+    {
+      "depends_on": [
         "CONNECTION-CRON-ADMISSION"
       ],
       "goal": "CONNECTION-PATHS",
@@ -7589,6 +7590,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for WING-TASK-408"
+    },
+    {
+      "depends_on": [
+        "DOC-BACKEND-CONTRACT"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "BACKEND-SSH-CONNECT",
+      "section": "Done",
+      "status": "done",
+      "title": "Implement reviewed native SSH forwarding to an already-configured Agent"
     },
     {
       "depends_on": [],

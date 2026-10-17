@@ -4,6 +4,224 @@ This file contains only hard blockers that require user action.
 
 ## Active
 
+<!-- pi-autowork:questions:start -->
+
+### Q-CONNECTION-SAVED-WORKFLOWS — USER_DECISION — effort quick — unblocks 1
+
+- Task: CONNECTION-SAVED-WORKFLOWS — Goal: CONNECTION-PATHS. Complete and
+- Needs: CONNECTION-SAVED-WORKFLOWS is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
+- Since: 2026-10-17T05:39:34Z
+- Answer: If no one is working on CONNECTION-SAVED-WORKFLOWS, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
+
+### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort decision — unblocks 4
+
+- Task: DOC-PARITY-TAB-CONTRACT — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-PARITY-TAB-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-ACCOUNT-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-ACCOUNT-CONTRACT — Goal: ACCOUNT. Section: Next. Trace one provider OAuth acquisition contract.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-ACCOUNT-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-ARTIFACT-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-ARTIFACT-CONTRACT — Goal: ARTIFACTS. Section: Next. Trace one bounded Agent artifact retrieval operation.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-ARTIFACT-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M3-CONTRACT-CHECKPOINT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M3-CONTRACT-CHECKPOINT — Goal: M3. Section: Next. Map the supported enrollment
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M3-CONTRACT-CHECKPOINT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M3-PROJECT-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M3-PROJECT-CONTRACT — Goal: M3-PROJECT. Section: Next. Trace one authoritative Project creation operation.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M3-PROJECT-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M3-PROVIDER-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M3-PROVIDER-CONTRACT — Goal: M3-PROVIDER. Section: Next. Recheck the existing-profile credential replacement contract.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M3-PROVIDER-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M4-CONTRACT-CHECKPOINT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M4-CONTRACT-CHECKPOINT — Goal: M4-DISCOVER. Section: Next.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M4-CONTRACT-CHECKPOINT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M4-KANBAN-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M4-KANBAN-CONTRACT — Goal: M4-KANBAN. Section: Next. Trace one bounded Project board read.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M4-KANBAN-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M4-MCP-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M4-MCP-CONTRACT — Goal: M4-MCP. Section: Next. Trace one toolset enable/disable contract.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M4-MCP-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M4-MEMORY-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M4-MEMORY-CONTRACT — Goal: M4-MEMORY. Section: Next. Trace one bounded profile-memory read.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M4-MEMORY-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M4-PLATFORM-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M4-PLATFORM-CONTRACT — Goal: M4-PLATFORMS. Section: Next. Trace one messaging-platform status/admin contract.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M4-PLATFORM-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-M4-SCHEDULE-CONTRACT — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-M4-SCHEDULE-CONTRACT — Goal: M4-SCHEDULES. Section: Next. Trace one schedule pause/resume operation.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-M4-SCHEDULE-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-DOC-NATIVE-DESIGN-REVIEW — USER_DECISION — effort decision — unblocks 2
+
+- Task: DOC-NATIVE-DESIGN-REVIEW — Goal: NATIVE-INTEGRATION. Section: Next.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix DOC-NATIVE-DESIGN-REVIEW's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-FILES-TERMINAL-BROWSE — USER_DECISION — effort decision — unblocks 2
+
+- Task: FILES-TERMINAL-BROWSE — Goal: PARITY. Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix FILES-TERMINAL-BROWSE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-M1-MOBILE-AWAY-STATUS — USER_DECISION — effort decision — unblocks 2
+
+- Task: M1-MOBILE-AWAY-STATUS — Goal: M1. Keep Agent-owned work understandable after Android background/return.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix M1-MOBILE-AWAY-STATUS's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-MT-RERUN-TRAIN — USER_DECISION — effort decision — unblocks 2
+
+- Task: MT-RERUN-TRAIN — Goal: INTEGRATION. Section: Next. Rerun canonical integration gates
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix MT-RERUN-TRAIN's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_DECISION — effort decision — unblocks 2
+
+- Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Goal: CHAT-FIDELITY. Section: Next. Keep recovered
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-VERIFY-OMNIROUTE-NODE22-CLOSURE — USER_DECISION — effort decision — unblocks 2
+
+- Task: VERIFY-OMNIROUTE-NODE22-CLOSURE — Goal: SECURITY. Section: Next. Verify retired OmniRoute paths and retained dependencies on Node.js 22.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix VERIFY-OMNIROUTE-NODE22-CLOSURE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-approved physical target and capture consent; preparation proceeds
+  without recording audio. Ownership: unclaimed; verify tracker before execution — USER_DECISION — effort decision — unblocks 2
+
+- Task: approved physical target and capture consent; preparation proceeds
+  without recording audio. Ownership: unclaimed; verify tracker before execution
+- Needs: 2 waiting task(s) depend on "approved physical target and capture consent; preparation proceeds without recording audio. Ownership: unclaimed; verify tracker before execution", which is not a Now/Next task (an outside condition, or a task in Needs decision).
+- Since: 2026-10-17T05:39:34Z
+- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
+
+### Q-owned target and
+  exclusive build access for execution; static fixture repair can proceed first — USER_DECISION — effort decision — unblocks 2
+
+- Task: owned target and
+  exclusive build access for execution; static fixture repair can proceed first
+- Needs: 2 waiting task(s) depend on "owned target and exclusive build access for execution; static fixture repair can proceed first", which is not a Now/Next task (an outside condition, or a task in Needs decision).
+- Since: 2026-10-17T05:39:34Z
+- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
+
+### Q-BACKEND-SSH-KEY-NATIVE — USER_DECISION — effort decision — unblocks 1
+
+- Task: BACKEND-SSH-KEY-NATIVE — Goal: REMOTE-BACKENDS. Qualify full-app
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix BACKEND-SSH-KEY-NATIVE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-PARITY-MAESTRO-ANDROID-DEVICE — USER_DECISION — effort decision — unblocks 1
+
+- Task: PARITY-MAESTRO-ANDROID-DEVICE — Goal: PARITY. Execute the repaired
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix PARITY-MAESTRO-ANDROID-DEVICE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort decision — unblocks 1
+
+- Task: PARITY-NATIVE-LINUX — Goal: PARITY. Execute and extend native Linux
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix PARITY-NATIVE-LINUX's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-PARITY-OFFICIAL-MATRIX — USER_DECISION — effort decision — unblocks 1
+
+- Task: PARITY-OFFICIAL-MATRIX — Goal: PARITY.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix PARITY-OFFICIAL-MATRIX's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-VERIFY-LIVE-WORKFLOW-RECOVERY — USER_DECISION — effort decision — unblocks 1
+
+- Task: VERIFY-LIVE-WORKFLOW-RECOVERY — Goal: M1.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix VERIFY-LIVE-WORKFLOW-RECOVERY's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_DECISION — effort decision — unblocks 1
+
+- Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Goal: SLASH-CATALOG. Section: Next. Qualify supported authoritative slash execution and unavailable-action recovery.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T05:39:34Z
+- Answer: Fix VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-CONNECTION-LINK-REMOVAL — USER_INPUT — effort input — unblocks 1
+
+- Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link
+- Needs: worker reported a blocker: The existing out-of-scope test/tooling/android_pairing_contract_test.dart asserts that Android forwards Intent.EXTRA_TEXT contents and retains the QR image cancellation handler. Those expectations conflict with retiring payload forwarding and QR support. It is outside the authorized Touches paths; the coordinator must either authorize updating that contract test or provide a revised Touches scope …
+- Since: 2026-10-17T05:39:34Z
+- Answer: Answer in CONNECTION-LINK-REMOVAL's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
+### Q-LANDING-PAGES-QUALITY — USER_INPUT — effort input — unblocks 0
+
+- Task: LANDING-PAGES-QUALITY — Goal: LANDING-ONBOARDING. Deliver landing changes
+- Needs: worker reported a blocker: The required plan_backlog_traceability_test cannot pass while TODO.md lacks the task body for CONNECTION-CRON-ADMISSION. The coordinator must restore/repair that backlog metadata; editing TODO.md is explicitly outside this task's Touches. No commit was made.
+- Since: 2026-10-17T05:39:34Z
+- Answer: Answer in LANDING-PAGES-QUALITY's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
+### Q-LANDING-PRODUCT-PROOF — USER_DECISION — effort investigate — unblocks 0
+
+- Task: LANDING-PRODUCT-PROOF — Goal: LANDING-ONBOARDING. Make Wing's value and
+- Needs: report.json does not match worker commit/files or reports failure
+- Since: 2026-10-17T05:39:34Z
+- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/LANDING-PRODUCT-PROOF/), then rescope or split LANDING-PRODUCT-PROOF in its TODO.md entry. The runner reruns it when the entry changes.
+
+<!-- pi-autowork:questions:end -->
+
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop
 
 - Status: ACTIVE

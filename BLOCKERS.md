@@ -34,6 +34,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T17:00:29Z
 - Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PARITY-OFFICIAL-MATRIX — USER_INPUT — effort input — unblocks 0
+
+- Task: PARITY-OFFICIAL-MATRIX — Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons
+- Needs: worker reported a blocker: Coordinator must add docs/product/hermes-desktop-feature-matrix.json to Touches. The task explicitly requires rebuilding feature-matrix JSON/Markdown and existing mappings, but Touches permits only the Markdown, docs/quality/, and test/tooling/. The existing Markdown names this JSON as the owner of row IDs and candidate/task mappings; that JSON still has reference_head null and withdrawn reference…
+- Since: 2026-10-17T19:57:08Z
+- Answer: Answer in PARITY-OFFICIAL-MATRIX's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort investigate — unblocks 1
 
 - Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link

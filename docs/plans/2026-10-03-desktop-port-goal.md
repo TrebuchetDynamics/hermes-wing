@@ -938,3 +938,111 @@ scheduler/provider is unavailable or an owner-only blocker remains unresolved.
   owner-approved isolated target/private auth and supported exact-pair/native
   recovery authority, separately authorized native prerequisites, then explicit
   resume and fresh exact lease. No automatic resume or milestone acceptance.
+
+## Android SSH multi-session priority
+
+Status: Accepted
+
+Owner direction: prioritize using the Android app over SSH, chatting across all
+accessible profiles/bots and multiple sessions, with a polished phone interface
+heavily based on `hermes-agent/apps/desktop/`. The owner confirmed both ordinary
+multi-session profiles and each bot's dedicated ongoing Bot Chat, and selected
+Desktop-faithful presentation adapted for touch: chat first, quick switching,
+clear running and approval states. This changes delivery order, not Agent authority
+or the rest of Desktop parity acceptance. Earlier desktop-first and easy-first
+sequencing below is historical where it conflicts with this priority.
+
+### Outcome and scope
+
+From Android, deliberately connect using Wing-managed SSH to an already configured
+Agent, see the profiles the authenticated Agent actually exposes, and open ordinary
+conversations and canonical Bot Chats without losing the previous conversation.
+Selecting another conversation does not stop other Agent-owned runs. The active
+host, profile and conversation remain visible; drafts, history, running/attention
+states and exact-owner approval/Stop actions do not bleed between conversations.
+
+Concrete acceptance example: two ordinary conversations in profile A, another in
+profile B, and A/B's canonical Bot Chats remain distinct. Switch while a run streams
+or waits for approval, return to the original conversation, and retain its draft,
+canonical history and correct pending action. Another conversation's completion
+must not steal focus, change the foreground or target an approval/Stop. This is an
+example, not a session-count limit or an invented all-profiles API.
+
+The phone layout follows Desktop's hierarchy and vocabulary, not a compressed
+Electron window: transcript/composer primary, explicit owner and connection state,
+quick profile/bot/session access, readable tool output and precise approval cards.
+Flat grouping, existing tokens and shared controls beat a new dashboard or nested
+cards. Keep controls usable with Android Back/keyboard, safe areas, the software
+keyboard, 200% text, reduced motion and non-color status labels. Portrait, landscape
+and compact widths must have an operable equivalent; no hover-only or gesture-only
+critical actions. A final visual mockup has not been approved by this interview.
+
+### Source evidence and implementation choices
+
+Pinned read-only Agent/Desktop reference:
+`158fd638da1629c8e62caf9ade1515d162def8ab`; Wing planning base `9a037f80`.
+Desktop `AGENTS.md`, `src/AGENTS.md`, `DESIGN.md`, `src/store/gateway.ts`,
+`src/plugins/hermes-bots/canonical-chat.ts` and
+`src/plugins/hermes-bots/bot-row-opens-canonical-chat.test.ts` define the ownership,
+look-up and interaction leads. Upstream tests were read, not run.
+
+Bot identity is the captured connection/profile and the session titled exactly
+`Bot Chat`, resolved with hidden rows and current lineage considered. A recent
+ordinary chat or a cached session-ID pin cannot substitute. Lookup failure or
+absence contradicting known canonical evidence must not create a new chat. A
+confirmed absent registry may use only the qualified Agent create/adopt operation,
+with concurrent opens adopting the same canonical conversation. Hidden canonical
+rows remain distinct from ordinary session history. No Office resurrection.
+
+Planner calls: reuse `ManagedSshForward`, its app-scoped provider,
+`HermesApiChannel`, existing serve lifecycle/owner fences, profile/session models
+and adaptive shell. Inspect the exact connected Agent's authenticated operations;
+Desktop's JSON-RPC names are not REST grants. Existing Linux loopback serve-chat
+qualification is not Android remote support. Extend the existing direct transport
+seam only after its Android/SSH origin, authentication, profile/session and request
+contracts are established; never remove platform/origin guards globally to make
+Connect appear successful. A tunnel or health probe alone is not usable chat.
+No generic protocol rewrite, extra backend, shell bridge, bootstrap, service change,
+Agent patch, arbitrary remote commands or new credentials store is approved.
+
+Graph evidence: the retained official structural graph yielded
+`requestForBot()` in `routing.ts`, `canonical-chat.ts` and profile/session routing
+leads. The broad BFS was truncated; direct source and the nearest Bot row test
+corroborate the statements above. The graph is partial discovery, not runtime proof.
+
+### Queue and acceptance boundaries
+
+Reuse, in order: `DOC-BACKEND-CONTRACT`, `BACKEND-SSH-CONNECT`,
+`DOC-BACKEND-DISCONNECT-CONTRACT`, `DOC-PARITY-TAB-CONTRACT`,
+`DOC-PARITY-TAB-RECONNECT-CONTRACT`. Add only the missing bounded owners
+`ANDROID-CANONICAL-BOT-CHAT` and `ANDROID-CHAT-TOUCH-POLISH`. Then prioritize the
+existing Android away/return, Waydroid matrix, official mapping and saved-owner
+reconnect tasks. Dependencies decide eligibility; this order is not a new chain
+blocking independent UI/session work on live SSH credentials. Existing active
+workers keep their contracts, progress and leases. No duplicate profile inventory,
+SSH key implementation, ordinary session CRUD or whole-product redesign task.
+
+Keep one source-only SSH contract review as the immediate open task. Ordinary
+multi-session implementation and fixture QA can proceed independently of live
+credentials. `BACKEND-SSH-KEY-NATIVE` retains both named-platform outcomes and its
+actual-target acceptance near the end of the regular queue. The six already deferred
+real-world checks stay last, unchanged. Blocked live work must not become a new
+preflight chain or displace independent Android implementation and fixture QA.
+
+Use the existing isolated Waydroid `.qa` strategy for Android fixture journeys;
+physical-device process-death proof stays separate. A synthetic Agent behind an
+actual test SSH tunnel proves only that named fixture/transport path, not live
+provider operation. Missing Bot/profile operations remain explicit unavailable
+states and acceptance gaps, never fake success or a shadow bot registry. No
+credentials, target access, inference spending or destructive install permission
+is supplied by this interview. Foreground switching/background Agent progress is
+not a promise of Android background service, notification or process-death survival.
+
+Required implementation verification: nearest deterministic ownership/race tests,
+formatting and Flutter analysis; rebuild the deterministic E2E target before browser
+checks; compile/install and operate the isolated Android artifact for touch/keyboard,
+Back, owner-switch and layout cases. Extend existing suites rather than manufacture
+passing receipts. Bind source, artifact, target, commands and results; keep browser,
+Waydroid, physical device and authenticated live outcomes separate. These checks
+are planned, not executed by this planning pass. No implementation, dispatch,
+scheduler change, commit, publication or live operation follows from saving this plan.

@@ -1,0 +1,141 @@
+# Managed SSH forwarding contract
+
+Status: bounded source contract for DOC-BACKEND-CONTRACT; native application and
+live Agent qualification remain open under BACKEND-SSH-CONNECT and
+BACKEND-SSH-KEY-NATIVE. This document grants no remote lifecycle authority.
+
+## Scope and source identity
+
+One operation: authenticate an explicitly selected SSH target and forward a local
+ephemeral IPv4 loopback listener to that target's `127.0.0.1:<Agent port>`.
+Wing then authenticates independently to the existing Agent. No subprocess,
+executable or argument vector exists in this operation. There is no remote exec,
+installation, restart, token discovery, Agent-file access or Wing Link exchange.
+
+Wing source reviewed at `bfba2dede34612a42d971fd674effdd0f0458815`:
+[adapter](../../lib/core/hermes/ssh/ssh_forward_io.dart),
+[types](../../lib/core/hermes/ssh/ssh_types.dart),
+[controller](../../lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart),
+[form](../../lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart) and
+[panel](../../lib/features/hermes_chat/widgets/managed_ssh_connection_panel.dart).
+The [existing official comparison](../product/desktop-connection-paths.md#official-welcome-local-ssh-and-remote-trace)
+pins unmodified Agent `158fd638da1629c8e62caf9ade1515d162def8ab` and its Desktop
+subtree. Desktop's `electron/ssh-connection.ts`, its nearest test, and
+`src/AGENTS.md` distinguish OpenSSH execution and remote lifecycle from this
+smaller Dart TCP operation. That reference remains read-only; this contract does
+not import Desktop shell/bootstrap authority or claim OpenSSH-config parity.
+
+## Inputs, trust and credentials
+
+- `ManagedSshConfig` accepts host text of 1–253 characters from its explicit
+  ASCII host allowlist, username of 1–128 characters from its username allowlist,
+  and SSH/Agent ports of 1–65535. It rejects URLs, path syntax and control characters.
+  It is not a saved host or trust record.
+- The verifier receives that attempt's configuration and SHA-256 SSH host-key
+  fingerprint. Missing verifier, malformed digest and declined review fail closed.
+  Password acquisition is gated on accepted trust. The panel requires deliberate
+  fingerprint confirmation for this connection; persistent known-host trust and
+  changed-key comparison across relaunch are not implemented by this path.
+- Password, private key/passphrase and Agent credential are distinct attempt
+  inputs. SSH success does not authorize Agent requests. No credential may be
+  placed in a URL, argv, clipboard, diagnostic or ordinary preference. Public-key
+  copy is the sole key-copy action. Legacy management credentials stay inert.
+- Imported key acquisition is a deliberate native file/document selection, not a
+  caller-supplied saved path or arbitrary filesystem API. The picker has no
+  initial path; the reader caps both reported and streamed bytes at 64 KiB,
+  validates the key and bounds supported encrypted OpenSSH KDF work. Selection
+  generations reject late picker/read results after replacement or cancellation.
+  This limited user-selected read does not grant directory browsing, Agent-home
+  reading or path persistence. See [key reader](../../lib/features/hermes_chat/ssh_keys/managed_ssh_key_selection.dart).
+- The separately consented generated identity uses existing platform secure storage
+  with readback validation; failure has no plaintext fallback. Imported content,
+  password and passphrase remain attempt-scoped. Controller/adapter/form cleanup
+  drops owned references; Dart strings and library buffers are not securely
+  zeroized. Native picker/secure-storage behavior still needs named-target proof.
+
+## Forwarding and lifecycle
+
+The adapter owns one attempt. Repeated Connect returns a typed busy failure;
+disposal permanently rejects reuse. Connect defaults to a 20-second overall
+attempt deadline, accepts only positive deadlines up to 60 seconds, and applies
+handshake/authentication deadlines. Trust and credential callbacks participate in
+cancellation/deadline fencing. No automatic reconnect or retry is implied.
+
+Only after SSH authentication does Wing bind `127.0.0.1` with port `0`. The
+returned URI contains no credential and is an ephemeral mapping, never a durable
+host identity. Each accepted socket forwards only to remote loopback and the
+configured Agent port. At most 16 local sockets are retained; excess sockets are
+closed. Forward-channel opening has a 10-second timeout. Individual stream
+failure closes that stream; it does not log bytes or run a remote command.
+
+Cancel, timeout, disposal and SSH loss close owned sockets, channels and listener;
+late dial/bind/channel completions are destroyed. An old lease may close only
+itself, not its replacement. The controller binds adoption to an attempt generation
+and exact channel origin, clears its credential references, and tears down only
+its owned transport on route/mode replacement. It must not disconnect a newer
+unrelated Agent connection. SSH teardown is not Agent Stop or authoritative run
+completion. Agent-owned work remains uncertain until authoritative readback.
+
+Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
+profile/session separately from the ephemeral local origin. **This path does not
+yet save that SSH target/trust mapping or implement cold-relaunch restoration.**
+Do not save a forwarded port as an ordinary endpoint or attach its credential to a
+later unrelated listener. BACKEND-SSH-CONNECT and DOC-BACKEND-DISCONNECT-CONTRACT
+retain durable mapping, interruption and no-replay acceptance.
+
+## Android Agent transport boundary
+
+The current controller calls `HermesChannel.connect` with the forwarded origin
+and separately supplied Agent credential. Production `HermesApiChannel` uses its
+advertised health/capabilities/session REST contract. Supported profile/history,
+Send, approval and Stop operations depend on that exact connected contract;
+SSH login or HTTP health alone proves none of them.
+
+Official Desktop instead uses `serve` REST plus `/api/ws` JSON-RPC. Wing's
+existing [fixed serve reader](../../lib/core/hermes/client/hermes_web_read_client.dart)
+exposes `/api/profiles`, profile-scoped `/api/sessions` and exact-session history.
+Its separately authenticated lifecycle requires a fresh session ticket,
+exclusive-submit support, server-request negotiation and captured runtime/stored
+session identity. REST credentials/reads are not an RPC grant. Its
+[channel integration](../../lib/core/hermes/channel/api_channel/hermes_api_channel_serve_chat.dart)
+correlates approvals and reconciles uncertain sessions without resending mutations.
+Production entry and cold restoration are currently Linux-scoped; the SSH
+controller does not select this reader or lifecycle on Android.
+
+Planner's call for BACKEND-SSH-CONNECT: reuse those fixed reader/lifecycle seams
+for a separately qualified Android tunneled-serve path rather than inventing a
+second transport or widening `HermesChannel.connect` to guess protocols. Before
+enabling it, bind acquisition and every async completion to the current SSH lease,
+explicit profile/session and transient origin, retain deliberate transport
+selection, and test ticket denial, profile/owner mismatch, stale adoption and loss
+with zero implicit Send/approval/Stop. A fresh ticket must use the existing
+secret-safe transport, never Desktop's credential-in-URL technique. Keep Linux
+behavior unchanged. This is the next implementation contract, not enabled Android
+support, a new advertised operation, or permission to remove Linux gates alone.
+
+## Failure oracles and qualification
+
+Existing deterministic checks (not live acceptance):
+
+- [adapter tests](../../test/core/hermes/ssh/managed_ssh_test.dart): input rejection,
+  unsupported browser, concurrent Connect, disposal, timeout and late dial cleanup.
+- [panel/controller tests](../../test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart):
+  explicit trust, late trust cancellation, mode replacement, separate Agent
+  credential, adoption without endpoint persistence and replacement ownership.
+- [key tests](../../test/features/hermes_chat/ssh_keys/managed_ssh_key_selection_test.dart)
+  and [form tests](../../test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart):
+  bounds, failed reads/unlock, cancellation and stale-selection rejection.
+- [opt-in loopback SSH tests](../../test/core/hermes/ssh/managed_ssh_loopback_test.dart):
+  absent/mismatched verifier, wrong password, cancelled review, transport loss,
+  old-lease disposal, and key/password forwarding. They skip without their owned
+  fixture; skipped tests are not host-key/authentication passes.
+
+Run the focused adapter, panel, form, provider and key tests and `git diff --check`
+when changing this boundary. Native Linux/Android full-app authentication, picker,
+keystore, relaunch, actual Agent operations and interruption need their existing
+approved target/access and source-bound receipts. Browser raw TCP remains
+unavailable; other native targets are unqualified, not automatically supported by
+`dart.library.io`. Preserve external-tunnel access where applicable. Remove or
+keep an operation unavailable if its platform cannot preserve host verification,
+credential isolation, loopback containment or owner-safe cleanup; never replace
+it with shell, public binding or a compatibility backend.

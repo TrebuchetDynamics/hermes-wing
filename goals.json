@@ -3914,6 +3914,7 @@
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "partial",
       "tasks": [
+        "ANDROID-CHAT-TOUCH-POLISH",
         "DOC-PARITY-COVERAGE",
         "DOC-PARITY-PLATFORM-DEVIATIONS",
         "FILES-TERMINAL-BROWSE",
@@ -4482,7 +4483,8 @@
         "VERIFY-GROUPED-RECENTS-RECOVERY",
         "VERIFY-PROFILE-FOOTER-NATIVE",
         "VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY",
-        "WING-TASK-408"
+        "WING-TASK-408",
+        "WING-TASK-408-LIVE"
       ],
       "title": "Match profile footer, grouped recents and full session modal"
     },
@@ -5250,6 +5252,7 @@
       "source": "docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary",
       "status": "unmet",
       "tasks": [
+        "ANDROID-CANONICAL-BOT-CHAT",
         "DOC-PARITY-TAB-CONTRACT",
         "DOC-PARITY-TAB-RECONNECT-CONTRACT"
       ],
@@ -6852,8 +6855,6 @@
       "PARITY-OFFICIAL-MATRIX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "WING-TASK-408",
-      "CONNECTION-CRON-CANARY",
       "CONNECTION-LINK-RETIREMENT",
       "CONNECTION-OWNER-RECONNECT",
       "CONNECTION-SETUP-AUTH-MATRIX",
@@ -6885,7 +6886,6 @@
       "BACKEND-SSH-KEY-NATIVE",
       "DOC-ACCOUNT-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
-      "DOC-BACKEND-CONTRACT",
       "DOC-NATIVE-DESIGN-REVIEW",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-BACKEND-DISCONNECT-CONTRACT",
@@ -6893,17 +6893,22 @@
       "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
       "LANDING-PRODUCT-PROOF",
+      "WING-TASK-408",
+      "ANDROID-CANONICAL-BOT-CHAT",
+      "ANDROID-CHAT-TOUCH-POLISH",
+      "CONNECTION-CRON-CANARY",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
       "DOC-API-PROTOCOL-ERROR-EVIDENCE",
+      "CONNECTION-CRON-ADMISSION-LIVE",
+      "DOC-M2-INODE-POLICY-EVIDENCE-LIVE",
+      "PARITY-LIVE-WORKFLOW-LIVE",
+      "WING-TASK-408-LIVE",
       "VERIFY-DESKTOP-NATIVE-DELIVERY",
       "VERIFY-PERSONA-LIVE-COMPATIBILITY",
       "VERIFY-M4-LIVE-INVENTORY",
       "VERIFY-SHELL-NATIVE-INPUT",
       "M2-DEVICE-QUALIFICATION",
-      "VERIFY-M6-ANDROID-INTEGRATED",
-      "CONNECTION-CRON-ADMISSION-LIVE",
-      "DOC-M2-INODE-POLICY-EVIDENCE-LIVE",
-      "PARITY-LIVE-WORKFLOW-LIVE"
+      "VERIFY-M6-ANDROID-INTEGRATED"
     ]
   },
   "tasks": [
@@ -6922,8 +6927,28 @@
       "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-SAVED-WORKFLOWS",
       "section": "Now",
-      "status": "in_progress",
+      "status": "open",
       "title": "Complete and prove owner-safe Local/Remote and saved-connection workflows"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY-TABS",
+      "id": "ANDROID-CANONICAL-BOT-CHAT",
+      "section": "Next",
+      "status": "open",
+      "title": "Android canonical bot chat"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY",
+      "id": "ANDROID-CHAT-TOUCH-POLISH",
+      "section": "Next",
+      "status": "open",
+      "title": "Android chat touch polish"
     },
     {
       "depends_on": [
@@ -6944,16 +6969,6 @@
       "section": "Next",
       "status": "open",
       "title": "Exercise full Wing managed-key SSH and recovery on native Linux and Android against the approved host"
-    },
-    {
-      "depends_on": [
-        "CONNECTION-CRON-ADMISSION"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-CRON-CANARY",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
     },
     {
       "depends_on": [
@@ -6982,7 +6997,7 @@
       "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-SETUP-AUTH-MATRIX",
       "section": "Next",
-      "status": "in_progress",
+      "status": "open",
       "title": "Finish Local existing-install/setup-needed enrollment and Remote auth/storage retry; qualify saved endpoint edit/test and explain unsupported OAuth through public controls"
     },
     {
@@ -7020,14 +7035,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map hostile-content rejection for one permitted artifact type"
-    },
-    {
-      "depends_on": [],
-      "goal": "REMOTE-BACKENDS",
-      "id": "DOC-BACKEND-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Define and review the bounded native SSH-forwarding contract"
     },
     {
       "depends_on": [
@@ -7442,7 +7449,7 @@
       "goal": "PARITY-COMPOSITION",
       "id": "WING-TASK-408",
       "section": "Next",
-      "status": "in_progress",
+      "status": "open",
       "title": "Keep Chat alive through compiled Settings and Profiles overlay navigation and recovery"
     },
     {
@@ -7454,6 +7461,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for CONNECTION-CRON-ADMISSION"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-CRON-ADMISSION"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-CRON-CANARY",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
     },
     {
       "depends_on": [
@@ -7564,6 +7581,16 @@
       "title": "Qualify sidebar persistence and adaptive return through physical OS controls"
     },
     {
+      "depends_on": [
+        "WING-TASK-408"
+      ],
+      "goal": "PARITY-COMPOSITION",
+      "id": "WING-TASK-408-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for WING-TASK-408"
+    },
+    {
       "depends_on": [],
       "goal": "REMOTE-BACKENDS",
       "id": "BACKEND-SSH-KEY-AUTH",
@@ -7670,6 +7697,14 @@
       "section": "Done",
       "status": "done",
       "title": "Verify owned code-first HTTP contract against handlers"
+    },
+    {
+      "depends_on": [],
+      "goal": "REMOTE-BACKENDS",
+      "id": "DOC-BACKEND-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Define and review the bounded native SSH-forwarding contract"
     },
     {
       "depends_on": [],

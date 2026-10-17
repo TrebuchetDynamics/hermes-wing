@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:04:17Z
 - Answer: If no one is working on DOC-VOICE-QUALIFICATION, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
+### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort decision — unblocks 1
+
+- Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link
+- Needs: 1 waiting task(s) depend on "CONNECTION-LINK-REMOVAL", which is not a Now/Next task (an outside condition, or a task in Needs decision).
+- Since: 2026-10-17T16:14:45Z
+- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
+
 ### Q-M1-NOTIFICATION-CONTRACT — USER_DECISION — effort decision — unblocks 1
 
 - Task: M1-NOTIFICATION-CONTRACT — Goal: M1. Resolve the smallest supported notification path after reliable status.
@@ -33,13 +40,6 @@ This file contains only hard blockers that require user action.
 - Needs: worker reported a blocker: Coordinator must widen Touches to include lib/l10n/app_en.arb, lib/l10n/app_localizations.dart and lib/l10n/app_localizations_en.dart. The required explicit close/Stop recovery needs localized explanations distinguishing closing presentation from stopping Agent work, unavailable Stop, and an unconfirmed Stop/close outcome. Source inspection found generic Close/Stop actions and a reconnect-before-r…
 - Since: 2026-10-17T17:00:29Z
 - Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort investigate — unblocks 1
-
-- Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link
-- Needs: dead worker without a commit or changes
-- Since: 2026-10-17T16:14:45Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/CONNECTION-LINK-REMOVAL/), then rescope or split CONNECTION-LINK-REMOVAL in its TODO.md entry. The runner reruns it when the entry changes.
 
 <!-- pi-autowork:questions:end -->
 

@@ -20,7 +20,7 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:04:17Z
 - Answer: Fix DOC-VOICE-QUALIFICATION's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
-### Q-BACKEND-SSH-CONNECT — USER_DECISION — effort investigate — unblocks 48
+### Q-BACKEND-SSH-CONNECT — USER_DECISION — effort investigate — unblocks 1
 
 - Task: BACKEND-SSH-CONNECT — Goal: REMOTE-BACKENDS. Complete and qualify the
 - Needs: integration validation failed or changed the integration tree

@@ -6378,3 +6378,32 @@ Section: Next.
   Checks: Pin the read-only official Agent/Desktop checkout with `git rev-parse HEAD`; recheck every mapped feature source and verification path, run affected existing matrix/tooling tests with `flutter test --no-pub test/tooling/`, validate changed JSON and Markdown targets, then `git diff --check`. Source mapping cannot advance Linux/Android runtime cells.
   Touches: docs/product/hermes-desktop-feature-matrix.md, docs/quality/, test/tooling/, docs/product/hermes-desktop-feature-matrix.json
   Touches widened by the runner from worker evidence: docs/product/hermes-desktop-feature-matrix.json
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **CONNECTION-OWNER-RECONNECT** —  Restore the same
+  saved host/profile/session after disconnect without replaying mutations.
+  Goal: CONNECTION-PATHS
+Section: Next.
+  Payoff: connection recovery retains conversation ownership rather than creating
+  a replacement.
+  Sources: [2026-10-03-study-follow-through](docs/plans/2026-10-03-study-follow-through.md) (current planning context)
+  [2026-09-04-chat-continuity](docs/superpowers/plans/2026-09-04-chat-continuity.md) (historical planning context);
+   [CONN-5/6](docs/product/prd.md#connection-path-requirements)
+  and [recovery checks](docs/test-plan.md#connection-path-verification).
+  Scope: existing Agent channel reconciliation, saved selection and nearest
+  production-path tests. This follows initial saved-host workflows, not new
+  connection authority. Exclude managed SSH, OAuth, installs and live providers.
+  Acceptance: deterministic disconnect/reconnect and delayed old-owner results
+  retain the exact host/profile/session and canonical history; public retry does
+  not duplicate sends, approvals or Stop. Add minimal fixes and freshly compiled
+  browser coverage, plus focused widgets, format and analysis. Native/live support
+  requires separate evidence.
+  Dependencies: CONNECTION-SAVED-WORKFLOWS.
+  Ownership: unclaimed backlog only; no board dispatch in this card.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Add the delayed-old-owner/retry request-count regressions, then `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Record exact restored identities and zero recovery mutations; native/live results remain separate.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+  Readiness: restored check procedure only; existing access and qualification gates remain.

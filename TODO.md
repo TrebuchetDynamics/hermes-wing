@@ -237,30 +237,6 @@ needs its own exact capability, ownership and qualification evidence.
   compact onboarding; unavailable operations and broader acceptance remain open.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
-- [ ] **CONNECTION-OWNER-RECONNECT** —  Restore the same
-  saved host/profile/session after disconnect without replaying mutations.
-  Goal: CONNECTION-PATHS
-Section: Next.
-  Payoff: connection recovery retains conversation ownership rather than creating
-  a replacement.
-  Sources: [2026-10-03-study-follow-through](docs/plans/2026-10-03-study-follow-through.md) (current planning context)
-  [2026-09-04-chat-continuity](docs/superpowers/plans/2026-09-04-chat-continuity.md) (historical planning context);
-   [CONN-5/6](docs/product/prd.md#connection-path-requirements)
-  and [recovery checks](docs/test-plan.md#connection-path-verification).
-  Scope: existing Agent channel reconciliation, saved selection and nearest
-  production-path tests. This follows initial saved-host workflows, not new
-  connection authority. Exclude managed SSH, OAuth, installs and live providers.
-  Acceptance: deterministic disconnect/reconnect and delayed old-owner results
-  retain the exact host/profile/session and canonical history; public retry does
-  not duplicate sends, approvals or Stop. Add minimal fixes and freshly compiled
-  browser coverage, plus focused widgets, format and analysis. Native/live support
-  requires separate evidence.
-  Dependencies: CONNECTION-SAVED-WORKFLOWS.
-  Ownership: unclaimed backlog only; no board dispatch in this card.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Add the delayed-old-owner/retry request-count regressions, then `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Record exact restored identities and zero recovery mutations; native/live results remain separate.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-  Readiness: restored check procedure only; existing access and qualification gates remain.
-
 ### **P4** — Extended experiences and physical qualification
 
 - [ ] **CONNECTION-LINK-REMOVAL** — Goal: CONNECTION-PATHS. Remove Wing Link
@@ -1610,4 +1586,13 @@ does not mark any check passed or authorize live actions.
   - Separately qualify actual Agent/provider authentication and inference, OS keyring/keystore, audio/IME and assistive technology, and distribution/update/rollback on the named target before making those support claims. Unavailable operations and deeper source/contract gaps remain explicit in the matrix.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITY-OFFICIAL-MATRIX.
+  Status: open
+
+- [ ] CONNECTION-OWNER-RECONNECT-LIVE — Live checks for CONNECTION-OWNER-RECONNECT
+  Scope: Run the live checks the offline work for CONNECTION-OWNER-RECONNECT left pending.
+  Acceptance: Each check passes on the real target:
+  - Native desktop/Android exact-owner reconnect with platform secure storage and an authenticated unmodified Hermes Agent requires separate qualification.
+  - Live Agent/provider continuation and recovery require separate runtime evidence; the opt-in live browser case was not enabled.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: CONNECTION-OWNER-RECONNECT.
   Status: open

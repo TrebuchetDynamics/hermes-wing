@@ -5215,6 +5215,7 @@
         "CONNECTION-LOCAL-SETUP-RECOVERY",
         "CONNECTION-OFFICIAL-DESKTOP-PORT",
         "CONNECTION-OWNER-RECONNECT",
+        "CONNECTION-OWNER-RECONNECT-LIVE",
         "CONNECTION-PRIMARY-ENTRY",
         "CONNECTION-PRODUCTION-BROWSER-MATRIX",
         "CONNECTION-REMOTE-AUTH-EXPLANATION",
@@ -6853,7 +6854,6 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "CONNECTION-OWNER-RECONNECT",
       "CONNECTION-LINK-REMOVAL",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
       "M1-NOTIFICATION-CONTRACT",
@@ -6919,7 +6919,8 @@
       "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
       "BACKEND-SSH-CONNECT-LIVE",
       "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE",
-      "PARITY-OFFICIAL-MATRIX-LIVE"
+      "PARITY-OFFICIAL-MATRIX-LIVE",
+      "CONNECTION-OWNER-RECONNECT-LIVE"
     ]
   },
   "tasks": [
@@ -6970,16 +6971,6 @@
       "section": "Next",
       "status": "open",
       "title": "Retire Wing Link packaging and legacy setup after Agent-only native Local flows and migration checks pass"
-    },
-    {
-      "depends_on": [
-        "CONNECTION-SAVED-WORKFLOWS"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-OWNER-RECONNECT",
-      "section": "Next",
-      "status": "open",
-      "title": "Restore exact saved host/profile/session after disconnect without mutation replay"
     },
     {
       "depends_on": [
@@ -7417,6 +7408,16 @@
     },
     {
       "depends_on": [
+        "CONNECTION-OWNER-RECONNECT"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-OWNER-RECONNECT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for CONNECTION-OWNER-RECONNECT"
+    },
+    {
+      "depends_on": [
         "CONNECTION-SAVED-WORKFLOWS"
       ],
       "goal": "CONNECTION-PATHS",
@@ -7652,6 +7653,16 @@
       "section": "Done",
       "status": "done",
       "title": "Re-trace official Desktop welcome and Local/SSH/Remote contracts; implement the first evidenced Flutter connection correction"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-SAVED-WORKFLOWS"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-OWNER-RECONNECT",
+      "section": "Done",
+      "status": "done",
+      "title": "Restore exact saved host/profile/session after disconnect without mutation replay"
     },
     {
       "depends_on": [],

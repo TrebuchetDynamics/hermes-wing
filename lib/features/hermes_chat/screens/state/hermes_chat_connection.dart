@@ -301,6 +301,14 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   }
 
   Future<void> _reconnectOnce(HermesChannel channel) async {
+    if (ref.read(managedSshConnectionControllerProvider).needsSshReconnect) {
+      _connectionForm.abandonAttempt();
+      _setState(() {
+        _connectionMode = HermesConnectionMode.ssh;
+        _editingConnection = true;
+      });
+      return;
+    }
     if (channel.state.isServeReadOnly) {
       if (channel is HermesApiChannel) {
         await channel.retryLocalServeConversation();

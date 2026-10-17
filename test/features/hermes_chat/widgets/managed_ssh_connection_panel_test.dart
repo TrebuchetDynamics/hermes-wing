@@ -77,6 +77,7 @@ class FakeForward extends ManagedSshForward {
   ManagedSshCredentials? credentials;
   int stops = 0;
   int closes = 0;
+  Completer<void>? closeGate;
   final ended = Completer<void>();
   @override
   Future<ManagedSshTunnel> connect({
@@ -97,6 +98,7 @@ class FakeForward extends ManagedSshForward {
       done: ended.future,
       close: () async {
         closes++;
+        await closeGate?.future;
       },
     ),
   );
@@ -917,8 +919,15 @@ void main() {
       expect(channel.token, input.agentBearerToken);
       expect(channel.state.connectedBaseUrl, 'http://127.0.0.1:45678');
       expect(forward.closes, 0);
-      await channel.disconnect();
-      await Future<void>.delayed(Duration.zero);
+      forward.closeGate = Completer<void>();
+      final cancelling = controller.cancel();
+      channel.set(
+        channel.state.copyWith(errorMessage: 'synthetic status update'),
+      );
+      forward.closeGate!.complete();
+      await cancelling;
+      expect(channel.disconnects, 1);
+      expect(channel.state.isConnected, false);
       expect(forward.closes, 1);
       controller.dispose();
       channel.dispose();

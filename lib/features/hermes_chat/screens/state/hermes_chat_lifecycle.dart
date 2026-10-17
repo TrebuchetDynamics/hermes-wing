@@ -21,7 +21,10 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
     if (_reconnectingOnResume || !mounted) return;
     final channel = ref.read(hermesChannelProvider);
     final state = channel.state;
-    if (state.isServeReadOnly) return;
+    if (state.isServeReadOnly ||
+        ref.read(managedSshConnectionControllerProvider).needsSshReconnect) {
+      return;
+    }
     final directory = ref.read(hermesGatewayDirectoryProvider);
     final activeContactId = directory.activeContactId;
     if (activeContactId != null && state.isConnected) {

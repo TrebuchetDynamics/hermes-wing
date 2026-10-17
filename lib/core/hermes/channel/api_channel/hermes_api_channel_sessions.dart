@@ -7,7 +7,13 @@ extension _SessionsExtension on HermesApiChannel {
     _serveReader = null;
     _serveCredential = null;
     _serveCanAccept = null;
+    _persistForwardedRecovery = null;
     _serveTransient = false;
+    _forwardedOrigin = null;
+    _forwardedRunOwner = null;
+    _forwardedUncertainSessions.clear();
+    _persistForwardedApiRecovery = null;
+    _forwardedApiSubmission = null;
     _client = null;
     _connectionGeneration += 1;
     _sessionSelectionGeneration += 1;
@@ -127,14 +133,17 @@ extension _SessionsExtension on HermesApiChannel {
       rethrow;
     }
     if (!canAcceptHistory()) return;
+    final unresolved =
+        detachedRunStillActive ||
+        _hasForwardedUncertainty(sessionId, profileId);
     _setState(
       _state.copyWith(
         activeSessionId: sessionId,
-        hasUnreconciledRun: detachedRunStillActive,
-        errorMessage: detachedRunStillActive
+        hasUnreconciledRun: unresolved,
+        errorMessage: unresolved
             ? 'Hermes run is still active. Reconnect later before retrying.'
             : null,
-        clearErrorMessage: !detachedRunStillActive,
+        clearErrorMessage: !unresolved,
         messages: {..._state.messages, sessionId: turns},
       ),
     );
@@ -490,10 +499,13 @@ extension _SessionsExtension on HermesApiChannel {
           sessions: remaining,
           activeSessionId: nextActiveId,
           clearActiveSessionId: nextActiveId == null,
-          hasUnreconciledRun: _sessionHasDetachedRun(
-            sessionId: nextActiveId,
-            profileId: profileId,
-          ),
+          hasUnreconciledRun:
+              (nextActiveId != null &&
+                  _hasForwardedUncertainty(nextActiveId, profileId)) ||
+              _sessionHasDetachedRun(
+                sessionId: nextActiveId,
+                profileId: profileId,
+              ),
           messages: messages,
         ),
       );

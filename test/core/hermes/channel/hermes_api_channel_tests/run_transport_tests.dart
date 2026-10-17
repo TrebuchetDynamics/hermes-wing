@@ -2,6 +2,130 @@ part of '../hermes_api_channel_test.dart';
 
 void _hermesApiChannelRunTransportTests() {
   test(
+    'forwarded API runs retain durable ownership across port replacement until terminal readback',
+    () async {
+      final store = _MemoryDetachedRunStore();
+      final started = Completer<void>();
+      final events = StreamController<String>.broadcast();
+      var status = 'running';
+      var submissions = 0;
+      var histories = 0;
+      var failHistory = false;
+      var uncertainPointer = false;
+      final reattached = Completer<void>();
+      final scope = 'ssh-forward:${'a' * 64}';
+      final capabilities =
+          jsonDecode(_runsCapableCapabilitiesFixture) as Map<String, dynamic>;
+      (capabilities['endpoints'] as Map<String, dynamic>)['session_messages'] =
+          {'method': 'GET', 'path': '/api/sessions/{session_id}/messages'};
+      final channel = HermesApiChannel(
+        detachedRunStore: store,
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            if (uri.path.endsWith('/messages')) {
+              histories++;
+              if (failHistory) throw StateError('Synthetic history failure');
+            }
+            if (uri.path.startsWith('/v1/runs/')) {
+              return '{"run_id":"${uri.pathSegments.last}","session_id":"sess_1","status":"$status"}';
+            }
+            return switch (uri.path) {
+              '/health' => '{"status":"ok"}',
+              '/v1/capabilities' => jsonEncode(capabilities),
+              '/api/sessions' => _sessionsFixture,
+              '/api/sessions/sess_1/messages' => _messagesFixture,
+              _ => throw StateError('Unexpected read'),
+            };
+          },
+          post: (uri, headers, body) async {
+            expect(uri.path, '/v1/runs');
+            submissions++;
+            return '{"run_id":"run_$submissions","session_id":"sess_1"}';
+          },
+          getStream: (_, _) {
+            if (submissions > 1) {
+              return Stream.value('event: run.completed\ndata: {}\n\n');
+            }
+            if (!started.isCompleted) {
+              started.complete();
+            } else if (!reattached.isCompleted) {
+              reattached.complete();
+            }
+            return events.stream;
+          },
+        ),
+      );
+      addTearDown(channel.dispose);
+      Future<void> persist(
+        String? profile,
+        String session,
+        bool uncertain,
+      ) async {
+        expect(session, 'sess_1');
+        uncertainPointer = uncertain;
+        if (uncertain) {
+          expect(submissions, lessThan(2));
+        }
+      }
+
+      await channel.connectForwardedApi(
+        baseUrl: 'http://127.0.0.1:20180',
+        forwardedRunOwner: scope,
+        persistForwardedRecovery: persist,
+      );
+      final sending = channel.sendText('synthetic explicit prompt');
+      await started.future;
+      expect(store.leases.single.baseUrl, scope);
+      await channel.disconnect();
+      await sending;
+      final before = histories;
+      await channel.connectForwardedApi(
+        baseUrl: 'http://127.0.0.1:20181',
+        forwardedRunOwner: scope,
+        deferSessionSelection: true,
+        uncertainSession: 'sess_1',
+        persistForwardedRecovery: persist,
+      );
+      expect(histories, before); // No intermediate default-session history.
+      expect(channel.state.activeSessionId, isNull);
+      expect(await channel.restoreSession('sess_1'), true);
+      expect(channel.state.hasUnreconciledRun, true);
+      await expectLater(channel.sendText('not replayed'), throwsStateError);
+      await reattached.future;
+      final settled = Completer<void>();
+      channel.addListener(() {
+        if (!channel.state.hasUnreconciledRun && !settled.isCompleted) {
+          settled.complete();
+        }
+      });
+      status = 'completed';
+      events.add('event: run.completed\ndata: {}\n\n');
+      await settled.future;
+      expect(uncertainPointer, false);
+      failHistory = true;
+      await channel.sendText('synthetic new explicit intent');
+      expect(submissions, 2);
+      expect(uncertainPointer, true);
+      expect(store.leases.single.runId, 'run_2');
+      await channel.disconnect();
+      failHistory = false;
+      await channel.connectForwardedApi(
+        baseUrl: 'http://127.0.0.1:20182',
+        forwardedRunOwner: scope,
+        deferSessionSelection: true,
+        uncertainSession: uncertainPointer ? 'sess_1' : null,
+        persistForwardedRecovery: persist,
+      );
+      expect(await channel.restoreSession('sess_1'), true);
+      expect(channel.state.hasUnreconciledRun, false);
+      expect(store.leases, isEmpty);
+      expect(submissions, 2);
+      await events.close();
+    },
+  );
+
+  test(
     'sendText uses run transport when advertised: streams deltas, surfaces an approval, then reconciles',
     () async {
       final approvals = <HermesApprovalRequest>[];

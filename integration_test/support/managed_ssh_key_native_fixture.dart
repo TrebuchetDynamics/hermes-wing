@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:wing/core/hermes/setup/secure_managed_ssh_recovery_store.dart';
+import 'package:wing/core/hermes/ssh/managed_ssh.dart';
+import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
 // The plugin's platform seam is intentionally test-only; no production dependency
 // or connected-state substitute is introduced.
 // ignore: depend_on_referenced_packages
@@ -46,7 +49,7 @@ class ManagedSshKeyNativeFixture {
   }
 
   Future<Map<String, dynamic>> control(String action) async {
-    if (!{'stats', 'hold', 'release'}.contains(action)) {
+    if (!{'stats', 'hold', 'release', 'interrupt'}.contains(action)) {
       throw StateError('Unknown fixture control');
     }
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 5);
@@ -74,6 +77,24 @@ class ManagedSshKeyNativeFixture {
   }
 
   void dispose() => _runtime.clear();
+}
+
+/// Pointer persistence is substituted to avoid writing the device's keychain.
+/// This qualifies same-process restoration only, not physical secure storage.
+class ManagedSshFixtureRecoveryStore implements ManagedSshRecoveryStore {
+  final _rows = <ManagedSshRecovery>[];
+  @override
+  Future<ManagedSshRecovery?> load(
+    ManagedSshConfig target,
+    SshAgentTransport transport,
+  ) async => _rows.where((row) => row.matches(target, transport)).firstOrNull;
+  @override
+  Future<void> save(ManagedSshRecovery selection) async {
+    _rows.removeWhere(
+      (row) => row.matches(selection.configuration, selection.transport),
+    );
+    _rows.add(selection);
+  }
 }
 
 /// Only selected-document acquisition is substituted. Production key parsing,

@@ -1,8 +1,9 @@
 # Managed SSH forwarding contract
 
-Status: bounded source contract for DOC-BACKEND-CONTRACT; native application and
-live Agent qualification remain open under BACKEND-SSH-CONNECT and
-BACKEND-SSH-KEY-NATIVE. This document grants no remote lifecycle authority.
+Status: source contract including DOC-BACKEND-DISCONNECT-CONTRACT recovery.
+Deterministic checks are not Android/native or live Agent qualification. This
+document grants no remote lifecycle authority. See the
+[interruption runbook](../runbooks/managed-ssh-disconnect-recovery.md).
 
 ## Scope and source identity
 
@@ -12,7 +13,7 @@ Wing then authenticates independently to the existing Agent. No subprocess,
 executable or argument vector exists in this operation. There is no remote exec,
 installation, restart, token discovery, Agent-file access or Wing Link exchange.
 
-Wing source reviewed at `bfba2dede34612a42d971fd674effdd0f0458815`:
+Current Wing implementation:
 [adapter](../../lib/core/hermes/ssh/ssh_forward_io.dart),
 [types](../../lib/core/hermes/ssh/ssh_types.dart),
 [controller](../../lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart),
@@ -34,8 +35,9 @@ not import Desktop shell/bootstrap authority or claim OpenSSH-config parity.
 - The verifier receives that attempt's configuration and SHA-256 SSH host-key
   fingerprint. Missing verifier, malformed digest and declined review fail closed.
   Password acquisition is gated on accepted trust. The panel requires deliberate
-  fingerprint confirmation for this connection; persistent known-host trust and
-  changed-key comparison across relaunch are not implemented by this path.
+  fingerprint confirmation for this connection. Saved conversation pointers
+  additionally require the same reviewed key; this is not an OpenSSH known_hosts
+  import, automatic trust grant, or host-key rotation workflow.
 - Password, private key/passphrase and Agent credential are distinct attempt
   inputs. SSH success does not authorize Agent requests. No credential may be
   placed in a URL, argv, clipboard, diagnostic or ordinary preference. Public-key
@@ -76,18 +78,47 @@ its owned transport on route/mode replacement. It must not disconnect a newer
 unrelated Agent connection. SSH teardown is not Agent Stop or authoritative run
 completion. Agent-owned work remains uncertain until authoritative readback.
 
-Durable identity must retain SSH host/port/user, reviewed trust and explicit Agent
-profile/session separately from the ephemeral local origin. **This path does not
-yet save that SSH target/trust mapping or implement cold-relaunch restoration.**
-Do not save a forwarded port as an ordinary endpoint or attach its credential to a
-later unrelated listener. BACKEND-SSH-CONNECT and DOC-BACKEND-DISCONNECT-CONTRACT
-retain durable mapping, interruption and no-replay acceptance.
+The [secure pointer store](../../lib/core/hermes/setup/secure_managed_ssh_recovery_store.dart)
+retains at most 32 exact SSH host/port/user/Agent-port/protocol records, reviewed
+fingerprints and selected Agent profile/optional session, with at most 32
+unresolved profile/session fences per target. Navigation and clearing the current
+selection never erase another session's uncertainty. It stores neither forwarding
+origin nor SSH/Agent authentication. Other hosts' pointers
+survive selection changes. Invalid/full/unavailable storage fails closed; there
+is no plaintext fallback or silent eviction. Legacy/direct endpoint slots are
+untouched by this store. No management or host-secret discovery is performed.
+
+Retry reopens the current target for fresh authentication. Reentering the exact
+same target also loads its secure pointer, including after controller recreation;
+there is no automatic cold-start SSH dial or saved-SSH chooser. Every connection
+still requires deliberate fingerprint review; a saved fingerprint mismatch fails
+before Agent acquisition and cannot silently retarget the old conversation. A
+changed host or protocol is a different owner, not permission to reuse credentials.
+Empty selections retain the target without inventing a session.
+
+Unexpected loss revokes channel ownership and retains the cached selection as an
+error, not a connected/writable Agent. Explicit Disconnect closes the captured
+channel before awaiting tunnel cleanup; informational state changes cannot keep
+it alive, and old close completions cannot disconnect a replacement. No teardown
+operation sends Agent Stop, restarts a service, or resolves a run's outcome.
+
+Advertised API restoration defers both bootstrap and profile session selection
+before restoring the exact session. Its detached-run scope is an opaque hash of
+the verified SSH owner, never the ephemeral origin. An uncertainty pointer blocks
+Send until matching authoritative terminal run status and history resolve the
+lease. Terminal events on a healthy session-chat stream also require successful
+canonical history before settlement. Local idleness, stream failure and failed
+history reads never settle work; recovery handles remain available until readback
+and secure settlement succeed. Unknown submissions without a resolvable run
+identity remain fenced; transcript history alone is not proof of idle. No old transient lease is guessed
+or migrated to a new host. Native serve restoration similarly retains uncertainty
+until its canonical read/replay barrier. Neither path replays mutations.
 
 ## Android Agent transport boundary
 
-The current controller calls `HermesChannel.connect` with the forwarded origin
-and separately supplied Agent credential. Production `HermesApiChannel` uses its
-advertised health/capabilities/session REST contract. Supported profile/history,
+The controller selects `connectForwardedApi` or `connectForwardedServeReads`
+explicitly with the forwarded origin and separately supplied Agent credential.
+The advertised API path uses its health/capabilities/session REST contract. Supported profile/history,
 Send, approval and Stop operations depend on that exact connected contract;
 SSH login or HTTP health alone proves none of them.
 
@@ -99,19 +130,17 @@ exclusive-submit support, server-request negotiation and captured runtime/stored
 session identity. REST credentials/reads are not an RPC grant. Its
 [channel integration](../../lib/core/hermes/channel/api_channel/hermes_api_channel_serve_chat.dart)
 correlates approvals and reconciles uncertain sessions without resending mutations.
-Production entry and cold restoration are currently Linux-scoped; the SSH
-controller does not select this reader or lifecycle on Android.
-
-Planner's call for BACKEND-SSH-CONNECT: reuse those fixed reader/lifecycle seams
-for a separately qualified Android tunneled-serve path rather than inventing a
-second transport or widening `HermesChannel.connect` to guess protocols. Before
-enabling it, bind acquisition and every async completion to the current SSH lease,
-explicit profile/session and transient origin, retain deliberate transport
-selection, and test ticket denial, profile/owner mismatch, stale adoption and loss
-with zero implicit Send/approval/Stop. A fresh ticket must use the existing
-secret-safe transport, never Desktop's credential-in-URL technique. Keep Linux
-behavior unchanged. This is the next implementation contract, not enabled Android
-support, a new advertised operation, or permission to remove Linux gates alone.
+The Android SSH form deliberately selects either advertised Agent API or native
+serve reads. The forwarded serve entry binds every acquisition/read to the
+current SSH lease and channel owner, restores the saved exact profile/session,
+and never persists its local origin/token in the Linux serve-recovery slot.
+Chat still requires separate fresh-ticket and owner qualification. Before Send
+or Stop, the forwarded channel awaits secure uncertainty persistence; failure
+prevents that mutation. Retry never submits a prompt, settles an approval or
+interrupts a run. Fresh tickets use the existing secret-safe transport, never
+Desktop's credential-in-URL technique. Linux direct serve entry/restoration and
+browser raw-TCP restrictions are unchanged. Platform overrides and fixtures are
+not native Android support evidence.
 
 ## Failure oracles and qualification
 

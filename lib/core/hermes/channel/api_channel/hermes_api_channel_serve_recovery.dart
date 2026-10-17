@@ -34,10 +34,12 @@ extension _ServeRecoveryExtension on HermesApiChannel {
     _serveRecovery = selection;
     final persist = !_serveTransient;
     final operation = _servePersistenceTail.then((_) async {
-      if (persist &&
-          identical(lifecycle, _serveLifecycle) &&
-          _serveOwnerIsCurrent) {
-        await _serveRecoveryStore?.save(selection);
+      if (identical(lifecycle, _serveLifecycle) && _serveOwnerIsCurrent) {
+        if (persist) {
+          await _serveRecoveryStore?.save(selection);
+        } else {
+          await _persistForwardedRecovery?.call(selection.checkpoint);
+        }
       }
     });
     _servePersistenceTail = operation.catchError((Object _) {});

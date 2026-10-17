@@ -862,6 +862,18 @@ abstract class AppLocalizations {
   /// **'Could not establish the SSH connection. Check the host and authentication, then retry.'**
   String get managedSshFailed;
 
+  /// No description provided for @managedSshInterruptedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH connection interrupted'**
+  String get managedSshInterruptedTitle;
+
+  /// No description provided for @managedSshInterruptedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry opens the same SSH target for fresh authentication. Wing retains the selected profile and session, but uncertain work needs Agent readback. Nothing is resent, approved or stopped automatically.'**
+  String get managedSshInterruptedBody;
+
   /// No description provided for @managedSshUnsupported.
   ///
   /// In en, this message translates to:

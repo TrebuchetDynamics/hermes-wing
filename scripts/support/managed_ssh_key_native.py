@@ -154,9 +154,12 @@ class Fixture:
         host_key = asyncssh.generate_private_key('ssh-ed25519')
         self.client_key = asyncssh.generate_private_key('ssh-ed25519')
         wrong = asyncssh.generate_private_key('ssh-ed25519')
-        self.http = await asyncio.start_server(self.serve_agent, '127.0.0.1', 0, limit=8192)
+        base = os.environ.get('AUTOWORK_PORT_BASE')
+        def port(offset):
+            return 0 if base is None else int(base) + offset
+        self.http = await asyncio.start_server(self.serve_agent, '127.0.0.1', port(80), limit=8192)
         self.agent_port = self.http.sockets[0].getsockname()[1]
-        self.control = await asyncio.start_server(self.serve_control, '127.0.0.1', 0, limit=8192)
+        self.control = await asyncio.start_server(self.serve_control, '127.0.0.1', port(81), limit=8192)
         owner = self
 
         class Server(asyncssh.SSHServer):
@@ -198,7 +201,7 @@ class Fixture:
                 return False
 
         try:
-            self.ssh = await asyncssh.create_server(Server, '127.0.0.1', 0,
+            self.ssh = await asyncssh.create_server(Server, '127.0.0.1', port(82),
                 server_host_keys=[host_key], config=None, encoding=None,
                 password_auth=False, kbdint_auth=False, allow_scp=False,
                 sftp_factory=None, agent_forwarding=False, x11_forwarding=False,
@@ -259,6 +262,10 @@ class Fixture:
                 self.hold = True
                 self.release.clear()
                 value = {'held': True}
+            elif method == 'POST' and target == '/interrupt':
+                for connection in tuple(self.connections):
+                    connection.abort()
+                value = {'interrupted': True}
             elif method == 'POST' and target == '/release':
                 self.hold = False
                 self.release.set()
@@ -323,6 +330,17 @@ async def probe_fixture():
                 pass
             else:
                 raise AssertionError('Shell accepted')
+            control_reader, control_writer = await asyncio.open_connection('127.0.0.1', runtime['control_port'])
+            control_writer.write(b'POST /interrupt HTTP/1.1\r\nHost: fixture\r\n\r\n')
+            await control_writer.drain()
+            interrupted = await asyncio.wait_for(control_reader.read(), 5)
+            assert b'"interrupted": true' in interrupted
+            control_writer.close()
+            await control_writer.wait_closed()
+            await asyncio.wait_for(conn.wait_closed(), 5)
+        # The control aborts owned connections, not the SSH/Agent listeners.
+        async with asyncssh.connect(**common, client_keys=[fixture.client_key]):
+            pass
         try:
             async with asyncssh.connect(**common,
                     client_keys=[asyncssh.generate_private_key('ssh-ed25519')]):
@@ -406,8 +424,8 @@ def validate_result(value, lane):
             raise ValueError('Native journey did not exercise required Agent reads')
     if counts['live_ssh'] != 0 or counts['ssh_auths'] < 3 or counts['ssh_denials'] < 1:
         raise ValueError('SSH authentication, mismatch or teardown evidence missing')
-    if value['cycles'][0] != value['cycles'][1]:
-        raise ValueError('Explicit reconnect read counts differ')
+    # Fresh selection and exact saved-owner restoration intentionally have
+    # different read counts; both must satisfy the bounded route oracle above.
     return value
 
 

@@ -456,6 +456,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not establish the SSH connection. Check the host and authentication, then retry.';
 
   @override
+  String get managedSshInterruptedTitle => 'SSH connection interrupted';
+
+  @override
+  String get managedSshInterruptedBody =>
+      'Retry opens the same SSH target for fresh authentication. Wing retains the selected profile and session, but uncertain work needs Agent readback. Nothing is resent, approved or stopped automatically.';
+
+  @override
   String get managedSshUnsupported =>
       'Managed SSH is not available in this browser. Use Wing on Android or desktop.';
 

@@ -29,13 +29,32 @@ extension _ConnectionExtension on HermesApiChannel {
     String? apiKey,
     bool deferSessionSelection = false,
     void Function(bool Function() isCurrent)? onAcquire,
+    String? forwardedRunOwner,
+    String? uncertainSession,
+    String? uncertainProfile,
+    Set<(String, String)> uncertainSessions = const {},
+    Future<void> Function(String?, String, bool)? persistForwardedRecovery,
   }) async {
     _retireServeChat();
     _serveReader?.disconnect();
     _serveReader = null;
     _serveCredential = null;
     _serveCanAccept = null;
+    _persistForwardedRecovery = null;
     _serveTransient = false;
+    _forwardedOrigin = forwardedRunOwner == null ? null : baseUrl;
+    _forwardedRunOwner = forwardedRunOwner;
+    _forwardedUncertainSessions
+      ..clear()
+      ..addAll(uncertainSessions);
+    if (uncertainSession != null) {
+      _forwardedUncertainSessions.add((
+        uncertainProfile ?? 'default',
+        uncertainSession,
+      ));
+    }
+    _persistForwardedApiRecovery = persistForwardedRecovery;
+    _forwardedApiSubmission = null;
     final generation = _connectionGeneration + 1;
     _connectionGeneration = generation;
     _sessionSelectionGeneration += 1;
@@ -95,13 +114,15 @@ extension _ConnectionExtension on HermesApiChannel {
       }
       final sessions = sessionsPage.sessions;
       if (!_isCurrentConnection(generation, client)) return;
-      final detachedActiveId = await _recoverActiveDetachedSession(
-        client: client,
-        capabilities: capabilities,
-        baseUrl: baseUrl,
-        profileId: initialProfileId,
-        sessionIds: sessions.map((session) => session.id),
-      );
+      final detachedActiveId = deferSessionSelection
+          ? null
+          : await _recoverActiveDetachedSession(
+              client: client,
+              capabilities: capabilities,
+              baseUrl: baseUrl,
+              profileId: initialProfileId,
+              sessionIds: sessions.map((session) => session.id),
+            );
       if (!_isCurrentConnection(generation, client)) return;
       hasUnreconciledRun = detachedActiveId != null;
       final activeId = deferSessionSelection

@@ -34,7 +34,7 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T17:00:29Z
 - Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
-### Q-BACKEND-SSH-CONNECT — USER_DECISION — effort investigate — unblocks 42
+### Q-BACKEND-SSH-CONNECT — USER_DECISION — effort investigate — unblocks 1
 
 - Task: BACKEND-SSH-CONNECT — Goal: REMOTE-BACKENDS. Complete and qualify the
 - Needs: integration validation failed or changed the integration tree

@@ -144,7 +144,8 @@ needs its own exact capability, ownership and qualification evidence.
   focus and approvals/Stop bind to the captured owner, not whichever chat is visible.
   Reuse existing session CRUD; no shared draft or shadow run-state database.
   Retained checks: `flutter analyze --no-pub`; `flutter test --no-pub --concurrency=1 test/features/hermes_chat/ test/router/`; `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Require source-bound independent review of owner isolation, per-tab drafts and close/Stop behavior. Planned checks only, not executed passes; native/live grants remain unchanged.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/router/, lib/app/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/router/, integration_test/, playwright/tests/, docs/quality/
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/router/, lib/app/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/router/, integration_test/, playwright/tests/, docs/quality/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
+  Touches widened by the runner from worker evidence: lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
 
 - [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Goal: PARITY-TABS. Section: Next. Implement and
   qualify reconnect for two distinct session-owned conversation tabs.

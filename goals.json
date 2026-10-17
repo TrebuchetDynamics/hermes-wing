@@ -6923,7 +6923,7 @@
       "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-LINK-REMOVAL",
       "section": "Now",
-      "status": "in_progress",
+      "status": "open",
       "title": "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
     },
     {

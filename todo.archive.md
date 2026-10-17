@@ -6166,3 +6166,81 @@ Section: Next.
   Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Ownership: unassigned; preserve existing connection and recovery owners. No worker dispatched by this entry.
   Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Run the linked away/return matrix on the existing isolated Waydroid QA artifact only after authenticated target readiness; record artifact, source, request counts and text-scale results. No inference or physical-device acceptance is supplied by these planned checks.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **LANDING-PRODUCT-PROOF** — Goal: LANDING-ONBOARDING. Make Wing's value and
+  real product interaction clear through a coherent responsive product page.
+  Section: Next.
+  Status: done
+  Payoff: existing Hermes users obtain Wing, connect safely and recognize useful
+  phone attention without confusing simulated proof with live compatibility.
+  Sources: [full landing plan](docs/plans/2026-10-12-wing-landing-onboarding.md),
+  [accepted landing outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
+  [landing-led identity](docs/plans/2026-10-12-wing-landing-onboarding.md#landing-led-product-identity-across-readme-and-docs),
+  [current README/Conduit plan](docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow),
+  [visual/proof acceptance](docs/plans/2026-10-12-wing-landing-onboarding.md#visual-and-interaction-ambition),
+  `README.md`, `docs/getting-started.md`, `site/index.html`, `site/styles.css`,
+  `scripts/generate_readme_assets.mjs`, `serve_web.mjs`, `assets/readme/showcase.png`,
+  `assets/readme/showcase-mobile.png`, `test/tooling/readme_assets_contract_test.dart`.
+  Scope: first deliver landing-led README/docs-index/tutorial composition and
+  voice, preserving the current headline Your agent. Within reach. and permanent
+  approved mascot; then retain current-image/shared-asset, landing trust/status/FAQ
+  and share-preview acceptance. Adapt hierarchy to standard Markdown/light-dark
+  layouts; no new docs stack, landing rebuild or repeat composition interview.
+  Reuse existing assets, generator and actual UI components. Use a synthetic demo-repository summary
+  and readable phone decision instead of echo e2e/Gateway readiness. Recapture
+  current UI, removing retired Office navigation from proof. Preserve burned-in
+  simulation labels and no-live-synchronization wording; those fixes already exist.
+  Keep a single support matrix in getting-started, link formal evidence separately,
+  and simplify tutorial flow without erasing security or platform limits.
+  Exclude new product demo, feature/backend, framework/dependency, analytics, live
+  authentication/inference, Agent edits, personal data or deployment in this slice.
+  Acceptance: README is approximately 160–180 lines (planner target), with three
+  scannable paths and acquisition before first use; first-chat CTA remains primary.
+  Docs user paths precede governance/reference inventories. Tutorial steps need no
+  protocol/QA vocabulary and retain exact current UI labels,
+  Agent/provider distinction, trust/cost warnings, no-tools smoke then optional
+  bounded Project-summary action. SSH status is visible by route; matrix separates
+  rendering, simulated/native checks and authenticated live evidence without copying
+  Conduit's dashboard contract or capabilities. Wide/narrow proof is legible,
+  current and provenance-labeled, with no retired Office UI or echo e2e selling point.
+  Retain desktop/compact keyboard, zoom, reduced-motion and truthful social-preview
+  checks; report screen-reader/native/live gaps separately. Optional 16/24/32/48px
+  icon evaluation must not replace the mascot/master without explicit visual
+  selection, or block the docs pass; 5–10% is restraint, not a measured score. README-only progress
+  does not close the broader landing/share parent acceptance.
+  Checks: planned implementation commands: `flutter test --no-pub
+  test/tooling/readme_assets_contract_test.dart
+  test/tooling/wing_link_docs_contract_test.dart
+  test/tooling/plan_backlog_traceability_test.dart
+  test/tooling/wing_branding_assets_test.dart`; affected fixture regressions;
+  `npm run readme:assets` after fixture changes; `git diff --check`. Extend existing
+  semantic ordering/link/provenance tests, count README lines, and inspect generated
+  wide/mobile images at actual display sizes. Use local Flutter 3.44.2 and Node 22;
+  Pages CI's distinct Flutter pin is not silently changed by this task.
+  Dependencies: LANDING-FIRST-REPLY.
+  Ownership: wing; open/unclaimed in this index. Check actual activity before edits.
+  Owner decision: rework within this same task and preserve the old candidate.
+  Retain `6165289ceb5e419a432a71e80ee568fff2f2c077` and its report as historical,
+  unqualified evidence. Start from current sources and the existing accepted scope;
+  do not overwrite current work with the old snapshot or rewrite its report to pass.
+  Keep all acceptance, checks, priority and live/publication restrictions unchanged.
+  This is planning only; no implementation session or runner is launched.
+  Partial delivery: local ec91584e integrates approved transparent Wing artwork
+  into app/icons, README/docs index and landing resources, not an invented banner.
+  Existing README editorial improvements remain preserved; logo integration does
+  not complete product voice or proof. No new APK/public-site delivery is claimed.
+  The refresh already clarifies acquisition/use and current-versus-planned wording. Existing simulation labels, stable anchors, trust/cost warnings
+  and qualification limits
+  remain. The older showcase captures are explicitly labeled; they were not
+  recaptured and do not prove current UI, Android SSH or Bot Chat acceptance.
+  Next action: align README, docs entry and beginner tutorial with the existing
+  landing promise and task-led hierarchy; then recapture the current synthetic
+  product story with the guarded producer. Keep original icon by default. Remaining
+  landing/shared-image/live acceptance stays open; preserve current queue order.
+  Touches: README.md, docs/README.md, docs/getting-started.md, site/, assets/readme/, scripts/generate_readme_assets.mjs, serve_web.mjs, test/tooling/, playwright/tests/regression/pages-landing.spec.mjs
+  Planner repair: reconcile the two prior Touches declarations into this one accepted allowlist, including the already-scoped docs index. Preserve the original candidate/report and current-source rework decision; no implementation, runner or publication action is authorized by this repair.

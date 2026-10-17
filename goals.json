@@ -5778,7 +5778,8 @@
       "tasks": [
         "LANDING-FIRST-REPLY",
         "LANDING-PAGES-QUALITY",
-        "LANDING-PRODUCT-PROOF"
+        "LANDING-PRODUCT-PROOF",
+        "LANDING-PRODUCT-PROOF-LIVE"
       ],
       "title": "Help existing Hermes users reach first reply through a credible accessible product landing page"
     },
@@ -6898,7 +6899,6 @@
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
       "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
-      "LANDING-PRODUCT-PROOF",
       "BACKEND-SSH-KEY-NATIVE",
       "CONNECTION-CRON-CANARY",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
@@ -6914,7 +6914,8 @@
       "VERIFY-SHELL-NATIVE-INPUT",
       "M2-DEVICE-QUALIFICATION",
       "VERIFY-M6-ANDROID-INTEGRATED",
-      "M1-MOBILE-AWAY-STATUS-LIVE"
+      "M1-MOBILE-AWAY-STATUS-LIVE",
+      "LANDING-PRODUCT-PROOF-LIVE"
     ]
   },
   "tasks": [
@@ -7304,16 +7305,6 @@
     },
     {
       "depends_on": [
-        "LANDING-FIRST-REPLY"
-      ],
-      "goal": "LANDING-ONBOARDING",
-      "id": "LANDING-PRODUCT-PROOF",
-      "section": "Next",
-      "status": "open",
-      "title": "Rebuild responsive product proof, hierarchy and truthful sharing"
-    },
-    {
-      "depends_on": [
         "M1-MOBILE-AWAY-STATUS"
       ],
       "goal": "M1",
@@ -7487,6 +7478,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M2-INODE-POLICY-EVIDENCE"
+    },
+    {
+      "depends_on": [
+        "LANDING-PRODUCT-PROOF"
+      ],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PRODUCT-PROOF-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for LANDING-PRODUCT-PROOF"
     },
     {
       "depends_on": [
@@ -8322,6 +8323,16 @@
       "section": "Done",
       "status": "done",
       "title": "Provide connection-first landing entry and exact API readiness guidance"
+    },
+    {
+      "depends_on": [
+        "LANDING-FIRST-REPLY"
+      ],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PRODUCT-PROOF",
+      "section": "Done",
+      "status": "done",
+      "title": "Rebuild responsive product proof, hierarchy and truthful sharing"
     },
     {
       "depends_on": [

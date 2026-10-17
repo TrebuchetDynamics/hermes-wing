@@ -340,11 +340,13 @@ class HermesApiChannel extends ChangeNotifier
     String? uncertainProfile,
     Set<(String, String)> uncertainSessions = const {},
     Future<void> Function(String?, String, bool)? persistForwardedRecovery,
+    bool Function()? canAccept,
   }) => _connectWithRecovery(
     baseUrl: baseUrl,
     apiKey: apiKey,
     deferSessionSelection: deferSessionSelection,
     onAcquire: onAcquire,
+    canAccept: canAccept,
     forwardedRunOwner: forwardedRunOwner,
     uncertainSession: uncertainSession,
     uncertainProfile: uncertainProfile,
@@ -362,6 +364,7 @@ class HermesApiChannel extends ChangeNotifier
     String? uncertainProfile,
     Set<(String, String)> uncertainSessions = const {},
     Future<void> Function(String?, String, bool)? persistForwardedRecovery,
+    bool Function()? canAccept,
   }) async {
     if (forwardedRunOwner != null &&
         !RegExp(r'^ssh-forward:[a-f0-9]{64}$').hasMatch(forwardedRunOwner)) {
@@ -372,8 +375,10 @@ class HermesApiChannel extends ChangeNotifier
     final recovery = _serveRecoveryGeneration + 1;
     final connection = _connectionGeneration;
     await _forgetServeRecovery();
+    // The caller's lease may retire before it owns any channel generation.
     if (recovery != _serveRecoveryGeneration ||
-        connection != _connectionGeneration) {
+        connection != _connectionGeneration ||
+        !(canAccept?.call() ?? true)) {
       return;
     }
     await _connect(
@@ -470,11 +475,31 @@ class HermesApiChannel extends ChangeNotifier
     if (!(canAccept?.call() ?? true)) return;
     final recovery = _serveRecoveryGeneration + 1;
     final connection = _connectionGeneration;
-    await _forgetServeRecovery();
-    if (recovery != _serveRecoveryGeneration ||
-        connection != _connectionGeneration) {
+    bool fenced() =>
+        recovery != _serveRecoveryGeneration ||
+        connection != _connectionGeneration;
+    try {
+      await _forgetServeRecovery();
+    } catch (_) {
+      // Storage detail stays private, and no credential is kept for Retry.
+      if (fenced() || !(canAccept?.call() ?? true)) return;
+      final disconnected = _disconnect();
+      final generation = _connectionGeneration;
+      await disconnected;
+      if (generation != _connectionGeneration ||
+          recovery != _serveRecoveryGeneration) {
+        return;
+      }
+      _setState(
+        const HermesChannelState(
+          status: HermesConnectionStatus.error,
+          isServeReadOnly: true,
+          errorMessage: 'Local serve read connection failed.',
+        ),
+      );
       return;
     }
+    if (fenced()) return;
     await _connectServeReads(
       baseUrl,
       credential,
@@ -488,6 +513,10 @@ class HermesApiChannel extends ChangeNotifier
       persistRecovery: persistRecovery,
     );
   }
+
+  // REST success only exposes explicit negotiation; it never authorizes a send.
+  bool get canEnableLocalServeChat =>
+      !_serveTransient || (_serveReader != null && _state.isConnected);
 
   Future<void> enableLocalServeChat() => _qualifyServeChat();
   Future<bool> restoreSavedLocalServeConversation() =>

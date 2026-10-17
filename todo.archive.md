@@ -6351,3 +6351,147 @@ Source section: Now / Next
   port replacement while retaining the durable saved host/profile/session. No
   implicit resend, approval, Stop or service restart; retain uncertain work until
   Agent readback. Android away/process-death proof belongs to its existing task.
+
+
+<!-- merged from origin/main 35eae410 -->
+
+### Parallel origin/main deliveries reconciled at merge
+
+Source section: Done (historical). These notes were recorded on `origin/main`
+while the cards above were closed locally. The merge kept the local recovery-store
+design; remote saved-destination settings, remembered host trust, serialized SSH
+teardown and their regressions were ported onto it. The remote profile/session
+pointer in the destination store is superseded by the host-key-bound
+`ManagedSshRecoveryStore`; its recovery regressions now exercise that store.
+
+- BACKEND-SSH-CONNECT (remote follow-through):
+  Disposed-controller follow-through: reject late Connect before forwarding or
+  credential acquisition and make disposal idempotent. The new panel regression
+  reproduced a successful post-disposal connection before the fix and now rejects
+  it without touching the forward or Agent channel. This bounded offline repair
+  leaves all native/durable acceptance and ticket-authenticated chat work open.
+  Teardown admission follow-through: Connect now rejects without acquiring fresh
+  credentials while cancellation is still retiring the Agent/forwarding lease.
+  Two regressions cover pending teardown and retry after success or failure.
+  Planner's call: fix this reproduced concurrent-retry collision before extending
+  forwarded chat; retain PARITY-LIVE-WORKFLOW's existing external gates separately.
+  No automatic retry or native/durable qualification is implied; parent stays open.
+  Unexpected-loss follow-through: an adopted tunnel's loss now uses that same
+  serialized cancellation path. Two deterministic regressions cover delayed Agent
+  retirement and production secure cleanup, rejecting fresh forwarding/credentials
+  until teardown settles and preserving deliberate retry afterward.
+  Planner's call: fix this reproduced retry race before extending forwarded chat;
+  skip live workflow gates already retained in PARITY-LIVE-WORKFLOW, not its
+  acceptance. Native/device/durable and authenticated chat proof remain open.
+  Forwarded chat follow-through: explicit Enable chat now negotiates the existing
+  fresh-ticket, exclusive-submit and approval-request contract on the owned
+  transient connection. REST and SSH success alone do not enable Send. Production
+  channel regressions cover captured-owner Send/approval/Stop, denied negotiation,
+  held qualification during loss/replacement and explicit uncertain-send recovery
+  without replay or ephemeral-port persistence. Planner's call: reuse that fixed
+  lifecycle, leaving native/live/full-app SSH and durable mapping/trust acceptance
+  open; PARITY-LIVE-WORKFLOW retains its separate external gates.
+  Remembered trust slice: [secure host pins](docs/security/managed-ssh-forward-contract.md#remembered-host-trust)
+  bind explicit first-use fingerprint review to the exact host text and SSH port.
+  Later matching keys reuse the readback-verified pin; changed keys, malformed pins
+  and storage failure block without overwrite or Agent adoption. No legacy slots,
+  credentials or forwarded origins are saved by this store. Planner's call: complete
+  this bounded durable trust outcome now, retaining the live authentication/provider
+  ceiling in PARITY-LIVE-WORKFLOW and native/full-app SSH in this existing parent.
+  Key rotation/reset remains unavailable; fixture recreation is not native relaunch.
+  Channel-owner-loss prerequisite: channel disconnect/replacement now retires the
+  adopted SSH lease through the existing cancellation admission barrier, without
+  disconnecting the replacement Agent. Two deterministic regressions reproduce
+  premature retry before the fix and cover held lease cleanup, no new credential
+  capture, late old completion and deliberate retry after cleanup. Planner's call:
+  repair this remaining teardown race before durable target/session recovery;
+  retain native/full-app qualification and the live gates in PARITY-LIVE-WORKFLOW.
+  Cancellation completion: concurrent unscoped cancel callers now join the owned
+  teardown and observe its success/failure, rather than return before the listener
+  closes. Stale attempt IDs remain inert; Connect stays blocked until settlement.
+  Planner's call: fix the reproduced premature completion in this existing SSH
+  lifecycle seam; keep PARITY-LIVE-WORKFLOW's external gates and this parent's
+  native/durable acceptance open. Four deterministic regressions cover delayed
+  and synchronous-listener cancellation, held cleanup and shared failure without
+  duplicate disconnect or lease close.
+  Adapter teardown follow-through: retain the low-level attempt until owned
+  cleanup settles, so concurrent/reentrant disconnect calls join that result and
+  Connect cannot acquire a replacement early. Two regressions reproduced reversed
+  completion and premature redial; a third covers synchronous socket-destroy
+  reentrancy during credential acquisition. Planner's call: repair this shared
+  forwarding prerequisite before durable recovery; keep the parent's native/live
+  acceptance and PARITY-LIVE-WORKFLOW's external gates open, not duplicated.
+  Saved-settings delivery: the production SSH form now offers explicit secure
+  Save/Use saved settings for the durable destination and API/serve choice, never
+  passwords, keys, Agent credentials or ephemeral forwarded origins. Loading
+  clears attempt secrets and performs no connection or mutation. Planner's call:
+  deliver this positive remembered-target path while retaining exact profile/session
+  recovery and native full-app acceptance here and in the existing disconnect task.
+  PARITY-LIVE-WORKFLOW retains its separate live access/provider-ceiling gates;
+  skip those unavailable external gates, not their acceptance. See the
+  [saved-settings contract](docs/security/managed-ssh-forward-contract.md#saved-destination-settings).
+  Same-process owner recovery: deliberate serve-mode SSH reconnect now restores
+  the last settled profile/session through the new authenticated lease even when
+  its local port changes. Destination identity includes host, SSH port, username,
+  Agent port and transport; changed settings cannot inherit another target's owner.
+  Recovery rereads canonical history and leaves chat disabled until explicit
+  negotiation; it never replays Send, approval or Stop. Planner's call: deliver
+  this positive reconnect path with the existing channel reader, not a second
+  domain store. PARITY-LIVE-WORKFLOW retains its unavailable external gates.
+  Saved-owner recovery: the existing secure destination slot now optionally retains
+  a settled serve profile/session for that exact explicitly saved destination.
+  Production Connect loads it under the attempt-generation fence, authenticates a
+  fresh lease and rereads canonical history; changed targets cannot inherit it.
+  No credential, local port, transcript or mutation is saved. Planner's call: extend
+  this existing record and reader rather than introduce a second domain store;
+  keep PARITY-LIVE-WORKFLOW's external gates and consumed budgets unchanged.
+  Recreated-controller/secure-store fixtures verify this offline behavior, not
+  actual process death, native secure storage or SSH authentication. Parent stays
+  open; abrupt exit can recover only the last successfully persisted selection.
+  Next action: qualify the saved-target and exact-owner journey through isolated
+  native full-app relaunch, then separately authorized real SSH/Linux/Android proof.
+  See [saved conversation pointer](docs/security/managed-ssh-forward-contract.md#saved-conversation-pointer).
+  Credential-lifetime prerequisite: the shared channel now retires serve read
+  credentials on disconnect and API replacement. Three deterministic regressions
+  prove that explicit serve Retry leaves the replacement origin/owner untouched
+  while preserving same-origin failed-read Retry. Planner's call: fix this
+  reproduced boundary defect before exposing tunneled serve selection; retain
+  the Android/native/durable acceptance and next action above. The existing
+  PARITY-LIVE-WORKFLOW task continues to hold live authentication/provider-ceiling
+  acceptance; no inference or new live target is required for this offline fix.
+  Adopted-cancellation prerequisite: explicit cancel and controller disposal now
+  retire the owned Agent connection before releasing its forwarding listener.
+  Planner's call: fix this reproduced stale-connected-state defect before Android
+  serve selection; retain the next action and native/durable acceptance above.
+  Three new deterministic regressions cover cancellation, disposal and replacement
+  during asynchronous teardown; the panel target passes 34 tests. Independent
+  native source review approved the source/test hashes. Parent remains open.
+  Cleanup-wait cancellation: shared API connection ownership is now published
+  before secure recovery cleanup awaits; cancellation/disposal fences late reads
+  and a replacement retains ownership. Three production-channel regressions cover
+  held storage cleanup. Planner's call: repair this reproduced cancellation gap
+  before Android transport enablement. Parent Android/native/durable acceptance
+  and next action remain open; no live inference or platform qualification claimed.
+  Serve cleanup prerequisite: explicit serve entry now claims its connection
+  generation before secure cleanup. Five production-channel regressions cover
+  disconnect, API/serve replacement, abandoned setup and sanitized storage failure
+  without credential Retry. Planner's call: fix the reproduced three-obsolete-read
+  race in this shared seam before Android selection; retain the same next action
+  and all Android/native/durable acceptance above. Independent source review
+  approves the exact Dart hashes; focused final qualification is recorded separately.
+  Dependencies: DOC-BACKEND-CONTRACT.
+  Section: Next.
+  Ownership: unclaimed in this index. Verify live tracker/continuation leases.
+  Current implementation: native Dart forwarding and password-form integration
+  now exist. Reuse `lib/core/hermes/ssh/` and the app-scoped controller rather than
+  rebuild the adapter. Native full-app qualification and durable
+  SSH relaunch remain open. Key UI now has passing production-control regressions;
+  BACKEND-SSH-KEY-NATIVE owns the remaining platform qualification. This task is not closed by terminal SSH or widget-only evidence.
+- WING-TASK-408 (remote compact follow-through):
+  Compact follow-through adds Settings to the existing Chat overflow menu, including
+  active saved-contact streams. Tab/Enter selects it after opening the menu; Close,
+  Escape and framework Back restore the exact retained Chat/draft/focus. All 24
+  production HTTP/SSE GTK journeys pass at 390/1280 logical pixels and 200% text,
+  including rendered compact saved-host replacement, with 77 focused regressions
+  and analysis passing. Independent native-source review approved. See
+  [compact native evidence](docs/quality/chat-workspace-overlay-native.md#compact-settings-during-active-saved-contact-chat).

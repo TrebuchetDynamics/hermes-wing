@@ -489,6 +489,8 @@ void main() {
       expect(controller.recoveryTarget?.uncertain, false);
       channel.clearActiveSession();
       await channel.disconnect();
+      // Connect stays closed until the retired lease finishes teardown.
+      await controller.cancel();
       expect(await connectApi(), true);
       expect(channel.state.activeSessionId, isNull);
       await channel.selectSession('remembered');

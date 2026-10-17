@@ -1412,7 +1412,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 tip: WingTip.voice,
                 text: AppLocalizations.of(context).tipVoice,
               ),
-            if (state.isServeReadOnly && channel is HermesApiChannel)
+            if (state.isServeReadOnly &&
+                channel is HermesApiChannel &&
+                channel.canEnableLocalServeChat)
               TextButton(
                 key: const ValueKey('hermes-local-serve-chat'),
                 onPressed: state.isSelectingProfile

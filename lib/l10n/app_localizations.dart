@@ -94,6 +94,60 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @managedSshSaveTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Save SSH settings'**
+  String get managedSshSaveTarget;
+
+  /// No description provided for @managedSshLoadTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Use saved SSH settings'**
+  String get managedSshLoadTarget;
+
+  /// No description provided for @managedSshTargetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save one SSH destination and Agent transport on this device. Serve mode also remembers the last settled profile and conversation for this saved destination. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.'**
+  String get managedSshTargetBody;
+
+  /// No description provided for @managedSshTargetSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH settings saved securely. Authentication is still required.'**
+  String get managedSshTargetSaved;
+
+  /// No description provided for @managedSshTargetLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved SSH settings loaded. Enter credentials, then Connect.'**
+  String get managedSshTargetLoaded;
+
+  /// No description provided for @managedSshTargetMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved SSH settings on this device.'**
+  String get managedSshTargetMissing;
+
+  /// No description provided for @managedSshTargetFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH settings could not be saved or loaded securely.'**
+  String get managedSshTargetFailure;
+
+  /// No description provided for @managedSshServeReads.
+  ///
+  /// In en, this message translates to:
+  /// **'Read Hermes serve through SSH'**
+  String get managedSshServeReads;
+
+  /// No description provided for @managedSshServeReadsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the host-provided serve session token, not API_SERVER_KEY. Reads profiles, sessions and history. Chat requires separate ticket authentication. SSH settings can be saved separately; credentials and automatic restoration are not saved. No automatic protocol fallback.'**
+  String get managedSshServeReadsBody;
+
   /// No description provided for @localServeReadsLabel.
   ///
   /// In en, this message translates to:
@@ -847,13 +901,25 @@ abstract class AppLocalizations {
   /// No description provided for @managedSshHostKeyBody.
   ///
   /// In en, this message translates to:
-  /// **'Compare this fingerprint with the host\'s SSH key before trusting this connection. Cancel if it differs or you cannot verify it.'**
+  /// **'Compare this fingerprint with the host\'s SSH key before trusting it. Wing will remember this host and SSH port securely and block changed keys. Cancel if you cannot verify it.'**
   String get managedSshHostKeyBody;
+
+  /// No description provided for @managedSshHostKeyChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The SSH host key differs from the remembered key. Connection blocked. Verify the change with the host administrator; Wing cannot replace a remembered key here.'**
+  String get managedSshHostKeyChanged;
+
+  /// No description provided for @managedSshHostTrustUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH host trust could not be read or saved securely. Connection blocked. Restore secure storage access before trying again.'**
+  String get managedSshHostTrustUnavailable;
 
   /// No description provided for @managedSshTrustAction.
   ///
   /// In en, this message translates to:
-  /// **'Trust this connection'**
+  /// **'Trust and remember host'**
   String get managedSshTrustAction;
 
   /// No description provided for @managedSshFailed.

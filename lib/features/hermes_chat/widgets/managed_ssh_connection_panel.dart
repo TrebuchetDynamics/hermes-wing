@@ -8,6 +8,7 @@ import '../ssh_keys/managed_ssh_generated_key_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/hermes/ssh/managed_ssh.dart';
+import '../../../core/hermes/ssh/secure_managed_ssh_host_trust_store.dart';
 import '../providers/managed_ssh_connection_controller.dart';
 import 'localized_managed_ssh_connection_form.dart';
 import 'managed_ssh_host_key_dialog.dart';
@@ -49,24 +50,49 @@ class _ManagedSshConnectionPanelState
     });
     final previousAttempt = controller.attemptId;
     _attemptId = null;
+    ManagedSshFailure? trustFailure;
+    String failureMessage(ManagedSshFailure? failure) => switch (failure) {
+      ManagedSshFailure.hostKeyChanged => strings.managedSshHostKeyChanged,
+      ManagedSshFailure.hostTrustUnavailable =>
+        strings.managedSshHostTrustUnavailable,
+      ManagedSshFailure.authentication =>
+        strings.managedSshAuthenticationFailed,
+      _ => strings.managedSshFailed,
+    };
+    bool isCurrent() =>
+        mounted &&
+        generation == _generation &&
+        controller.attemptId == previousAttempt + 1;
     try {
       final connecting = controller.connectSsh(
         input,
         verifyHostKey: (config, key) async {
-          if (!mounted || generation != _generation) return false;
-          final accepted = await reviewManagedSshHostKey(
-            context,
-            host: config.host,
-            port: config.sshPort,
-            algorithm: key.algorithm,
-            fingerprint:
-                'SHA256:${base64.encode(key.sha256).replaceAll('=', '')}',
-            title: strings.managedSshHostKeyTitle,
-            explanation: strings.managedSshHostKeyBody,
-            cancelLabel: strings.cancelAction,
-            trustLabel: strings.managedSshTrustAction,
-          );
-          return mounted && generation == _generation && accepted;
+          if (!isCurrent()) return false;
+          try {
+            return await const SecureManagedSshHostTrustStore().verify(
+              config,
+              key,
+              isCurrent: isCurrent,
+              review: () async {
+                if (!isCurrent()) return false;
+                return reviewManagedSshHostKey(
+                  context,
+                  host: config.host,
+                  port: config.sshPort,
+                  algorithm: key.algorithm,
+                  fingerprint:
+                      'SHA256:${base64.encode(key.sha256).replaceAll('=', '')}',
+                  title: strings.managedSshHostKeyTitle,
+                  explanation: strings.managedSshHostKeyBody,
+                  cancelLabel: strings.cancelAction,
+                  trustLabel: strings.managedSshTrustAction,
+                );
+              },
+            );
+          } on ManagedSshException catch (error) {
+            trustFailure = error.failure;
+            return false;
+          }
         },
       );
       if (controller.attemptId != previousAttempt) {
@@ -78,16 +104,15 @@ class _ManagedSshConnectionPanelState
         _adopted = true;
         widget.onConnected?.call();
       } else {
-        setState(() => _error = strings.managedSshFailed);
+        setState(() => _error = failureMessage(trustFailure));
       }
     } catch (error) {
       if (mounted && generation == _generation) {
         setState(
-          () => _error =
-              error is ManagedSshException &&
-                  error.failure == ManagedSshFailure.authentication
-              ? strings.managedSshAuthenticationFailed
-              : strings.managedSshFailed,
+          () => _error = failureMessage(
+            trustFailure ??
+                (error is ManagedSshException ? error.failure : null),
+          ),
         );
       }
     } finally {

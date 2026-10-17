@@ -3923,6 +3923,7 @@
         "FIX-GATEWAY-KEYBOARD-390",
         "PARITY-MAESTRO-ANDROID",
         "PARITY-MAESTRO-ANDROID-DEVICE",
+        "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
         "PARITY-NATIVE-LINUX",
         "PARITY-OFFICIAL-MATRIX"
       ],
@@ -6851,7 +6852,6 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "PARITY-MAESTRO-ANDROID-DEVICE",
       "PARITY-OFFICIAL-MATRIX",
       "CONNECTION-OWNER-RECONNECT",
       "CONNECTION-LINK-REMOVAL",
@@ -6915,7 +6915,8 @@
       "M2-DEVICE-QUALIFICATION",
       "VERIFY-M6-ANDROID-INTEGRATED",
       "M1-MOBILE-AWAY-STATUS-LIVE",
-      "LANDING-PRODUCT-PROOF-LIVE"
+      "LANDING-PRODUCT-PROOF-LIVE",
+      "PARITY-MAESTRO-ANDROID-DEVICE-LIVE"
     ]
   },
   "tasks": [
@@ -7336,14 +7337,6 @@
     {
       "depends_on": [],
       "goal": "PARITY",
-      "id": "PARITY-MAESTRO-ANDROID-DEVICE",
-      "section": "Next",
-      "status": "open",
-      "title": "Execute repaired approvals/Stop/reconnect and attachment-owner-race flows on the enrolled disposable Android target, then qualify remaining mapped features"
-    },
-    {
-      "depends_on": [],
-      "goal": "PARITY",
       "id": "PARITY-NATIVE-LINUX",
       "section": "Next",
       "status": "open",
@@ -7516,6 +7509,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-LIVE-WORKFLOW"
+    },
+    {
+      "depends_on": [
+        "PARITY-MAESTRO-ANDROID-DEVICE"
+      ],
+      "goal": "PARITY",
+      "id": "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITY-MAESTRO-ANDROID-DEVICE"
     },
     {
       "depends_on": [
@@ -8515,6 +8518,14 @@
       "section": "Done",
       "status": "done",
       "title": "Execute and repair mapped Android Maestro fixture journeys on a disposable QA target"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITY-MAESTRO-ANDROID-DEVICE",
+      "section": "Done",
+      "status": "done",
+      "title": "Execute repaired approvals/Stop/reconnect and attachment-owner-race flows on the enrolled disposable Android target, then qualify remaining mapped features"
     },
     {
       "depends_on": [

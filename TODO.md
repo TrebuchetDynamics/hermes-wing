@@ -295,40 +295,6 @@ needs its own exact capability, ownership and qualification evidence.
   compact onboarding; unavailable operations and broader acceptance remain open.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
-- [ ] **PARITY-MAESTRO-ANDROID-DEVICE** —  Execute the repaired
-  approval/Stop/reconnect and deferred attachment-owner-race journeys in the
-  owner-selected Waydroid Android environment, then qualify remaining mapped flows.
-  Goal: PARITY
-Section: Next.
-  Payoff: prove mobile control outcomes rather than substitute widget counters.
-  Sources: [fixture receipt](docs/quality/android-approval-attachment-fixture.md),
-  [matrix](docs/product/hermes-desktop-feature-matrix.md) and
-  [runbook](docs/runbooks/desktop-feature-qualification.md).
-  Scope: existing QA wrapper/fixtures and nearest regressions; add missing assertions
-  and the smallest exposed Wing fixes. Exclude live inference, Agent edits, personal
-  app resets, authentication bypass and privileged service/network changes.
-  Acceptance: successful current ADB authentication, reviewed disposable target and
-  `.qa` package, source/build/flow fingerprints, actual Maestro launch and per-flow
-  exits. Prove three sends, two decisions, one Stop and unchanged recovery counters;
-  prove late attachment rejection across both session owners and a usable next pick.
-  Qualify the retained earlier-history tail separately. Include fresh welcome,
-  keyboard Back/cancel, sanitized denial, explicit retry and saved-owner relaunch
-  against the exact disposable Android artifact. The
-  [Linux welcome recovery](docs/quality/desktop-welcome-recovery.md) does not qualify Android.
-  Record other mapped journeys
-  as pass/fail/unsupported/not-run, without closing positive gaps through unavailable
-  states. Run relevant format/analyze/tests for changed Dart.
-  Default applied: use Waydroid now, with the isolated `.qa` app. Prepare normal
-  authenticated ADB connectivity and missing user-space tools within this target;
-  preserve host trust, shared services and the paired app. Empty ADB inventory is
-  engineering setup, not a request for the owner to supply a phone. Waydroid
-  receipts do not close physical-device M2 acceptance. No privileged service
-  repair, authentication bypass or unrelated device adoption is authorized.
-  Dependencies: none. Ownership: unclaimed in this index; check tracker.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Follow docs/runbooks/desktop-feature-qualification.md with the existing scripts/run_android_maestro_features.sh, authenticated Waydroid target and matching isolated .qa artifact. Capture per-flow exits, source/build fingerprints and exact send/decision/Stop counters; preserve the paired app and record physical/TalkBack/live-provider gaps separately.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
-
 - [ ] **PARITY-OFFICIAL-MATRIX** — Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons
   Replace the withdrawn feature mapping with official-source feature groups and
   per-platform acceptance. Retain Wing receipts as behavior evidence only.
@@ -1680,4 +1646,18 @@ does not mark any check passed or authorize live actions.
   - Exact GitHub rendering/sanitization, real social-platform card cropping/cache behavior, public artifact freshness and consented human first-reply/onboarding review require their respective authorized environments. Local metadata and Markdown approximations are not those results. Broader landing/share parent acceptance must not be closed from this local docs/proof commit alone.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: LANDING-PRODUCT-PROOF.
+  Status: open
+
+- [ ] PARITY-MAESTRO-ANDROID-DEVICE-LIVE — Live checks for PARITY-MAESTRO-ANDROID-DEVICE
+  Scope: Run the live checks the offline work for PARITY-MAESTRO-ANDROID-DEVICE left pending.
+  Acceptance: Each check passes on the real target:
+  - Normal authenticated ADB reachability for the selected Waydroid target; privileged diagnostics/repair, if required, need separate authority. No substitute phone required.
+  - Review disposable target and installed .qa package; capture exact source/build/APK/flow fingerprints; actual Maestro launches and individual device exits.
+  - Prove 3 sends, 2 decisions, 1 Stop, unchanged recovery counters and sess_1 retention; qualify earlier-history tail separately.
+  - Prove late attachment rejection across sess_1/sess_2 and usable next pick.
+  - Exact-artifact Android fresh welcome, keyboard Back/cancel, sanitized denial, explicit retry and saved-owner relaunch.
+  - Other mapped Android journeys, without substituting unavailable-state checks for positive gaps.
+  - Separate physical-device M2, TalkBack, native picker/IME, live Agent/provider and authoritative run qualification.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITY-MAESTRO-ANDROID-DEVICE.
   Status: open

@@ -6244,3 +6244,41 @@ Source section: Now / Next
   landing/shared-image/live acceptance stays open; preserve current queue order.
   Touches: README.md, docs/README.md, docs/getting-started.md, site/, assets/readme/, scripts/generate_readme_assets.mjs, serve_web.mjs, test/tooling/, playwright/tests/regression/pages-landing.spec.mjs
   Planner repair: reconcile the two prior Touches declarations into this one accepted allowlist, including the already-scoped docs index. Preserve the original candidate/report and current-source rework decision; no implementation, runner or publication action is authorized by this repair.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **PARITY-MAESTRO-ANDROID-DEVICE** —  Execute the repaired
+  approval/Stop/reconnect and deferred attachment-owner-race journeys in the
+  owner-selected Waydroid Android environment, then qualify remaining mapped flows.
+  Goal: PARITY
+Section: Next.
+  Payoff: prove mobile control outcomes rather than substitute widget counters.
+  Sources: [fixture receipt](docs/quality/android-approval-attachment-fixture.md),
+  [matrix](docs/product/hermes-desktop-feature-matrix.md) and
+  [runbook](docs/runbooks/desktop-feature-qualification.md).
+  Scope: existing QA wrapper/fixtures and nearest regressions; add missing assertions
+  and the smallest exposed Wing fixes. Exclude live inference, Agent edits, personal
+  app resets, authentication bypass and privileged service/network changes.
+  Acceptance: successful current ADB authentication, reviewed disposable target and
+  `.qa` package, source/build/flow fingerprints, actual Maestro launch and per-flow
+  exits. Prove three sends, two decisions, one Stop and unchanged recovery counters;
+  prove late attachment rejection across both session owners and a usable next pick.
+  Qualify the retained earlier-history tail separately. Include fresh welcome,
+  keyboard Back/cancel, sanitized denial, explicit retry and saved-owner relaunch
+  against the exact disposable Android artifact. The
+  [Linux welcome recovery](docs/quality/desktop-welcome-recovery.md) does not qualify Android.
+  Record other mapped journeys
+  as pass/fail/unsupported/not-run, without closing positive gaps through unavailable
+  states. Run relevant format/analyze/tests for changed Dart.
+  Default applied: use Waydroid now, with the isolated `.qa` app. Prepare normal
+  authenticated ADB connectivity and missing user-space tools within this target;
+  preserve host trust, shared services and the paired app. Empty ADB inventory is
+  engineering setup, not a request for the owner to supply a phone. Waydroid
+  receipts do not close physical-device M2 acceptance. No privileged service
+  repair, authentication bypass or unrelated device adoption is authorized.
+  Dependencies: none. Ownership: unclaimed in this index; check tracker.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Follow docs/runbooks/desktop-feature-qualification.md with the existing scripts/run_android_maestro_features.sh, authenticated Waydroid target and matching isolated .qa artifact. Capture per-flow exits, source/build fingerprints and exact send/decision/Stop counters; preserve the paired app and record physical/TalkBack/live-provider gaps separately.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/

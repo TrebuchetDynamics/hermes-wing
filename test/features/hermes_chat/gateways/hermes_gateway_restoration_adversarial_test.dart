@@ -228,6 +228,128 @@ void main() {
     },
   );
 
+  test(
+    'queued profile choice cannot survive a host ownership roundtrip',
+    () async {
+      final h = RestorationHarness();
+      addTearDown(h.dispose);
+      await h.directory.start();
+      final entered = Completer<void>();
+      final release = Completer<String?>();
+      h.onRead = (uri) async {
+        if (uri.path == '/api/sessions' &&
+            uri.queryParameters['profile'] == 'other' &&
+            !entered.isCompleted) {
+          entered.complete();
+          return release.future;
+        }
+        return null;
+      };
+      const other = HermesProfile(
+        id: 'other',
+        displayName: 'Other',
+        revision: 'r',
+      );
+      final old = h.directory.selectProfileOnActiveGateway(
+        'other',
+        discoveredProfile: other,
+      );
+      final oldRejected = expectLater(old, throwsStateError);
+      await entered.future;
+      final queued = h.directory.selectProfileOnActiveGateway(
+        'other',
+        discoveredProfile: other,
+      );
+      Object? queuedError;
+      final queuedDone = queued.catchError((Object error) {
+        queuedError = error;
+      });
+      const replacement = GatewayContactId(
+        gatewayId: 'beta',
+        profileId: 'coder',
+      );
+      await h.directory.activate(replacement, preferredSessionId: 'older-A');
+      await h.directory.activate(
+        target.contactId,
+        preferredSessionId: 'older-A',
+      );
+      final reads = List.of(h.reads);
+      release.complete(null);
+      await oldRejected;
+      await queuedDone;
+      expect(queuedError, isStateError);
+      expect(h.reads, reads);
+      expect(h.directory.activeContactId, target.contactId);
+      expect(h.channel.state.connectedBaseUrl, 'https://alpha.example');
+      expect(h.channel.state.selectedProfileId, 'coder');
+      expect(h.channel.state.activeSessionId, 'older-A');
+      expect(h.channel.state.activeMessages.single.id, 'canonical-A');
+      expect(h.cache.selection?.contactId, target.contactId);
+      expect(h.cache.selection?.sessionId, 'older-A');
+      expect(h.mutations, isEmpty);
+    },
+  );
+
+  test(
+    'late profile completion cannot reopen in-flight restoration Retry',
+    () async {
+      final h = RestorationHarness();
+      addTearDown(h.dispose);
+      await h.directory.start();
+      final profileEntered = Completer<void>();
+      final profileRelease = Completer<String?>();
+      final historyEntered = Completer<void>();
+      final historyRelease = Completer<String?>();
+      h.onRead = (uri) async {
+        if (uri.path == '/api/sessions' &&
+            uri.queryParameters['profile'] == 'other') {
+          profileEntered.complete();
+          return profileRelease.future;
+        }
+        if (uri.path == '/api/sessions/older-A/messages' &&
+            !historyEntered.isCompleted) {
+          historyEntered.complete();
+          return historyRelease.future;
+        }
+        return null;
+      };
+      final oldSelection = h.directory.selectProfileOnActiveGateway(
+        'other',
+        discoveredProfile: const HermesProfile(
+          id: 'other',
+          displayName: 'Other',
+          revision: 'r',
+        ),
+      );
+      final rejected = expectLater(oldSelection, throwsStateError);
+      await profileEntered.future;
+      final recovery = h.directory.activate(
+        target.contactId,
+        preferredSessionId: target.sessionId,
+      );
+      await historyEntered.future;
+      profileRelease.complete(null);
+      await rejected;
+      final stillActivating = h.directory.isActivating;
+      final reads = List.of(h.reads);
+      await h.directory.retrySessionRestoration();
+      final readsAfterRetry = List.of(h.reads);
+      historyRelease.complete(null);
+      await recovery;
+      expect(stillActivating, isTrue);
+      expect(readsAfterRetry, reads);
+      expect(h.directory.isActivating, isFalse);
+      expect(h.directory.activeContactId, target.contactId);
+      expect(h.channel.state.connectedBaseUrl, 'https://alpha.example');
+      expect(h.channel.state.selectedProfileId, 'coder');
+      expect(h.channel.state.activeSessionId, 'older-A');
+      expect(h.channel.state.activeMessages.single.id, 'canonical-A');
+      expect(h.cache.selection?.contactId, target.contactId);
+      expect(h.cache.selection?.sessionId, 'older-A');
+      expect(h.mutations, isEmpty);
+    },
+  );
+
   for (final phase in ['metadata', 'history']) {
     for (final action in [
       'directory',

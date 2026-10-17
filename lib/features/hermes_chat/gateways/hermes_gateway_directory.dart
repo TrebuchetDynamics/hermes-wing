@@ -660,11 +660,22 @@ class HermesGatewayDirectory extends ChangeNotifier
     HermesProfile? discoveredProfile,
   }) async {
     supersedeSessionRestoration();
+    final generation = _activationGeneration;
+    final gatewayId = _activeContactId?.gatewayId;
     final predecessor = _profileSelectionTail;
     final release = Completer<void>();
     _profileSelectionTail = release.future;
     await predecessor;
     try {
+      // Queue time belongs to the original connection intent, even when the
+      // user leaves and later returns to the same host/profile strings.
+      if (_disposed ||
+          generation != _activationGeneration ||
+          _activeContactId?.gatewayId != gatewayId) {
+        throw StateError(
+          'The active gateway changed while selecting the profile.',
+        );
+      }
       final currentId = _activeContactId;
       if (currentId == null) {
         throw StateError('Select a gateway before selecting a profile.');
@@ -682,7 +693,6 @@ class HermesGatewayDirectory extends ChangeNotifier
         throw StateError('Hermes profile "$profileId" is not available.');
       }
 
-      final generation = _activationGeneration;
       _isActivating = true;
       await _activeChannel.selectProfile(
         profileId,
@@ -721,7 +731,9 @@ class HermesGatewayDirectory extends ChangeNotifier
       await _rememberActiveSelection();
       notifyListeners();
     } finally {
-      _isActivating = false;
+      if (!_disposed && generation == _activationGeneration) {
+        _isActivating = false;
+      }
       release.complete();
     }
   }

@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:04:17Z
 - Answer: Fix DOC-VOICE-QUALIFICATION's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
+
+- Task: DOC-PARITY-TAB-CONTRACT — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
+- Needs: worker reported a blocker: Coordinator must widen Touches to include lib/l10n/app_en.arb, lib/l10n/app_localizations.dart and lib/l10n/app_localizations_en.dart. The required explicit close/Stop recovery needs localized explanations distinguishing closing presentation from stopping Agent work, unavailable Stop, and an unconfirmed Stop/close outcome. Source inspection found generic Close/Stop actions and a reconnect-before-r…
+- Since: 2026-10-17T17:00:29Z
+- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-BACKEND-SSH-CONNECT — USER_DECISION — effort investigate — unblocks 1
 
 - Task: BACKEND-SSH-CONNECT — Goal: REMOTE-BACKENDS. Complete and qualify the

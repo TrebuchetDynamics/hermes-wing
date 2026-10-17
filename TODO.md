@@ -256,7 +256,8 @@ Section: Next.
   Knowledge mapping: [official bootstrap/pane/ownership/replay/Stop findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Map only semantically traced outcomes; mark controller/plugin imports and deeper settings/IPC/rollback/Projects/tool/slash/accessibility gaps as unverified. Inspected upstream tests and graph edges do not advance runtime cells.
   Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Ownership: unclaimed.
   Checks: Pin the read-only official Agent/Desktop checkout with `git rev-parse HEAD`; recheck every mapped feature source and verification path, run affected existing matrix/tooling tests with `flutter test --no-pub test/tooling/`, validate changed JSON and Markdown targets, then `git diff --check`. Source mapping cannot advance Linux/Android runtime cells.
-  Touches: docs/product/hermes-desktop-feature-matrix.md, docs/quality/, test/tooling/
+  Touches: docs/product/hermes-desktop-feature-matrix.md, docs/quality/, test/tooling/, docs/product/hermes-desktop-feature-matrix.json
+  Touches widened by the runner from worker evidence: docs/product/hermes-desktop-feature-matrix.json
 
 
 - [ ] **CONNECTION-OWNER-RECONNECT** —  Restore the same

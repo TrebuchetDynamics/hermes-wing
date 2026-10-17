@@ -34,13 +34,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T17:00:29Z
 - Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
-### Q-BACKEND-SSH-CONNECT — USER_DECISION — effort investigate — unblocks 1
-
-- Task: BACKEND-SSH-CONNECT — Goal: REMOTE-BACKENDS. Complete and qualify the
-- Needs: integration validation failed or changed the integration tree
-- Since: 2026-10-17T17:48:23Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/BACKEND-SSH-CONNECT/), then rescope or split BACKEND-SSH-CONNECT in its TODO.md entry. The runner reruns it when the entry changes.
-
 ### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort investigate — unblocks 1
 
 - Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link

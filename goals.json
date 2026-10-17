@@ -7053,16 +7053,6 @@
       "title": "Implement owner-safe managed SSH disconnect and reconnect"
     },
     {
-      "depends_on": [
-        "DOC-M2-CPU-ENVELOPE-PROOF"
-      ],
-      "goal": "M2",
-      "id": "DOC-M2-INODE-POLICY-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Assess the additional scratch inode-policy prerequisite"
-    },
-    {
       "depends_on": [],
       "goal": "M3",
       "id": "DOC-M3-CONTRACT-CHECKPOINT",
@@ -7867,6 +7857,16 @@
       "section": "Done",
       "status": "done",
       "title": "Validate canonical history response and compaction lineage before recovery settlement"
+    },
+    {
+      "depends_on": [
+        "DOC-M2-CPU-ENVELOPE-PROOF"
+      ],
+      "goal": "M2",
+      "id": "DOC-M2-INODE-POLICY-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Assess the additional scratch inode-policy prerequisite"
     },
     {
       "depends_on": [

@@ -5520,3 +5520,33 @@ Source section: Now / Next
   workspace activity before adoption; this documentation pass assigns no worker.
 
 <!-- End archived WING-TASK-407. -->
+
+- [x] **DOC-M2-INODE-POLICY-EVIDENCE** — Goal: M2. Section: Next. Assess the additional scratch
+  inode-policy prerequisite. Payoff: preserve the separate admission obligation
+  even if the conditional CPU proof supplies a finite envelope.
+  Sources: [unchanged prerequisites](docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md#outcome-and-exactly-one-conditional-next-proof-seam)
+  and [synthetic contract](docs/quality/2026-10-06-m2-synthetic-isolation-contract.md).
+  Scope: source-only inode-accounting and descendant/cleanup policy review.
+  Exclude adapter implementation, control execution, APKs, provisioning, private
+  state, runtime activation and authority or limit changes.
+  Acceptance: map the proposed additional inode policy to a reviewed bounded
+  enforcement contract or UNAVAILABLE. Do not equate CPU proof with inode,
+  immutable custody, cleanup or Android qualification. M2 remains unverified.
+  Checks: source-only review of the cited predecessor contract, its proposed inode
+  accounting and descendant/cleanup boundaries; document the fixed source and
+  reviewed-contract or UNAVAILABLE outcome; `git diff --check` and document-link
+  validation. These are required review checks, not runtime execution evidence.
+  Dependencies: DOC-M2-CPU-ENVELOPE-PROOF.
+  Ownership: unclaimed here; verify tracker and continuation leases first.
+  Planner decision: fix the stale queue placement, not the isolation mechanism.
+  The predecessor is done and this existing task authorizes source-only review;
+  no owner choice, new hardware or execution rights are needed to assess it.
+  Move this body to Next, preserving other task order and every safety/admission
+  limit. A completed CPU assessment does not prove a usable CPU bound or approve
+  the inode policy.  Next action: review the proposed policy and record either its
+  bounded contract or precise UNAVAILABLE result; do not implement/run controls.
+  Completion: source-only review delivered in local commit `0f1fd1ef`; see
+  [fixed-source assessment](docs/quality/2026-10-06-m2-inode-policy-evidence.md).
+  Outcome: UNAVAILABLE / `scratch_inode_policy_unavailable`. Two predecessor
+  source hashes, four local links/anchors and whitespace checks passed. No
+  inode control ran, no limits changed, and physical Android/M2 remain unverified.

@@ -13,205 +13,138 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T05:39:34Z
 - Answer: If no one is working on CONNECTION-LINK-REMOVAL, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-ACCOUNT-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-ACCOUNT-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-ACCOUNT-CONTRACT — Goal: ACCOUNT. Section: Next. Trace one provider OAuth acquisition contract.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-ACCOUNT-CONTRACT — Trace one provider OAuth acquisition contract.
+- Needs: DOC-ACCOUNT-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-ACCOUNT-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-ACCOUNT-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-ARTIFACT-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-ARTIFACT-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-ARTIFACT-CONTRACT — Goal: ARTIFACTS. Section: Next. Trace one bounded Agent artifact retrieval operation.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-ARTIFACT-CONTRACT — Trace one bounded Agent artifact retrieval operation.
+- Needs: DOC-ARTIFACT-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-ARTIFACT-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-ARTIFACT-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M3-CONTRACT-CHECKPOINT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M3-CONTRACT-CHECKPOINT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M3-CONTRACT-CHECKPOINT — Goal: M3. Section: Next. Map the supported enrollment
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M3-CONTRACT-CHECKPOINT — Map the supported enrollment
+- Needs: DOC-M3-CONTRACT-CHECKPOINT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M3-CONTRACT-CHECKPOINT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M3-CONTRACT-CHECKPOINT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M3-PROJECT-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M3-PROJECT-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M3-PROJECT-CONTRACT — Goal: M3-PROJECT. Section: Next. Trace one authoritative Project creation operation.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M3-PROJECT-CONTRACT — Trace one authoritative Project creation operation.
+- Needs: DOC-M3-PROJECT-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M3-PROJECT-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M3-PROJECT-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M3-PROVIDER-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M3-PROVIDER-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M3-PROVIDER-CONTRACT — Goal: M3-PROVIDER. Section: Next. Recheck the existing-profile credential replacement contract.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M3-PROVIDER-CONTRACT — Recheck the existing-profile credential replacement contract.
+- Needs: DOC-M3-PROVIDER-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M3-PROVIDER-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M3-PROVIDER-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M4-CONTRACT-CHECKPOINT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M4-CONTRACT-CHECKPOINT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M4-CONTRACT-CHECKPOINT — Goal: M4-DISCOVER. Section: Next.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M4-CONTRACT-CHECKPOINT — Discover and install profile-targeted skills through exact contracts
+- Needs: DOC-M4-CONTRACT-CHECKPOINT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M4-CONTRACT-CHECKPOINT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M4-CONTRACT-CHECKPOINT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M4-KANBAN-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M4-KANBAN-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M4-KANBAN-CONTRACT — Goal: M4-KANBAN. Section: Next. Trace one bounded Project board read.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M4-KANBAN-CONTRACT — Trace one bounded Project board read.
+- Needs: DOC-M4-KANBAN-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M4-KANBAN-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M4-KANBAN-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M4-MCP-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M4-MCP-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M4-MCP-CONTRACT — Goal: M4-MCP. Section: Next. Trace one toolset enable/disable contract.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M4-MCP-CONTRACT — Trace one toolset enable/disable contract.
+- Needs: DOC-M4-MCP-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M4-MCP-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M4-MCP-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M4-MEMORY-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M4-MEMORY-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M4-MEMORY-CONTRACT — Goal: M4-MEMORY. Section: Next. Trace one bounded profile-memory read.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M4-MEMORY-CONTRACT — Trace one bounded profile-memory read.
+- Needs: DOC-M4-MEMORY-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M4-MEMORY-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M4-MEMORY-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M4-PLATFORM-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M4-PLATFORM-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M4-PLATFORM-CONTRACT — Goal: M4-PLATFORMS. Section: Next. Trace one messaging-platform status/admin contract.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M4-PLATFORM-CONTRACT — Trace one messaging-platform status/admin contract.
+- Needs: DOC-M4-PLATFORM-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M4-PLATFORM-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M4-PLATFORM-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-M4-SCHEDULE-CONTRACT — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M4-SCHEDULE-CONTRACT — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-M4-SCHEDULE-CONTRACT — Goal: M4-SCHEDULES. Section: Next. Trace one schedule pause/resume operation.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-M4-SCHEDULE-CONTRACT — Trace one schedule pause/resume operation.
+- Needs: DOC-M4-SCHEDULE-CONTRACT is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-M4-SCHEDULE-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-M4-SCHEDULE-CONTRACT, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-DOC-NATIVE-DESIGN-REVIEW — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-NATIVE-DESIGN-REVIEW — USER_DECISION — effort quick — unblocks 1
 
-- Task: DOC-NATIVE-DESIGN-REVIEW — Goal: NATIVE-INTEGRATION. Section: Next.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: DOC-NATIVE-DESIGN-REVIEW — Review bounded host-local integration before privileged implementation
+- Needs: DOC-NATIVE-DESIGN-REVIEW is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix DOC-NATIVE-DESIGN-REVIEW's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on DOC-NATIVE-DESIGN-REVIEW, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-FILES-TERMINAL-BROWSE — USER_DECISION — effort decision — unblocks 2
+### Q-FILES-TERMINAL-BROWSE — USER_DECISION — effort quick — unblocks 1
 
-- Task: FILES-TERMINAL-BROWSE — Goal: PARITY. Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: FILES-TERMINAL-BROWSE — Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
+- Needs: FILES-TERMINAL-BROWSE is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix FILES-TERMINAL-BROWSE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on FILES-TERMINAL-BROWSE, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-M1-MOBILE-AWAY-STATUS — USER_DECISION — effort decision — unblocks 2
+### Q-M1-MOBILE-AWAY-STATUS — USER_DECISION — effort quick — unblocks 1
 
-- Task: M1-MOBILE-AWAY-STATUS — Goal: M1. Keep Agent-owned work understandable after Android background/return.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: M1-MOBILE-AWAY-STATUS — Keep Agent-owned work understandable after Android background/return.
+- Needs: M1-MOBILE-AWAY-STATUS is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix M1-MOBILE-AWAY-STATUS's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on M1-MOBILE-AWAY-STATUS, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-MT-RERUN-TRAIN — USER_DECISION — effort decision — unblocks 2
+### Q-MT-RERUN-TRAIN — USER_DECISION — effort quick — unblocks 1
 
-- Task: MT-RERUN-TRAIN — Goal: INTEGRATION. Section: Next. Rerun canonical integration gates
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
+- Needs: MT-RERUN-TRAIN is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix MT-RERUN-TRAIN's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on MT-RERUN-TRAIN, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_DECISION — effort decision — unblocks 2
+### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_DECISION — effort quick — unblocks 1
 
-- Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Goal: CHAT-FIDELITY. Section: Next. Keep recovered
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered
+- Needs: VERIFY-CHAT-TRANSCRIPT-NATIVE is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T05:39:34Z
-- Answer: Fix VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Answer: If no one is working on VERIFY-CHAT-TRANSCRIPT-NATIVE, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-VERIFY-OMNIROUTE-NODE22-CLOSURE — USER_DECISION — effort decision — unblocks 2
+### Q-VERIFY-OMNIROUTE-NODE22-CLOSURE — USER_DECISION — effort quick — unblocks 1
 
-- Task: VERIFY-OMNIROUTE-NODE22-CLOSURE — Goal: SECURITY. Section: Next. Verify retired OmniRoute paths and retained dependencies on Node.js 22.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T15:57:20Z
-- Answer: Fix VERIFY-OMNIROUTE-NODE22-CLOSURE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-approved physical target and capture consent; preparation proceeds
-  without recording audio. Ownership: unclaimed; verify tracker before execution — USER_DECISION — effort decision — unblocks 2
-
-- Task: approved physical target and capture consent; preparation proceeds
-  without recording audio. Ownership: unclaimed; verify tracker before execution
-- Needs: 2 waiting task(s) depend on "approved physical target and capture consent; preparation proceeds without recording audio. Ownership: unclaimed; verify tracker before execution", which is not a Now/Next task (an outside condition, or a task in Needs decision).
+- Task: VERIFY-OMNIROUTE-NODE22-CLOSURE — Verify retired OmniRoute paths and retained dependencies on Node.js 22.
+- Needs: VERIFY-OMNIROUTE-NODE22-CLOSURE is marked in_progress by another session and will not be adopted automatically; 1 waiting task(s) depend on it.
 - Since: 2026-10-17T15:58:49Z
-- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
+- Answer: If no one is working on VERIFY-OMNIROUTE-NODE22-CLOSURE, set `Status: open` in its TODO.md entry (the runner then runs it); otherwise note who holds it and when it will be done.
 
-### Q-owned target and
-  exclusive build access for execution; static fixture repair can proceed first — USER_DECISION — effort decision — unblocks 2
+### Q-DOC-M5-ANDROID-FIXTURE — USER_DECISION — effort decision — unblocks 2
 
-- Task: owned target and
-  exclusive build access for execution; static fixture repair can proceed first
-- Needs: 2 waiting task(s) depend on "owned target and exclusive build access for execution; static fixture repair can proceed first", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T15:58:49Z
-- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
-
-### Q-BACKEND-SSH-KEY-NATIVE — USER_DECISION — effort decision — unblocks 1
-
-- Task: BACKEND-SSH-KEY-NATIVE — Goal: REMOTE-BACKENDS. Qualify full-app
+- Task: DOC-M5-ANDROID-FIXTURE — Goal: M5. Section: Next. Repair only the two reproduced fixture
 - Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T05:39:34Z
-- Answer: Fix BACKEND-SSH-KEY-NATIVE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+- Since: 2026-10-17T16:04:17Z
+- Answer: Fix DOC-M5-ANDROID-FIXTURE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
-### Q-CONNECTION-OWNER-RECONNECT — USER_DECISION — effort decision — unblocks 1
+### Q-DOC-VOICE-QUALIFICATION — USER_DECISION — effort decision — unblocks 2
 
-- Task: CONNECTION-OWNER-RECONNECT — Goal: CONNECTION-PATHS. Restore the same
+- Task: DOC-VOICE-QUALIFICATION — Goal: VOICE. Section: Next.
 - Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T07:26:12Z
-- Answer: Fix CONNECTION-OWNER-RECONNECT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-CONNECTION-SETUP-AUTH-MATRIX — USER_DECISION — effort decision — unblocks 1
-
-- Task: CONNECTION-SETUP-AUTH-MATRIX — Goal: CONNECTION-PATHS. Finish the
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T07:26:12Z
-- Answer: Fix CONNECTION-SETUP-AUTH-MATRIX's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-PARITY-MAESTRO-ANDROID-DEVICE — USER_DECISION — effort decision — unblocks 1
-
-- Task: PARITY-MAESTRO-ANDROID-DEVICE — Goal: PARITY. Execute the repaired
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T05:39:34Z
-- Answer: Fix PARITY-MAESTRO-ANDROID-DEVICE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort decision — unblocks 1
-
-- Task: PARITY-NATIVE-LINUX — Goal: PARITY. Execute and extend native Linux
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T05:39:34Z
-- Answer: Fix PARITY-NATIVE-LINUX's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-PARITY-OFFICIAL-MATRIX — USER_DECISION — effort decision — unblocks 1
-
-- Task: PARITY-OFFICIAL-MATRIX — Goal: PARITY.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T05:39:34Z
-- Answer: Fix PARITY-OFFICIAL-MATRIX's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-VERIFY-LIVE-WORKFLOW-RECOVERY — USER_DECISION — effort decision — unblocks 1
-
-- Task: VERIFY-LIVE-WORKFLOW-RECOVERY — Goal: M1.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T05:39:34Z
-- Answer: Fix VERIFY-LIVE-WORKFLOW-RECOVERY's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_DECISION — effort decision — unblocks 1
-
-- Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Goal: SLASH-CATALOG. Section: Next. Qualify supported authoritative slash execution and unavailable-action recovery.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T05:39:34Z
-- Answer: Fix VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-LANDING-PRODUCT-PROOF — USER_INPUT — effort input — unblocks 0
-
-- Task: LANDING-PRODUCT-PROOF — Goal: LANDING-ONBOARDING. Make Wing's value and
-- Needs: worker reported a blocker: The execution prompt explicitly restricts changes to 'Touches: (none declared)'. The embedded TODO contract lists intended paths, but those conflict with the execution allowlist; its two Touches lists also differ on docs/README.md. The coordinator must populate/reconcile the execution Touches allowlist with the requested repository-relative paths before implementation can proceed. No repository fi…
-- Since: 2026-10-17T08:24:23Z
-- Answer: Answer in LANDING-PRODUCT-PROOF's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+- Since: 2026-10-17T16:04:17Z
+- Answer: Fix DOC-VOICE-QUALIFICATION's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
 <!-- pi-autowork:questions:end -->
 

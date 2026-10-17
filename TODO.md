@@ -386,7 +386,7 @@ Section: Next.
   Ownership: unclaimed backlog only; no board dispatch in this card.
   Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Add the delayed-old-owner/retry request-count regressions, then `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Record exact restored identities and zero recovery mutations; native/live results remain separate.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
+  Readiness: restored check procedure only; existing access and qualification gates remain.
 
 ### **P4** — Extended experiences and physical qualification
 
@@ -1073,7 +1073,7 @@ Section: Next.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
-
+  Readiness: restored check procedure only; existing access and qualification gates remain.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 

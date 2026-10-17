@@ -583,18 +583,22 @@ void main() {
         loader: FakeGatewaySummaryLoader({}),
         activeChannel: channel,
       );
+      final container = ProviderContainer(
+        overrides: [
+          managedSshConnectionControllerProvider.overrideWithValue(controller),
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesGatewayDirectoryProvider.overrideWith((_) => directory),
+          hermesEndpointStoreProvider.overrideWithValue(endpoints),
+          hermesVoiceCaptureServiceProvider.overrideWithValue(null),
+          hermesTextToSpeechServiceProvider.overrideWithValue(null),
+        ],
+      );
+      addTearDown(container.dispose);
+      // Production creates the controller through its provider when SSH starts.
+      container.read(managedSshConnectionControllerProvider);
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            managedSshConnectionControllerProvider.overrideWithValue(
-              controller,
-            ),
-            hermesChannelProvider.overrideWithValue(channel),
-            hermesGatewayDirectoryProvider.overrideWith((_) => directory),
-            hermesEndpointStoreProvider.overrideWithValue(endpoints),
-            hermesVoiceCaptureServiceProvider.overrideWithValue(null),
-            hermesTextToSpeechServiceProvider.overrideWithValue(null),
-          ],
+        UncontrolledProviderScope(
+          container: container,
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

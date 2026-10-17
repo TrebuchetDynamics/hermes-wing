@@ -913,6 +913,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _setState(VoidCallback fn) => setState(fn);
 
+  // Only a controller that adopted a tunnel can need reconnect; reading the
+  // provider would otherwise create an app-scoped channel listener for everyone.
+  bool get _needsSshReconnect =>
+      ref.exists(managedSshConnectionControllerProvider) &&
+      ref.read(managedSshConnectionControllerProvider).needsSshReconnect;
+
   bool get _sessionRestorationUnsettled =>
       _gatewayDirectory.isActivating ||
       _gatewayDirectory.restoringSessionId != null;
@@ -1834,7 +1840,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       ),
       body: _editingConnection
           ? _buildConnectForm(context, channel, state)
-          : ref.read(managedSshConnectionControllerProvider).needsSshReconnect
+          : _needsSshReconnect
           ? WingEmptyState(
               key: const ValueKey('managed-ssh-interrupted'),
               icon: Icons.link_off,

@@ -301,7 +301,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
   }
 
   Future<void> _reconnectOnce(HermesChannel channel) async {
-    if (ref.read(managedSshConnectionControllerProvider).needsSshReconnect) {
+    if (_needsSshReconnect) {
       _connectionForm.abandonAttempt();
       _setState(() {
         _connectionMode = HermesConnectionMode.ssh;

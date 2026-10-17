@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:04:17Z
 - Answer: Fix DOC-VOICE-QUALIFICATION's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-M1-NOTIFICATION-CONTRACT — USER_DECISION — effort decision — unblocks 1
+
+- Task: M1-NOTIFICATION-CONTRACT — Goal: M1. Resolve the smallest supported notification path after reliable status.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-17T17:24:25Z
+- Answer: Fix M1-NOTIFICATION-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
 
 - Task: DOC-PARITY-TAB-CONTRACT — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation

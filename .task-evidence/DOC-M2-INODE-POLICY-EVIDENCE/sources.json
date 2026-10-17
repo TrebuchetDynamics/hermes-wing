@@ -1,0 +1,16 @@
+{
+  "task": "DOC-M2-INODE-POLICY-EVIDENCE",
+  "purpose": "Fixed local source snapshot for source-only inode-policy review; not runtime evidence.",
+  "sources": [
+    {
+      "path": "docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md",
+      "sha256": "70b4a8730229ecf70a03a558f0a031bc8bb1a85aa1d0f08c22202ff9815ea31a",
+      "bytes": 14867
+    },
+    {
+      "path": "docs/quality/2026-10-06-m2-synthetic-isolation-contract.md",
+      "sha256": "3ce22ee5e7ada26af836b191177638000c9dfd245173877c2b753b6228dbfeb8",
+      "bytes": 23117
+    }
+  ]
+}

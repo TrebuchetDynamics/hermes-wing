@@ -5595,6 +5595,11 @@ Source section: Now / Next
   limit. A completed CPU assessment does not prove a usable CPU bound or approve
   the inode policy. Next action: review the proposed policy and record either its
   bounded contract or precise UNAVAILABLE result; do not implement/run controls.
+  Completion: source-only review delivered in local commit `0f1fd1ef`; see
+  [fixed-source assessment](docs/quality/2026-10-06-m2-inode-policy-evidence.md).
+  Outcome: UNAVAILABLE / `scratch_inode_policy_unavailable`. Two predecessor
+  source hashes, four local links/anchors and whitespace checks passed. No
+  inode control ran, no limits changed, and physical Android/M2 remain unverified.
 
 
 <!-- archived from TODO.md -->

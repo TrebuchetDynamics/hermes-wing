@@ -5721,7 +5721,8 @@
         "BACKEND-SSH-KEY-AUTH",
         "BACKEND-SSH-KEY-NATIVE",
         "DOC-BACKEND-CONTRACT",
-        "DOC-BACKEND-DISCONNECT-CONTRACT"
+        "DOC-BACKEND-DISCONNECT-CONTRACT",
+        "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE"
       ],
       "title": "Provide typed SSH/Docker/WSL backend lifecycle outcomes"
     },
@@ -6847,7 +6848,6 @@
   "priority_order": {
     "schema": 1,
     "tasks": [
-      "DOC-BACKEND-DISCONNECT-CONTRACT",
       "DOC-PARITY-TAB-CONTRACT",
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
@@ -6917,7 +6917,8 @@
       "M1-MOBILE-AWAY-STATUS-LIVE",
       "LANDING-PRODUCT-PROOF-LIVE",
       "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
-      "BACKEND-SSH-CONNECT-LIVE"
+      "BACKEND-SSH-CONNECT-LIVE",
+      "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7024,16 +7025,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map hostile-content rejection for one permitted artifact type"
-    },
-    {
-      "depends_on": [
-        "BACKEND-SSH-CONNECT"
-      ],
-      "goal": "REMOTE-BACKENDS",
-      "id": "DOC-BACKEND-DISCONNECT-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Implement owner-safe managed SSH disconnect and reconnect"
     },
     {
       "depends_on": [],
@@ -7465,6 +7456,16 @@
     },
     {
       "depends_on": [
+        "DOC-BACKEND-DISCONNECT-CONTRACT"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-BACKEND-DISCONNECT-CONTRACT"
+    },
+    {
+      "depends_on": [
         "DOC-M2-INODE-POLICY-EVIDENCE"
       ],
       "goal": "M2",
@@ -7726,6 +7727,16 @@
       "section": "Done",
       "status": "done",
       "title": "Define and review the bounded native SSH-forwarding contract"
+    },
+    {
+      "depends_on": [
+        "BACKEND-SSH-CONNECT"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "DOC-BACKEND-DISCONNECT-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Implement owner-safe managed SSH disconnect and reconnect"
     },
     {
       "depends_on": [],

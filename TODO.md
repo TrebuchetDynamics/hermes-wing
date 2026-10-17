@@ -118,27 +118,6 @@ needs its own exact capability, ownership and qualification evidence.
 
 ### **P0** — Android SSH, multi-session chat and touch polish
 
-- [ ] **DOC-BACKEND-DISCONNECT-CONTRACT** — Goal: REMOTE-BACKENDS. Implement
-  owner-safe managed SSH disconnect and reconnect. Existing task ID retained.
-  Payoff: tunnel interruption cannot lose session identity or replay mutations.
-  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [CONN-4/5/6](docs/product/prd.md#connection-path-requirements),
-  [recovery matrix](docs/test-plan.md#connection-path-verification).
-  Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/core/hermes/client/, lib/core/hermes/setup/, lib/features/hermes_chat/providers/, lib/features/hermes_chat/gateways/, lib/features/hermes_chat/controllers/, lib/features/hermes_chat/screens/, lib/features/hermes_chat/widgets/, lib/l10n/, test/core/hermes/ssh/, test/core/hermes/channel/, test/core/hermes/client/, test/core/hermes/setup/, test/features/hermes_chat/providers/, test/features/hermes_chat/gateways/, test/features/hermes_chat/controllers/, test/features/hermes_chat/screens/, test/features/hermes_chat/widgets/, test/features/hermes_chat/support/, integration_test/, scripts/run_managed_ssh*, scripts/support/managed_ssh*, test/tooling/managed_ssh*, docs/security/managed-ssh-forward-contract.md, docs/test-plan.md, docs/getting-started.md, docs/quality/*ssh*, docs/runbooks/managed-ssh*, docs/runbooks/chat-reconnect-read-intent.md, docs/runbooks/chat-disconnect-confirmation-intent.md
-  Scope: reviewed forwarding lifecycle, channel reconciliation and nearest tests.
-  Clean up only the owned child. Keep remote service/run Stop separate from
-  tunnel teardown. Exclude remote shell, bootstrap, Agent edits and secret copying.
-  Acceptance: disconnect, unexpected child exit, host switches and replaced local
-  ports retain exact durable host/profile/session identity. Old completions cannot
-  tear down replacements. Recovery performs zero implicit sends/approvals/Stop.
-  Prove deterministic races, then the bounded native interruption/recovery journey.
-  Dependencies: BACKEND-SSH-CONNECT. Section: Next.
-  Ownership: unclaimed in this index. Verify tracker/continuation leases first.
-  Checks: planned `flutter test --no-pub test/core/hermes/ssh test/features/hermes_chat/providers/managed_ssh_provider_test.dart`; add the nearest interruption/replacement regression; `flutter analyze`; named Android fixture interruption and explicit Retry without mutation replay.
-  Android focus: exercise Wi-Fi/tunnel loss, explicit Retry and ephemeral local
-  port replacement while retaining the durable saved host/profile/session. No
-  implicit resend, approval, Stop or service restart; retain uncertain work until
-  Agent readback. Android away/process-death proof belongs to its existing task.
-
 - [ ] **DOC-PARITY-TAB-CONTRACT** — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
   tabs with keyboard switching and explicit close/Stop recovery.
   Payoff: preserve distinct conversations without losing drafts or stopping another run.
@@ -1633,4 +1612,14 @@ does not mark any check passed or authorize live actions.
   - Retain the task's required native/security review and qualification dependency. Independent offline code review does not close it. Review docs/quality/android-ssh-serve-offline.md for unsupported behavior: per-attempt host trust only, no durable SSH target/profile/session mapping or cold SSH relaunch; unsupported targets retain external-tunnel access.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: BACKEND-SSH-CONNECT.
+  Status: open
+
+- [ ] DOC-BACKEND-DISCONNECT-CONTRACT-LIVE — Live checks for DOC-BACKEND-DISCONNECT-CONTRACT
+  Scope: Run the live checks the offline work for DOC-BACKEND-DISCONNECT-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - Run the named Android SSH fixture interruption -> explicit Retry journey in integration_test/managed_ssh_key_native_test.dart on an approved disposable Android app/device with its owned ADB-reverse mapping; verify replaced forwarding port, exact host/profile/session and zero mutations. Prepared but not executed here.
+  - On an approved Android live-Agent target, exercise Wi-Fi/tunnel interruption and explicit Retry with uncertain work; verify authoritative readback and zero implicit Send/approval/Stop/service restart. No live Agent or physical Android target was exercised.
+  - Physical platform secure-storage durability and native document acquisition remain unqualified; fixture substitutions are not keystore/SAF evidence. Android away/process-death proof remains with its existing separate task.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-BACKEND-DISCONNECT-CONTRACT.
   Status: open

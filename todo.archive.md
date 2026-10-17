@@ -6325,3 +6325,29 @@ Source section: Now / Next
   Preserve Linux acceptance; do not treat Android planning as either platform passed.
   Retained checks: `flutter test --no-pub --concurrency=1 test/core/hermes/ssh/managed_ssh_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/ssh_keys/managed_ssh_key_selection_test.dart`; `flutter analyze --no-pub`; format changed Dart files and `git diff --check`. Native full-app/controlled-target evidence remains mandatory; fixture-only passes do not close this task.
   Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-BACKEND-DISCONNECT-CONTRACT** — Goal: REMOTE-BACKENDS. Implement
+  owner-safe managed SSH disconnect and reconnect. Existing task ID retained.
+  Payoff: tunnel interruption cannot lose session identity or replay mutations.
+  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [CONN-4/5/6](docs/product/prd.md#connection-path-requirements),
+  [recovery matrix](docs/test-plan.md#connection-path-verification).
+  Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/core/hermes/client/, lib/core/hermes/setup/, lib/features/hermes_chat/providers/, lib/features/hermes_chat/gateways/, lib/features/hermes_chat/controllers/, lib/features/hermes_chat/screens/, lib/features/hermes_chat/widgets/, lib/l10n/, test/core/hermes/ssh/, test/core/hermes/channel/, test/core/hermes/client/, test/core/hermes/setup/, test/features/hermes_chat/providers/, test/features/hermes_chat/gateways/, test/features/hermes_chat/controllers/, test/features/hermes_chat/screens/, test/features/hermes_chat/widgets/, test/features/hermes_chat/support/, integration_test/, scripts/run_managed_ssh*, scripts/support/managed_ssh*, test/tooling/managed_ssh*, docs/security/managed-ssh-forward-contract.md, docs/test-plan.md, docs/getting-started.md, docs/quality/*ssh*, docs/runbooks/managed-ssh*, docs/runbooks/chat-reconnect-read-intent.md, docs/runbooks/chat-disconnect-confirmation-intent.md
+  Scope: reviewed forwarding lifecycle, channel reconciliation and nearest tests.
+  Clean up only the owned child. Keep remote service/run Stop separate from
+  tunnel teardown. Exclude remote shell, bootstrap, Agent edits and secret copying.
+  Acceptance: disconnect, unexpected child exit, host switches and replaced local
+  ports retain exact durable host/profile/session identity. Old completions cannot
+  tear down replacements. Recovery performs zero implicit sends/approvals/Stop.
+  Prove deterministic races, then the bounded native interruption/recovery journey.
+  Dependencies: BACKEND-SSH-CONNECT. Section: Next.
+  Ownership: unclaimed in this index. Verify tracker/continuation leases first.
+  Checks: planned `flutter test --no-pub test/core/hermes/ssh test/features/hermes_chat/providers/managed_ssh_provider_test.dart`; add the nearest interruption/replacement regression; `flutter analyze`; named Android fixture interruption and explicit Retry without mutation replay.
+  Android focus: exercise Wi-Fi/tunnel loss, explicit Retry and ephemeral local
+  port replacement while retaining the durable saved host/profile/session. No
+  implicit resend, approval, Stop or service restart; retain uncertain work until
+  Agent readback. Android away/process-death proof belongs to its existing task.

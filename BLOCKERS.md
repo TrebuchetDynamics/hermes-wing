@@ -129,7 +129,7 @@ This file contains only hard blockers that require user action.
 
 - Task: VERIFY-OMNIROUTE-NODE22-CLOSURE — Goal: SECURITY. Section: Next. Verify retired OmniRoute paths and retained dependencies on Node.js 22.
 - Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T08:21:50Z
+- Since: 2026-10-17T08:23:02Z
 - Answer: Fix VERIFY-OMNIROUTE-NODE22-CLOSURE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
 ### Q-approved physical target and capture consent; preparation proceeds
@@ -138,7 +138,7 @@ This file contains only hard blockers that require user action.
 - Task: approved physical target and capture consent; preparation proceeds
   without recording audio. Ownership: unclaimed; verify tracker before execution
 - Needs: 2 waiting task(s) depend on "approved physical target and capture consent; preparation proceeds without recording audio. Ownership: unclaimed; verify tracker before execution", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T08:23:02Z
+- Since: 2026-10-17T08:24:23Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 ### Q-owned target and
@@ -147,7 +147,7 @@ This file contains only hard blockers that require user action.
 - Task: owned target and
   exclusive build access for execution; static fixture repair can proceed first
 - Needs: 2 waiting task(s) depend on "owned target and exclusive build access for execution; static fixture repair can proceed first", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T08:23:02Z
+- Since: 2026-10-17T08:24:23Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 ### Q-BACKEND-SSH-KEY-NATIVE — USER_DECISION — effort decision — unblocks 1
@@ -205,6 +205,13 @@ This file contains only hard blockers that require user action.
 - Needs: not runnable: needs unique Scope, Acceptance and Checks fields
 - Since: 2026-10-17T05:39:34Z
 - Answer: Fix VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
+### Q-LANDING-PRODUCT-PROOF — USER_INPUT — effort input — unblocks 0
+
+- Task: LANDING-PRODUCT-PROOF — Goal: LANDING-ONBOARDING. Make Wing's value and
+- Needs: worker reported a blocker: The execution prompt explicitly restricts changes to 'Touches: (none declared)'. The embedded TODO contract lists intended paths, but those conflict with the execution allowlist; its two Touches lists also differ on docs/README.md. The coordinator must populate/reconcile the execution Touches allowlist with the requested repository-relative paths before implementation can proceed. No repository fi…
+- Since: 2026-10-17T08:24:23Z
+- Answer: Answer in LANDING-PRODUCT-PROOF's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
 <!-- pi-autowork:questions:end -->
 

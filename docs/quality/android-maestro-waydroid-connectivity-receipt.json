@@ -1,0 +1,771 @@
+{
+  "task": "PARITY-MAESTRO-ANDROID-DEVICE",
+  "checked_at_utc": "2026-10-17T18:05:56Z",
+  "result": "pending_live",
+  "source_head": "49487943e3bd426413eabb22277869662ebae5c3",
+  "source_kind": "clean isolated baseline; worker changes documentation only",
+  "source_inputs": {
+    "count": 398,
+    "sha256": "ca355fdc57e17231e6687ebbbef20f0595ee1547b2857c1de4651a4308b77807",
+    "algorithm": "SHA-256 of UTF-8 json.dumps(entries, sort_keys=True, separators=(\",\", \":\")), without trailing newline. Entries sorted by repository-relative path; each entry is {path, sha256} of tracked file bytes.",
+    "git_ls_files_scope": [
+      "lib/",
+      "integration_test/",
+      "android/",
+      "scripts/maestro/",
+      "scripts/run_android_maestro_features.sh",
+      "scripts/run_android_maestro_profiles.sh",
+      "test/integration/maestro_approval_attachment_controls_test.dart",
+      "test/integration/maestro_feature_fixture_test.dart",
+      "test/tooling/android_maestro_features_wrapper_test.py",
+      "pubspec.yaml",
+      "pubspec.lock"
+    ]
+  },
+  "previous_receipt_input_comparison": [
+    {
+      "path": "scripts/run_android_maestro_features.sh",
+      "previous_sha256": "38966f19a8f788c36e2a8959d7be5aab9943a798e20198f29d0060c24be3b813",
+      "current_sha256": "547b790f45e05413bf0b28ee46f9ea99f62dbcb060d2a0d49cf385c03dd2ee5b",
+      "matches_previous": false
+    },
+    {
+      "path": "scripts/maestro/fixture/approvals_recovery.yaml",
+      "previous_sha256": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+      "current_sha256": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+      "matches_previous": true
+    },
+    {
+      "path": "scripts/maestro/fixture/attachment_picker_race.yaml",
+      "previous_sha256": "6b79d41ae9ecf6f52a7576a1ddb06351c7f5e8c43729230c5ceb7364352582ed",
+      "current_sha256": "6b79d41ae9ecf6f52a7576a1ddb06351c7f5e8c43729230c5ceb7364352582ed",
+      "matches_previous": true
+    },
+    {
+      "path": "integration_test/hermes_features_maestro_main.dart",
+      "previous_sha256": "ccd6bc142d25403dc99420d164cfc1d5e1a018245fc8af5d9133c4c6cdf070f4",
+      "current_sha256": "cb0664219794d8cfe36116b3f948b960fb7f9fa1d9f06b2a8bd5e8b0e296f4f1",
+      "matches_previous": false
+    },
+    {
+      "path": "integration_test/support/maestro/interaction_fixture.dart",
+      "previous_sha256": "084f032d271e32aa7d27cd739eded7d5772e72e3eff5d3b51a406ccd36a25984",
+      "current_sha256": "084f032d271e32aa7d27cd739eded7d5772e72e3eff5d3b51a406ccd36a25984",
+      "matches_previous": true
+    },
+    {
+      "path": "test/integration/maestro_approval_attachment_controls_test.dart",
+      "previous_sha256": "928826127a8273f54b783d18c061f1d3463b7a8a1446f703a04a605ebaf9aece",
+      "current_sha256": "7cae609431d6db6ed3bb371156eef2766c921310fb65d7b93d4903b4b81ceb5e",
+      "matches_previous": false
+    },
+    {
+      "path": "test/tooling/android_maestro_features_wrapper_test.py",
+      "previous_sha256": "fbc2fcece09c2b36f9ab4a5490bc4f9ad7f5d13fec7d4205dca706c3fa842d3e",
+      "current_sha256": "5b1070d21af52846ba6209713673abbbd5ed7f6ba470e7450b2f628bcf51eba7",
+      "matches_previous": false
+    }
+  ],
+  "environment": {
+    "waydroid_session": "RUNNING",
+    "waydroid_container": "RUNNING",
+    "waydroid_reported_ip": "UNKNOWN",
+    "dhcp_lease_bytes": 0,
+    "host_bridge": "up; one attached virtual interface up",
+    "android_boot_completed": "1",
+    "android_adb_secure": "1",
+    "android_dhcp_address": null,
+    "android_dhcp_gateway": null,
+    "android_adb_tcp_port_property": null,
+    "android_os_build_fingerprint": "waydroid/lineage_waydroid_x86_64/waydroid_x86_64:13/TQ3A.230901.001/eng.aleast.20260403.132616:userdebug/test-keys",
+    "adb_server_port": 20100,
+    "maestro_version": "2.4.0"
+  },
+  "connection_observations": [
+    {
+      "command": "ADB_SERVER_SOCKET=tcp:localhost:20100 timeout 30s waydroid adb connect",
+      "exit_code": 1,
+      "observation": "Unknown container IP address. Is Waydroid running?"
+    },
+    {
+      "command": "ADB_SERVER_SOCKET=tcp:localhost:20100 adb devices -l",
+      "exit_code": 0,
+      "observation": "No devices; not authenticated-device evidence"
+    },
+    {
+      "command": "timeout 15s waydroid shell -- ip -brief address",
+      "exit_code": 1,
+      "observation": "Action \"shell\" needs root access; not escalated"
+    }
+  ],
+  "diagnostic_side_effects": "Initial default adb devices -l automatically started host ADB daemon on 5037 before port isolation, outside assigned worker range. Subsequent probes used 20100. Neither daemon was stopped/restarted as repair. This initial port use was not compliant.",
+  "adb_current_authenticated_device": false,
+  "disposable_target_review": "not_run; no reachable serial",
+  "expected_app_id": "com.trebuchetdynamics.hermes.wing.qa",
+  "installed_package_review": "not_run",
+  "apk_sha256": null,
+  "apk_build_fingerprint": null,
+  "sdk_build_identity": null,
+  "maestro_test_invoked": false,
+  "journeys": [
+    {
+      "name": "approvals_stop_reconnect",
+      "flow": "scripts/maestro/fixture/approvals_recovery.yaml",
+      "runtime_result": "not_run",
+      "device_exit_code": null,
+      "submitted_turns": null,
+      "approval_decisions": null,
+      "stop_calls": null,
+      "recovery_counters_unchanged": null,
+      "restored_session": null
+    },
+    {
+      "name": "attachment_owner_race",
+      "flow": "scripts/maestro/fixture/attachment_picker_race.yaml",
+      "runtime_result": "not_run",
+      "device_exit_code": null,
+      "picker_pending": null,
+      "active_session": null,
+      "picker_completions": null,
+      "attachment_rejected_both_owners": null,
+      "submitted_turns": null,
+      "next_pick_usable": null
+    },
+    {
+      "name": "earlier_history_tail",
+      "flow": "scripts/maestro/fixture/approvals_recovery.yaml",
+      "runtime_result": "not_run",
+      "device_exit_code": null
+    },
+    {
+      "name": "fresh_welcome",
+      "runtime_result": "not_run",
+      "device_exit_code": null
+    },
+    {
+      "name": "keyboard_back_cancel",
+      "runtime_result": "not_run",
+      "device_exit_code": null
+    },
+    {
+      "name": "sanitized_denial_explicit_retry",
+      "runtime_result": "not_run",
+      "device_exit_code": null
+    },
+    {
+      "name": "saved_owner_relaunch",
+      "runtime_result": "not_run",
+      "device_exit_code": null
+    }
+  ],
+  "matrix_source": "docs/product/hermes-desktop-feature-matrix.json",
+  "matrix_source_sha256": "031b47e3d7dce7b977f57d726183a102d95282374862cae7d6b05ab98323b6a5",
+  "matrix_availability_boundary": "All runtime outcomes are not_run. Missing/standalone candidate status is source inventory, not product unsupported or pass. Current wrapper candidates are allowlisted, not proven coverage.",
+  "mapped_features": [
+    {
+      "id": "HD-ENTRY",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/local_setup_accessibility.yaml",
+          "sha256": "95257368bd3ffd6516f3441bb0d8fde58897c37e6e054cbfdd51849276686f3f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-LOCAL",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/computer_setup.yaml",
+          "sha256": null,
+          "availability": "missing_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-REMOTE",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/gateway_connection.yaml",
+          "sha256": "f871bce6dd500fe69dc3db1abc8e05487dd99afa2958852e7d89b598fbdce41a",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-OAUTH",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-SSH",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-BACKENDS",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-HOSTS",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/gateway_connection.yaml",
+          "sha256": "f871bce6dd500fe69dc3db1abc8e05487dd99afa2958852e7d89b598fbdce41a",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-PAIR",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/pairing.yaml",
+          "sha256": null,
+          "availability": "missing_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-TRUST",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/gateway_trust.yaml",
+          "sha256": null,
+          "availability": "missing_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-SHELL",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/visual_review.yaml",
+          "sha256": "d28678d2e634417f3f57cb3efe5fafd0675e90c872bf9db92c4ccfabafb60850",
+          "availability": "standalone_not_reviewed",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-TABS",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-PROFILE",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/profiles/switch_chat.yaml",
+          "sha256": "2154a409b1d02cc96aa12222f15d7d834344b66fceb19be643313b9f96d00840",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        },
+        {
+          "path": "scripts/maestro/profiles/create_setup_delete.yaml",
+          "sha256": "48d57bd48d70d4593ffbde2c6b57453d773063db886fec6af200768d881f29b7",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        },
+        {
+          "path": "scripts/maestro/profiles/provider_model_chat.yaml",
+          "sha256": "bc4002f4aaedc9f7ec95536688269c1fe475138562aa97be899ae2237bd2c314",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-PROJECT",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/soul_directories.yaml",
+          "sha256": "82df204b5f69e5e1421465a74efe81ed07239d849f7a203d52aa6374c56c80f7",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-PROVIDER",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/providers.yaml",
+          "sha256": "3bee392fcb2f7d2484857be294b640db57e00d109e758b7b85e91d9f7b47ae98",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-MODEL",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/profiles/switch_chat.yaml",
+          "sha256": "2154a409b1d02cc96aa12222f15d7d834344b66fceb19be643313b9f96d00840",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        },
+        {
+          "path": "scripts/maestro/profiles/create_setup_delete.yaml",
+          "sha256": "48d57bd48d70d4593ffbde2c6b57453d773063db886fec6af200768d881f29b7",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        },
+        {
+          "path": "scripts/maestro/profiles/provider_model_chat.yaml",
+          "sha256": "bc4002f4aaedc9f7ec95536688269c1fe475138562aa97be899ae2237bd2c314",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-REASON",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-CHAT",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/approvals_recovery.yaml",
+          "sha256": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-APPROVAL",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/approvals_recovery.yaml",
+          "sha256": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-STOP",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/approvals_recovery.yaml",
+          "sha256": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-CLARIFY",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-QUEUE",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-DRAFT",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/draft_isolation.yaml",
+          "sha256": "e7f6e7a4a77d0c2ab77dc0f2cf5db4f6794eb14dee7a0afdf469eaa689f9d85e",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-SEARCH",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/sessions.yaml",
+          "sha256": "a85f2801fc767dfa7a10a85edad80ab63a4f6389528aa57580c6c866421d4d5f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-RESUME",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/approvals_recovery.yaml",
+          "sha256": "452970b3d97dd98ba5eab9bdd9a149ad98b7f0b98f412afafdf76cd45528524f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-FORK",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/session_branch_qa.yaml",
+          "sha256": "2d83fff5e8600833954c8750d5b58745db78ac07d9e6279890a38e73f4a750d2",
+          "availability": "standalone_not_reviewed",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        },
+        {
+          "path": "scripts/maestro/session_metadata_qa.yaml",
+          "sha256": "d57146b722c501cc793187a1b825ff2853fa80a6330d93c1ec8d4e3274cb53b3",
+          "availability": "standalone_not_reviewed",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-DELETE",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/sessions.yaml",
+          "sha256": "a85f2801fc767dfa7a10a85edad80ab63a4f6389528aa57580c6c866421d4d5f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-PINS",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/chat_groups.yaml",
+          "sha256": "c851b1df7ae61a35a741b5bfd96ec4f6aa4db651ed91aa6e07c4cdbf3b724177",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-ATTACH",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/attachment_picker_race.yaml",
+          "sha256": "6b79d41ae9ecf6f52a7576a1ddb06351c7f5e8c43729230c5ceb7364352582ed",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-PREVIEW",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-EXPORT",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/transcript_export.yaml",
+          "sha256": "919020343a2f546534a7a578bc90dd3a035366014829c513e3850488f09e5244",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-VOICE",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/microphone_denied.yaml",
+          "sha256": "4e944199e201dc62b1a4b712dd211696199a1c1b36392f72dd71276b5d1e4261",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        },
+        {
+          "path": "scripts/maestro/fixture/voice_language.yaml",
+          "sha256": "099eff1f2d8ff8c0878edc478ab0105c738ec335a1d750dfca8f787f66c68569",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-COMMAND",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/composer_commands.yaml",
+          "sha256": "ec0170b65c87a80f03c40be9619ed291356ff10a4e3708410118ba76bac61adf",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-SOUL",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/soul_directories.yaml",
+          "sha256": "82df204b5f69e5e1421465a74efe81ed07239d849f7a203d52aa6374c56c80f7",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-SKILLS",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/tools_inventory_qa.yaml",
+          "sha256": "faca662a680f44403edb7ce1409aa315a74d3c652bab1743a4157632583b47e9",
+          "availability": "standalone_not_reviewed",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-MCP",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-MEMORY",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-SCHEDULE",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/schedules.yaml",
+          "sha256": "4919ae3bb3d415c1ba66222549b7fb7dcc5871fa2c0d7490390f5cf2a1fc7c16",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-KANBAN",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-GATEWAY",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/gateway_connection.yaml",
+          "sha256": "f871bce6dd500fe69dc3db1abc8e05487dd99afa2958852e7d89b598fbdce41a",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-OFFICE",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/office_workspace_qa.yaml",
+          "sha256": null,
+          "availability": "missing_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-ACCOUNT",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-SETTINGS",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/settings.yaml",
+          "sha256": "baf404355a3a7d37b6a18fd87db693c69b678e576cc26da7f0faf6399d411941",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        },
+        {
+          "path": "scripts/maestro/fixture/spellcheck.yaml",
+          "sha256": "695c6f8b93520ae69b8c0a5827665ab20cce876e0c14e54d4c36bffd73ccf1dc",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "HD-DIAG",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-UPDATE",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-NATIVE",
+      "runtime_result": "not_run",
+      "mapping": "no_candidate",
+      "candidates": []
+    },
+    {
+      "id": "HD-ACCESS",
+      "runtime_result": "not_run",
+      "mapping": "candidates",
+      "candidates": [
+        {
+          "path": "scripts/maestro/fixture/local_setup_accessibility.yaml",
+          "sha256": "95257368bd3ffd6516f3441bb0d8fde58897c37e6e054cbfdd51849276686f3f",
+          "availability": "current_wrapper_candidate",
+          "device_exit_code": null,
+          "runtime_result": "not_run"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest test/tooling/android_maestro_features_wrapper_test.py -v",
+      "exit_code": 0,
+      "summary": "6 mocked-tool tests; not Android evidence"
+    },
+    {
+      "command": "XDG_CACHE_HOME=\"$TMPDIR/android-device/maestro-cache\" ADB_SERVER_SOCKET=tcp:localhost:20100 ANDROID_ADB_SERVER_PORT=20100 timeout 45s \"$HOME/.maestro/bin/maestro\" check-syntax scripts/maestro/fixture/approvals_recovery.yaml",
+      "exit_code": 0,
+      "summary": "Syntax only; no device test"
+    },
+    {
+      "command": "XDG_CACHE_HOME=\"$TMPDIR/android-device/maestro-cache\" ADB_SERVER_SOCKET=tcp:localhost:20100 ANDROID_ADB_SERVER_PORT=20100 timeout 45s \"$HOME/.maestro/bin/maestro\" check-syntax scripts/maestro/fixture/attachment_picker_race.yaml",
+      "exit_code": 0,
+      "summary": "Syntax only; no device test"
+    },
+    {
+      "command": "bash -n scripts/run_android_maestro_features.sh scripts/run_android_maestro_profiles.sh",
+      "exit_code": 0,
+      "summary": "Shell syntax only"
+    }
+  ],
+  "pending_live": [
+    "Normal authenticated ADB reachability for the selected Waydroid target; privileged diagnostics/repair, if required, need separate authority. No substitute phone required.",
+    "Review disposable target and installed .qa package; capture exact source/build/APK/flow fingerprints; actual Maestro launches and individual device exits.",
+    "Prove 3 sends, 2 decisions, 1 Stop, unchanged recovery counters and sess_1 retention; qualify earlier-history tail separately.",
+    "Prove late attachment rejection across sess_1/sess_2 and usable next pick.",
+    "Exact-artifact Android fresh welcome, keyboard Back/cancel, sanitized denial, explicit retry and saved-owner relaunch.",
+    "Other mapped Android journeys, without substituting unavailable-state checks for positive gaps.",
+    "Separate physical-device M2, TalkBack, native picker/IME, live Agent/provider and authoritative run qualification."
+  ],
+  "safety": "No install/reset, alternate target, auth bypass, property/network change, shared-service repair, privilege escalation, live inference or Agent edit. Initial default ADB daemon startup is disclosed separately."
+}

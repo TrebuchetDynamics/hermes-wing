@@ -56,7 +56,9 @@ img {
   scroll-margin-top: 160px;
 }
 
-#connect a {
+#connect a,
+.trust-note a,
+.faq a {
   color: var(--cyan-soft);
   text-decoration: underline;
 }
@@ -460,6 +462,14 @@ h2 {
   grid-template-columns: minmax(300px, 0.72fr) minmax(560px, 1.28fr);
   align-items: center;
   gap: clamp(44px, 8vw, 110px);
+}
+
+.trust-note {
+  max-width: 80ch;
+  margin: 48px 0 0;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  line-height: 1.7;
 }
 
 .runtime-steps {

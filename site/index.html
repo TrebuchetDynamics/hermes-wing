@@ -9,16 +9,25 @@
       content="Connect your existing Hermes Agent from another screen. Hermes Wing is an alpha client; chat needs your own authenticated Agent and configured model."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Hermes Wing — Hermes Agent everywhere" />
+    <meta property="og:title" content="Hermes Wing — Your agent. Within reach." />
     <meta
       property="og:description"
-      content="Follow conversations, inspect tool activity, and approve work from mobile or desktop."
+      content="Alpha client for your own authenticated Agent. Follow conversations and review work; preview uses simulated data, not live synchronization."
     />
     <meta
       property="og:image"
       content="https://trebuchetdynamics.github.io/hermes-wing/assets/showcase.png"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="760" />
+    <meta property="og:image:alt" content="DEMO DATA · SIMULATED SESSION: repository summary and phone file-read review, not live synchronization" />
     <meta property="og:url" content="https://trebuchetdynamics.github.io/hermes-wing/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hermes Wing — Your agent. Within reach." />
+    <meta name="twitter:description" content="Alpha client for your own authenticated Agent. Follow conversations and review work; preview uses simulated data, not live synchronization." />
+    <meta name="twitter:image" content="https://trebuchetdynamics.github.io/hermes-wing/assets/showcase.png" />
+    <meta name="twitter:image:alt" content="DEMO DATA · SIMULATED SESSION: repository summary and phone file-read review, not live synchronization" />
+    <link rel="canonical" href="https://trebuchetdynamics.github.io/hermes-wing/" />
     <link rel="icon" href="assets/app-icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <title>Hermes Wing — Hermes Agent everywhere</title>
@@ -48,7 +57,7 @@
       </nav>
     </header>
 
-    <main id="main">
+    <main id="main" tabindex="-1">
       <section class="hero shell" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow"><span class="status-dot"></span>Built for Hermes Agent</p>
@@ -146,8 +155,8 @@
         <div class="shell proof-list">
           <span>Streamed runs</span>
           <span>Inline approvals</span>
-          <span>Gateway inventory</span>
-          <span>Optional on-device voice</span>
+          <span>Separate profiles</span>
+          <span>Experimental voice</span>
         </div>
       </section>
 
@@ -169,6 +178,8 @@
             <source
               media="(max-width: 600px)"
               srcset="assets/showcase-mobile.png"
+              width="390"
+              height="808"
             />
             <img
               src="assets/showcase.png"
@@ -195,8 +206,8 @@
             </div>
             <p>
               Wing connects through Hermes's HTTPS API and SSE event stream. It does
-              not read Hermes files, duplicate agent state, or silently enable
-              unsupported operations.
+              not directly manage Agent files, duplicate agent state, or silently
+              enable unsupported operations.
             </p>
           </div>
 
@@ -235,6 +246,15 @@
               </picture>
             </figure>
           </div>
+          <p class="trust-note">
+            <strong>Your Agent, your permissions.</strong> Wing sends chat directly to
+            Agent, not through a Wing management proxy. This page collects no credentials;
+            enter the separate Agent token only in the app. Your provider may charge and
+            process conversation data. Native credentials use platform secure storage;
+            qualification varies by platform. Keep HTTPS and SSH host checks enabled.
+            <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/SECURITY.md">Security and private reporting</a>
+            explain the alpha's boundaries; no independent security audit is claimed.
+          </p>
         </div>
       </section>
 
@@ -254,7 +274,7 @@
           </article>
           <article>
             <span>02</span><h3>Approvals</h3>
-            <p>Review sensitive work and approve once, allow for the session, always allow, or deny.</p>
+            <p>Review the requested scope and choose from the Agent-supported approval options, or deny. A rendered control is not live-policy qualification.</p>
           </article>
           <article>
             <span>03</span><h3>Gateways & profiles</h3>
@@ -292,6 +312,36 @@
             <div role="row"><span role="cell">iOS</span><span role="cell" class="status build">Runtime not verified</span></div>
             <div role="row"><span role="cell">macOS</span><span role="cell" class="status build">Runtime not verified</span></div>
           </div>
+        </div>
+      </section>
+
+      <section class="section shell faq" id="faq" aria-labelledby="faq-title">
+        <div class="section-heading">
+          <p class="eyebrow">A few practical answers</p>
+          <h2 id="faq-title">Before you connect</h2>
+        </div>
+        <div class="capability-list">
+          <article>
+            <span>01</span><h3>I use the Hermes CLI. Is that enough?</h3>
+            <p>Not by itself. Enable Agent's authenticated HTTP API and configure a
+              provider/model. Wing uses the Agent token, not your provider key.
+              <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#start-the-conversation">First-chat guide</a>.</p>
+          </article>
+          <article>
+            <span>02</span><h3>Browser or native client?</h3>
+            <p>The browser can preview the connection form without an Agent. Chat
+              needs trusted HTTPS and an explicit allowed Wing CORS origin.
+              Browser SSH and OAuth are unsupported. Native Android/Linux clients
+              require a source build; full-app SSH authentication remains unverified.</p>
+          </article>
+          <article>
+            <span>03</span><h3>Does Agent keep running when I leave?</h3>
+            <p>If Agent runs on your computer, that computer must stay on and reachable.
+              Closing Wing does not move Agent onto your phone. Android's manual Termux
+              path does not guarantee background survival. Notifications and full
+              away/return recovery remain unverified.
+              <a href="https://github.com/TrebuchetDynamics/hermes-wing/blob/main/docs/getting-started.md#can-everything-run-on-the-phone-instead">Same-phone limits</a>.</p>
+          </article>
         </div>
       </section>
 

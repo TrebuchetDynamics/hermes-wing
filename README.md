@@ -2,11 +2,14 @@
 
 # Hermes Wing
 
-Chat with your Hermes assistant, follow tool activity, and approve or stop its work
-from your phone, browser, or desktop. **Your Agent runs the work. Wing is the client.**
+**Your agent. Within reach.**
 
-An independent Flutter port guided by [official Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop),
-for Hermes users trying an early alpha. Desktop parity is a goal, not a guarantee; no hosted assistant, provider account or model credits are included.
+Chat with your Hermes assistant, follow tool activity, and review work from
+another screen. **Your Agent runs the work. Wing is the client.**
+
+An independent Flutter client for phone, browser and desktop, guided by
+[official Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop).
+Desktop parity is a goal, not a guarantee; no hosted assistant or model credits are included.
 
 **[Set up your first chat](docs/getting-started.md)** ·
 [Preview the connection screen](https://trebuchetdynamics.github.io/hermes-wing/app/) ·
@@ -24,8 +27,8 @@ for Hermes users trying an early alpha. Desktop parity is a goal, not a guarante
   </picture>
 </p>
 
-*DEMO DATA · SIMULATED SESSION. Synthetic Agent and repository; not live-provider testing,
-cross-device synchronization, Desktop parity proof or the planned Bot Chat experience.*
+*DEMO DATA · SIMULATED SESSION. A synthetic repository summary and a phone's file-read decision.
+Not live-provider testing, cross-device synchronization, Desktop parity proof or the planned Bot Chat experience.*
 
 <a id="what-can-i-do-with-it"></a>
 <a id="features"></a>
@@ -50,7 +53,7 @@ canonical Bot Chats and touch-first polish. That priority is not a shipped-featu
 
 [Hermes Agent](https://github.com/NousResearch/hermes-agent) runs the assistant,
 conversations, tools, and configuration; Wing connects to your own Agent.
-Agent can access files or run commands when granted tools and permissions; review each request—a visual client does not make those actions harmless.
+Review its file/command permissions—a visual client does not make those actions harmless.
 
 <a id="what-do-i-need"></a>
 <a id="what-do-i-need-for-the-android-setup-guide"></a>
@@ -70,7 +73,8 @@ Preview the UI, connect an existing Agent, or build a native client below.
 2. On **Welcome to Hermes Wing**, choose **Connect to Remote Hermes** to inspect
    the form. No Agent or credential is needed just to preview it.
 
-**Success:** the welcome screen and form appear. This is an interface, not a working assistant; the hosted build can lag the source.
+**Success:** the welcome screen and form appear.
+This is an interface, not a working assistant; the hosted build can lag the source.
 
 ### Connect an existing Hermes Agent
 
@@ -79,26 +83,23 @@ Open the [web alpha](https://trebuchetdynamics.github.io/hermes-wing/app/) or
 [build a native client](docs/getting-started.md#build-and-open-the-client).
 Expect Welcome, or Chat for a saved connection. Follow the [first-chat guide](docs/getting-started.md). You need:
 
-- **An enabled, reachable, authenticated Hermes Agent HTTP API—not just a CLI.**
-  Wing needs compatible `/v1/capabilities` contracts for session chat and streaming, plus required grants.
-  A CLI, health check or OpenAI-compatible API alone is insufficient. Follow the
-  [Agent API Server guide](https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server) to enable the listener,
-  set a strong Agent credential and check reachability. Default `127.0.0.1:8642` means Agent's machine, not your phone.
-- **A trusted route.** Native SSH can forward to Agent's host loopback; verify the host fingerprint
-  and supply the separate Agent credential. Remote access needs an administrator-approved secure endpoint;
-  browsers also require trusted HTTPS and an explicit allowed Wing CORS origin.
+- **A running, compatible Agent—not just a CLI.** Enable its authenticated HTTP API
+  using the [Agent API Server guide](https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server).
+  Wing needs session chat and streaming support; a health check or OpenAI-compatible API alone is insufficient.
+- **A trusted route.** Native SSH verifies the host fingerprint and still needs the Agent credential.
+  Remote browsers need trusted HTTPS and an explicitly allowed Wing CORS origin.
   Never expose a public port, disable trust, or treat a VPN as authentication.
+  `127.0.0.1` means the device running Wing, not another computer.
 - **A configured Agent profile/provider/model.** Providers may charge and process
   conversation data; self-hosting Agent does not make inference local.
 
-Use the Agent credential in Wing, not a provider key. Start with the guide's no-tools prompt;
-a reply—not a health check or saved credential—is success. Before sending a repository task,
-complete that smoke and understand the cost and tool permissions.
+Use the Agent credential in Wing, not a provider key. Follow the guide's no-tools prompt;
+a reply—not a health check or saved credential—is success. Try a repository task only afterwards,
+with costs and tool permissions understood.
 
 ### Build a native client
 
-Install Git, Flutter 3.44.2 and target development tools. Follow
-[Build and open the client](docs/getting-started.md#build-and-open-the-client) for Android/Linux prerequisites and recovery.
+Install Git, Flutter 3.44.2 and target tools; follow [Build and open the client](docs/getting-started.md#build-and-open-the-client) for Android/Linux prerequisites and recovery.
 **Success:** Wing opens to its welcome screen. Continue with the existing-Agent path above; a build does not prepare Agent, authenticate a connection or prove generation.
 
 <a id="connect-your-agent"></a>
@@ -144,8 +145,7 @@ The optional [repository summary](docs/getting-started.md#optional-repository-su
 
 ## Build from source
 
-Web is the recommended source-built alpha evaluation path, not proof of Android
-readiness. Install Git, Flutter 3.44.2 and a browser, then run:
+For a source-built web alpha, install Git, Flutter 3.44.2 and a browser, then run:
 
 ```bash
 git clone https://github.com/TrebuchetDynamics/hermes-wing.git

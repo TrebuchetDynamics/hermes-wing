@@ -8,7 +8,7 @@ import { enableFlutterAccessibility } from "../playwright/support/flutter_semant
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const assets = path.join(repo, "assets", "readme");
-const scratch = path.join(repo, "build", "readme-assets");
+const scratch = path.join(process.env.TMPDIR ?? path.join(repo, "build"), "readme-assets");
 const externalBaseUrl = process.env.README_ASSET_BASE_URL;
 const port = Number(process.env.README_ASSET_PORT ?? 8871);
 const baseUrl = externalBaseUrl ?? `http://127.0.0.1:${port}/`;
@@ -82,6 +82,9 @@ async function openWingPage(browser, viewport) {
 
 async function assertCleanPresentation(capture) {
   const forbidden = [
+    "Office",
+    "Gateway readiness",
+    "echo e2e",
     "_no_installed_skill_match_",
     "No installed skills match",
     "could not be loaded",
@@ -122,7 +125,7 @@ async function captureProductFrames(browser) {
   const desktopPath = path.join(scratch, "desktop.png");
   await desktop.page.screenshot({
     path: desktopPath,
-    clip: { x: 530, y: 280, width: 750, height: 466 },
+    clip: { x: 530, y: 280, width: 750, height: 310 },
     animations: "disabled",
   });
   await desktop.context.close();
@@ -163,33 +166,37 @@ async function composeShowcase(browser, desktopPath, mobilePath) {
   const page = await browser.newPage({
     viewport: { width: 1200, height: 760 },
   });
-  await page.setViewportSize({ width: 390, height: 764 });
+  await page.setViewportSize({ width: 390, height: 808 });
   await page.setContent(`<!doctype html><html lang="en"><style>
     html,body{margin:0;background:#0c0e12;color:#f4f4f5}
-    p{margin:0;height:44px;display:flex;align-items:center;justify-content:center;font:700 13px Arial,sans-serif}
+    p{margin:0;height:44px;display:flex;align-items:center;justify-content:center;font:700 16px Arial,sans-serif}
+    .provenance{font-size:14px;color:#cbd1da}
     img{display:block;width:390px;height:720px}
     </style><p>DEMO DATA · SIMULATED SESSION</p>
-    <img alt="Simulated mobile approval scenario" src="data:image/png;base64,${mobileBytes.toString("base64")}"></html>`);
+    <img alt="Simulated mobile approval scenario" src="data:image/png;base64,${mobileBytes.toString("base64")}">
+    <p class="provenance">Synthetic Agent · no live synchronization</p></html>`);
   await page.screenshot({ path: path.join(assets, "showcase-mobile.png") });
   await page.setViewportSize({ width: 1200, height: 760 });
   await page.setContent(`<!doctype html>
 <html><head><style>
 *{box-sizing:border-box}html,body{margin:0;width:1200px;height:760px;overflow:hidden}
 body{background:#0c0e12;color:#f4f4f5;font-family:Arial,sans-serif}
-.eyebrow{position:absolute;left:42px;top:35px;color:#7dd3fc;font:700 12px ui-monospace,monospace;letter-spacing:1.5px}
+.eyebrow{position:absolute;left:42px;top:30px;color:#7dd3fc;font:700 18px ui-monospace,monospace;letter-spacing:1px}
 h1{position:absolute;left:42px;top:58px;margin:0;font-size:34px;line-height:1.1;letter-spacing:-.7px}
 .meta{position:absolute;right:42px;top:39px;color:#8f96a3;font:12px ui-monospace,monospace;letter-spacing:1px}
 .meta:before{content:"";display:inline-block;width:8px;height:8px;margin-right:9px;border-radius:50%;background:#20e6e6}
 .frame{position:absolute;overflow:hidden;border:1px solid #343943;background:#111318;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .frame img{display:block;width:100%;height:100%;object-fit:cover}
-.desktop{left:42px;top:126px;width:790px;height:466px;border-radius:16px}
-.mobile{right:42px;top:126px;width:282px;height:520px;border-radius:24px}
+.desktop{left:42px;top:126px;width:750px;height:310px;border-radius:16px}
+.mobile{right:42px;top:126px;width:312px;height:576px;border-radius:24px}
+.story{position:absolute;left:42px;top:466px;width:750px;color:#cbd1da;font:22px/1.5 Arial,sans-serif}
+.story p{margin:0 0 16px}.story strong{color:#f4f4f5}
 .label{position:absolute;z-index:2;top:111px;padding:7px 17px;border:1px solid #343943;border-radius:999px;background:#202329;color:#cbd1da;font:700 12px ui-monospace,monospace;letter-spacing:.6px}
 .label.desktop-label{left:58px}.label.mobile-label{right:58px}
 .proof{position:absolute;left:42px;bottom:88px;display:flex;gap:10px}
 .proof span{padding:8px 14px;border:1px solid #343943;border-radius:999px;color:#cbd1da;font:700 11px ui-monospace,monospace;letter-spacing:.6px}
 .proof span:before{content:"";display:inline-block;width:6px;height:6px;margin-right:8px;border-radius:50%;background:#3b82f6}
-.caption{position:absolute;left:42px;bottom:35px;color:#8f96a3;font:13px ui-monospace,monospace;letter-spacing:.25px}
+.caption{position:absolute;left:42px;bottom:22px;color:#cbd1da;font:18px Arial,sans-serif}
 </style></head><body>
 <div class="eyebrow">DEMO DATA · SIMULATED SESSION</div>
 <h1>A repository summary. A decision on your phone.</h1>
@@ -198,6 +205,8 @@ h1{position:absolute;left:42px;top:58px;margin:0;font-size:34px;line-height:1.1;
 <div class="label mobile-label">MOBILE · FILE READ REVIEW</div>
 <div class="frame desktop"><img alt="" src="data:image/png;base64,${desktopBytes.toString("base64")}"></div>
 <div class="frame mobile"><img alt="" src="data:image/png;base64,${mobileBytes.toString("base64")}"></div>
+<div class="story"><p><strong>Ask about a demo repository.</strong><br>Read its summary and follow file activity.</p>
+<p><strong>Review the requested access.</strong><br>Approve once or deny when Agent asks.</p></div>
 <div class="proof"><span>SIMULATED SUMMARY</span><span>READ-ONLY FILE REVIEW</span><span>PHONE APPROVAL</span></div>
 <div class="caption">Synthetic sample workflow — not a live Agent or cross-device synchronization.</div>
 </body></html>`);

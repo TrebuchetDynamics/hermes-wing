@@ -128,6 +128,31 @@ test("landing page remains usable at a compact mobile viewport", async ({
   expect(failures).toEqual([]);
 });
 
+test("landing shares truthful alpha proof and explains trust before connecting", async ({ page }) => {
+  const failures = collectPageFailures(page);
+  await page.goto(root, { waitUntil: "networkidle" });
+  const canonical = "https://trebuchetdynamics.github.io/hermes-wing/";
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", canonical);
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", canonical);
+  for (const [attribute, prefix] of [["property", "og"], ["name", "twitter"]]) {
+    await expect(page.locator(`meta[${attribute}="${prefix}:description"]`)).toHaveAttribute("content", /Alpha client.*your own authenticated Agent/);
+    await expect(page.locator(`meta[${attribute}="${prefix}:image"]`)).toHaveAttribute("content", `${canonical}assets/showcase.png`);
+    await expect(page.locator(`meta[${attribute}="${prefix}:image:alt"]`)).toHaveAttribute("content", /SIMULATED SESSION.*not live synchronization/);
+  }
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
+  await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute("content", "1200");
+  await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute("content", "760");
+  await expect(page.locator("form, input, textarea")).toHaveCount(0);
+  await expect(page.locator(".trust-note")).toContainText("This page collects no credentials");
+  await expect(page.locator(".trust-note")).toContainText("provider may charge");
+  const faq = page.getByRole("region", { name: "Before you connect" });
+  await expect(faq.getByRole("heading", { level: 3 })).toHaveCount(3);
+  await expect(faq).toContainText("Browser SSH and OAuth are unsupported");
+  await expect(faq).toContainText("computer must stay on and reachable");
+  await expect(faq.getByRole("link", { name: "First-chat guide" })).toHaveAttribute("href", /docs\/getting-started\.md#start-the-conversation$/);
+  expect(failures).toEqual([]);
+});
+
 test("nested Flutter web alpha initializes under the app route", async ({
   page,
 }) => {
@@ -143,11 +168,13 @@ test("nested Flutter web alpha initializes under the app route", async ({
 
 for (const width of [1280, 390]) {
   test(`connection entry works without JavaScript at ${width}px and 200% text`, async ({ browser }) => {
-    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 900 } });
+    const context = await browser.newContext({ javaScriptEnabled: false, reducedMotion: "reduce", viewport: { width, height: 900 } });
     const page = await context.newPage();
     const failures = collectPageFailures(page);
     await page.goto(root, { waitUntil: "networkidle" });
     await expectLanding(page);
+    expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
     await page.keyboard.press("Enter");

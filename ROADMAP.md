@@ -2,8 +2,10 @@
 
 ## North star
 
-Prioritize a 1:1 Hermes Desktop product port through Flutter, using desktop and
-wide web as the Desktop-first fidelity baseline while preserving mobile usability.
+Prioritize Android SSH, profile/bot multi-session chat and touch-first polish
+within the 1:1 official Desktop Flutter port. The [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority)
+supersedes earlier desktop-first/easy-first delivery order, not Desktop fidelity.
+Desktop and wide web remain reference and regression surfaces.
 Desktop feature coverage, navigation, terminology, interactions and recovery
 behavior define the target. The accepted local target is full Desktop functionality
 through a separately designed bounded native integration; remote mode may expose
@@ -27,8 +29,8 @@ Status: Accepted
 Scope: organize the existing owner-approved official Desktop port into outcome
 milestones. This planning request does not start workers, alter schedules, enable
 inference or authorize releases. `TODO.md` remains the work queue; `goals.json`
-remains its execution index. Preserve current CONNECTION-PATHS focus and active
-ownership. The stages below guide scope, not new hard dependencies or deadlines.
+remains its execution index. Preserve active ownership; the current Android
+priority above governs task order without restoring an obsolete focus bias. The stages below guide scope, not new hard dependencies or deadlines.
 
 Planning baseline: Wing `a3b24c9e`; read-only official Agent/Desktop checkout
 `158fd638da1629c8e62caf9ade1515d162def8ab`. This pin is not a remote-latest claim.

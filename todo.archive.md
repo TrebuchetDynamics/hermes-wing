@@ -5673,7 +5673,12 @@ Source section: Now / Next
 
 Source section: Now / Next
 
-- [x] **WING-TASK-408** — Goal: PARITY-COMPOSITION. Keep Chat alive while Settings
+### WING-TASK-408 — historical offline closeout; parent remains open
+
+The earlier checked entry records offline work only. The current unchecked parent
+and WING-TASK-408-LIVE in TODO.md retain all outstanding acceptance.
+
+Goal: PARITY-COMPOSITION. Keep Chat alive while Settings
   and Profiles overlays open and close in the compiled application.
   Payoff: users inspect settings or profiles without losing their draft or stream.
   Touches: lib/router/widgets/, lib/router/providers/, lib/shared/widgets/, lib/features/hermes_chat/screens/, lib/features/settings/screens/, test/router/chat_workspace_overlay_test.dart, test/integration/linux_chat_workspace_overlay_runner_test.dart, integration_test/linux_chat_workspace_overlay_test.dart, integration_test/linux_chat_workspace_stream_test.dart, integration_test/run_linux_chat_workspace_stream.py, playwright/tests/regression/chat-workspace-overlay.spec.mjs, docs/quality/chat-workspace-overlay-browser.md, docs/quality/chat-workspace-overlay-native.md
@@ -5927,3 +5932,45 @@ Section: Now.
   acceptance, partial-delivery evidence and native/live access gates. Planning only;
   no worker, runner or schedule is started by this decision.
   Checks: `flutter test --no-pub --concurrency=1 test/features/enrollment/ test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`; `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before the existing compiled connection/browser matrix. Reuse matching receipts for unchanged inputs; native/live authentication and OS storage/chooser proof remain separately gated.
+
+
+## Owner-retired canary contract — not completed
+
+The owner retired CONNECTION-CRON-CANARY without acceptance on 2026-10-16. The original contract is retained below as history, not an execution instruction.
+
+### CONNECTION-CRON-CANARY — preserved original contract, not completed
+
+Historical Goal: CONNECTION-PATHS. Section: Next.
+  Qualify one implementation canary before restarting the existing cron.
+  Payoff: recurring work produces checked port commits, not status-only success.
+  Sources: [accepted restart plan](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview)
+  and [connection frontier](docs/plans/2026-10-03-desktop-port-goal.md#current-connection-frontier).
+  Graph evidence: partial; source-bound job inspection establishes a paused
+  15-minute job, not installed admission, live ownership or an executed canary.
+  Scope: preserve and finish the current Wing candidate; reconcile existing
+  connection owners; update/read back the existing paused job prompt; qualify
+  one manually triggered occurrence and gated schedule resumption. Use an existing
+  eligible CONNECTION-PATHS implementation task, not duplicate product work.
+  Acceptance: observe safe admission, relevant passing checks, independent review,
+  a scoped implementation commit on canonical main and worker release. Existing
+  chat work, documentation-only commits and job status `ok` do not count. Resume
+  only after all canary evidence passes; read back enabled state and cadence and
+  inspect the first scheduled occurrence. A hard refusal pauses and notifies.
+  Verification: retain exact job/task/run/commit and check receipts; inspect the
+  implementation diff, release proof, scheduler readback and first scheduled result.
+  No fresh worker or scheduler mutation is authorized by this task's creation.
+  Dependencies: CONNECTION-CRON-ADMISSION. Current candidate release and reconciled
+  connection frontier are required before selecting the implementation canary.
+  Ownership: unclaimed coordination task; use the existing job and native task
+  graph. No substitute cron writer, Agent changes, push, release or paid inference.
+
+Current product direction: Wing Link is deprecated, not merely optional. Retained
+legacy tasks and receipts describe existing code, not permission to expand it.
+Implement direct/native replacements or explicit unavailable-capability behavior.
+Do not erase paired state or label removal as feature qualification. Preserve
+active workers and coordinate exact source ownership before dispatch.
+
+
+
+
+<!-- End preserved owner-retired canary contract. -->

@@ -15,6 +15,118 @@ execution index. Keep the existing `CONNECTION-PATHS` focus and active removal
 owner. This page is a marketing/onboarding surface, not permission to redesign the
 Desktop-guided Flutter application or introduce another Agent backend.
 
+## Landing-led product identity across README and docs
+
+Status: Accepted
+
+### Owner direction and boundaries
+
+The owner chooses the current landing page as the visual/communication standard
+and explicitly retains **Your agent. Within reach.** as the headline. README and
+docs should feel like the same product, not engineering artifacts. Keep the
+existing portrait/wing mascot as Wing's permanent identity; do not propose another
+mascot or reopen the rejected gold/cyan marks. The suggestion to simplify fine
+details another roughly 5–10% is **consideration**, not approval to alter the
+master or replace the installed icon. Planning authorizes this saved handoff only,
+not implementation, publication, worker dispatch or timed scheduling.
+
+This current direction supersedes the older proposed headline and fresh whole-site
+composition interview below. Their source observations remain historical, not an
+instruction to rebuild the landing before improving documentation. Keep the
+existing Android/SSH queue order, live owners and deferred real-world checks.
+
+### Current evidence
+
+Inspected canonical `ec91584e` plus the preserved current editorial working copy:
+README is 186 lines, getting-started 311, docs index 221. The landing already uses
+`Your agent.<br /><span>Within reach.</span>`, one clear Connect my Agent action,
+a subordinate preview and a short alpha qualification. It is the reference, not
+an implementation backlog for replacing that headline.
+
+Input-matched desktop/narrow local renders confirm the difference: README already
+has benefits and correct artwork, but qualifications/protocol details still
+interrupt its product story; docs starts with withdrawn-reference, governance and
+evidence prose before Start here. Existing showcase imagery is honestly labeled
+synthetic yet still shows Gateway readiness/echo e2e and retired Office navigation.
+The user supplied an editorial judgment, not a measured conversion or usability
+baseline. The retained Markdown renders are CommonMark approximations, not exact
+GitHub rendering or native-device evidence.
+
+Approved original/master and alpha/platform policies are recorded in
+[branding usage](../../assets/branding/README.md). Their implementation is already
+locally integrated; do not recreate it or treat repository integration as APK or
+public-site delivery. Landing HTML/CSS, README/docs Markdown and the current icon
+remain the implementation sources; screenshots alone do not establish capability.
+
+### Chosen approach — planner calls
+
+Choose **landing-led hierarchy and voice adapted to each surface**. Copy-only
+trimming would leave docs' information architecture unchanged; copying landing CSS
+into Markdown or creating a docs framework would add machinery without solving the
+reader's task. These reversible choices are the planner's calls:
+
+1. README keeps its single project-name heading, approved compact logo, the exact
+   landing headline as a lead, one plain outcome sentence, first-chat CTA and honest
+   preview/build alternatives. Retain the existing 160–180-line target as a soft
+   editorial budget, not permission to delete safety to hit a number. Use standard
+   GitHub Markdown and existing assets, not another banner or simulated dashboard.
+2. Docs index starts with a concise product promise and task routes: first chat,
+   choose a connection, troubleshoot, then build/contribute/reference. Move document
+   ownership, retired-reference explanations and evidence inventories below those
+   paths without deleting them or breaking anchors. The beginner tutorial presents
+   actions and success/recovery signals; detailed protocol/reference stays linked.
+3. Voice is direct, confident and specific: tell the reader what Wing helps them do,
+   what they need and what happens next. Keep Agent/client authority, alpha/source
+   availability, provider costs, credentials, transport/trust and unsupported-mode
+   limits adjacent to the action they constrain. Confidence never means an invented
+   live capability, seamless synchronization, readiness or support guarantee.
+4. Carry the landing's hierarchy, restrained approved artwork, spacing rhythm and
+   purposeful headings into Markdown. Do not force its dark colors/CSS onto GitHub
+   light mode or redesign the Desktop-faithful Flutter app under this docs task.
+   Existing application composition remains with ANDROID-CHAT-TOUCH-POLISH.
+5. Optional icon evaluation compares the unchanged approved artwork at actual
+   16/24/32/48px on light/dark backgrounds. Only if detail noise is evident, show
+   original versus one restrained optical-size derivative, preserving face/wing,
+   silhouette, colors and transparent edges. Treat 5–10% as a request for restraint,
+   not a fabricated numeric simplification score. Default: keep today's icon. Any
+   replacement needs explicit visual selection, regenerated derivatives and fresh
+   pixel/hash/alpha checks. This optional comparison never blocks README/docs work.
+
+Anti-goals: another mascot, a landing rebuild, new framework/dependency/analytics,
+unsafe shorter setup, deleted technical evidence, fabricated proof or app parity,
+unapproved icon replacement, and unrelated queue reprioritization. No new ADR or
+brand-system scaffold is needed.
+
+### Execution and observable acceptance
+
+Reuse LANDING-PAGES-QUALITY and LANDING-PRODUCT-PROOF, in their existing order.
+The first owns focused artifact/content/asset guards; the second first owns the
+coherent README, docs-index and tutorial pass, then the previously accepted current
+product-proof/shared-image/landing/share obligations. Do not close either parent
+from logo integration or README-only progress. No new task ID is needed.
+
+A fresh reader can identify what Wing is, why to use it and their next action near
+the opening; docs user paths precede governance. The three starting paths, exact UI
+labels, safe first no-tools reply, optional bounded Project summary and one existing
+platform-status owner remain. Current captures replace retired/toy selling points
+through the existing guarded producer, with simulation labels intact. Technical
+material is relocated to existing owners, not destroyed. Check links/anchors,
+headings, legal identity/source attribution and claim accuracy separately from tone.
+
+Render README/docs on light/dark compact/wide layouts (planned 360/1280px), with
+readable images, no overflow and keyboard-operable links; preserve semantic content
+at 200% text/zoom and reduced motion where applicable. Compare to the retained
+landing reference, not a subjective perfect score. Preserve GitHub/CommonMark,
+fixture/native/live and published/candidate distinctions. Any optional icon sheet
+must show actual small pixels, not enlarged thumbnail proof alone.
+
+Planned implementation checks reuse the task's focused README/docs/traceability
+contracts plus `test/tooling/wing_branding_assets_test.dart`; preserve negatives and
+add outcome/hierarchy assertions, not brittle prose snapshots. Run the existing
+asset producer only when its fixture/images change and the Pages assembled-artifact
+checks when site/shared artifacts change. New visual work and usability/device
+results are **not run** by this plan. No new publication permission is implied.
+
 ## Backlog connection
 
 `LANDING-FIRST-REPLY` is complete for offline onboarding and archived in
@@ -106,9 +218,10 @@ There is no measured newcomer/first-reply completion baseline in this investigat
 ## Recommended visitor experience
 
 One promise: **Use your existing Hermes Agent from another screen.**
-Proposed hero wording: **Your Hermes Agent. On the screen you need.** Follow with
-one concrete sentence about continuing conversations, inspecting tool work and
-responding to approvals, constrained to verified capabilities.
+The owner now selects the current headline **Your agent. Within reach.** as the
+standard; the older alternative is superseded. Follow with one concrete sentence
+about conversations, tool work and approvals, constrained to verified capabilities.
+See [landing-led identity](#landing-led-product-identity-across-readme-and-docs).
 
 1. **Understand:** compact identity, real product proof, one primary action
    **Connect my Agent**, and an adjacent short **Alpha · bring your own Agent**
@@ -181,11 +294,11 @@ card grid. Preserve the icon and truthful product content. Do not treat the
 current cyan/near-black skin as an immutable brand commitment or replace the
 application's reference-guided visual system through marketing work.
 
-Before the visual implementation, use the established Impeccable surface workflow
-to select/record a complete composition with the owner. Compare a connection-led
-composition with a product-story composition; the former is recommended for the
-chosen audience. This plan does not pretend that a polished mock or a final world
-has already been selected. Keep art direction separate from audience acceptance.
+The owner has now selected the existing landing as the reference; do not restart
+that composition interview. Adapt its hierarchy/voice to README and docs through
+the [current bounded direction](#landing-led-product-identity-across-readme-and-docs).
+The normal named-design-skill policy applies during implementation. Keep optional
+icon-variant selection and device/publication qualification separate.
 
 - First viewport must show benefit, audience, meaningful action and enough readable
   product proof on desktop and compact mobile. Test actual typography/crops rather

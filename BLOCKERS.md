@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T20:45:00Z
 - Answer: Answer in PARITY-NATIVE-LINUX's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PLANGAP-001-2f — USER_INPUT — effort input — unblocks 0
+
+- Task: PLANGAP-001-2f — Accept hash-suffixed task IDs in plan traceability without weakening guards.
+- Needs: worker reported a blocker: Coordinator must provide a corrected baseline, or explicitly expand this task's scope to repair the pre-existing invalid top-level testWidgets invocation in test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59-82 and formatting drift in test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart. Both files are unchanged from baseline. The required analyze/full offlin…
+- Since: 2026-10-18T20:59:27Z
+- Answer: Answer in PLANGAP-001-2f's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

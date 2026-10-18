@@ -5235,6 +5235,7 @@
         "CONNECTION-SETUP-AUTH-MATRIX-LIVE",
         "CONNECTION-TWO-HOST-RECOVERY",
         "PARITYUPDATE-001-aa",
+        "PARITYUPDATE-001-aa-LIVE",
         "PORT-DESKTOP-WELCOME",
         "PORT-DESKTOP-WELCOME-RECOVERY",
         "WING-TASK-405",
@@ -6902,7 +6903,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "PARITYUPDATE-001-aa",
       "PARITYUPDATE-002-5c",
       "PARITYUPDATE-003-b1",
       "PARITYUPDATE-004-48",
@@ -6968,7 +6968,8 @@
       "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE",
       "DOC-NATIVE-FAILURE-BOUNDARY-LIVE",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE",
-      "DEV-001-c7-LIVE"
+      "DEV-001-c7-LIVE",
+      "PARITYUPDATE-001-aa-LIVE"
     ]
   },
   "tasks": [
@@ -7037,14 +7038,6 @@
       "section": "Next",
       "status": "open",
       "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
-    },
-    {
-      "depends_on": [],
-      "goal": "CONNECTION-PATHS",
-      "id": "PARITYUPDATE-001-aa",
-      "section": "Next",
-      "status": "open",
-      "title": "Resolve canonical gateway attachment and recovery contracts"
     },
     {
       "depends_on": [],
@@ -7621,6 +7614,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-OFFICIAL-MATRIX"
+    },
+    {
+      "depends_on": [
+        "PARITYUPDATE-001-aa"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "PARITYUPDATE-001-aa-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYUPDATE-001-aa"
     },
     {
       "depends_on": [
@@ -9043,6 +9046,14 @@
       "section": "Done",
       "status": "done",
       "title": "Establish the authoritative exact session provider/model read"
+    },
+    {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
+      "id": "PARITYUPDATE-001-aa",
+      "section": "Done",
+      "status": "done",
+      "title": "Resolve canonical gateway attachment and recovery contracts"
     },
     {
       "depends_on": [

@@ -502,22 +502,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **PARITYUPDATE-001-aa** — Resolve canonical gateway attachment and recovery contracts
-  Goal: CONNECTION-PATHS
-  Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
-  Sources: [accepted refresh scope](docs/quality/official-desktop-parity-refresh-2026-10-18.md#scope-and-priority), [bounded outcome](docs/quality/official-desktop-parity-refresh-2026-10-18.md#gateway-attachment), [current matrix](docs/product/hermes-desktop-feature-matrix.md#current-product-matrix).
-  Scope: Trace canonical gateway discovery, private per-dial tickets, multiplexed profile ownership, stale-owner recovery and viewer disconnect versus owner shutdown. Compare exact unmodified Agent handlers/nearest tests and current Wing native-serve caller. Document a permissible attach-only path or precise unavailable boundary; no gateway ensure/start/restart, control-ticket mint, runtime installation or UI implementation.
-  Acceptance: Record the exact transport operations, advertisement/grants, connection/profile/home/session identities, native-ticket secret-safe delivery and expiry, stale owner versus denied access, disconnect lifetime and topology distinctions. Reject per-profile serve fallback and local startup after remote failure. Separate any necessary future bounded native design from currently advertised remote operations.
-  Checks: `git diff --check`; `python3 -m json.tool docs/product/hermes-desktop-feature-matrix.json > /dev/null`; source-check every recorded operation against the pinned handler and nearest tests and every citation against exact path/range/SHA-256. These are required future documentation checks, not executed protocol/runtime tests.
-  Dependencies: None. No live target or optional feature is a prerequisite for existing Android work.
-  Ownership: Coordinator; one isolated task writer. Preserve active owners and shared documentation coordination.
-  Touches: docs/quality/canonical-gateway-attachment-contract.md, docs/product/hermes-desktop-feature-matrix.json, docs/product/hermes-desktop-feature-matrix.md
-  Resources: None.
-  Readiness: Accepted read-only contract research/documentation only. Implementation remains gated on exact supported contracts and a separately bounded task; live qualification remains separate.
-  Next action: Trace the pinned HD-LOCAL, HD-HOSTS, HD-RESUME callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/canonical-gateway-attachment-contract.md`.
-  Status: open
-Section: Next.
-
 - [ ] **PARITYUPDATE-002-5c** — Resolve canonical submission, pending queue and clarification contracts
   Goal: CHAT-FIDELITY
   Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
@@ -1618,4 +1602,12 @@ does not mark any check passed or authorize live actions.
   - No platforms were exercised beyond Linux-hosted SDK static tooling. Native SSH/device/secure-storage/live Agent reachability and actual IME/screen-reader behavior remain unqualified here and retain existing live qualification tasks; this review grants no live access.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DEV-001-c7.
+  Status: open
+
+- [ ] PARITYUPDATE-001-aa-LIVE — Live checks for PARITYUPDATE-001-aa
+  Scope: Run the live checks the offline work for PARITYUPDATE-001-aa left pending.
+  Acceptance: Each check passes on the real target:
+  - No product platform was exercised. Named-target canonical attachment/reconnect/disconnect qualification remains separate from this source-only task; retain existing Linux/Android/SSH/remote qualification owners and require a separately admitted implementation before positive canonical-native acceptance.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITYUPDATE-001-aa.
   Status: open

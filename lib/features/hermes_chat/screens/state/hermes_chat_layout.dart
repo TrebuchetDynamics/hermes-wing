@@ -1015,7 +1015,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final showSessionRail = constraints.maxWidth >= 900;
+        // Reserve a readable conversation beside the 280px session inventory.
+        // Smaller workspaces retain the same inventory through the session picker.
+        final showSessionRail =
+            constraints.maxWidth >= 1100 &&
+            !AppShellSessionNavigation.of(context);
         final chatPane = _buildChatPane(
           context: context,
           channel: channel,

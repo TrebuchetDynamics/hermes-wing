@@ -1276,7 +1276,7 @@
           1105
         ],
         "trace": "semantic_source",
-        "observed": "prompt.submit now carries stable submission_id plus owner session and optional images/hidden/HUD/voice/queued metadata. Later receipt validation requires matching identity/status and binds optimistic bubble to durable user_row_id.",
+        "observed": "prompt.submit carries stable submission_id plus owner session and optional images/hidden/HUD/voice/queued metadata. Later receipt validation checks identity/status and binds an optimistic occurrence only if user_row_id is returned; that field is not in the canonical Agent receipt.",
         "sha256": "54127a8b43762a771f67cbef5be47dc4ce2e2b80445e6b00e97cab1282040ea3",
         "url": "https://github.com/NousResearch/hermes-agent/blob/a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70/apps/desktop/src/app/session/hooks/use-prompt-actions/submit.ts#L1080-L1105"
       },
@@ -1290,7 +1290,7 @@
         "lib/features/hermes_chat/presentation/hermes_chat_timeline.dart"
       ],
       "current_wing_subset": "REST/SSE Chat and bounded native serve text generation exist; timeline groups tool activity and reasoning. Native lifecycle uses legacy identityless prompt.submit and marks unknown acknowledgment as uncertain.",
-      "remaining_gap": "Canonical stable admission/durable user-row receipt and pending reconciliation do not exist in Wing. Current native status allowlist is streaming/queued/steered/redirected, not full queued/started/terminal/unknown receipt semantics. Do not claim ACK is output or weaken uncertainty to match optimistic Desktop.",
+      "remaining_gap": "Contract trace: docs/quality/canonical-pending-input-contract.md. Unmodified canonical stable admission/receipt contracts exist but Wing has no consumer; the canonical receipt has no send-time user_row_id (standalone serve differs). Preserve queued/started/terminal/unknown reconciliation, exact explicit retry versus changed send and authoritative Stop uncertainty; do not merely expand Wing's legacy status allowlist.",
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [
@@ -1314,12 +1314,12 @@
           "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/submit.ts",
           "lines": [
             1210,
-            1280
+            1296
           ],
           "trace": "semantic_source",
-          "observed": "Admission receipt validates stable ID/status/session and binds optimistic user occurrence to durable row. Unknown is not automatically rerun.",
+          "observed": "Receipt consumer validates stable ID/status/session and binds only the matching optimistic occurrence when user_row_id is supplied. This conditional standalone-compatible binding does not prove canonical Agent receipts contain row IDs; unknown is not permission to rerun.",
           "sha256": "54127a8b43762a771f67cbef5be47dc4ce2e2b80445e6b00e97cab1282040ea3",
-          "url": "https://github.com/NousResearch/hermes-agent/blob/a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70/apps/desktop/src/app/session/hooks/use-prompt-actions/submit.ts#L1210-L1280"
+          "url": "https://github.com/NousResearch/hermes-agent/blob/a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70/apps/desktop/src/app/session/hooks/use-prompt-actions/submit.ts#L1210-L1296"
         }
       ],
       "wing_evidence": [
@@ -1546,7 +1546,7 @@
         "lib/features/hermes_chat/presentation/hermes_chat_timeline.dart"
       ],
       "current_wing_subset": "Wing has correlated approval actions and ordinary Chat input, but no clarify question/request model, staged batch or clarify.lock caller in lib.",
-      "remaining_gap": "Need authoritative live question identities, staged single/multi/free-text batch, sequential null/answer locks, reconnect lock restoration and skip/cancel semantics. Preview synthetic qids are display-only and ordinary replies are not clarification answers.",
+      "remaining_gap": "Contract trace: docs/quality/canonical-pending-input-contract.md. Generation-bound clarify.respond and opted-in local-viewer clarify.lock batches are distinct unmodified contracts, neither consumed by Wing. Sequential Confirm is not atomic; Skip/timeout retain partial locks. Canonical authoritative batch/lock reconnect projection is absent at this pin; Desktop fixtures/staging do not supply it. Preview qids and ordinary chat are not answers.",
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [],
@@ -1645,7 +1645,7 @@
         "lib/features/hermes_chat/composer/hermes_chat_message_flow.dart"
       ],
       "current_wing_subset": "Wing process-local follow-up FIFO caps five entries, binds to originating session, parks on other sessions, removes entries and sends when idle/supported. Busy text can use existing qualified steering path.",
-      "remaining_gap": "No server-owned pending admission list, cancel/resolve_unknown/steer_queued/atomic replace, stable retry identity or persisted authoritative FIFO projection. Local queue UI/control coverage is not canonical queue parity; reconnect must not replay cached mutations.",
+      "remaining_gap": "Contract trace: docs/quality/canonical-pending-input-contract.md. Agent FIFO, cancel/resolve_unknown and row-advertised steer_queued/replace_queued are source-resolved, not implemented in Wing. Cancel's queued-read/claim race may hard-interrupt and return started; replacement atomically retires old input and appends a new identity at FIFO tail. Local queue controls/drain are not this contract; never replay cached writes on reconnect.",
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [],
@@ -1734,7 +1734,7 @@
         "lib/features/hermes_chat/composer/hermes_chat_message_flow.dart"
       ],
       "current_wing_subset": "Process-local bounded draft store keys gateway/profile/session and generations; captures text and attachment then restores only untouched empty generation. Attachment eviction is visible.",
-      "remaining_gap": "Stable exact submission retry identity and per-pane fresh-draft lifecycle are not modeled. Do not infer disk persistence; multi-conversation drafts remain with existing tabs task, canonical retry identity with admission successor.",
+      "remaining_gap": "Contract trace: docs/quality/canonical-pending-input-contract.md. Exact owner/principal/ID/payload retry versus a changed send is resolved in canonical source but absent from Wing's volatile draft/submission model. A restored draft is not a deduplicated retry; canonical send-time user-row correlation is not supplied by standalone evidence. Per-pane lifecycle remains with the tabs owner; no automatic replay or inferred disk persistence.",
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [],

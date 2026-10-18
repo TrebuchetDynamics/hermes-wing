@@ -624,27 +624,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M3-PROJECT-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M3-PROVIDER-CONTRACT** —  Recheck the existing-profile credential replacement contract.
-  Goal: M3-PROVIDER
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [2026-07-14-milestone2-providers-models](docs/superpowers/plans/2026-07-14-milestone2-providers-models.md) (superseded planning context);
-   [M3-PROVIDER](docs/adr/api-and-state.md#required-agent-owned-mutation-contract).
-  Scope: read-only contract/test/caller trace, including the current direct credential
-  client and provider sheet. Exclude secret acquisition, provider writes, inference,
-  restarts, Agent edits and new Wing Link compatibility operations.
-  Acceptance: compare current Set/Remove/Validate dispatch and exact capability gates
-  with credential IDs, expected revisions, idempotency and separate consent/effects
-  required by the ADR. Name unsupported guarantees and the bounded fail-closed
-  correction with nearest client/channel/widget regressions; do not invent fields.
-  Preserve separate add/remove/assignment/validation outcomes and unavailable controls.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M3-PROVIDER-REMOVAL-CONTRACT** — Goal: M3-PROVIDER. Section: Next. Trace credential removal separately from replacement.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M3-PROVIDER](docs/adr/api-and-state.md#required-agent-owned-mutation-contract).
@@ -1481,4 +1460,13 @@ does not mark any check passed or authorize live actions.
   - Future Project creation qualification requires an approved disposable target and a suitable unmodified Agent contract; no native, browser, Android/device or live service was exercised. This documentation task does not qualify creation, assignment or Project-scoped Chat; M3-PROJECT remains unmet.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M3-PROJECT-CONTRACT.
+  Status: open
+
+- [ ] DOC-M3-PROVIDER-CONTRACT-LIVE — Live checks for DOC-M3-PROVIDER-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M3-PROVIDER-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No live support is qualified. Future isolated Linux UI/provider validation, deployed capability advertisement, secret transport/storage, concurrent-writer/replay and activation checks require an eligible unmodified Agent contract plus separately scoped target/authority/effects consent; current inspected contracts do not establish the ADR guarantees.
+  - Android/device and native UI qualification remain NOT_CHECKED; source and fixture test inspection does not qualify those platforms.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M3-PROVIDER-CONTRACT.
   Status: open

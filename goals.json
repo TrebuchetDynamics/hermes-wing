@@ -2699,6 +2699,7 @@
         "PARITY-NATIVE-RELAUNCH",
         "PARITY-PAIR-READ",
         "VERIFY-LIVE-WORKFLOW-RECOVERY",
+        "VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE",
         "VERIFY-NATIVE-MODEL-RELAUNCH",
         "VERIFY-NATIVE-RESUMED-SEND"
       ],
@@ -6860,7 +6861,6 @@
       "MT-VERIFY-BROWSER-GATES",
       "SECURITY-RETAINED-RELEASE-AUDIT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
-      "VERIFY-LIVE-WORKFLOW-RECOVERY",
       "VERIFY-OMNIROUTE-NODE22-CLOSURE",
       "FILES-TERMINAL-BROWSE",
       "FILES-TERMINAL-DOWNLOAD",
@@ -6921,7 +6921,8 @@
       "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE",
       "PARITY-OFFICIAL-MATRIX-LIVE",
       "CONNECTION-OWNER-RECONNECT-LIVE",
-      "M1-NOTIFICATION-CONTRACT-LIVE"
+      "M1-NOTIFICATION-CONTRACT-LIVE",
+      "VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE"
     ]
   },
   "tasks": [
@@ -7331,16 +7332,6 @@
     },
     {
       "depends_on": [
-        "PARITY-LIVE-WORKFLOW"
-      ],
-      "goal": "M1",
-      "id": "VERIFY-LIVE-WORKFLOW-RECOVERY",
-      "section": "Next",
-      "status": "open",
-      "title": "Keep the qualified live exact session and canonical outcomes through read-only reconnect and route return without replay"
-    },
-    {
-      "depends_on": [
         "FIX-NPM-AUDIT"
       ],
       "goal": "SECURITY",
@@ -7544,6 +7535,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Qualify exact advertised atomic restore authority before native recovery"
+    },
+    {
+      "depends_on": [
+        "VERIFY-LIVE-WORKFLOW-RECOVERY"
+      ],
+      "goal": "M1",
+      "id": "VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for VERIFY-LIVE-WORKFLOW-RECOVERY"
     },
     {
       "depends_on": [
@@ -8865,6 +8866,16 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify grouped-recents disclosure and adaptive-return recovery through real controls"
+    },
+    {
+      "depends_on": [
+        "PARITY-LIVE-WORKFLOW"
+      ],
+      "goal": "M1",
+      "id": "VERIFY-LIVE-WORKFLOW-RECOVERY",
+      "section": "Done",
+      "status": "done",
+      "title": "Keep the qualified live exact session and canonical outcomes through read-only reconnect and route return without replay"
     },
     {
       "depends_on": [

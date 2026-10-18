@@ -6568,3 +6568,29 @@ Source section: Now / Next
   Ownership: unassigned; verify existing proposal/board ownership before execution. No worker dispatched by this entry.
   Next action: record the bounded source/capability assessment in the existing notification proposal, retaining Proposed architecture and exact missing-contract findings rather than implementing delivery.
   Touches: docs/product/notification-contract-proposal.md
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **VERIFY-LIVE-WORKFLOW-RECOVERY** — Keep the qualified live exact session and canonical outcomes through read-only reconnect and route return without replay
+  Keep the qualified exact live session usable after reconnect and route return.
+  Goal: M1
+Section: Next.
+  Payoff: distinguish canonical recovery from cached UI and prevent duplicate work.
+  Sources: [daily workflow acceptance](docs/plans/2026-10-03-desktop-daily-workflow.md#acceptance-matrix)
+  and [supported continuation](docs/quality/native-resumed-send.md#remaining-qualification-and-delivery).
+  Scope: the predecessor's isolated QA target, production channel/Chat and nearest
+  recovery tests; repair reproduced Wing defects only. Exclude new inference,
+  Agent changes, personal credentials/state, shared gateway restarts and release.
+  Acceptance: after the predecessor's completed/Stopped runs and resumed send,
+  explicitly reconnect and leave/return to Chat. Read back the same profile/session,
+  canonical history and terminal outcomes. Record zero added sends, creates, model
+  writes, approval responses or Stop requests. Failed reads allow explicit retry
+  without replay; delayed old-owner reads cannot settle the current session.
+  Run bounded native/live read-only checks and nearest deterministic regressions.
+  Dependencies: PARITY-LIVE-WORKFLOW. Not eligible before it passes.
+  Ownership: unclaimed in this index; check tracker leases before execution.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Only after the predecessor actual live workflow and the existing disposable authentication/target grants are qualified, perform the bounded read-only native reconnect/route-return procedure in the linked receipt. Assert zero added submissions or other mutations; offline parent closeout or fixtures do not satisfy that live prerequisite.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/

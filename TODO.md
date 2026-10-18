@@ -362,28 +362,6 @@ Section: Next.
 
 ### **P2** — Remaining supported feature parity and accessibility
 
-- [ ] **VERIFY-LIVE-WORKFLOW-RECOVERY** — Keep the qualified live exact session and canonical outcomes through read-only reconnect and route return without replay
-  Keep the qualified exact live session usable after reconnect and route return.
-  Goal: M1
-Section: Next.
-  Payoff: distinguish canonical recovery from cached UI and prevent duplicate work.
-  Sources: [daily workflow acceptance](docs/plans/2026-10-03-desktop-daily-workflow.md#acceptance-matrix)
-  and [supported continuation](docs/quality/native-resumed-send.md#remaining-qualification-and-delivery).
-  Scope: the predecessor's isolated QA target, production channel/Chat and nearest
-  recovery tests; repair reproduced Wing defects only. Exclude new inference,
-  Agent changes, personal credentials/state, shared gateway restarts and release.
-  Acceptance: after the predecessor's completed/Stopped runs and resumed send,
-  explicitly reconnect and leave/return to Chat. Read back the same profile/session,
-  canonical history and terminal outcomes. Record zero added sends, creates, model
-  writes, approval responses or Stop requests. Failed reads allow explicit retry
-  without replay; delayed old-owner reads cannot settle the current session.
-  Run bounded native/live read-only checks and nearest deterministic regressions.
-  Dependencies: PARITY-LIVE-WORKFLOW. Not eligible before it passes.
-  Ownership: unclaimed in this index; check tracker leases before execution.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Only after the predecessor actual live workflow and the existing disposable authentication/target grants are qualified, perform the bounded read-only native reconnect/route-return procedure in the linked receipt. Assert zero added submissions or other mutations; offline parent closeout or fixtures do not satisfy that live prerequisite.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
-
 - [ ] **VERIFY-OMNIROUTE-NODE22-CLOSURE** —  Verify retired OmniRoute paths and retained dependencies on Node.js 22.
   Goal: SECURITY
 Section: Next.
@@ -1637,4 +1615,14 @@ does not mark any check passed or authorize live actions.
   - Suspended/terminated Android/iOS and browser push remain unavailable pending an authoritative notification enrollment/routing/rotation/revocation/redemption contract, separate architecture/privacy/provider or relay consent decisions, and real platform delivery evidence. No provider or relay was selected or activated.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: M1-NOTIFICATION-CONTRACT.
+  Status: open
+
+- [ ] VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE — Live checks for VERIFY-LIVE-WORKFLOW-RECOVERY
+  Scope: Run the live checks the offline work for VERIFY-LIVE-WORKFLOW-RECOVERY left pending.
+  Acceptance: Each check passes on the real target:
+  - Actual-live prerequisite remains unqualified: PARITY-LIVE-WORKFLOW-LIVE is open and the native generation driver still unconditionally refuses LIVE_INFERENCE_BOUND_NOT_QUALIFIED. Require supported authoritative physical provider-attempt admission and the predecessor's actual completed/Stopped runs, relaunch restoration and intentional resumed send; offline predecessor closeout is not sufficient.
+  - After predecessor actual-live qualification, use its same disposable target/profile/session and valid secret-safe read grants for bounded native reconnect and Chat route return. Compare canonical history and terminal outcomes against a fresh baseline and independently record zero added sends, creates, model writes, approval responses and Stop requests, including failed attempts. No credentials, live service or native GTK process accessed in this task.
+  - Live failed-read Retry or delayed-owner qualification requires naturally occurring failures or separately authorized disposable fault controls; deterministic coverage does not qualify live faults. Missing canonical readback or independent mutation observations must remain inconclusive. No service disruption, new inference, replacement session, personal state or shared gateway restart is authorized.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: VERIFY-LIVE-WORKFLOW-RECOVERY.
   Status: open

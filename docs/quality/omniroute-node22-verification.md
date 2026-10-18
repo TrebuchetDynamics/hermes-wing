@@ -2,6 +2,9 @@
 
 Task: `VERIFY-OMNIROUTE-NODE22-CLOSURE`. Required surviving offline checks pass;
 historical Go checks remain unavailable. **Not SECURITY or release acceptance.**
+The later [retained release audit](security-retained-release-audit.md) records a
+fresh unthresholded root audit and compares these inputs on its named candidate;
+it does not replace this receipt or qualify a release.
 
 ## Candidate and environment
 

@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
-
-- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
-- Needs: worker reported a blocker: Existing DOC-PARITY-TAB-CONTRACT/source owners must provide the mandatory Chat-suite repairs and reconcile the new syntax failure at test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59-82 and 4-pixel overflow at test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart:1524. The original 44 listener failures and disclosure/position failures still occur. Only the au… (+3 more in report.json)
-- Since: 2026-10-18T20:25:50Z
-- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

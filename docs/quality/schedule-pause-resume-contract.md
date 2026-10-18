@@ -138,8 +138,9 @@ the exact operation and grants, explicit current profile/job identities, an
 authoritative concurrency check, safe unknown-outcome/replay reconciliation and
 bounded redacted results. These are acceptance gaps, not proposed wire fields or
 permission for a shell bridge, direct Agent-file write or shadow scheduler.
-The already indexed `DOC-M4-SCHEDULE-DELIVERY-CONTRACT` is a separate read-only
-follow-up; this task neither traces nor authorizes delivery changes.
+The separate read-only [delivery-configuration trace](schedule-delivery-configuration-contract.md)
+(`DOC-M4-SCHEDULE-DELIVERY-CONTRACT`) records the existing-job delivery edit and
+its admission gaps; neither trace authorizes delivery changes.
 
 No browser, native UI, physical device, live authentication, schedule execution or
 delivery was exercised. Any eventual native/live pause/resume journey needs its

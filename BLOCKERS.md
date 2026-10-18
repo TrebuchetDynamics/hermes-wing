@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T05:27:05Z
 - Answer: Answer in VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 44
+
+- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
+- Needs: merge conflict; worker and canonical checkout preserved
+- Since: 2026-10-18T08:15:07Z
+- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/), then rescope or split DOC-PARITY-TAB-CONTRACT in its TODO.md entry. The runner reruns it when the entry changes.
+
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

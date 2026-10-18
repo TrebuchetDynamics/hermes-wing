@@ -6627,3 +6627,117 @@ Section: Next.
   Checks: On Node.js 22 run `npm audit --audit-level=high`, `node --test test/tooling/omniroute_retirement_test.mjs`, and `flutter test --no-pub test/features/profiles/profile_catalog_test.dart`; `git diff --check`. Preserve the Acceptance above: any missing or retired historical Go check is recorded explicitly as unavailable/not run, never fabricated or silently passed. No installer recreation or audit suppression.
   Touches: package.json, package-lock.json, test/tooling/, test/features/profiles/, docs/quality/, pubspec.lock
   Touches widened by the runner from worker evidence: pubspec.lock
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **CONNECTION-SETUP-AUTH-MATRIX** —  Finish the
+  Goal: CONNECTION-PATHS
+Section: Next.
+  remaining CONNECTION-SAVED-WORKFLOWS matrix: Local existing-install/setup-needed
+  enrollment recovery, remaining native/live saved connection qualification,
+  full two-host profile/session collision qualification, and live Remote authentication.
+  Optional Local setup's isolated-screen consent, Stop, inspection-only retry and
+  disposed-controller fencing now have bounded compiled fixture evidence. Reuse
+  [that completed slice](docs/quality/local-setup-recovery.md). Production enrollment
+  and native fixture composition belong to CONNECTION-LOCAL-ENROLLMENT-NATIVE,
+  now done for the production-routing/native fixture slice. See the
+  [native enrollment receipt](docs/quality/local-setup-enrollment-native.md).
+  Current direct-only Linux replacement subset delivered at origin/main
+  782ed30d562b0d38a8c5c69ab430ef7d3de644b7 after independent native review.
+  Four GTK logical-size/text-scale journeys prove missing/default/selected home
+  metadata, public Back/cancel preservation, sanitized denial and explicit retry
+  with the retained saved Agent profile/session and inert legacy records. Production
+  code needed no fix. Independent review passed analysis and 20 focused Flutter
+  tests; coordinator integration tooling union passed 109 Python tests using the
+  cached isolated asyncssh environment after the bare interpreter lacked asyncssh.
+  Real authentication, physical keychain and actual OS chooser/window sizing
+  remain NOT_CHECKED. Android manual preparation and retained saved-owner recovery
+  fixture/runner delivered at origin/main ae64b0f5c1a6f2dd39096d233dcf6ba5caefe45d
+  after independent native review. Reused exact-source review evidence: 40 Dart
+  and 5 Python tests, analysis, formatting, shell syntax and diff checks passed;
+  fresh coordinator integration union passed 52 Flutter tests with an unchanged
+  dependency lock. See [Android direct setup evidence](docs/quality/android-direct-setup-enrollment.md).
+  Native Android execution, actual Termux installation, live authentication,
+  physical keystore and assistive-technology output remain NOT_CHECKED. These
+  deliveries qualify their declared fixture subsets, not this parent or either
+  retirement parent; do not reimplement or repeat the delivered harness.
+  Do not dispatch duplicate routing work. CONNECTION-REMOTE-AUTH-EXPLANATION is
+  also done: [public guidance and recovery](docs/quality/remote-auth-explanation.md)
+  have focused widget and native Linux fixture evidence. Reuse those checks;
+  do not repeat unsupported-OAuth copy work. OAuth implementation, actual install/adopt
+  and live authentication remain unqualified. Two-host
+  keyboard selection/retry also has [native fixture evidence](docs/quality/two-host-recovery-native.md), not live
+  authentication or full matrix qualification.
+  CONNECTION-PRODUCTION-BROWSER-MATRIX is done for combined production-router
+  Chromium composition. Reuse [its frozen-candidate results](docs/quality/connection-production-browser-matrix.md);
+  do not repeat that fixture matrix or treat legacy setup as replacement Local support.
+  First-run entry and saved edit/Test already have bounded fixture evidence;
+  reuse it rather than reimplementing those controls. Native edit/Test belongs
+  to M1-SAVED-ENDPOINT-EDIT-NATIVE and must not be dispatched twice.
+  Roadmap stages 1-2: [forward port roadmap](ROADMAP.md#flutter-port-execution-roadmap).
+  Use the existing task for API onboarding/native/live matrix gaps; offline UI
+  implementation remains independent of missing live-only credentials or budgets.
+  Stranger-first-success acceptance from the owner review: an existing Hermes CLI
+  user follows public-main guidance to enable an authenticated HTTP API, confirm
+  the supported Wing capability contract, open Wing and receive one real reply
+  without guessing. CLI success alone is not API readiness; an OpenAI-compatible
+  /v1 URL alone does not prove Wing-native capability/session/run support.
+  Baseline: cached-toolchain UI preview passed; this real onboarding journey is
+  NOT_CHECKED. Target: one independently observed complete journey per named target,
+  with every documented prerequisite, outcome and recovery step accounted for.
+  Verify: record non-secret source/platform identity, explicit API discovery and
+  one owned conversation reply; distinguish build, persistence, connect and generation.
+  Guard: approved disposable QA authentication and qualified provider-call budget;
+  no personal credential discovery, implicit gateway restart, public binding,
+  CORS wildcard, token in argv/URL, or new inference authority from this plan.
+  Start with offline prerequisite/error/guide checks; native and hosted browser
+  topologies are separate cells. Full tool activity/approval/Stop/restoration is
+  the subsequent PARITY-LIVE-WORKFLOW outcome, not inferred from the first reply.
+  Plan inputs: [README API prerequisite](README.md#connect-your-assistant),
+  [official API guide](https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server),
+  [Wing native capability URL](lib/core/hermes/client/hermes_api_config.dart).
+  No new goal, dependency release, task closure or implementation dispatch.
+  Scope: remaining setup/authentication checks through current typed contracts
+  and public controls; no new SSH/OAuth authority,
+  remote installs or personal runtime changes. Native/live checks are separately
+  attributed and remain NOT_CHECKED until executed.
+  Dependencies:
+  CONNECTION-SAVED-HOST-OWNER-SAFETY.
+  Payoff: finish onboarding without repeating delivered rename/remove or Remote retry.
+  Delivered subset: CONNECTION-REMOTE-AUTH-STORAGE-RETRY now covers deterministic
+  auth rejection, uncertain save and explicit retry; native/live authentication
+  and secure storage remain unqualified. See the
+  [Remote receipt](docs/quality/remote-connection-retry.md).
+  Sources: [CONN-2/3/5/6](docs/product/prd.md#connection-path-requirements),
+  [saved-host limits](docs/quality/saved-connection-owner-safety.md#acceptance-mapping),
+  [forward roadmap](ROADMAP.md#flutter-port-execution-roadmap).
+  Historical restart acceptance remains in its plan; it is not a prerequisite
+  for the current product authentication matrix.
+  Graph evidence: partial; no current repository graph. Existing source-bound
+  matrix receipts establish delivered subsets, not installed dispatcher admission.
+  Acceptance: public-control widget regressions and a freshly compiled Chromium
+  matrix prove cancellation, one explicit setup/connect action, sanitized failures,
+  explicit retry and stable saved/live identity. Record exact requests and zero
+  stale-owner mutations; distinguish unsupported OAuth from authenticated success.
+  First-run Local / SSH / Remote entry must not require Wing Link installation,
+  pairing or credentials. Reuse direct Agent channel/storage and the reference
+  flow, not the phone/computer/pairing chooser. Where managed SSH or an Agent
+  operation is unsupported, explain that limit without forcing host management.
+  Prove zero Wing Link requests for Agent-only connect and recovery, including
+  absent or failed management access. Legacy raw records stay inert and preserved.
+  See the [accepted decision](docs/adr/product.md#decision) and
+  [Agent-only verification](docs/test-plan.md#connection-path-verification).
+  Ownership: unclaimed; the owner released the stale claim on 2026-10-16.
+  Status: done
+  Touches: lib/core/hermes/, lib/features/enrollment/, lib/features/hermes_chat/,
+  test/core/hermes/, test/features/enrollment/, test/features/hermes_chat/,
+  integration_test/, playwright/tests/, docs/quality/
+  Owner decision: release the claim and keep this task incomplete. Preserve
+  authentication, device, secure-storage and provider-call-budget gates, all
+  partial-delivery evidence and existing no-spending/no-personal-credential limits.
+  Planning only; no worker, runner, schedule or live test starts from this answer.
+  Retained checks: `flutter test --no-pub --concurrency=1 test/features/enrollment/ test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`; `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before the existing compiled connection/browser matrix. Reuse matching receipts for unchanged inputs; native/live authentication and OS storage/chooser proof remain separately gated.
+  Checks: Reuse the linked delivered fixture/native receipts for unchanged inputs; run only remaining matrix cells under the existing authentication, target and provider-call-budget gates. For changed UI inputs, `flutter test --no-pub --concurrency=1 test/features/enrollment/ test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`; `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before compiled browser checks; `git diff --check`. Retained checks below are historical procedures, not a reason to repeat completed subsets or claim live authentication.

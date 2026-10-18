@@ -5226,6 +5226,7 @@
         "CONNECTION-SAVED-WORKFLOWS",
         "CONNECTION-SAVED-WORKFLOWS-LIVE",
         "CONNECTION-SETUP-AUTH-MATRIX",
+        "CONNECTION-SETUP-AUTH-MATRIX-LIVE",
         "CONNECTION-TWO-HOST-RECOVERY",
         "PORT-DESKTOP-WELCOME",
         "PORT-DESKTOP-WELCOME-RECOVERY",
@@ -6861,14 +6862,12 @@
       "MT-VERIFY-BROWSER-GATES",
       "SECURITY-RETAINED-RELEASE-AUDIT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
-      "VERIFY-OMNIROUTE-NODE22-CLOSURE",
       "FILES-TERMINAL-BROWSE",
       "FILES-TERMINAL-DOWNLOAD",
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "CONNECTION-SETUP-AUTH-MATRIX",
       "DOC-M3-CONTRACT-CHECKPOINT",
       "DOC-M3-ROLLBACK-EVIDENCE",
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
@@ -6922,7 +6921,8 @@
       "PARITY-OFFICIAL-MATRIX-LIVE",
       "CONNECTION-OWNER-RECONNECT-LIVE",
       "M1-NOTIFICATION-CONTRACT-LIVE",
-      "VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE"
+      "VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE",
+      "CONNECTION-SETUP-AUTH-MATRIX-LIVE"
     ]
   },
   "tasks": [
@@ -6965,16 +6965,6 @@
       "section": "Next",
       "status": "open",
       "title": "Retire Wing Link packaging and legacy setup after Agent-only native Local flows and migration checks pass"
-    },
-    {
-      "depends_on": [
-        "CONNECTION-SAVED-HOST-OWNER-SAFETY"
-      ],
-      "goal": "CONNECTION-PATHS",
-      "id": "CONNECTION-SETUP-AUTH-MATRIX",
-      "section": "Next",
-      "status": "open",
-      "title": "Finish Local existing-install/setup-needed enrollment and Remote auth/storage retry; qualify saved endpoint edit/test and explain unsupported OAuth through public controls"
     },
     {
       "depends_on": [],
@@ -7400,6 +7390,16 @@
     },
     {
       "depends_on": [
+        "CONNECTION-SETUP-AUTH-MATRIX"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-SETUP-AUTH-MATRIX-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for CONNECTION-SETUP-AUTH-MATRIX"
+    },
+    {
+      "depends_on": [
         "DOC-API-CONFORMANCE"
       ],
       "goal": "API-CONFORMANCE",
@@ -7707,6 +7707,16 @@
       "section": "Done",
       "status": "done",
       "title": "Complete and prove owner-safe Local/Remote and saved-connection workflows"
+    },
+    {
+      "depends_on": [
+        "CONNECTION-SAVED-HOST-OWNER-SAFETY"
+      ],
+      "goal": "CONNECTION-PATHS",
+      "id": "CONNECTION-SETUP-AUTH-MATRIX",
+      "section": "Done",
+      "status": "done",
+      "title": "Finish Local existing-install/setup-needed enrollment and Remote auth/storage retry; qualify saved endpoint edit/test and explain unsupported OAuth through public controls"
     },
     {
       "depends_on": [],

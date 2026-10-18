@@ -130,6 +130,36 @@
 
 # Design System: Hermes Wing — first desktop shell
 
+## Official Desktop shared visual foundation
+
+Target: a near-literal Flutter port of official Hermes Desktop, adapted for touch,
+not a Telegram-inspired client. Reference pinned from GitHub at
+`ccc695635094d7615373db267b77f894d978b1a0`:
+
+- `apps/shared/src/theme-presets.ts:125-181`: canonical Nous light/dark seeds.
+- `apps/desktop/src/themes/context.tsx:270-289,338-389`: applied seed/mix rules.
+- `apps/desktop/src/styles.css:297-416,476-494`: derived surfaces/text and fonts.
+- `apps/desktop/DESIGN.md`: flat hierarchy, shared primitives and Chat as home.
+
+Port the applied surfaces, not merely the boot CSS fallbacks. Light chrome is
+92% white plus 8% `#f3f3f3`; dark chrome is 74% `#0d1117` plus 26% `#0d0d0e`.
+Sidebar seeds are `#f6f8fa` / `#010409`. Editor seeds mix at 22% / 38% against
+`#fcfcfc` / `#161618`. Primary is `#0053fd` / `#4a84fe`; primary foreground is
+white / `#161616`. Text uses the source foreground at 94% / 74% opacity over
+its surface. Use those same roles on compact and wide layouts, with one token
+owner consumed by the Flutter default theme and sidebar. Preserve palette IDs
+and explicitly saved alternative palettes. No new network font dependency.
+
+Touch adaptations retain 48 logical-pixel action targets, current readable body
+sizes, platform font fallback, 200% scaling, keyboard focus and reduced motion.
+Do not copy 24px desktop hit areas onto phones. This slice does not change the
+transcript/composer structure, session model, Agent transport or feature gates.
+
+Required verification: source-derived theme expectations, light/dark text/action
+contrast, existing alternate-palette persistence, shell regression, analyzer,
+formatter and rendered compact/wide production controls. Rendered browser evidence
+is not Android, native keychain, live Agent, full typography or full design parity.
+
 ## Overview
 
 **Creative North Star: "The Hermes Desktop Task Shell"**

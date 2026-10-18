@@ -20,12 +20,12 @@ void main() {
       final rail = tester.widget<ColoredBox>(
         find.descendant(of: sidebar, matching: find.byType(ColoredBox)).first,
       );
-      expect(rail.color, const Color(0xfff8f8f8));
+      expect(rail.color, const Color(0xfff6f8fa));
       expect(
         Theme.of(
           tester.element(find.byType(TextField)),
         ).scaffoldBackgroundColor,
-        Colors.white,
+        Color.lerp(const Color(0xfff3f3f3), Colors.white, 0.92),
       );
       final button = tester.widget<TextButton>(
         find.widgetWithText(TextButton, 'Chat'),
@@ -59,8 +59,9 @@ void main() {
         (style.secondary, style.rail),
         (style.accent, style.hover),
       ]) {
-        final a = pair.$1.computeLuminance();
-        final b = pair.$2.computeLuminance();
+        final background = Color.alphaBlend(pair.$2, style.rail);
+        final a = Color.alphaBlend(pair.$1, background).computeLuminance();
+        final b = background.computeLuminance();
         final contrast = ((a > b ? a : b) + 0.05) / ((a < b ? a : b) + 0.05);
         expect(
           contrast,
@@ -136,13 +137,21 @@ void main() {
         return data;
       }))!;
       final rect = tester.getRect(toggle);
+      final focusStyle = AppShellDesktopStyle.forBrightness(Brightness.light);
+      final focusPixel = Color.alphaBlend(
+        focusStyle.secondary,
+        focusStyle.rail,
+      );
+      final red = (focusPixel.r * 255).round();
+      final green = (focusPixel.g * 255).round();
+      final blue = (focusPixel.b * 255).round();
       var outlinePixels = 0;
       for (var y = rect.top.toInt(); y < rect.top.toInt() + 3; y++) {
         for (var x = rect.left.toInt() + 12; x < rect.right.toInt() - 12; x++) {
           final offset = (y * 1280 + x) * 4;
-          if (pixels.getUint8(offset) == 0x55 &&
-              pixels.getUint8(offset + 1) == 0x55 &&
-              pixels.getUint8(offset + 2) == 0x55) {
+          if ((pixels.getUint8(offset) - red).abs() <= 1 &&
+              (pixels.getUint8(offset + 1) - green).abs() <= 1 &&
+              (pixels.getUint8(offset + 2) - blue).abs() <= 1) {
             outlinePixels++;
           }
         }
@@ -237,11 +246,13 @@ void main() {
                 rendered.getUint8(index + 1),
                 rendered.getUint8(index + 2),
               );
-              expect(
-                color,
+              final paintedOutline = Color.alphaBlend(
                 style.secondary,
-                reason: '$brightness $icon edge $point',
+                style.rail,
               );
+              expect((color.r - paintedOutline.r).abs(), lessThan(0.005));
+              expect((color.g - paintedOutline.g).abs(), lessThan(0.005));
+              expect((color.b - paintedOutline.b).abs(), lessThan(0.005));
               final a = color.computeLuminance();
               final b = style.rail.computeLuminance();
               expect(

@@ -31,6 +31,28 @@ The paths below exist locally; source inspection is not an exercised Desktop UI.
 Screenshots listed above and historical slices below are leads, not current-source
 parity, runtime or acceptance receipts.
 
+## Official GitHub comparison — current replacement scope
+
+Reference: [official Desktop at ccc695635094](https://github.com/NousResearch/hermes-agent/tree/ccc695635094d7615373db267b77f894d978b1a0/apps/desktop).
+The following mapping supersedes withdrawn comparisons for these surfaces only.
+It is source inspection, not executed Desktop or Android parity.
+
+| Surface | Official source under `apps/desktop/` | Flutter gap and delivery order |
+| --- | --- | --- |
+| Shared design | `DESIGN.md`; `src/styles.css`; `src/themes/presets.ts`; shared `apps/shared/src/theme-presets.ts` | Port canonical Nous seeds and applied surface mixes to shared Flutter tokens first. The isolated visual foundation changes default colors, not full composition, fonts or every preset. |
+| Navigation | `DESIGN.md:46-78` | Chat is home; Skills, Messaging and Artifacts are durable destinations; Settings, Cron and Profiles are short-task overlays. Wing retains a different working destination inventory. Do not create empty routes merely to match labels. |
+| Chat | `src/app/chat/composer/controls.tsx`; `DESIGN.md:106-126` | Reuse existing transcript, tools, approval ownership, drafts and Send/Stop/queue. Port flat transcript/composer structure and responsive controls; current bubbles and composition remain gaps. |
+| Workspace | `src/components/pane-shell/tree/renderer/tab-strip-scroll.ts` | Deliver independent per-session drafts, scroll and exact host/profile/session ownership before claiming multi-tab parity. Projects require separately verified Agent operations. |
+| Bots | `src/plugins/hermes-bots/canonical-chat.ts` | Verify exact `Bot Chat` lookup including hidden rows and lineage, concurrent adoption and failure behavior before adding roster UI. Contacts and retired Office are not Bots. |
+| Settings and Skills | `src/app/settings/index.tsx`; `src/app/capabilities/index.tsx` | Adapt official organization/search using existing qualified editors and inventories. Full Skills Hub, connectors and plugin management require verified contracts. |
+| Artifacts and Messaging | `src/app/artifacts/index.tsx`; `src/app/messaging/index.tsx` | Separate verticals after exact authenticated inventory/configuration contracts. Transcript export is not Artifacts; Connections is not Messaging. |
+| Working panels | `src/app/contrib/panes.tsx` | Preview, Files, Review and Terminal need bounded platform and Agent contracts. Never port Electron IPC as a shell bridge or unrestricted remote filesystem interface. |
+
+Acceptance remains per surface: recognizable official hierarchy and interactions,
+compact and wide rendering, enlarged text/keyboard/reduced motion, explicit owner
+recovery and separate Android/live evidence. Missing contracts stay unavailable.
+The shared theme slice does not close the remaining rows or qualify the prior APK.
+
 ## Current source-backed gaps
 
 Desktop references below are relative to `withdrawn source citation`.

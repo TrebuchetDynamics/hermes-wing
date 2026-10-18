@@ -580,6 +580,7 @@
       "status": "partial",
       "tasks": [
         "DEV-001-c7",
+        "DEV-001-c7-LIVE",
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
         "MT-VERIFY-BROWSER-GATES",
@@ -6901,7 +6902,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "DEV-001-c7",
       "PARITYUPDATE-001-aa",
       "PARITYUPDATE-002-5c",
       "PARITYUPDATE-003-b1",
@@ -6967,7 +6967,8 @@
       "SECURITY-RETAINED-RELEASE-AUDIT-LIVE",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE",
       "DOC-NATIVE-FAILURE-BOUNDARY-LIVE",
-      "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE"
+      "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE",
+      "DEV-001-c7-LIVE"
     ]
   },
   "tasks": [
@@ -6990,14 +6991,6 @@
       "section": "Next",
       "status": "open",
       "title": "Android chat touch polish"
-    },
-    {
-      "depends_on": [],
-      "goal": "INTEGRATION",
-      "id": "DEV-001-c7",
-      "section": "Next",
-      "status": "open",
-      "title": "Use official Flutter MCP for a bounded Wing architecture review"
     },
     {
       "depends_on": [],
@@ -7202,6 +7195,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for CONNECTION-SETUP-AUTH-MATRIX"
+    },
+    {
+      "depends_on": [
+        "DEV-001-c7"
+      ],
+      "goal": "INTEGRATION",
+      "id": "DEV-001-c7-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DEV-001-c7"
     },
     {
       "depends_on": [
@@ -7868,6 +7871,14 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify same-profile/session collisions across two saved hosts through native selection, delayed failure and explicit retry"
+    },
+    {
+      "depends_on": [],
+      "goal": "INTEGRATION",
+      "id": "DEV-001-c7",
+      "section": "Done",
+      "status": "done",
+      "title": "Use official Flutter MCP for a bounded Wing architecture review"
     },
     {
       "depends_on": [],

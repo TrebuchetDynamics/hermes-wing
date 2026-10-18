@@ -7510,3 +7510,22 @@ Source section: Now / Next
   deterministic proof, not a product repair or an observed acoustic result.
   No engine invocation, playback, capture, device selection or live receipt is
   authorized by this read-only preparation.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DEV-001-c7** — Use official Flutter MCP for a bounded Wing architecture review.
+  Goal: INTEGRATION
+Section: Next.
+  Status: done
+  Sources: [owner-confirmed developer-tool scope](docs/plans/2026-10-18-flutter-mcp-architecture.md#scope), [full tooling plan](docs/plans/2026-10-18-flutter-mcp-architecture.md), [planner decisions and observed baseline](docs/plans/2026-10-18-flutter-mcp-architecture.md#observed-baseline), [existing checks](CONTRIBUTING.md#required-checks), [tool-selection findings](docs/plans/2026-10-18-flutter-mcp-architecture.md#deliberately-not-adopted).
+  Payoff: architecture recommendations use actual SDK symbols and diagnostics without adding an app-side AI engine or another tooling stack.
+  Scope: a read-only source/test architecture assessment of the existing HermesApiChannel -> ManagedSshConnectionController -> connection-panel/form path. Use the installed official Dart MCP via a temporary stdio session restricted to analyze_files,lsp,roots; select this task's isolated workspace, not another worker or upstream checkout. Capture exact SDK/source identity and compare the nearest error/owner/cancellation tests. Record findings in docs/quality/flutter-mcp-architecture-review.md and link from this plan. No product refactor, code fixes, dependency/install/configuration edits, hook or scheduler setup, live Agent/device access, or runtime debugging is authorized by this task.
+  Acceptance: real MCP symbol locations and scoped applyFixes=false diagnostics agree with direct source; tool inventory contains only the allowed names. A concise assessment traces callers and ownership/failure handoffs, names test coverage and gaps, and separates inspected risk from reproduced behavior. Propose at most three evidence-backed changes, reusing existing Riverpod/channel boundaries; no new architecture layer without a demonstrated need. Reuse existing SSH feedback planning if it addresses the same finding rather than create duplicate implementation. Verify server cleanup and unchanged source/manifests/locks. Keep current analyzer/tests and Agent authority intact. Explicitly state that a clean analyzer does not establish good architecture, runtime correctness or native SSH qualification; temporary MCP access is not persistent native connector installation.
+  Checks: record `git rev-parse HEAD HEAD^{tree}`, `git status --short`, `dart --version` and `dart mcp-server --help`; initialize a temporary `dart mcp-server --disable=all --enable=analyze_files,lsp,roots` session with only this workspace root. Inspect tools/list; use tools/call lsp resolveWorkspaceSymbol and analyze_files on the named channel/controller/presentation sources with applyFixes=false. Preserve bounded source/tool/result identity privately; do not enable protocol logs. Compare source/test findings and dispose the owned server. Recheck tracked status and manifest/lock hashes; verify changed Markdown links and `git diff --check`. Test runs/Flutter runtime attachment are outside this read-only review; later implementation retains its own mandatory focused and broader checks.
+  Dependencies: None.
+  Ownership: unclaimed; planning only. Existing app writers keep their workspaces and inputs; perform the review on a captured source without modifying their code or contracts.
+  Touches: docs/quality/flutter-mcp-architecture-review.md, docs/plans/2026-10-18-flutter-mcp-architecture.md
+  Next action: use the already-proven temporary official MCP route to assess the SSH failure/cleanup/presentation boundary; record concrete findings and the smallest proposed correction, not an implementation or a generic architecture rewrite.

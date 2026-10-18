@@ -502,20 +502,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **DEV-001-c7** — Use official Flutter MCP for a bounded Wing architecture review.
-  Goal: INTEGRATION
-Section: Next.
-  Status: open
-  Sources: [owner-confirmed developer-tool scope](docs/plans/2026-10-18-flutter-mcp-architecture.md#scope), [full tooling plan](docs/plans/2026-10-18-flutter-mcp-architecture.md), [planner decisions and observed baseline](docs/plans/2026-10-18-flutter-mcp-architecture.md#observed-baseline), [existing checks](CONTRIBUTING.md#required-checks), [tool-selection findings](docs/plans/2026-10-18-flutter-mcp-architecture.md#deliberately-not-adopted).
-  Payoff: architecture recommendations use actual SDK symbols and diagnostics without adding an app-side AI engine or another tooling stack.
-  Scope: a read-only source/test architecture assessment of the existing HermesApiChannel -> ManagedSshConnectionController -> connection-panel/form path. Use the installed official Dart MCP via a temporary stdio session restricted to analyze_files,lsp,roots; select this task's isolated workspace, not another worker or upstream checkout. Capture exact SDK/source identity and compare the nearest error/owner/cancellation tests. Record findings in docs/quality/flutter-mcp-architecture-review.md and link from this plan. No product refactor, code fixes, dependency/install/configuration edits, hook or scheduler setup, live Agent/device access, or runtime debugging is authorized by this task.
-  Acceptance: real MCP symbol locations and scoped applyFixes=false diagnostics agree with direct source; tool inventory contains only the allowed names. A concise assessment traces callers and ownership/failure handoffs, names test coverage and gaps, and separates inspected risk from reproduced behavior. Propose at most three evidence-backed changes, reusing existing Riverpod/channel boundaries; no new architecture layer without a demonstrated need. Reuse existing SSH feedback planning if it addresses the same finding rather than create duplicate implementation. Verify server cleanup and unchanged source/manifests/locks. Keep current analyzer/tests and Agent authority intact. Explicitly state that a clean analyzer does not establish good architecture, runtime correctness or native SSH qualification; temporary MCP access is not persistent native connector installation.
-  Checks: record `git rev-parse HEAD HEAD^{tree}`, `git status --short`, `dart --version` and `dart mcp-server --help`; initialize a temporary `dart mcp-server --disable=all --enable=analyze_files,lsp,roots` session with only this workspace root. Inspect tools/list; use tools/call lsp resolveWorkspaceSymbol and analyze_files on the named channel/controller/presentation sources with applyFixes=false. Preserve bounded source/tool/result identity privately; do not enable protocol logs. Compare source/test findings and dispose the owned server. Recheck tracked status and manifest/lock hashes; verify changed Markdown links and `git diff --check`. Test runs/Flutter runtime attachment are outside this read-only review; later implementation retains its own mandatory focused and broader checks.
-  Dependencies: None.
-  Ownership: unclaimed; planning only. Existing app writers keep their workspaces and inputs; perform the review on a captured source without modifying their code or contracts.
-  Touches: docs/quality/flutter-mcp-architecture-review.md, docs/plans/2026-10-18-flutter-mcp-architecture.md
-  Next action: use the already-proven temporary official MCP route to assess the SSH failure/cleanup/presentation boundary; record concrete findings and the smallest proposed correction, not an implementation or a generic architecture rewrite.
-
 - [ ] **PARITYUPDATE-001-aa** — Resolve canonical gateway attachment and recovery contracts
   Goal: CONNECTION-PATHS
   Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
@@ -1624,4 +1610,12 @@ does not mark any check passed or authorize live actions.
   - On that approved artifact, establish the pending-configuration ordering and actual settlement for stop/disposal, then observe no late audio, replay or stale callback; verify retained text/draft, zero automatic capture/re-arm/sends and bounded diagnostic privacy. If ordering cannot be established on the unchanged artifact, leave that branch NOT_CHECKED. No physical or acoustic acceptance is claimed.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-VOICE-OUTPUT-CANCEL-EVIDENCE.
+  Status: open
+
+- [ ] DEV-001-c7-LIVE — Live checks for DEV-001-c7
+  Scope: Run the live checks the offline work for DEV-001-c7 left pending.
+  Acceptance: Each check passes on the real target:
+  - No platforms were exercised beyond Linux-hosted SDK static tooling. Native SSH/device/secure-storage/live Agent reachability and actual IME/screen-reader behavior remain unqualified here and retain existing live qualification tasks; this review grants no live access.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DEV-001-c7.
   Status: open

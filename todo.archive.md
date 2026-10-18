@@ -7571,3 +7571,24 @@ Source section: Now / Next
   Next action: Trace the pinned HD-CHAT, HD-DRAFT, HD-QUEUE, HD-CLARIFY callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/canonical-pending-input-contract.md`.
   Status: done
 Section: Next.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **PARITYUPDATE-003-b1** — Resolve connection-specific remote dashboard OAuth contracts
+  Goal: ACCOUNT
+  Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
+  Sources: [accepted refresh scope](docs/quality/official-desktop-parity-refresh-2026-10-18.md#scope-and-priority), [bounded outcome](docs/quality/official-desktop-parity-refresh-2026-10-18.md#remote-oauth), [current matrix](docs/product/hermes-desktop-feature-matrix.md#current-product-matrix).
+  Scope: Trace remote dashboard OAuth browser return/cookie partition, connection-specific draft identity, fresh per-dial ticket and logout/cancel target fencing through exact Agent handlers/tests and Wing token-only connection path. Keep provider-account OAuth and Cloud topology distinct. No login, account change, browser authorization, cookie/credential acquisition or implementation.
+  Acceptance: Name exact auth operations, origins/redirect restrictions, grants and target identities; credential persistence and ephemeral handoff; cancellation, stale target and sign-out/revocation outcomes. Record platform feasibility/unavailable outcomes under current secure storage and direct-Agent boundaries. Do not acquire secrets or turn source availability into credential/runtime qualification.
+  Checks: `git diff --check`; `python3 -m json.tool docs/product/hermes-desktop-feature-matrix.json > /dev/null`; source-check every recorded operation against the pinned handler and nearest tests and every citation against exact path/range/SHA-256. These are required future documentation checks, not executed protocol/runtime tests.
+  Dependencies: None. No live target or optional feature is a prerequisite for existing Android work.
+  Ownership: Coordinator; one isolated task writer. Preserve active owners and shared documentation coordination.
+  Touches: docs/quality/remote-dashboard-oauth-contract.md, docs/product/hermes-desktop-feature-matrix.json, docs/product/hermes-desktop-feature-matrix.md
+  Resources: None.
+  Readiness: Accepted read-only contract research/documentation only. Implementation remains gated on exact supported contracts and a separately bounded task; live qualification remains separate.
+  Next action: Trace the pinned HD-OAUTH callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/remote-dashboard-oauth-contract.md`.
+  Status: done
+Section: Next.

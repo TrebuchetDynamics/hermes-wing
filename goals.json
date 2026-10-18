@@ -5658,7 +5658,8 @@
         "DOC-ACCOUNT-CONTRACT-LIVE",
         "DOC-ACCOUNT-REVOCATION-EVIDENCE",
         "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE",
-        "PARITYUPDATE-003-b1"
+        "PARITYUPDATE-003-b1",
+        "PARITYUPDATE-003-b1-LIVE"
       ],
       "title": "Qualify account/OAuth/pools/credits/wallet authority before exposure"
     },
@@ -6904,7 +6905,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "PARITYUPDATE-003-b1",
       "PARITYUPDATE-004-48",
       "WING-001-b3",
       "PLANGAP-001-2f",
@@ -6970,7 +6970,8 @@
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE",
       "DEV-001-c7-LIVE",
       "PARITYUPDATE-001-aa-LIVE",
-      "PARITYUPDATE-002-5c-LIVE"
+      "PARITYUPDATE-002-5c-LIVE",
+      "PARITYUPDATE-003-b1-LIVE"
     ]
   },
   "tasks": [
@@ -7039,14 +7040,6 @@
       "section": "Next",
       "status": "open",
       "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
-    },
-    {
-      "depends_on": [],
-      "goal": "ACCOUNT",
-      "id": "PARITYUPDATE-003-b1",
-      "section": "Next",
-      "status": "open",
-      "title": "Resolve connection-specific remote dashboard OAuth contracts"
     },
     {
       "depends_on": [],
@@ -7627,6 +7620,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITYUPDATE-002-5c"
+    },
+    {
+      "depends_on": [
+        "PARITYUPDATE-003-b1"
+      ],
+      "goal": "ACCOUNT",
+      "id": "PARITYUPDATE-003-b1-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYUPDATE-003-b1"
     },
     {
       "depends_on": [
@@ -9065,6 +9068,14 @@
       "section": "Done",
       "status": "done",
       "title": "Resolve canonical submission, pending queue and clarification contracts"
+    },
+    {
+      "depends_on": [],
+      "goal": "ACCOUNT",
+      "id": "PARITYUPDATE-003-b1",
+      "section": "Done",
+      "status": "done",
+      "title": "Resolve connection-specific remote dashboard OAuth contracts"
     },
     {
       "depends_on": [

@@ -613,6 +613,38 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get chatLiveVoiceTitle => 'Live voice';
+
+  @override
+  String get chatLiveVoiceStartAction => 'Start Live voice';
+
+  @override
+  String get chatLiveVoiceConsentTitle => 'Start Live voice?';
+
+  @override
+  String get chatLiveVoiceConsentBody =>
+      'For this session, Wing will keep listening, send recognized turns automatically and speak replies aloud. Speak while a reply plays to interrupt it. Microphone and speech services may process audio on your device or through the connected Agent. Mute the microphone or end at any time. Your saved speech preference will not change. This uses speech recognition and reply playback, not a realtime voice model.';
+
+  @override
+  String get chatLiveVoiceUnavailableTitle => 'Live voice unavailable';
+
+  @override
+  String get chatLiveVoiceUnavailableBody =>
+      'Live voice needs both microphone capture and speech playback. Check Voice & speech settings and device services. You can continue in text or dictate a draft separately.';
+
+  @override
+  String get chatLiveVoiceMuteMicrophone => 'Mute microphone';
+
+  @override
+  String get chatLiveVoiceUnmuteMicrophone => 'Unmute microphone';
+
+  @override
+  String get chatLiveVoiceMicrophoneMuted => 'Microphone muted';
+
+  @override
+  String get chatLiveVoiceEndAction => 'End · return to text';
+
+  @override
   String get chatVoiceMuteOutputAction => 'Mute speech';
 
   @override

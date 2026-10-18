@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/features/settings/providers/voice_settings_provider.dart';
@@ -29,6 +30,219 @@ Future<void> _revealVoiceOptions(WidgetTester tester) async {
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({
+      'wing.voice.speak_replies_enabled': true,
+    });
+  });
+  testWidgets(
+    'Live voice is an explicit session-only conversation at 390 / 200%',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel();
+      final capture = _LiveCaptureService();
+      final tts = _LiveSpeechService();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            wingVoiceSettingsProvider.overrideWith(
+              () => _TestVoiceSettingsController(const WingVoiceSettings()),
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(2),
+                disableAnimations: true,
+              ),
+              child: child!,
+            ),
+            home: HermesChatScreen(
+              voiceCaptureServiceOverride: capture,
+              textToSpeechServiceOverride: tts,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('hermes-composer-field')),
+        'draft to preserve',
+      );
+      final start = find.byKey(const ValueKey('hermes-live-voice-start'));
+      expect(start.hitTestable(), findsOneWidget);
+      await tester.tap(start);
+      await tester.pumpAndSettle();
+      expect(find.text('Start Live voice?'), findsOneWidget);
+      expect(capture.calls, 0);
+      final consent = find.byKey(const ValueKey('hermes-live-voice-consent'));
+      await tester.ensureVisible(consent);
+      await tester.tap(consent);
+      await tester.pumpAndSettle();
+      expect(capture.calls, 1);
+      expect(find.text('Live voice'), findsOneWidget);
+      capture.complete('first synthetic question');
+      await tester.pumpAndSettle();
+      expect(tts.spoken, ['echo: first synthetic question']);
+      expect(capture.calls, 2);
+      expect(find.text('Listening for interruption'), findsOneWidget);
+      capture.emit('a different follow-up');
+      await tester.pumpAndSettle();
+      expect(tts.stops, 1);
+      expect(capture.calls, 2);
+      capture.complete('a different follow-up');
+      await tester.pumpAndSettle();
+      expect(channel.sentVoiceTranscripts, [
+        'first synthetic question',
+        'a different follow-up',
+      ]);
+      expect(tts.spoken, [
+        'echo: first synthetic question',
+        'echo: a different follow-up',
+      ]);
+      final mute = find.byKey(const ValueKey('hermes-voice-mute-microphone'));
+      await tester.ensureVisible(mute);
+      await tester.tap(mute);
+      await tester.pumpAndSettle();
+      expect(find.text('Microphone muted'), findsOneWidget);
+      final calls = capture.calls;
+      capture.complete('muted result must not send');
+      await tester.pumpAndSettle();
+      expect(channel.sentVoiceTranscripts.length, 2);
+      expect(capture.calls, calls);
+      await tester.ensureVisible(mute);
+      await tester.tap(mute);
+      await tester.pumpAndSettle();
+      expect(capture.calls, calls + 1);
+      final end = find.byKey(const ValueKey('hermes-voice-mode-end-button'));
+      await tester.ensureVisible(end);
+      await tester.tap(end);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('hermes-voice-mode-surface')),
+        findsNothing,
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const ValueKey('hermes-composer-field')),
+            )
+            .controller!
+            .text,
+        'draft to preserve',
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HermesChatScreen)),
+      );
+      expect(
+        container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
+        isFalse,
+      );
+      capture.complete('late result after end');
+      await tester.pumpAndSettle();
+      expect(channel.sentVoiceTranscripts, [
+        'first synthetic question',
+        'a different follow-up',
+      ]);
+      expect(tts.spoken.length, 2);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('disabling voice ends an active Live microphone immediately', (
+    tester,
+  ) async {
+    final capture = _LiveCaptureService();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _LiveSpeechService(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('hermes-live-voice-start')));
+    await tester.pumpAndSettle();
+    expect(capture.calls, 1);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    container
+        .read(wingVoiceSettingsProvider.notifier)
+        .setContinuousVoiceEnabled(false);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('hermes-voice-mode-surface')),
+      findsNothing,
+    );
+  });
+
+  for (final changeOwner in [false, true]) {
+    testWidgets(
+      'Live consent rejects a stale start; owner change $changeOwner',
+      (tester) async {
+        final channel = FakeHermesChannel();
+        final capture = _LiveCaptureService();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              hermesChannelProvider.overrideWithValue(channel),
+              wingVoiceSettingsProvider.overrideWith(
+                () => _TestVoiceSettingsController(const WingVoiceSettings()),
+              ),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: HermesChatScreen(
+                voiceCaptureServiceOverride: capture,
+                textToSpeechServiceOverride: _LiveSpeechService(),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('hermes-live-voice-start')));
+        await tester.pumpAndSettle();
+        if (changeOwner) {
+          await channel.selectProfile('replacement');
+        } else {
+          final container = ProviderScope.containerOf(
+            tester.element(find.byType(HermesChatScreen)),
+          );
+          container
+              .read(wingVoiceSettingsProvider.notifier)
+              .setContinuousVoiceEnabled(false);
+        }
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-live-voice-consent')),
+        );
+        await tester.pumpAndSettle();
+        expect(capture.calls, 0);
+        expect(channel.sentVoiceTranscripts, isEmpty);
+        expect(
+          find.byKey(const ValueKey('hermes-voice-mode-surface')),
+          findsNothing,
+        );
+      },
+    );
+  }
+
   testWidgets(
     'mobile voice mute stays reachable during playback at 200% text',
     (tester) async {
@@ -135,25 +349,28 @@ void main() {
             findsOneWidget,
           );
           expect(find.text('Playing assistant reply'), findsNothing);
-          await tester.tap(find.text('End hands-free listening'));
+          await tester.tap(find.text('Mute microphone'));
           await tester.pumpAndSettle();
           expect(capture.cancelCalls, 1);
         } else {
-          await tester.tap(find.text('End hands-free listening'));
+          await tester.tap(find.text('Mute microphone'));
           await tester.pumpAndSettle();
           expect(capture.cancelCalls, 1);
           expect(tts.stopCalls, 0);
-          final composer = tester.widget<TextField>(
-            find.byKey(const ValueKey('hermes-composer-field')),
+          expect(find.text('Microphone muted'), findsOneWidget);
+          expect(
+            find.byKey(const ValueKey('hermes-voice-mode-surface')),
+            findsOneWidget,
           );
-          expect(composer.enabled, isTrue);
-          expect(composer.decoration?.hintText, 'Message Hermes…');
           await tester.tap(
-            find.byKey(const ValueKey('hermes-tts-stop-button')),
+            find.byKey(const ValueKey('hermes-voice-stop-output')),
           );
           await tester.pumpAndSettle();
           expect(tts.stopCalls, 1);
         }
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-voice-mode-end-button')),
+        );
         await tester.pump(const Duration(seconds: 1));
       },
     );
@@ -196,7 +413,10 @@ void main() {
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+            home: HermesChatScreen(
+              voiceCaptureServiceOverride: capture,
+              textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+            ),
           ),
         ),
       );
@@ -234,7 +454,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+          ),
         ),
       ),
     );
@@ -248,7 +471,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(capture.cancelCalls, 0);
     expect(find.text('Unmute speech'), findsOneWidget);
-    await tester.tap(find.text('End hands-free listening'));
+    await tester.tap(find.text('Mute microphone'));
     await tester.pumpAndSettle();
     expect(capture.cancelCalls, 1);
     capture.complete('discarded after pause');
@@ -451,6 +674,7 @@ void main() {
   testWidgets('paperclip picks and sends images and text files', (
     tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
     final channel = FakeHermesChannel();
     var pickerCalls = 0;
     var pickTextFile = false;
@@ -538,6 +762,7 @@ void main() {
   testWidgets('attachment follow-up waits in the busy queue and sends next', (
     tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);
     final png = Uint8List.fromList([
@@ -835,6 +1060,7 @@ void main() {
   testWidgets('keyboard image insertion stages and sends a sniffed image', (
     tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);
     final png = Uint8List.fromList([
@@ -992,7 +1218,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+          ),
         ),
       ),
     );
@@ -1164,7 +1393,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+          ),
         ),
       ),
     );
@@ -1198,7 +1430,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+          ),
         ),
       ),
     );
@@ -1341,45 +1576,54 @@ void main() {
     );
   });
 
-  testWidgets('Hermes voice switch persists the hands-free reply preference', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel();
-    final capture = _ControlledVoiceCaptureService();
+  testWidgets(
+    'Live entry asks for consent without persisting the reply preference',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      final capture = _ControlledVoiceCaptureService();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          hermesChannelProvider.overrideWithValue(channel),
-          wingVoiceSettingsProvider.overrideWith(
-            () => _TestVoiceSettingsController(
-              const WingVoiceSettings(speakRepliesEnabled: false),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            wingVoiceSettingsProvider.overrideWith(
+              () => _TestVoiceSettingsController(
+                const WingVoiceSettings(speakRepliesEnabled: false),
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: HermesChatScreen(
+              voiceCaptureServiceOverride: capture,
+              textToSpeechServiceOverride: _RecordingTextToSpeechService(),
             ),
           ),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await _revealVoiceOptions(tester);
-    await tester.tap(
-      find.byKey(const ValueKey('hermes-continuous-voice-switch')),
-    );
-    await tester.pump();
+      await _revealVoiceOptions(tester);
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-continuous-voice-switch')),
+      );
+      await tester.pump();
 
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(HermesChatScreen)),
-    );
-    expect(
-      container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
-      isTrue,
-    );
-  });
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HermesChatScreen)),
+      );
+      expect(find.text('Start Live voice?'), findsOneWidget);
+      expect(capture.captureCalls, 0);
+      expect(
+        container.read(wingVoiceSettingsProvider).speakRepliesEnabled,
+        isFalse,
+      );
+      await tester.tap(find.text('Continue in text'));
+      await tester.pumpAndSettle();
+      expect(capture.captureCalls, 0);
+    },
+  );
 
   for (final useMenu in [false, true]) {
     testWidgets('dictation stays a draft; use menu $useMenu', (tester) async {
@@ -1397,7 +1641,10 @@ void main() {
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+            home: HermesChatScreen(
+              voiceCaptureServiceOverride: capture,
+              textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+            ),
           ),
         ),
       );
@@ -1440,7 +1687,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+          ),
         ),
       ),
     );
@@ -1512,7 +1762,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HermesChatScreen(voiceCaptureServiceOverride: capture),
+          home: HermesChatScreen(
+            voiceCaptureServiceOverride: capture,
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
+          ),
         ),
       ),
     );
@@ -1568,16 +1821,13 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
       await tester.pumpAndSettle();
 
+      expect(find.text('Live voice unavailable'), findsOneWidget);
       expect(
-        find.byKey(const ValueKey('hermes-voice-playback-unavailable')),
+        find.textContaining('needs both microphone capture'),
         findsOneWidget,
       );
-      expect(find.text('Voice output unavailable'), findsOneWidget);
-      expect(find.textContaining('reply is available as text'), findsOneWidget);
-      expect(
-        find.textContaining('Voice input remains available'),
-        findsOneWidget,
-      );
+      expect(capture.captureCalls, 0);
+      expect(channel.sentVoiceTranscripts, isEmpty);
       expect(find.text('Continue in text'), findsOneWidget);
       expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
 
@@ -1587,7 +1837,7 @@ void main() {
         find.byKey(const ValueKey('hermes-voice-playback-unavailable')),
         findsNothing,
       );
-      expect(find.text('echo: play this reply'), findsOneWidget);
+      expect(find.text('Live voice unavailable'), findsNothing);
     },
   );
 
@@ -1598,11 +1848,12 @@ void main() {
         overrides: [
           hermesChannelProvider.overrideWithValue(FakeHermesChannel()),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: HermesChatScreen(
-            voiceCaptureServiceOverride: _FailingVoiceCaptureService(),
+            voiceCaptureServiceOverride: const _FailingVoiceCaptureService(),
+            textToSpeechServiceOverride: _RecordingTextToSpeechService(),
           ),
         ),
       ),
@@ -1619,6 +1870,62 @@ void main() {
     expect(error.flagsCollection.isLiveRegion, isTrue);
     semantics.dispose();
   });
+}
+
+class _LiveCaptureService
+    implements VoiceCaptureService, VoiceCaptureProgressService {
+  final _partials = StreamController<String>.broadcast();
+  Completer<VoiceCapture>? pending;
+  int calls = 0;
+  @override
+  Stream<String> get partialTranscripts => _partials.stream;
+  @override
+  Future<VoiceCapture> capture({required Duration timeout}) {
+    calls++;
+    pending = Completer<VoiceCapture>();
+    return pending!.future;
+  }
+
+  void emit(String text) => _partials.add(text);
+  void complete(String text) {
+    if (pending == null || pending!.isCompleted) return;
+    pending!.complete(
+      VoiceCapture(
+        audio: Uint8List(0),
+        transcript: text,
+        duration: const Duration(seconds: 1),
+        confidence: 1,
+      ),
+    );
+  }
+
+  @override
+  Future<void> cancel() async {}
+}
+
+class _LiveSpeechService implements TextToSpeechService {
+  final spoken = <String>[];
+  final pending = <Completer<void>>[];
+  int stops = 0;
+  @override
+  Future<void> speak(String text) {
+    spoken.add(text);
+    final completion = Completer<void>();
+    pending.add(completion);
+    return completion.future;
+  }
+
+  @override
+  Future<void> stop() async {
+    stops++;
+    for (final completion in pending) {
+      if (!completion.isCompleted) completion.complete();
+    }
+    pending.clear();
+  }
+
+  @override
+  Future<void> dispose() => stop();
 }
 
 class _FailingVoiceCaptureService implements VoiceCaptureService {

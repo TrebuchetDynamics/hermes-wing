@@ -2449,7 +2449,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final strings = AppLocalizations.of(context);
     final capturing = _voiceInputController.capturing;
     final speaking = _voiceInputController.speaking;
-    final phase = capturing
+    final phase = _voiceInputController.microphoneMuted
+        ? strings.chatLiveVoiceMicrophoneMuted
+        : capturing
         ? speaking
               ? strings.chatVoiceInterruptionLabel
               : strings.chatLayoutListeningLabel
@@ -2486,7 +2488,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      strings.chatLayoutHandsFreeVoiceLabel,
+                      strings.chatLiveVoiceTitle,
                       style: Theme.of(
                         context,
                       ).textTheme.labelLarge?.copyWith(color: colors.onSurface),
@@ -2546,13 +2548,28 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 },
               ),
               TextButton.icon(
-                label: Text(strings.chatVoicePauseMicrophoneAction),
-                icon: const Icon(Icons.mic_off_outlined),
-                onPressed: _voiceInputController.pauseMicrophone,
+                key: const ValueKey('hermes-voice-mute-microphone'),
+                label: Text(
+                  _voiceInputController.microphoneMuted
+                      ? strings.chatLiveVoiceUnmuteMicrophone
+                      : strings.chatLiveVoiceMuteMicrophone,
+                ),
+                icon: Icon(
+                  _voiceInputController.microphoneMuted
+                      ? Icons.mic_off_outlined
+                      : Icons.mic_outlined,
+                ),
+                onPressed: () {
+                  if (_voiceInputController.microphoneMuted) {
+                    unawaited(_voiceInputController.unmuteMicrophone());
+                  } else {
+                    _voiceInputController.muteMicrophone();
+                  }
+                },
               ),
               TextButton.icon(
                 key: const ValueKey('hermes-voice-mode-end-button'),
-                label: Text(strings.chatVoiceEndAction),
+                label: Text(strings.chatLiveVoiceEndAction),
                 icon: const Icon(Icons.close_rounded),
                 onPressed: _voiceInputController.pause,
               ),
@@ -2653,6 +2670,21 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
               _buildMicButton(canSendTurns),
               _buildSendButton(channel, canSendTurns),
             ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              key: const ValueKey('hermes-live-voice-start'),
+              icon: const Icon(Icons.record_voice_over_outlined),
+              label: Text(strings.chatLiveVoiceStartAction),
+              onPressed:
+                  canSendTurns &&
+                      ref
+                          .watch(wingVoiceSettingsProvider)
+                          .continuousVoiceEnabled
+                  ? () => _setContinuousVoice(true)
+                  : null,
+            ),
           ),
           if (_composerVoiceOptionsExpanded)
             Wrap(
@@ -2805,12 +2837,75 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
   }
 
   void _setContinuousVoice(bool value) {
-    ref.read(wingVoiceSettingsProvider.notifier).setSpeakRepliesEnabled(value);
-    if (value) {
-      unawaited(_voiceInputController.enableContinuous());
-    } else {
+    if (!value) {
       _voiceInputController.pause();
+      return;
     }
+    unawaited(_startLiveVoice());
+  }
+
+  Future<void> _startLiveVoice() async {
+    final channel = ref.read(hermesChannelProvider);
+    final isCurrent = _draftCaptureGuard(channel);
+    if (!isCurrent() ||
+        channel.state.isServeReadOnly ||
+        !ref.read(wingVoiceSettingsProvider).continuousVoiceEnabled) {
+      return;
+    }
+    final strings = AppLocalizations.of(context);
+    final capture =
+        widget.voiceCaptureServiceOverride ??
+        ref.read(hermesVoiceCaptureServiceProvider);
+    final tts =
+        widget.textToSpeechServiceOverride ??
+        ref.read(hermesTextToSpeechServiceProvider);
+    if (capture == null || tts == null) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(strings.chatLiveVoiceUnavailableTitle),
+          content: Text(strings.chatLiveVoiceUnavailableBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(strings.chatLayoutContinueInTextAction),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    if (!ref.read(wingVoiceSettingsProvider).speakRepliesEnabled) {
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          scrollable: true,
+          title: Text(strings.chatLiveVoiceConsentTitle),
+          content: Text(strings.chatLiveVoiceConsentBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(strings.chatLayoutContinueInTextAction),
+            ),
+            FilledButton(
+              key: const ValueKey('hermes-live-voice-consent'),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(strings.chatLiveVoiceStartAction),
+            ),
+          ],
+        ),
+      );
+      if (accepted != true) return;
+    }
+    if (!mounted ||
+        !isCurrent() ||
+        !ref.read(wingVoiceSettingsProvider).continuousVoiceEnabled) {
+      return;
+    }
+    _composerFocusNode.unfocus();
+    unawaited(
+      _voiceInputController.enableContinuous(sessionSpeechConsent: true),
+    );
   }
 
   Widget _buildContinuousVoiceSwitch(bool canSendTurns) {

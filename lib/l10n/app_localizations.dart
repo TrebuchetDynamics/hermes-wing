@@ -1120,6 +1120,66 @@ abstract class AppLocalizations {
   /// **'{title} (continued)'**
   String chatTranscriptContinuedTools(String title);
 
+  /// No description provided for @chatLiveVoiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live voice'**
+  String get chatLiveVoiceTitle;
+
+  /// No description provided for @chatLiveVoiceStartAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Live voice'**
+  String get chatLiveVoiceStartAction;
+
+  /// No description provided for @chatLiveVoiceConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Live voice?'**
+  String get chatLiveVoiceConsentTitle;
+
+  /// No description provided for @chatLiveVoiceConsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For this session, Wing will keep listening, send recognized turns automatically and speak replies aloud. Speak while a reply plays to interrupt it. Microphone and speech services may process audio on your device or through the connected Agent. Mute the microphone or end at any time. Your saved speech preference will not change. This uses speech recognition and reply playback, not a realtime voice model.'**
+  String get chatLiveVoiceConsentBody;
+
+  /// No description provided for @chatLiveVoiceUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live voice unavailable'**
+  String get chatLiveVoiceUnavailableTitle;
+
+  /// No description provided for @chatLiveVoiceUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Live voice needs both microphone capture and speech playback. Check Voice & speech settings and device services. You can continue in text or dictate a draft separately.'**
+  String get chatLiveVoiceUnavailableBody;
+
+  /// No description provided for @chatLiveVoiceMuteMicrophone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute microphone'**
+  String get chatLiveVoiceMuteMicrophone;
+
+  /// No description provided for @chatLiveVoiceUnmuteMicrophone.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute microphone'**
+  String get chatLiveVoiceUnmuteMicrophone;
+
+  /// No description provided for @chatLiveVoiceMicrophoneMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone muted'**
+  String get chatLiveVoiceMicrophoneMuted;
+
+  /// No description provided for @chatLiveVoiceEndAction.
+  ///
+  /// In en, this message translates to:
+  /// **'End · return to text'**
+  String get chatLiveVoiceEndAction;
+
   /// No description provided for @chatVoiceMuteOutputAction.
   ///
   /// In en, this message translates to:

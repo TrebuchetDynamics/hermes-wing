@@ -178,6 +178,16 @@
   "@chatTranscriptContinuedTools": {
     "placeholders": {"title": {"type": "String"}}
   },
+  "chatLiveVoiceTitle": "Live voice",
+  "chatLiveVoiceStartAction": "Start Live voice",
+  "chatLiveVoiceConsentTitle": "Start Live voice?",
+  "chatLiveVoiceConsentBody": "For this session, Wing will keep listening, send recognized turns automatically and speak replies aloud. Speak while a reply plays to interrupt it. Microphone and speech services may process audio on your device or through the connected Agent. Mute the microphone or end at any time. Your saved speech preference will not change. This uses speech recognition and reply playback, not a realtime voice model.",
+  "chatLiveVoiceUnavailableTitle": "Live voice unavailable",
+  "chatLiveVoiceUnavailableBody": "Live voice needs both microphone capture and speech playback. Check Voice & speech settings and device services. You can continue in text or dictate a draft separately.",
+  "chatLiveVoiceMuteMicrophone": "Mute microphone",
+  "chatLiveVoiceUnmuteMicrophone": "Unmute microphone",
+  "chatLiveVoiceMicrophoneMuted": "Microphone muted",
+  "chatLiveVoiceEndAction": "End · return to text",
   "chatVoiceMuteOutputAction": "Mute speech",
   "chatVoiceUnmuteOutputAction": "Unmute speech",
   "chatVoicePauseMicrophoneAction": "End hands-free listening",

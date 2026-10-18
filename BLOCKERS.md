@@ -48,6 +48,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T11:18:03Z
 - Answer: Fix DOC-M4-MCP-CONFIG-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-DOC-M4-SCHEDULE-DELIVERY-CONTRACT — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-M4-SCHEDULE-DELIVERY-CONTRACT — Goal: M4-SCHEDULES. Section: Next. Trace one schedule-delivery configuration operation.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T11:27:26Z
+- Answer: Fix DOC-M4-SCHEDULE-DELIVERY-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-SECURITY-RETAINED-RELEASE-AUDIT — USER_DECISION — effort decision — unblocks 1
 
 - Task: SECURITY-RETAINED-RELEASE-AUDIT — Goal: SECURITY.

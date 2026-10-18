@@ -6764,3 +6764,23 @@ Section: Next.
   and ownership. Ownership: unclaimed in this index; verify tracker first.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-PROJECT-CONTRACT** —  Trace one authoritative Project creation operation.
+  Goal: M3-PROJECT
+Section: Next.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [2026-09-01_111952-project-setup-contract](docs/plans/2026-09-01_111952-project-setup-contract.md) (superseded planning context)
+  [2026-08-30-directory-selection-project-readiness](docs/superpowers/plans/2026-08-30-directory-selection-project-readiness.md) (superseded planning context);
+   [M3-PROJECT](docs/product/prd.md#core-journeys).
+  Scope: Project models/callers and upstream read-only contracts; exclude Agent edits, arbitrary paths, global selection and compatibility expansion.
+  Acceptance: Record the exact operation/grant/identity/concurrency contract, or its absence, and one bounded next slice. Assignment and scoped Chat remain separately gated.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/quality/

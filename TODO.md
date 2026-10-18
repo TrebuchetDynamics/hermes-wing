@@ -624,22 +624,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M3-PROJECT-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M3-PROJECT-CONTRACT** —  Trace one authoritative Project creation operation.
-  Goal: M3-PROJECT
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [2026-09-01_111952-project-setup-contract](docs/plans/2026-09-01_111952-project-setup-contract.md) (superseded planning context)
-  [2026-08-30-directory-selection-project-readiness](docs/superpowers/plans/2026-08-30-directory-selection-project-readiness.md) (superseded planning context);
-   [M3-PROJECT](docs/product/prd.md#core-journeys).
-  Scope: Project models/callers and upstream read-only contracts; exclude Agent edits, arbitrary paths, global selection and compatibility expansion.
-  Acceptance: Record the exact operation/grant/identity/concurrency contract, or its absence, and one bounded next slice. Assignment and scoped Chat remain separately gated.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M3-PROVIDER-CONTRACT** —  Recheck the existing-profile credential replacement contract.
   Goal: M3-PROVIDER
 Section: Next.
@@ -1489,4 +1473,12 @@ does not mark any check passed or authorize live actions.
   - Combined isolated enrollment -> new-profile -> explicit Chat and failed-setup rollback require a suitable exact unmodified Agent contract before live execution. The inspected API server does not advertise Wing profile creation/grants, and dashboard/RPC best-effort create is not a transactional substitute. M3 remains unqualified; next separate source-evidence slice is DOC-M3-ROLLBACK-EVIDENCE.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M3-CONTRACT-CHECKPOINT.
+  Status: open
+
+- [ ] DOC-M3-PROJECT-CONTRACT-LIVE — Live checks for DOC-M3-PROJECT-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M3-PROJECT-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - Future Project creation qualification requires an approved disposable target and a suitable unmodified Agent contract; no native, browser, Android/device or live service was exercised. This documentation task does not qualify creation, assignment or Project-scoped Chat; M3-PROJECT remains unmet.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M3-PROJECT-CONTRACT.
   Status: open

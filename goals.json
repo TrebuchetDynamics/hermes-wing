@@ -5377,7 +5377,8 @@
       "status": "unmet",
       "tasks": [
         "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
-        "DOC-M3-PROJECT-CONTRACT"
+        "DOC-M3-PROJECT-CONTRACT",
+        "DOC-M3-PROJECT-CONTRACT-LIVE"
       ],
       "title": "Create and assign an Agent-owned Project and enter scoped Chat"
     },
@@ -6871,7 +6872,6 @@
       "CONNECTION-LINK-RETIREMENT",
       "DOC-M3-ROLLBACK-EVIDENCE",
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
-      "DOC-M3-PROJECT-CONTRACT",
       "DOC-M3-PROVIDER-CONTRACT",
       "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
       "DOC-ARTIFACT-CONTRACT",
@@ -6923,7 +6923,8 @@
       "M1-NOTIFICATION-CONTRACT-LIVE",
       "VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE",
       "CONNECTION-SETUP-AUTH-MATRIX-LIVE",
-      "DOC-M3-CONTRACT-CHECKPOINT-LIVE"
+      "DOC-M3-CONTRACT-CHECKPOINT-LIVE",
+      "DOC-M3-PROJECT-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7012,14 +7013,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace primary-folder assignment separately from creation"
-    },
-    {
-      "depends_on": [],
-      "goal": "M3-PROJECT",
-      "id": "DOC-M3-PROJECT-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one authoritative Project creation operation"
     },
     {
       "depends_on": [],
@@ -7440,6 +7433,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M3-CONTRACT-CHECKPOINT"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-PROJECT-CONTRACT"
+      ],
+      "goal": "M3-PROJECT",
+      "id": "DOC-M3-PROJECT-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M3-PROJECT-CONTRACT"
     },
     {
       "depends_on": [
@@ -8105,6 +8108,14 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify trusted enrollment, profile setup and explicit Chat"
+    },
+    {
+      "depends_on": [],
+      "goal": "M3-PROJECT",
+      "id": "DOC-M3-PROJECT-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one authoritative Project creation operation"
     },
     {
       "depends_on": [],

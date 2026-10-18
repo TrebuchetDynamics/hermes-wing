@@ -11,7 +11,7 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     file: open.yaml
     env:
       SCREEN: Chat fixture
-- tapOn: '(?s).*Message Hermes.*'
+- tapOn: '(?s).*Message Fixture profile.*'
 - inputText: Fixture export
 - hideKeyboard
 - tapOn: '^Send$'

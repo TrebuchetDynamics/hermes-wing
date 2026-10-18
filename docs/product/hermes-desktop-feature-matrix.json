@@ -161,7 +161,13 @@
         "lib/features/local_setup/screens/local_hermes_setup_screen.dart"
       ],
       "current_wing_subset": "Metadata-only Linux Hermes-home inspection and manual Android Termux preparation feed direct authentication; Wing does not install/start Agent.",
-      "remaining_gap": "Canonical gateway discovery/private-ticket authentication and managed installation remain missing. Do not reinterpret native serve transport as canonical local lifecycle authority. Never launch a per-profile serve child to match an obsolete reference.",
+      "remaining_gap": "Canonical attachment remains unimplemented: source trace resolves private identify/session-ticket, interactive WS and native HTTP grants, but Wing uses a different dashboard-ticket caller. Future native attach must exclude ensure/start/restart, lock repair and per-profile serve fallback; managed installation remains absent.",
+      "attachment_contract": {
+        "task_id": "PARITYUPDATE-001-aa",
+        "document": "docs/quality/canonical-gateway-attachment-contract.md",
+        "disposition": "native_attach_only_feasible_not_implemented_remote_discovery_not_established",
+        "wing_inspected_head": "2ddbb51b69044c71411e32168750a9a92db4c731"
+      },
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [
@@ -529,7 +535,13 @@
         "lib/core/hermes/setup/secure_hermes_endpoint_store.dart"
       ],
       "current_wing_subset": "Saved direct endpoint inventory, secure credential bundles, explicit connect/disconnect and owner-safe saved edits are composed under Connections.",
-      "remaining_gap": "Desktop source-default/startup restoration and multi-source/multi-profile active sockets are broader than Wing single active connection. New gateway owner identity and exact per-profile request scope must remain explicit, not guessed from a primary/default label.",
+      "remaining_gap": "Source trace resolves profile-bound versus explicit host-scoped grants and control-home versus session-home ownership. Wing has no canonical owner/home binding or shared multiplexed attachment; source defaults and multiple active sockets remain broader than its single active connection. Remote failure must never start a local owner.",
+      "attachment_contract": {
+        "task_id": "PARITYUPDATE-001-aa",
+        "document": "docs/quality/canonical-gateway-attachment-contract.md",
+        "disposition": "multiplex_scope_resolved_wing_owner_binding_missing",
+        "wing_inspected_head": "2ddbb51b69044c71411e32168750a9a92db4c731"
+      },
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [
@@ -1902,7 +1914,13 @@
         "lib/core/hermes/channel/api_channel/hermes_api_channel_serve_chat.dart"
       ],
       "current_wing_subset": "Wing exact owner recovery stores origin/profile/stored/runtime/epoch/sequence/uncertain checkpoint and reconnects lifecycle; persisted native restoration is intentionally Linux-gated and never restores a mutation.",
-      "remaining_gap": "Current canonical replay/activation and full multiplexed profile/session semantics require requalification; no replacement conversation on ambiguous missing runtime. Existing native-serve/REST recovery does not prove new gateway event equivalence.",
+      "remaining_gap": "Canonical resume/replay and viewer-only disconnect are source-traced, not qualified. Desktop maps activate to resume and strips lazy; Wing still sends lazy:true, which the canonical resume schema rejects. Missing authenticated home/instance binding and native ticket acquisition remain; no replacement conversation or automatic replay after ambiguous recovery.",
+      "attachment_contract": {
+        "task_id": "PARITYUPDATE-001-aa",
+        "document": "docs/quality/canonical-gateway-attachment-contract.md",
+        "disposition": "canonical_recovery_traced_current_resume_wire_incompatible",
+        "wing_inspected_head": "2ddbb51b69044c71411e32168750a9a92db4c731"
+      },
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [

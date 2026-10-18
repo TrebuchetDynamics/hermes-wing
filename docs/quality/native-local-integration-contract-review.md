@@ -146,3 +146,11 @@ only. Real native chooser latency/cancellation, OS keyring behavior, installed-h
 auth/capability checks, Agent-owned continuation, process death/cleanup and
 Linux/macOS/Windows/Android acceptance remain separately scoped live work. Do not
 mark NATIVE-INTEGRATION or the daily-use milestone qualified from this receipt.
+
+## Dependent failure-containment review
+
+[DOC-NATIVE-FAILURE-BOUNDARY](native-local-failure-containment-review.md) deepens
+the existing metadata operation's cancellation, late-result, slow/failed IO,
+unknown-outcome and removal criteria. It distinguishes result-admission fencing
+from missing hard cancellation/deadline/output bounds; it does not upgrade this
+receipt to native activation or platform qualification.

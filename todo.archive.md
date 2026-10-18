@@ -7444,3 +7444,36 @@ Section: Next.
   logout/revocation request, provisioning, wallet action or credential access.
   Touches: docs/quality/
   Readiness: source-only documentation; native/live qualification stays separate.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [NATIVE-INTEGRATION](docs/adr/client.md#decision),
+  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
+  [reviewed first operation](docs/plans/2026-10-03-desktop-local-integration-design.md#first-operation-existing-metadata-inspection),
+  [failure and removal boundaries](docs/plans/2026-10-03-desktop-local-integration-design.md#failure-and-recovery-contract),
+  [predecessor evidence](docs/quality/native-local-integration-contract-review.md#installedreference-drift-and-unavailable-guarantees).
+  Status: done
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: After operation review, specify cancellation, unknown-outcome and removal criteria against living ADRs. Preparation supplies no native activation rights.
+  Dependencies: DOC-NATIVE-DESIGN-REVIEW; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: pin inspected Wing/reference revisions with `git rev-parse HEAD`;
+  inspect `lib/core/hermes/local_discovery/`,
+  `lib/features/hermes_chat/widgets/platform_local_connection_panel.dart`,
+  `test/core/hermes/local_discovery/local_hermes_home_discovery_test.dart` and
+  `test/features/hermes_chat/widgets/platform_local_connection_behavior_test.dart`.
+  Map cancel/mode-change/disposal, late results, slow/failed metadata IO and
+  unknown outcomes to the living ADRs and reviewed removal criteria. Distinguish
+  existing stale-result fencing from missing hard cancellation/deadline/output bounds;
+  record missing proof without promising OS rollback. Verify changed Markdown links,
+  obtain independent contract/security review and run `git diff --check`.
+  Touches: docs/quality/
+  Next action: deepen the existing metadata-only operation's failure review;
+  the reviewed proposal does not admit a launcher, helper, privileged implementation
+  or activation. Source/test inspection is not named-platform runtime evidence.

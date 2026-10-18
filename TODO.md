@@ -502,34 +502,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [NATIVE-INTEGRATION](docs/adr/client.md#decision),
-  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
-  [reviewed first operation](docs/plans/2026-10-03-desktop-local-integration-design.md#first-operation-existing-metadata-inspection),
-  [failure and removal boundaries](docs/plans/2026-10-03-desktop-local-integration-design.md#failure-and-recovery-contract),
-  [predecessor evidence](docs/quality/native-local-integration-contract-review.md#installedreference-drift-and-unavailable-guarantees).
-  Status: open
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: After operation review, specify cancellation, unknown-outcome and removal criteria against living ADRs. Preparation supplies no native activation rights.
-  Dependencies: DOC-NATIVE-DESIGN-REVIEW; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: pin inspected Wing/reference revisions with `git rev-parse HEAD`;
-  inspect `lib/core/hermes/local_discovery/`,
-  `lib/features/hermes_chat/widgets/platform_local_connection_panel.dart`,
-  `test/core/hermes/local_discovery/local_hermes_home_discovery_test.dart` and
-  `test/features/hermes_chat/widgets/platform_local_connection_behavior_test.dart`.
-  Map cancel/mode-change/disposal, late results, slow/failed metadata IO and
-  unknown outcomes to the living ADRs and reviewed removal criteria. Distinguish
-  existing stale-result fencing from missing hard cancellation/deadline/output bounds;
-  record missing proof without promising OS rollback. Verify changed Markdown links,
-  obtain independent contract/security review and run `git diff --check`.
-  Touches: docs/quality/
-  Next action: deepen the existing metadata-only operation's failure review;
-  the reviewed proposal does not admit a launcher, helper, privileged implementation
-  or activation. Source/test inspection is not named-platform runtime evidence.
-
 - [ ] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE** — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [VOICE](docs/product/prd.md#core-journeys),
@@ -1662,4 +1634,13 @@ does not mark any check passed or authorize live actions.
   - Current deployed Agent exact lifecycle capabilities/grants and named-platform secure-storage/end-to-end behavior remain unverified; no Wing account lifecycle operation is admitted by this study.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-ACCOUNT-REVOCATION-EVIDENCE.
+  Status: open
+
+- [ ] DOC-NATIVE-FAILURE-BOUNDARY-LIVE — Live checks for DOC-NATIVE-FAILURE-BOUNDARY
+  Scope: Run the live checks the offline work for DOC-NATIVE-FAILURE-BOUNDARY left pending.
+  Acceptance: Each check passes on the real target:
+  - No platform was exercised at runtime. Separately scoped isolated Linux native evidence must check actual chooser cancellation/exit/modality, delayed or failed metadata IO responsiveness and outstanding-work behavior across mode changes, disposal and re-entry. Existing provider-overridden/completer tests and historical GTK receipts do not establish these guarantees.
+  - Other named-platform behavior and any future privileged operation require their own reviewed contracts and runtime receipts. Preparation grants no native activation rights; this review does not qualify OS rollback, keyring/authentication, process cleanup or NATIVE-INTEGRATION.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-NATIVE-FAILURE-BOUNDARY.
   Status: open

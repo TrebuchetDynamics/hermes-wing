@@ -5700,7 +5700,8 @@
       "tasks": [
         "DOC-NATIVE-DESIGN-REVIEW",
         "DOC-NATIVE-DESIGN-REVIEW-LIVE",
-        "DOC-NATIVE-FAILURE-BOUNDARY"
+        "DOC-NATIVE-FAILURE-BOUNDARY",
+        "DOC-NATIVE-FAILURE-BOUNDARY-LIVE"
       ],
       "title": "Review bounded host-local integration before privileged implementation"
     },
@@ -6899,7 +6900,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
       "DEV-001-c7",
       "PARITYUPDATE-001-aa",
@@ -6965,7 +6965,8 @@
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE",
       "SECURITY-RETAINED-RELEASE-AUDIT-LIVE",
-      "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE"
+      "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE",
+      "DOC-NATIVE-FAILURE-BOUNDARY-LIVE"
     ]
   },
   "tasks": [
@@ -6996,16 +6997,6 @@
       "section": "Next",
       "status": "open",
       "title": "Use official Flutter MCP for a bounded Wing architecture review"
-    },
-    {
-      "depends_on": [
-        "DOC-NATIVE-DESIGN-REVIEW"
-      ],
-      "goal": "NATIVE-INTEGRATION",
-      "id": "DOC-NATIVE-FAILURE-BOUNDARY",
-      "section": "Next",
-      "status": "open",
-      "title": "Review failure containment for the first bounded native operation"
     },
     {
       "depends_on": [],
@@ -7510,6 +7501,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-NATIVE-DESIGN-REVIEW"
+    },
+    {
+      "depends_on": [
+        "DOC-NATIVE-FAILURE-BOUNDARY"
+      ],
+      "goal": "NATIVE-INTEGRATION",
+      "id": "DOC-NATIVE-FAILURE-BOUNDARY-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-NATIVE-FAILURE-BOUNDARY"
     },
     {
       "depends_on": [
@@ -8525,6 +8526,16 @@
       "section": "Done",
       "status": "done",
       "title": "Review bounded host-local integration before privileged implementation"
+    },
+    {
+      "depends_on": [
+        "DOC-NATIVE-DESIGN-REVIEW"
+      ],
+      "goal": "NATIVE-INTEGRATION",
+      "id": "DOC-NATIVE-FAILURE-BOUNDARY",
+      "section": "Done",
+      "status": "done",
+      "title": "Review failure containment for the first bounded native operation"
     },
     {
       "depends_on": [

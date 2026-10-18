@@ -6741,3 +6741,26 @@ Section: Next.
   Planning only; no worker, runner, schedule or live test starts from this answer.
   Retained checks: `flutter test --no-pub --concurrency=1 test/features/enrollment/ test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`; `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before the existing compiled connection/browser matrix. Reuse matching receipts for unchanged inputs; native/live authentication and OS storage/chooser proof remain separately gated.
   Checks: Reuse the linked delivered fixture/native receipts for unchanged inputs; run only remaining matrix cells under the existing authentication, target and provider-call-budget gates. For changed UI inputs, `flutter test --no-pub --concurrency=1 test/features/enrollment/ test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart`; `flutter analyze --no-pub`; rebuild `lib/main_e2e.dart` before compiled browser checks; `git diff --check`. Retained checks below are historical procedures, not a reason to repeat completed subsets or claim live authentication.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-CONTRACT-CHECKPOINT** —  Map the supported enrollment
+  and new-profile setup journey to its isolated qualification checks. Payoff:
+  prove existing setup without conflating it with unavailable Project/provider writes.
+  Goal: M3
+Section: Next.
+  Sources: [2026-07-13-android-auth-profiles](docs/superpowers/plans/2026-07-13-android-auth-profiles.md) (superseded planning context);
+   [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace)
+  and [mutation criteria](docs/adr/api-and-state.md#required-agent-owned-mutation-contract).
+  Scope: source/test/caller trace and contract-gap receipt only; no Agent edits,
+  direct-file fallback, provider mutation, secrets or expanded Wing Link adapter.
+  Acceptance: identify the smallest isolated enrollment → new-profile → explicit
+  Chat check with exact device/profile identity, transaction rollback and no hidden
+  writes. Project and existing-profile provider contracts have separate tasks below.
+  Dependencies: none for source inspection; implementation needs verified contract
+  and ownership. Ownership: unclaimed in this index; verify tracker first.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/quality/

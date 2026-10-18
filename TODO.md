@@ -603,25 +603,6 @@ code, not a production channel. Each slice must reuse verified behavior where
 possible and preserve the existing messaging API path. No task authorizes Agent
 patches, personal credential discovery, service restarts or provider spending.
 
-- [ ] **DOC-M3-CONTRACT-CHECKPOINT** —  Map the supported enrollment
-  and new-profile setup journey to its isolated qualification checks. Payoff:
-  prove existing setup without conflating it with unavailable Project/provider writes.
-  Goal: M3
-Section: Next.
-  Sources: [2026-07-13-android-auth-profiles](docs/superpowers/plans/2026-07-13-android-auth-profiles.md) (superseded planning context);
-   [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace)
-  and [mutation criteria](docs/adr/api-and-state.md#required-agent-owned-mutation-contract).
-  Scope: source/test/caller trace and contract-gap receipt only; no Agent edits,
-  direct-file fallback, provider mutation, secrets or expanded Wing Link adapter.
-  Acceptance: identify the smallest isolated enrollment → new-profile → explicit
-  Chat check with exact device/profile identity, transaction rollback and no hidden
-  writes. Project and existing-profile provider contracts have separate tasks below.
-  Dependencies: none for source inspection; implementation needs verified contract
-  and ownership. Ownership: unclaimed in this index; verify tracker first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M3-ROLLBACK-EVIDENCE** — Goal: M3. Section: Next. Attribute one failed new-profile setup rollback.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace).
@@ -1499,4 +1480,13 @@ does not mark any check passed or authorize live actions.
   - Full live two-host profile/session collision qualification requires two approved authenticated disposable Agents, intentionally colliding profile/session IDs, isolated saved state and bounded delayed responses. Public selection/cancellation/retry must preserve origin-bound credentials and exact owner/history with zero management attempts or stale-owner mutations. Existing native/browser fixture receipts are reused only within their original scope.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: CONNECTION-SETUP-AUTH-MATRIX.
+  Status: open
+
+- [ ] DOC-M3-CONTRACT-CHECKPOINT-LIVE — Live checks for DOC-M3-CONTRACT-CHECKPOINT
+  Scope: Run the live checks the offline work for DOC-M3-CONTRACT-CHECKPOINT left pending.
+  Acceptance: Each check passes on the real target:
+  - Approved-device direct enrollment, native authentication, physical secure-input/storage and target-specific accessibility qualification remain unexecuted; no platform was exercised by this documentation task.
+  - Combined isolated enrollment -> new-profile -> explicit Chat and failed-setup rollback require a suitable exact unmodified Agent contract before live execution. The inspected API server does not advertise Wing profile creation/grants, and dashboard/RPC best-effort create is not a transactional substitute. M3 remains unqualified; next separate source-evidence slice is DOC-M3-ROLLBACK-EVIDENCE.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M3-CONTRACT-CHECKPOINT.
   Status: open

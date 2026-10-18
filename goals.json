@@ -5357,6 +5357,7 @@
       "status": "partial",
       "tasks": [
         "DOC-M3-CONTRACT-CHECKPOINT",
+        "DOC-M3-CONTRACT-CHECKPOINT-LIVE",
         "DOC-M3-ROLLBACK-EVIDENCE"
       ],
       "title": "Qualify trusted enrollment, profile setup and explicit Chat"
@@ -6868,7 +6869,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M3-CONTRACT-CHECKPOINT",
       "DOC-M3-ROLLBACK-EVIDENCE",
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
       "DOC-M3-PROJECT-CONTRACT",
@@ -6922,7 +6922,8 @@
       "CONNECTION-OWNER-RECONNECT-LIVE",
       "M1-NOTIFICATION-CONTRACT-LIVE",
       "VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE",
-      "CONNECTION-SETUP-AUTH-MATRIX-LIVE"
+      "CONNECTION-SETUP-AUTH-MATRIX-LIVE",
+      "DOC-M3-CONTRACT-CHECKPOINT-LIVE"
     ]
   },
   "tasks": [
@@ -7001,14 +7002,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map hostile-content rejection for one permitted artifact type"
-    },
-    {
-      "depends_on": [],
-      "goal": "M3",
-      "id": "DOC-M3-CONTRACT-CHECKPOINT",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify trusted enrollment, profile setup and explicit Chat"
     },
     {
       "depends_on": [
@@ -7437,6 +7430,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M2-INODE-POLICY-EVIDENCE"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-CONTRACT-CHECKPOINT"
+      ],
+      "goal": "M3",
+      "id": "DOC-M3-CONTRACT-CHECKPOINT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M3-CONTRACT-CHECKPOINT"
     },
     {
       "depends_on": [
@@ -8094,6 +8097,14 @@
       "section": "Done",
       "status": "done",
       "title": "Review the synthetic isolation and immutable-input proof contract before implementation"
+    },
+    {
+      "depends_on": [],
+      "goal": "M3",
+      "id": "DOC-M3-CONTRACT-CHECKPOINT",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify trusted enrollment, profile setup and explicit Chat"
     },
     {
       "depends_on": [],

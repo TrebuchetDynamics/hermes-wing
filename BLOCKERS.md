@@ -20,7 +20,7 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T05:27:05Z
 - Answer: Answer in VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 44
+### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 3
 
 - Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
 - Needs: merge conflict; worker and canonical checkout preserved

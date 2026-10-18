@@ -5358,7 +5358,8 @@
       "tasks": [
         "DOC-M3-CONTRACT-CHECKPOINT",
         "DOC-M3-CONTRACT-CHECKPOINT-LIVE",
-        "DOC-M3-ROLLBACK-EVIDENCE"
+        "DOC-M3-ROLLBACK-EVIDENCE",
+        "DOC-M3-ROLLBACK-EVIDENCE-LIVE"
       ],
       "title": "Qualify trusted enrollment, profile setup and explicit Chat"
     },
@@ -6884,7 +6885,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M3-ROLLBACK-EVIDENCE",
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
       "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
@@ -6938,7 +6938,8 @@
       "DOC-NATIVE-DESIGN-REVIEW-LIVE",
       "DOC-VOICE-QUALIFICATION-LIVE",
       "LANDING-PAGES-QUALITY-LIVE",
-      "BACKEND-SSH-KEY-NATIVE-LIVE"
+      "BACKEND-SSH-KEY-NATIVE-LIVE",
+      "DOC-M3-ROLLBACK-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -7011,16 +7012,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace credential removal separately from replacement"
-    },
-    {
-      "depends_on": [
-        "DOC-M3-CONTRACT-CHECKPOINT"
-      ],
-      "goal": "M3",
-      "id": "DOC-M3-ROLLBACK-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Attribute one failed new-profile setup rollback"
     },
     {
       "depends_on": [
@@ -7383,6 +7374,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M3-PROVIDER-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "goal": "M3",
+      "id": "DOC-M3-ROLLBACK-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M3-ROLLBACK-EVIDENCE"
     },
     {
       "depends_on": [
@@ -8190,6 +8191,16 @@
       "section": "Done",
       "status": "done",
       "title": "Recheck the existing-profile credential replacement contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-CONTRACT-CHECKPOINT"
+      ],
+      "goal": "M3",
+      "id": "DOC-M3-ROLLBACK-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Attribute one failed new-profile setup rollback"
     },
     {
       "depends_on": [],

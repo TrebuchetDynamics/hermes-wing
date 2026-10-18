@@ -603,25 +603,6 @@ code, not a production channel. Each slice must reuse verified behavior where
 possible and preserve the existing messaging API path. No task authorizes Agent
 patches, personal credential discovery, service restarts or provider spending.
 
-- [ ] **DOC-M3-ROLLBACK-EVIDENCE** — Attribute one failed new-profile setup rollback.
-  Goal: M3
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [enrollment checkpoint](docs/quality/m3-enrollment-profile-contract-checkpoint.md).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Find source-bound cleanup and preserved existing-profile identity in existing Go tests/receipts, or name the missing proof. No profile creation.
-  Dependencies: DOC-M3-CONTRACT-CHECKPOINT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin inspected Wing and reference revisions with `git rev-parse HEAD` in
-  each checkout; inspect source, nearest tests and sanitized historical receipts
-  for failed-setup cleanup and preserved existing-profile identity. Record the
-  exact supported proof or gap, not a new rollback run. Verify changed Markdown
-  targets, obtain independent contract/security review, and run `git diff --check`.
-  Touches: docs/quality/
-
 - [ ] **DOC-M3-PROJECT-ASSIGNMENT-CONTRACT** — Trace primary-folder assignment separately from creation.
   Goal: M3-PROJECT
 Section: Next.
@@ -1484,4 +1465,13 @@ does not mark any check passed or authorize live actions.
   - Before a later native fixture execution, reconcile the reusable launcher's scratch source-copy/SDK-copy preparation with the execution environment's worktree-only scratch-copy and shared-SDK rules. The --run path was not invoked or modified here; retain source/artifact-bound sanitized fixture receipts separately from approved-host evidence.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: BACKEND-SSH-KEY-NATIVE.
+  Status: open
+
+- [ ] DOC-M3-ROLLBACK-EVIDENCE-LIVE — Live checks for DOC-M3-ROLLBACK-EVIDENCE
+  Scope: Run the live checks the offline work for DOC-M3-ROLLBACK-EVIDENCE left pending.
+  Acceptance: Each check passes on the real target:
+  - Current new-profile whole-setup rollback and unchanged existing-profile identity remain UNVERIFIED. A separately authorized isolated failure/readback qualification requires a suitable exact unmodified Agent create/identity/outcome contract first; this documentation task authorizes no new attempt.
+  - Native/device secure-storage and target-specific onboarding behavior remain separately unqualified; no platform was exercised by this task.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M3-ROLLBACK-EVIDENCE.
   Status: open

@@ -7102,3 +7102,27 @@ Section: Next.
   Native execution and the real operating-system chooser remain separate checks.
   Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Use the existing scripts/run_managed_ssh_key_native.sh and the linked SSH private-key qualification procedure with approved target/authentication and isolated state. Record Linux and Android cells, trust/key-denial/cancel and process-restart identity separately; no provider generation or OS chooser/storage pass is implied.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-ROLLBACK-EVIDENCE** — Attribute one failed new-profile setup rollback.
+  Goal: M3
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [enrollment checkpoint](docs/quality/m3-enrollment-profile-contract-checkpoint.md).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Find source-bound cleanup and preserved existing-profile identity in existing Go tests/receipts, or name the missing proof. No profile creation.
+  Dependencies: DOC-M3-CONTRACT-CHECKPOINT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin inspected Wing and reference revisions with `git rev-parse HEAD` in
+  each checkout; inspect source, nearest tests and sanitized historical receipts
+  for failed-setup cleanup and preserved existing-profile identity. Record the
+  exact supported proof or gap, not a new rollback run. Verify changed Markdown
+  targets, obtain independent contract/security review, and run `git diff --check`.
+  Touches: docs/quality/

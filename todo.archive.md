@@ -6594,3 +6594,36 @@ Section: Next.
   Ownership: unclaimed in this index; check tracker leases before execution.
   Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Only after the predecessor actual live workflow and the existing disposable authentication/target grants are qualified, perform the bounded read-only native reconnect/route-return procedure in the linked receipt. Assert zero added submissions or other mutations; offline parent closeout or fixtures do not satisfy that live prerequisite.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **VERIFY-OMNIROUTE-NODE22-CLOSURE** —  Verify retired OmniRoute paths and retained dependencies on Node.js 22.
+  Goal: SECURITY
+Section: Next.
+  Payoff: qualify the committed removal without rebuilding the deleted installer.
+  Sources: [retirement design](docs/spec.md#security-compatibility-and-delivery),
+  [verification plan](docs/test-plan.md#acceptance-records-and-gaps),
+  [historical review](docs/quality/omniroute-install-review.md) and
+  [supported toolchain](CONTRIBUTING.md#setup). Baseline: committed retirement
+  `92beb1dcddbf2be638ac7819f3a636ec25ba75e2`; capture later candidate inputs separately
+  from the canonical goal ledger. The ledger title retains the predecessor scope.
+  Scope: root manifest/lock, existing retirement checks, retained generic catalog
+  and audit decoding. Exclude recreated installer assets, external installations,
+  credentials, service actions, live inference, upstream edits and audit suppression.
+  Acceptance: on Node.js 22 run `npm audit --audit-level=high` and
+  `node --test test/tooling/omniroute_retirement_test.mjs`; run focused Go retirement
+  checks and `flutter test test/features/profiles/profile_catalog_test.dart` on the
+  same candidate. Prove former CLI actions and discovery/setup contracts unavailable,
+  bundled assets absent, generic catalog and historical audit decoding retained.
+  Record exact commands, exits and input hashes. Missing or failing checks stay
+  unverified; source removal alone does not close SECURITY or release acceptance.
+  Dependencies: FIX-NPM-AUDIT is ledger-done, not proof the old embedded audit passed.
+  Ownership: retain the existing remediation owner's routing; reconcile scheduled
+  card t_a466ece0 against removed inputs before execution. No card or lease change
+  is authorized here. Queued in Next, not dispatched by this documentation pass.
+  Checks: On Node.js 22 run `npm audit --audit-level=high`, `node --test test/tooling/omniroute_retirement_test.mjs`, and `flutter test --no-pub test/features/profiles/profile_catalog_test.dart`; `git diff --check`. Preserve the Acceptance above: any missing or retired historical Go check is recorded explicitly as unavailable/not run, never fabricated or silently passed. No installer recreation or audit suppression.
+  Touches: package.json, package-lock.json, test/tooling/, test/features/profiles/, docs/quality/, pubspec.lock
+  Touches widened by the runner from worker evidence: pubspec.lock

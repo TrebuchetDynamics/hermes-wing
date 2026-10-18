@@ -7332,16 +7332,6 @@
     },
     {
       "depends_on": [
-        "FIX-NPM-AUDIT"
-      ],
-      "goal": "SECURITY",
-      "id": "VERIFY-OMNIROUTE-NODE22-CLOSURE",
-      "section": "Next",
-      "status": "open",
-      "title": "Prove the repaired optional OmniRoute dependency consumer closure on the supported Node.js 22 toolchain without starting host services"
-    },
-    {
-      "depends_on": [
         "DOC-SLASH-DENIAL-EVIDENCE"
       ],
       "goal": "SLASH-CATALOG",
@@ -8896,6 +8886,16 @@
       "section": "Done",
       "status": "done",
       "title": "Re-select a model explicitly after native restart and send once to the restored exact session"
+    },
+    {
+      "depends_on": [
+        "FIX-NPM-AUDIT"
+      ],
+      "goal": "SECURITY",
+      "id": "VERIFY-OMNIROUTE-NODE22-CLOSURE",
+      "section": "Done",
+      "status": "done",
+      "title": "Prove the repaired optional OmniRoute dependency consumer closure on the supported Node.js 22 toolchain without starting host services"
     },
     {
       "depends_on": [

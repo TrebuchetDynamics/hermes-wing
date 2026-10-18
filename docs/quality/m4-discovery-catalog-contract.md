@@ -108,7 +108,9 @@ at compile time. It does not validate server JSON or impose the missing bounds.
 The tab consumes only `data` for this query and defaults absent data to `[]`;
 that does not establish an explicit empty-versus-failed-catalog presentation.
 Selection, detail/preview and install effects are deliberately not traced here;
-`DOC-M4-DISCOVERY-SELECTION-CONTRACT` owns their separate assessment, not execution.
+the [selection/install follow-up](m4-discovery-selection-contract.md) separately
+assesses that contract, consent, result/readback and failure/no-replay gaps without
+executing an installation. Catalog availability grants no install authority.
 
 ## Wing caller and regression trace: installed inventory only
 

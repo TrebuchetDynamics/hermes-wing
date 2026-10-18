@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_INPUT — effort input — unblocks 1
+
+- Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered
+- Needs: worker reported a blocker: The contract explicitly requires DOC-PARITY-TAB-CONTRACT's source-bound green Chat-suite repair before resuming full qualification. That owning worker is still running and no qualifying green result is supplied. Coordinator must finish/review the existing repair and supply its integrated source identity and green mandatory-suite result, then resume this task on that combined source. Preserve the e…
+- Since: 2026-10-18T20:45:24Z
+- Answer: Answer in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-PARITY-NATIVE-LINUX — USER_INPUT — effort input — unblocks 0
 
 - Task: PARITY-NATIVE-LINUX — Execute and extend native Linux

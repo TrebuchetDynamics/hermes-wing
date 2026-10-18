@@ -6,20 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort decision — unblocks 1
-
-- Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link
-- Needs: 1 waiting task(s) depend on "CONNECTION-LINK-REMOVAL", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-17T16:14:45Z
-- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
-
-### Q-FILES-TERMINAL-BROWSE — USER_DECISION — effort decision — unblocks 1
-
-- Task: FILES-TERMINAL-BROWSE — Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
-- Needs: 1 waiting task(s) depend on "FILES-TERMINAL-BROWSE", which is not a Now/Next task (an outside condition, or a task in Needs decision).
-- Since: 2026-10-18T16:31:16Z
-- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

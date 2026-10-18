@@ -6889,3 +6889,24 @@ Section: Next.
   Checks: First compare current fixtures with the discovery receipt; use `maestro check-syntax scripts/maestro/fixture/transcript_export.yaml` and `maestro check-syntax scripts/maestro/fixture/local_setup_accessibility.yaml` after selector/navigation repairs, plus affected deterministic fixture regressions and `git diff --check`. Execute the two flows only with owned-target and exclusive-build access, against the matching isolated QA artifact. Require actual clipboard/readback and share-sheet dismissal receipts for completion; syntax/widget checks do not qualify Android or TalkBack. No install or device operation is authorized by this metadata repair.
   Touches: scripts/maestro/fixture/transcript_export.yaml, scripts/maestro/fixture/local_setup_accessibility.yaml, integration_test/hermes_features_maestro_main.dart, test/tooling/, docs/quality/
   Readiness: preparation is distinct from gated execution; original acceptance and owner deferrals remain unchanged.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-CONTRACT-CHECKPOINT** — Discover and install profile-targeted skills through exact contracts
+  Inspect one profile-scoped discovery catalog read before proposing UI or writes.
+  Goal: M4-DISCOVER
+Section: Next.
+  Payoff: advance accepted discovery without freezing existing inventories.
+  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
+  Scope: read-only authoritative handler/test and Wing caller/regression trace;
+  exclude installs, MCP mutation, generic commands and shadow inventories.
+  Acceptance: supported bounded schema, exact grant/profile gate and failure
+  behavior, or an evidenced unavailable operation. Remaining M4 operations stay
+  individually gated.
+  Dependencies: none for inspection. Ownership: unclaimed in
+  this index; verify tracker and reference instructions before deep upstream study.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/quality/

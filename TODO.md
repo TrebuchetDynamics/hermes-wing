@@ -671,23 +671,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M5-ANDROID-FIXTURE; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M4-CONTRACT-CHECKPOINT** — Discover and install profile-targeted skills through exact contracts
-  Inspect one profile-scoped discovery catalog read before proposing UI or writes.
-  Goal: M4-DISCOVER
-Section: Next.
-  Payoff: advance accepted discovery without freezing existing inventories.
-  Sources: [M4](ROADMAP.md#m4--discover-and-administer-supported-agent-work).
-  Scope: read-only authoritative handler/test and Wing caller/regression trace;
-  exclude installs, MCP mutation, generic commands and shadow inventories.
-  Acceptance: supported bounded schema, exact grant/profile gate and failure
-  behavior, or an evidenced unavailable operation. Remaining M4 operations stay
-  individually gated.
-  Dependencies: none for inspection. Ownership: unclaimed in
-  this index; verify tracker and reference instructions before deep upstream study.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M4-DISCOVERY-SELECTION-CONTRACT** — Goal: M4-DISCOVER. Section: Next. Trace catalog selection separately from search.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M4-DISCOVER](docs/product/hermes-desktop-parity.md#statuses).
@@ -1442,4 +1425,12 @@ does not mark any check passed or authorize live actions.
   - TalkBack, native keyboard/IME and physical-device qualification remain unverified. Independent review and canonical integration are separate from this local task commit.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M5-ANDROID-FIXTURE.
+  Status: open
+
+- [ ] DOC-M4-CONTRACT-CHECKPOINT-LIVE — Live checks for DOC-M4-CONTRACT-CHECKPOINT
+  Scope: Run the live checks the offline work for DOC-M4-CONTRACT-CHECKPOINT left pending.
+  Acceptance: Each check passes on the real target:
+  - After an eligible unmodified Agent discovery contract is available: target-specific authenticated catalog/read-denial, profile isolation and accessible native journeys. No platform, browser, native UI or live Agent was exercised by this documentation task.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-CONTRACT-CHECKPOINT.
   Status: open

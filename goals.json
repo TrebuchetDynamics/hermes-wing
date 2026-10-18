@@ -5437,6 +5437,7 @@
       "status": "unmet",
       "tasks": [
         "DOC-M4-CONTRACT-CHECKPOINT",
+        "DOC-M4-CONTRACT-CHECKPOINT-LIVE",
         "DOC-M4-DISCOVERY-SELECTION-CONTRACT"
       ],
       "title": "Discover and install profile-targeted skills through exact contracts"
@@ -6882,7 +6883,6 @@
       "DOC-M4-MCP-CONFIG-CONTRACT",
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
       "DOC-M5-LARGE-TEXT-EVIDENCE",
-      "DOC-M4-CONTRACT-CHECKPOINT",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
       "DOC-M4-KANBAN-CONTRACT",
@@ -6929,7 +6929,8 @@
       "DOC-ARTIFACT-CONTRACT-LIVE",
       "DOC-M4-MCP-CONTRACT-LIVE",
       "DOC-M4-SCHEDULE-CONTRACT-LIVE",
-      "DOC-M5-ANDROID-FIXTURE-LIVE"
+      "DOC-M5-ANDROID-FIXTURE-LIVE",
+      "DOC-M4-CONTRACT-CHECKPOINT-LIVE"
     ]
   },
   "tasks": [
@@ -7030,14 +7031,6 @@
       "section": "Next",
       "status": "open",
       "title": "Attribute one failed new-profile setup rollback"
-    },
-    {
-      "depends_on": [],
-      "goal": "M4-DISCOVER",
-      "id": "DOC-M4-CONTRACT-CHECKPOINT",
-      "section": "Next",
-      "status": "open",
-      "title": "Discover and install profile-targeted skills through exact contracts"
     },
     {
       "depends_on": [
@@ -7428,6 +7421,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M3-PROVIDER-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-CONTRACT-CHECKPOINT"
+      ],
+      "goal": "M4-DISCOVER",
+      "id": "DOC-M4-CONTRACT-CHECKPOINT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-CONTRACT-CHECKPOINT"
     },
     {
       "depends_on": [
@@ -8147,6 +8150,14 @@
       "section": "Done",
       "status": "done",
       "title": "Recheck the existing-profile credential replacement contract"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-DISCOVER",
+      "id": "DOC-M4-CONTRACT-CHECKPOINT",
+      "section": "Done",
+      "status": "done",
+      "title": "Discover and install profile-targeted skills through exact contracts"
     },
     {
       "depends_on": [],

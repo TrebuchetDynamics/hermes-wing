@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 3
+
+- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
+- Needs: worker timeout after 5400 s while running (11 min): export PATH="$AUTOWORK_CACHE/flutter-3.44.2/bin:/home/xel/.nvm/versions/node/v22.22.2/bin:$PATH" PUB_CACHE="$AUTOWORK_CA
+- Since: 2026-10-18T19:44:12Z
+- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/), then rescope or split DOC-PARITY-TAB-CONTRACT in its TODO.md entry. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

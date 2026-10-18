@@ -17,6 +17,64 @@ import 'package:wing/shared/voice/voice_capture_service.dart';
 import '../support/fake_hermes_channel.dart';
 
 void main() {
+  testWidgets(
+    'mobile voice mute stays reachable during playback at 200% text',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel();
+      final capture = _CommandThenBlockCaptureService('synthetic question');
+      final tts = _BlockingTextToSpeechService();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(2),
+                disableAnimations: true,
+              ),
+              child: child!,
+            ),
+            home: HermesChatScreen(
+              voiceCaptureServiceOverride: capture,
+              textToSpeechServiceOverride: tts,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-mic-button')),
+      );
+      await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+      await tester.pumpAndSettle();
+      final mute = find.byKey(const ValueKey('hermes-voice-mute-output'));
+      await tester.ensureVisible(mute);
+      expect(mute.hitTestable(), findsOneWidget);
+      await tester.tap(mute);
+      await tester.pumpAndSettle();
+      expect(tts.stopCalls, 1);
+      expect(capture.cancelCalls, 0);
+      expect(find.text('Unmute speech'), findsOneWidget);
+      expect(channel.sentVoiceTranscripts, ['synthetic question']);
+      final end = find.byKey(const ValueKey('hermes-voice-mode-end-button'));
+      await tester.ensureVisible(end);
+      await tester.tap(end);
+      await tester.pumpAndSettle();
+      expect(capture.cancelCalls, 1);
+      expect(
+        find.byKey(const ValueKey('hermes-composer-field')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final stopOutputFirst in [true, false]) {
     testWidgets(
       'voice channels stop independently; output first $stopOutputFirst',
@@ -47,6 +105,10 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Listening for interruption'), findsOneWidget);
         expect(find.text('Playing assistant reply'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('hermes-voice-mute-output')),
+          findsOneWidget,
+        );
         expect(capture.captureCalls, 2);
         expect(tester.takeException(), isNull);
         if (stopOutputFirst) {

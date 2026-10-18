@@ -713,7 +713,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     }
     try {
       await tts.speak(spokenText).timeout(_speechTimeout);
-      await Future<void>.delayed(_rearmDelay);
+      // Microphone rearm has its own delay; queued speech must flow immediately.
     } catch (_) {
       if (_disposed || speechGeneration != _speechGeneration) return;
       final continuous = _continuousEnabled;
@@ -754,6 +754,7 @@ class HermesVoiceInputController extends ChangeNotifier {
       return;
     }
     notifyListeners();
+    unawaited(maybeContinue());
     if (!_capturing) {
       unawaited(_capture(autoSend: true, continuous: true));
     }

@@ -13,6 +13,34 @@ import 'package:wing/shared/voice/voice_settings.dart';
 import '../support/fake_hermes_channel.dart';
 
 void main() {
+  testWidgets('spoken streaming chunks do not wait for microphone rearm', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel();
+    final tts = FakeTextToSpeechService();
+    final controller = HermesVoiceInputController(
+      channel: () => channel,
+      captureService: () => null,
+      textToSpeechService: () => tts,
+      settings: () => const WingVoiceSettings(),
+      onDraft: (_) {},
+      rearmDelay: const Duration(seconds: 2),
+    );
+    addTearDown(controller.dispose);
+    controller.speakNextReply();
+    channel.beginStreamingTurn('synthetic question');
+    channel.appendStreamingTurnText('First sentence.');
+    unawaited(controller.maybeContinue());
+    await tester.pump();
+    expect(tts.spoken, ['First sentence.']);
+    channel.appendStreamingTurnText(' Second sentence.');
+    unawaited(controller.maybeContinue());
+    await tester.pump();
+    expect(tts.spoken, ['First sentence.', 'Second sentence.']);
+    controller.pause();
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   for (final confirmed in [false, true]) {
     test(
       'replacement voice waits for captured stop confirmation $confirmed',

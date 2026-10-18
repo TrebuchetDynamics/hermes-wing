@@ -382,7 +382,13 @@
         "lib/features/hermes_chat/controllers/hermes_connection_form.dart"
       ],
       "current_wing_subset": "Wing offers direct Agent token authentication and explains unsupported browser OAuth; no remote dashboard OAuth acquisition/return route is composed.",
-      "remaining_gap": "Remote dashboard browser/cookie partition, per-dial ticket, cancel/logout and connection-draft identity require a qualified secret-safe platform and exact Agent contract. Provider OAuth account evidence is a different authority flow.",
+      "remaining_gap": "Contract trace: docs/quality/remote-dashboard-oauth-contract.md. Agent dashboard cookie/native PKCE and per-dial ticket operations are source-resolved, not implemented or qualified in Wing. Cookie drafts can be connection-specific, but native tokens/logout are URL-keyed; editor fences do not prove acquisition cancellation or remote revocation. Secure-storage-only custody, exact-target logout and platform browser return remain design gaps. Provider-account OAuth and Cloud discovery/cascade are distinct.",
+      "dashboard_oauth_contract": {
+        "task_id": "PARITYUPDATE-003-b1",
+        "document": "docs/quality/remote-dashboard-oauth-contract.md",
+        "disposition": "source_resolved_connection_specific_integration_unavailable",
+        "wing_inspected_head": "bc8d991f048d5c0290392c72310076de9172092f"
+      },
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [],

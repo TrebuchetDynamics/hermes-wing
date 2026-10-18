@@ -13,12 +13,12 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 3
+### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
 
-- Task: DOC-PARITY-TAB-CONTRACT — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
-- Needs: integration validation failed or changed the integration tree
-- Since: 2026-10-18T05:17:37Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/), then rescope or split DOC-PARITY-TAB-CONTRACT in its TODO.md entry. The runner reruns it when the entry changes.
+- Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.
+- Needs: worker reported a blocker: Provide an exact advertised authoritative command catalog/completion/dispatch contract from an unmodified Hermes Agent that Wing can consume, including its transport, operation identifiers, authorization grants and endpoint/profile/session ownership semantics. The task contract explicitly retains the absent-authoritative-transport hold; docs/quality/slash-catalog-contract.md documents catalog/comp…
+- Since: 2026-10-18T05:27:05Z
+- Answer: Answer in VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
 <!-- pi-autowork:questions:end -->
 

@@ -2680,6 +2680,7 @@
         "M1-NATIVE-INTEGRATED-RESTART",
         "M1-NATIVE-STOP-RECOVERY",
         "M1-NOTIFICATION-CONTRACT",
+        "M1-NOTIFICATION-CONTRACT-LIVE",
         "M1-SAVED-ENDPOINT-EDIT",
         "M1-SAVED-ENDPOINT-EDIT-NATIVE",
         "M1-SAVED-ENDPOINT-FEEDBACK-ACCESSIBILITY",
@@ -6854,10 +6855,7 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "PARITY-OFFICIAL-MATRIX",
-      "CONNECTION-OWNER-RECONNECT",
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
-      "M1-NOTIFICATION-CONTRACT",
       "MT-RERUN-TRAIN",
       "MT-VERIFY-BROWSER-GATES",
       "SECURITY-RETAINED-RELEASE-AUDIT",
@@ -6922,7 +6920,8 @@
       "BACKEND-SSH-CONNECT-LIVE",
       "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE",
       "PARITY-OFFICIAL-MATRIX-LIVE",
-      "CONNECTION-OWNER-RECONNECT-LIVE"
+      "CONNECTION-OWNER-RECONNECT-LIVE",
+      "M1-NOTIFICATION-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7274,16 +7273,6 @@
     },
     {
       "depends_on": [
-        "M1-MOBILE-AWAY-STATUS"
-      ],
-      "goal": "M1",
-      "id": "M1-NOTIFICATION-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Resolve the smallest supported notification contract after reliable return and status"
-    },
-    {
-      "depends_on": [
         "MT-APP-SHELL-STATUS-BAR"
       ],
       "goal": "INTEGRATION",
@@ -7487,6 +7476,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for M1-MOBILE-AWAY-STATUS"
+    },
+    {
+      "depends_on": [
+        "M1-NOTIFICATION-CONTRACT"
+      ],
+      "goal": "M1",
+      "id": "M1-NOTIFICATION-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for M1-NOTIFICATION-CONTRACT"
     },
     {
       "depends_on": [],
@@ -8434,6 +8433,16 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify native keyboard Stop failure and authoritative recovery without mutation replay"
+    },
+    {
+      "depends_on": [
+        "M1-MOBILE-AWAY-STATUS"
+      ],
+      "goal": "M1",
+      "id": "M1-NOTIFICATION-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Resolve the smallest supported notification contract after reliable return and status"
     },
     {
       "depends_on": [],

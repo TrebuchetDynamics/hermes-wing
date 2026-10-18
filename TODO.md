@@ -259,19 +259,6 @@ Section: Next.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
 
 
-- [ ] **M1-NOTIFICATION-CONTRACT** — Resolve the smallest supported notification path after reliable status. Section: Next.
-  Goal: M1
-  Status: open
-  Payoff: determine whether completion/attention alerts can be implemented without a second Agent backend or credential leakage.
-  Sources: [accepted order](docs/product/prd.md#user-demand-emphasis), [existing proposal](docs/product/notification-contract-proposal.md), official Agent/Desktop source and nearest tests.
-  Scope: one bounded source/capability assessment of current enrollment/routing/revocation and platform delivery support. Reuse existing proposals; identify exact supported operations, grants and privacy boundaries, or explain unavailable contracts. Do not invent endpoints, choose a paid relay, collect credentials, install push SDKs, activate delivery or modify Agent.
-  Acceptance: save an operation-to-source/test map distinguishing shipped API, source-only support and unavailable behavior. Identify one smallest implementable alert path and its permission-denial, generic lock-screen, deduplication and exact-owner tap tests, or name the exact missing authoritative contract. Keep foreground status usable without notifications. Record architecture choices as Proposed; provider/relay consent and real platform delivery remain separate future decisions and checks. This closes assessment only, not notification implementation or M1.
-  Checks: planned documentation-only verification: cross-check the operation-to-source/test map against pinned official Agent/Desktop source and nearest tests; verify local links and anchors in the updated proposal; run `git diff --check -- docs/product/notification-contract-proposal.md`. Review permission-denial, generic lock-screen, deduplication and exact-owner tap test requirements against the accepted PRD and existing proposal; keep those future delivery tests unexecuted/unqualified by this assessment.
-  Dependencies: M1-MOBILE-AWAY-STATUS.
-  Ownership: unassigned; verify existing proposal/board ownership before execution. No worker dispatched by this entry.
-  Next action: record the bounded source/capability assessment in the existing notification proposal, retaining Proposed architecture and exact missing-contract findings rather than implementing delivery.
-  Touches: docs/product/notification-contract-proposal.md
-
 - [ ] **MT-RERUN-TRAIN** —  Rerun canonical integration gates
   on a newly captured combined tree, not the repaired historical candidate.
   Goal: INTEGRATION
@@ -1612,4 +1599,14 @@ does not mark any check passed or authorize live actions.
   - Live Agent/provider continuation and recovery require separate runtime evidence; the opt-in live browser case was not enabled.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: CONNECTION-OWNER-RECONNECT.
+  Status: open
+
+- [ ] M1-NOTIFICATION-CONTRACT-LIVE — Live checks for M1-NOTIFICATION-CONTRACT
+  Scope: Run the live checks the offline work for M1-NOTIFICATION-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - Existing M1-MOBILE-AWAY-STATUS Android matrix remains NOT_CHECKED; this documentation assessment does not qualify reliable Android away/return status.
+  - After separately scoped local-alert implementation, qualify permission denial/revocation, generic locked-screen payloads, exact-owner taps, focus transitions and deduplication on named native artifacts/targets. No application platform was exercised in this assessment.
+  - Suspended/terminated Android/iOS and browser push remain unavailable pending an authoritative notification enrollment/routing/rotation/revocation/redemption contract, separate architecture/privacy/provider or relay consent decisions, and real platform delivery evidence. No provider or relay was selected or activated.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: M1-NOTIFICATION-CONTRACT.
   Status: open

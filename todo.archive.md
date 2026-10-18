@@ -6828,3 +6828,21 @@ Section: Next.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
   Readiness: restored check procedure only; existing access and qualification gates remain.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-MCP-CONTRACT** —  Trace one toolset enable/disable contract.
+  Goal: M4-MCP
+Section: Next.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Tools inventory/callers and read-only Agent source/tests; exclude MCP installation, secrets and arbitrary commands.
+  Acceptance: Identify exact profile/toolset identity, grant and conflict behavior or precise absent operation; discovery alone must not authorize writes.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/quality/

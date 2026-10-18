@@ -5475,7 +5475,8 @@
       "status": "partial",
       "tasks": [
         "DOC-M4-MCP-CONFIG-CONTRACT",
-        "DOC-M4-MCP-CONTRACT"
+        "DOC-M4-MCP-CONTRACT",
+        "DOC-M4-MCP-CONTRACT-LIVE"
       ],
       "title": "Enable/disable toolsets and administer MCP safely"
     },
@@ -6877,7 +6878,6 @@
       "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
       "DOC-M4-MCP-CONFIG-CONTRACT",
-      "DOC-M4-MCP-CONTRACT",
       "DOC-M4-SCHEDULE-CONTRACT",
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
       "DOC-M5-ANDROID-FIXTURE",
@@ -6926,7 +6926,8 @@
       "DOC-M3-CONTRACT-CHECKPOINT-LIVE",
       "DOC-M3-PROJECT-CONTRACT-LIVE",
       "DOC-M3-PROVIDER-CONTRACT-LIVE",
-      "DOC-ARTIFACT-CONTRACT-LIVE"
+      "DOC-ARTIFACT-CONTRACT-LIVE",
+      "DOC-M4-MCP-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7083,14 +7084,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace one MCP configuration read separately from toolset toggling"
-    },
-    {
-      "depends_on": [],
-      "goal": "M4-MCP",
-      "id": "DOC-M4-MCP-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one toolset enable/disable contract"
     },
     {
       "depends_on": [
@@ -7449,6 +7442,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M3-PROVIDER-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-MCP-CONTRACT"
+      ],
+      "goal": "M4-MCP",
+      "id": "DOC-M4-MCP-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-MCP-CONTRACT"
     },
     {
       "depends_on": [
@@ -8146,6 +8149,14 @@
       "section": "Done",
       "status": "done",
       "title": "Map one Tools inventory journey to current-source evidence"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-MCP",
+      "id": "DOC-M4-MCP-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one toolset enable/disable contract"
     },
     {
       "depends_on": [

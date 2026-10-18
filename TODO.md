@@ -653,20 +653,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M4-MCP-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M4-MCP-CONTRACT** —  Trace one toolset enable/disable contract.
-  Goal: M4-MCP
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Tools inventory/callers and read-only Agent source/tests; exclude MCP installation, secrets and arbitrary commands.
-  Acceptance: Identify exact profile/toolset identity, grant and conflict behavior or precise absent operation; discovery alone must not authorize writes.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M4-SCHEDULE-CONTRACT** —  Trace one schedule pause/resume operation.
   Goal: M4-SCHEDULES
 Section: Next.
@@ -1463,4 +1449,12 @@ does not mark any check passed or authorize live actions.
   - No application/platform or live Agent artifact retrieval/preview/save was exercised. Any future implementation needs separate named-platform/live authentication, hostile-content and persistence qualification; the artifact operation remains unavailable in Wing.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-ARTIFACT-CONTRACT.
+  Status: open
+
+- [ ] DOC-M4-MCP-CONTRACT-LIVE — Live checks for DOC-M4-MCP-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-MCP-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - Native/live authenticated enable/disable and exact authoritative readback remain unqualified. A separately authorized isolated target can exercise them only after an unmodified Agent exposes the required exact operation, profile/platform identity, grants, concurrency and persistence/activation/retry guarantees; this documentation slice adds no write support.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-MCP-CONTRACT.
   Status: open

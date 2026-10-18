@@ -7204,3 +7204,27 @@ Section: Next.
   Verify changed Markdown targets, obtain independent contract/security review,
   and run `git diff --check`. No artifact request or preview activation.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-MCP-CONFIG-CONTRACT** — Trace one MCP configuration read separately from toolset toggling.
+  Goal: M4-MCP
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [toolset trace](docs/quality/toolset-toggle-contract.md#revisit-trigger-and-remaining-qualification).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name profile identity, output redaction, bounds and exact grant, or the absent read. No MCP installation, config write or arbitrary commands.
+  Dependencies: DOC-M4-MCP-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace one MCP
+  configuration-read handler/model, nearest tests and Wing caller or its absence.
+  Compare profile identity, redaction, bounds and exact authorization with Acceptance;
+  verify changed Markdown targets, obtain independent contract/security review,
+  and run `git diff --check`. Inspect source only, not actual MCP configuration.
+  Touches: docs/quality/

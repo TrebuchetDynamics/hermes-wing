@@ -605,25 +605,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-M4-MCP-CONFIG-CONTRACT** — Trace one MCP configuration read separately from toolset toggling.
-  Goal: M4-MCP
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [toolset trace](docs/quality/toolset-toggle-contract.md#revisit-trigger-and-remaining-qualification).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name profile identity, output redaction, bounds and exact grant, or the absent read. No MCP installation, config write or arbitrary commands.
-  Dependencies: DOC-M4-MCP-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace one MCP
-  configuration-read handler/model, nearest tests and Wing caller or its absence.
-  Compare profile identity, redaction, bounds and exact authorization with Acceptance;
-  verify changed Markdown targets, obtain independent contract/security review,
-  and run `git diff --check`. Inspect source only, not actual MCP configuration.
-  Touches: docs/quality/
-
 - [ ] **DOC-M4-SCHEDULE-DELIVERY-CONTRACT** — Trace one schedule-delivery configuration operation.
   Goal: M4-SCHEDULES
 Section: Next.
@@ -1436,4 +1417,12 @@ does not mark any check passed or authorize live actions.
   - Future retrieved-text implementation requires an eligible unmodified Agent contract, then separately authorized named-platform/live authentication, hostile-content/network isolation, denial/cancellation/owner-loss and persistence qualification. No application/browser/native/device or live Agent artifact retrieval, preview or save was exercised; ARTIFACTS remains open and artifact operations remain unavailable in Wing.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE.
+  Status: open
+
+- [ ] DOC-M4-MCP-CONFIG-CONTRACT-LIVE — Live checks for DOC-M4-MCP-CONFIG-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-MCP-CONFIG-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No application, browser, native desktop, physical Android/device, live authentication, provider or Agent operation was exercised. After a suitable unmodified Agent advertises a bounded sanitized exact-authorized MCP config read, separately admit a disposable native/live read-refresh and auth-denial/profile-isolation-recreation journey. This source-only task authorizes no installation, config write, probe, OAuth or arbitrary command execution.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-MCP-CONFIG-CONTRACT.
   Status: open

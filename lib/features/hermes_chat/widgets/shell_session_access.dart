@@ -540,22 +540,27 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GlobalSessionsButton(enabled: _settled),
-            Text(
-              strings.shellLoadedSessions,
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            Text(
-              strings.shellSessionScope,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
             TextButton.icon(
               key: const ValueKey('shell-new-session'),
               onPressed: enabled && state.canCreateSessions
                   ? () => _activate(generation, null)
                   : null,
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add, size: 16),
               label: Text(strings.shellNewSession),
+            ),
+            GlobalSessionsButton(enabled: _settled),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 12, 10, 6),
+              child: Tooltip(
+                message: strings.shellSessionScope,
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    strings.shellLoadedSessions,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ),
+              ),
             ),
             if (_pending != null)
               Semantics(
@@ -568,17 +573,20 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
               Text(strings.shellUnavailable)
             else
               for (final group in groups.entries) ...[
-                Semantics(
-                  header: true,
-                  child: Text(
-                    strings.shellSessionSource(
-                      group.key == null
-                          ? strings.sessionUnknownSource
-                          : wingRedactedPreview(group.key!, maxLength: 48),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      strings.shellSessionSource(
+                        group.key == null
+                            ? strings.sessionUnknownSource
+                            : wingRedactedPreview(group.key!, maxLength: 48),
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
                 for (final session in group.value)
@@ -596,6 +604,14 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
                           selected: state.activeSessionId == session.id,
                           child: TextButton(
                             key: ValueKey('shell-open-session-${session.id}'),
+                            style: TextButton.styleFrom(
+                              alignment: Alignment.centerLeft,
+                              backgroundColor:
+                                  state.activeSessionId == session.id
+                                  ? Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.08)
+                                  : Colors.transparent,
+                            ),
                             onPressed: enabled
                                 ? () => _activate(generation, session.id)
                                 : null,

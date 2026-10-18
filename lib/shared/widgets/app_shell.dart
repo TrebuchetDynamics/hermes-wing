@@ -448,7 +448,7 @@ class _DesktopShell extends StatelessWidget {
                             child: Column(
                               children: [
                                 SizedBox(
-                                  height: 64,
+                                  height: 48,
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
@@ -491,65 +491,44 @@ class _DesktopShell extends StatelessWidget {
                                   ),
                                 ),
                                 Expanded(
-                                  // Keep layout-built destinations ordered before
-                                  // the fixed footer regardless of attach timing.
                                   child: FocusTraversalGroup(
                                     policy: WidgetOrderTraversalPolicy(),
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) => SingleChildScrollView(
-                                        child: ConstrainedBox(
-                                          constraints: BoxConstraints(
-                                            minHeight: constraints.maxHeight,
+                                    child: SingleChildScrollView(
+                                      key: const ValueKey(
+                                        'desktop-sidebar-scroll',
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          _navigationGroup(
+                                            context,
+                                            key: const ValueKey(
+                                              'desktop-workflow-navigation',
+                                            ),
+                                            label: AppLocalizations.of(
+                                              context,
+                                            ).shellWorkflowNavigation,
+                                            start: 0,
+                                            end: workflowCount,
                                           ),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Column(
-                                                children: [
-                                                  _navigationGroup(
-                                                    context,
-                                                    key: const ValueKey(
-                                                      'desktop-workflow-navigation',
-                                                    ),
-                                                    label: AppLocalizations.of(
-                                                      context,
-                                                    ).shellWorkflowNavigation,
-                                                    start: 0,
-                                                    end: workflowCount,
-                                                  ),
-                                                  if (expanded)
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(
-                                                        top: 8,
-                                                      ),
-                                                      child:
-                                                          ShellSessionAccess(),
-                                                    ),
-                                                ],
-                                              ),
-                                              Column(
-                                                children: [
-                                                  const Divider(
-                                                    indent: 12,
-                                                    endIndent: 12,
-                                                  ),
-                                                  _navigationGroup(
-                                                    context,
-                                                    key: const ValueKey(
-                                                      'desktop-utility-navigation',
-                                                    ),
-                                                    label: AppLocalizations.of(
-                                                      context,
-                                                    ).shellUtilityNavigation,
-                                                    start: workflowCount,
-                                                    end: destinations.length,
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                          _navigationGroup(
+                                            context,
+                                            key: const ValueKey(
+                                              'desktop-utility-navigation',
+                                            ),
+                                            label: AppLocalizations.of(
+                                              context,
+                                            ).shellUtilityNavigation,
+                                            start: workflowCount,
+                                            end: destinations.length,
                                           ),
-                                        ),
+                                          if (expanded)
+                                            const Padding(
+                                              padding: EdgeInsets.only(top: 12),
+                                              child: ShellSessionAccess(),
+                                            ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -620,13 +599,13 @@ class _DesktopShell extends StatelessWidget {
       explicitChildNodes: true,
       label: label,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (var index = start; index < end; index++)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
+                padding: const EdgeInsets.only(bottom: 1),
                 child: Builder(
                   builder: (destinationContext) => Focus(
                     canRequestFocus: false,
@@ -709,28 +688,6 @@ class _DesktopProfileFooter extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (expanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    status.profileLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: style.secondary, fontSize: 11),
-                  ),
-                  Text(
-                    key: const ValueKey('desktop-profile-value'),
-                    profile,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: style.secondary, fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
           Tooltip(
             message: label,
             excludeFromSemantics: true,
@@ -746,17 +703,37 @@ class _DesktopProfileFooter extends StatelessWidget {
                   ChatWorkspaceOverlay.open(context, AppRoutes.profiles),
               child: Semantics(
                 label: label,
-                child: ExcludeSemantics(
-                  child: expanded
-                      ? Row(
-                          children: [
-                            const Icon(Icons.people_outline, size: 16),
-                            const SizedBox(width: 10),
-                            Expanded(child: Text(l10n.chatProfileManage)),
-                          ],
-                        )
-                      : const Icon(Icons.people_outline, size: 16),
-                ),
+                excludeSemantics: true,
+                child: expanded
+                    ? Row(
+                        children: [
+                          const Icon(Icons.people_outline, size: 16),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  key: const ValueKey('desktop-profile-value'),
+                                  profile,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  l10n.chatProfileManage,
+                                  style: TextStyle(
+                                    color: style.secondary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : const ExcludeSemantics(
+                        child: Icon(Icons.people_outline, size: 16),
+                      ),
               ),
             ),
           ),

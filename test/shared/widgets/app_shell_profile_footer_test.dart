@@ -258,7 +258,7 @@ void main() {
       final safe = wingRedactedPreview(name, maxLength: 80);
       expect(safe, 'Profile [redacted-path] token=[redacted]');
       expectDisplay(tester, safe);
-      expect(tester.getSemantics(profileValue).label, safe);
+      expect(tester.getSemantics(manage).label, contains(safe));
       await tester.tap(find.byKey(const ValueKey('desktop-sidebar-toggle')));
       await tester.pumpAndSettle();
       expect(profileValue, findsNothing);
@@ -433,9 +433,15 @@ void main() {
             x++
           ) {
             final offset = (y * 1280 + x) * 4;
-            if (pixels.getUint8(offset) == 0x55 &&
-                pixels.getUint8(offset + 1) == 0x55 &&
-                pixels.getUint8(offset + 2) == 0x55) {
+            final outline = Color.alphaBlend(style.secondary, style.rail);
+            if ((pixels.getUint8(offset) - (outline.r * 255).round()).abs() <=
+                    1 &&
+                (pixels.getUint8(offset + 1) - (outline.g * 255).round())
+                        .abs() <=
+                    1 &&
+                (pixels.getUint8(offset + 2) - (outline.b * 255).round())
+                        .abs() <=
+                    1) {
               outlinePixels++;
             }
           }

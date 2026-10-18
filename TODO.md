@@ -502,22 +502,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **PARITYUPDATE-004-48** — Resolve uncovered Desktop outcome contracts without expanding active tasks
-  Goal: PARITY
-  Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
-  Sources: [accepted refresh scope](docs/quality/official-desktop-parity-refresh-2026-10-18.md#scope-and-priority), [bounded outcome](docs/quality/official-desktop-parity-refresh-2026-10-18.md#unowned-outcomes), [current matrix](docs/product/hermes-desktop-feature-matrix.md#current-product-matrix).
-  Scope: Produce one bounded seven-row contract disposition for authoritative all-message JSON export; foreign session list/preview/continue; optional Radio; credential Vault; Agent/Desktop plugin package halves; Bot Screen observe/control leases; Pets generation/adoption. Follow each pinned Desktop caller to the exact unmodified Agent handler/nearest test or identify client-local authority. Reuse existing owners; no feature implementation, network playback, export/import, secret access, package loading, computer control or generation.
-  Acceptance: Each of the seven rows names exact operations/advertisement/grants, connection/profile/resource identities, positive versus unavailable outcome, side effects/secret boundary, cancellation/stale-owner/reconnect behavior, accessible equivalent and existing task overlap. Export completeness is distinct from loaded text, foreign import from backup recovery, Screen from Bot Chat, Vault from endpoint secure storage, and packages from MCP configuration. Missing guarantees stay explicit. Propose only fully specified bounded implementation successors where supported; do not reopen archived work or alter current Files/slash/live gates.
-  Checks: `git diff --check`; `python3 -m json.tool docs/product/hermes-desktop-feature-matrix.json > /dev/null`; source-check every recorded operation against the pinned handler and nearest tests and every citation against exact path/range/SHA-256. These are required future documentation checks, not executed protocol/runtime tests.
-  Dependencies: None. No live target or optional feature is a prerequisite for existing Android work.
-  Ownership: Coordinator; one isolated task writer. Preserve active owners and shared documentation coordination.
-  Touches: docs/quality/unowned-desktop-outcomes-contract.md, docs/product/hermes-desktop-feature-matrix.json, docs/product/hermes-desktop-feature-matrix.md
-  Resources: None.
-  Readiness: Accepted read-only contract research/documentation only. Implementation remains gated on exact supported contracts and a separately bounded task; live qualification remains separate.
-  Next action: Trace the pinned HD-EXPORT, HD-IMPORT, HD-RADIO, HD-VAULT, HD-PLUGIN-PACKAGES, HD-SCREEN, HD-PETS callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/unowned-desktop-outcomes-contract.md`.
-  Status: open
-Section: Next.
-
 - [ ] **WING-001-b3** — Make SSH connection failures visible and actionable.
   Goal: REMOTE-BACKENDS
 Section: Next.
@@ -1595,4 +1579,14 @@ does not mark any check passed or authorize live actions.
   - A separately bounded future OAuth design and authorized isolated live qualification must establish deployed advertisement, secure-storage-only custody, exact-connection browser return/background behavior, cancellation and logout outcomes on each named platform. Source resolution does not qualify native revocation, Cloud discovery/cascade or provider-account OAuth.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITYUPDATE-003-b1.
+  Status: open
+
+- [ ] PARITYUPDATE-004-48-LIVE — Live checks for PARITYUPDATE-004-48
+  Scope: Run the live checks the offline work for PARITYUPDATE-004-48 left pending.
+  Acceptance: Each check passes on the real target:
+  - Only Linux-host source/document validation was exercised. No Agent protocol/runtime tests, application/browser/device runs, network playback, export/import, secret acquisition, package execution, computer control or image generation was performed; no Linux/Android runtime cell advanced.
+  - Future separately bounded consumers need exact connected-Agent admission and named-platform qualification. Preserve export snapshot/completeness limits, foreign preview-content/privacy limits, Vault secret/concurrency boundaries, Agent/Desktop package authority split, Screen secret-safe ticket delivery/non-canvas/reconnect gaps, and Pets profile/run/spend/cancellation gaps. Optional Radio is client-local, not blocked on an Agent API, but media/privacy/lifecycle qualification remains separate.
+  - Coordinator review and integration remain separate from this local worker commit. The document specifies only a conditional read-only foreign list/preview successor with explicit transport/admission dependency; no new task was scheduled or active owner expanded.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITYUPDATE-004-48.
   Status: open

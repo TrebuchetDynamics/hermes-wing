@@ -7592,3 +7592,24 @@ Source section: Now / Next
   Next action: Trace the pinned HD-OAUTH callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/remote-dashboard-oauth-contract.md`.
   Status: done
 Section: Next.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **PARITYUPDATE-004-48** — Resolve uncovered Desktop outcome contracts without expanding active tasks
+  Goal: PARITY
+  Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
+  Sources: [accepted refresh scope](docs/quality/official-desktop-parity-refresh-2026-10-18.md#scope-and-priority), [bounded outcome](docs/quality/official-desktop-parity-refresh-2026-10-18.md#unowned-outcomes), [current matrix](docs/product/hermes-desktop-feature-matrix.md#current-product-matrix).
+  Scope: Produce one bounded seven-row contract disposition for authoritative all-message JSON export; foreign session list/preview/continue; optional Radio; credential Vault; Agent/Desktop plugin package halves; Bot Screen observe/control leases; Pets generation/adoption. Follow each pinned Desktop caller to the exact unmodified Agent handler/nearest test or identify client-local authority. Reuse existing owners; no feature implementation, network playback, export/import, secret access, package loading, computer control or generation.
+  Acceptance: Each of the seven rows names exact operations/advertisement/grants, connection/profile/resource identities, positive versus unavailable outcome, side effects/secret boundary, cancellation/stale-owner/reconnect behavior, accessible equivalent and existing task overlap. Export completeness is distinct from loaded text, foreign import from backup recovery, Screen from Bot Chat, Vault from endpoint secure storage, and packages from MCP configuration. Missing guarantees stay explicit. Propose only fully specified bounded implementation successors where supported; do not reopen archived work or alter current Files/slash/live gates.
+  Checks: `git diff --check`; `python3 -m json.tool docs/product/hermes-desktop-feature-matrix.json > /dev/null`; source-check every recorded operation against the pinned handler and nearest tests and every citation against exact path/range/SHA-256. These are required future documentation checks, not executed protocol/runtime tests.
+  Dependencies: None. No live target or optional feature is a prerequisite for existing Android work.
+  Ownership: Coordinator; one isolated task writer. Preserve active owners and shared documentation coordination.
+  Touches: docs/quality/unowned-desktop-outcomes-contract.md, docs/product/hermes-desktop-feature-matrix.json, docs/product/hermes-desktop-feature-matrix.md
+  Resources: None.
+  Readiness: Accepted read-only contract research/documentation only. Implementation remains gated on exact supported contracts and a separately bounded task; live qualification remains separate.
+  Next action: Trace the pinned HD-EXPORT, HD-IMPORT, HD-RADIO, HD-VAULT, HD-PLUGIN-PACKAGES, HD-SCREEN, HD-PETS callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/unowned-desktop-outcomes-contract.md`.
+  Status: done
+Section: Next.

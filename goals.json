@@ -3935,7 +3935,8 @@
         "PARITY-NATIVE-LINUX",
         "PARITY-OFFICIAL-MATRIX",
         "PARITY-OFFICIAL-MATRIX-LIVE",
-        "PARITYUPDATE-004-48"
+        "PARITYUPDATE-004-48",
+        "PARITYUPDATE-004-48-LIVE"
       ],
       "title": "Match the remaining Desktop product outcomes explicitly"
     },
@@ -6905,7 +6906,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "PARITYUPDATE-004-48",
       "WING-001-b3",
       "PLANGAP-001-2f",
       "CONNECTION-LINK-RETIREMENT",
@@ -6971,7 +6971,8 @@
       "DEV-001-c7-LIVE",
       "PARITYUPDATE-001-aa-LIVE",
       "PARITYUPDATE-002-5c-LIVE",
-      "PARITYUPDATE-003-b1-LIVE"
+      "PARITYUPDATE-003-b1-LIVE",
+      "PARITYUPDATE-004-48-LIVE"
     ]
   },
   "tasks": [
@@ -7040,14 +7041,6 @@
       "section": "Next",
       "status": "open",
       "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
-    },
-    {
-      "depends_on": [],
-      "goal": "PARITY",
-      "id": "PARITYUPDATE-004-48",
-      "section": "Next",
-      "status": "open",
-      "title": "Resolve uncovered Desktop outcome contracts without expanding active tasks"
     },
     {
       "depends_on": [],
@@ -7630,6 +7623,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITYUPDATE-003-b1"
+    },
+    {
+      "depends_on": [
+        "PARITYUPDATE-004-48"
+      ],
+      "goal": "PARITY",
+      "id": "PARITYUPDATE-004-48-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYUPDATE-004-48"
     },
     {
       "depends_on": [
@@ -9076,6 +9079,14 @@
       "section": "Done",
       "status": "done",
       "title": "Resolve connection-specific remote dashboard OAuth contracts"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITYUPDATE-004-48",
+      "section": "Done",
+      "status": "done",
+      "title": "Resolve uncovered Desktop outcome contracts without expanding active tasks"
     },
     {
       "depends_on": [

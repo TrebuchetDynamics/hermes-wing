@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Shell-only roles from Desktop main.css at 2ed89070; never a route theme.
+import '../../theme/hermes_desktop_tokens.dart';
+
+/// Shell roles share the official Desktop palette with compact feature routes.
 class AppShellDesktopStyle {
   const AppShellDesktopStyle._({
     required this.rail,
@@ -13,29 +15,19 @@ class AppShellDesktopStyle {
     required this.border,
   });
 
-  factory AppShellDesktopStyle.forBrightness(Brightness brightness) =>
-      brightness == Brightness.dark
-      ? const AppShellDesktopStyle._(
-          rail: Color(0xff171717),
-          workArea: Color(0xff212121),
-          foreground: Color(0xffececec),
-          secondary: Color(0xffb4b4b4),
-          hover: Color(0xff2f2f2f),
-          selection: Color(0x26003f7a),
-          // Desktop's #006acd falls below 4.5:1 on its dark rail.
-          accent: Color(0xff579fff),
-          border: Color(0x0fffffff),
-        )
-      : const AppShellDesktopStyle._(
-          rail: Color(0xfff8f8f8),
-          workArea: Colors.white,
-          foreground: Color(0xff111111),
-          secondary: Color(0xff555555),
-          hover: Color(0xfff0f0f0),
-          selection: Color(0x14003f7a),
-          accent: Color(0xff003f7a),
-          border: Color(0xffe5e5e5),
-        );
+  factory AppShellDesktopStyle.forBrightness(Brightness brightness) {
+    final colors = HermesDesktopTokens.colors(brightness);
+    return AppShellDesktopStyle._(
+      rail: colors.surfaceContainerLow,
+      workArea: colors.surface,
+      foreground: colors.onSurface,
+      secondary: colors.onSurfaceVariant,
+      hover: colors.primary.withValues(alpha: 0.06),
+      selection: colors.primary.withValues(alpha: 0.08),
+      accent: colors.primary,
+      border: colors.outlineVariant,
+    );
+  }
 
   final Color rail;
   final Color workArea;

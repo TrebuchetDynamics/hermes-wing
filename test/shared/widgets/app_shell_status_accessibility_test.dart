@@ -44,20 +44,21 @@ Widget statusApp(
     ),
     home: AppShell(
       location: location,
-      child: const Scaffold(body: Text('Synthetic status workspace')),
+      child: Scaffold(
+        appBar: AppBar(actions: const [AppShellMenuButton()]),
+        body: const Text('Synthetic status workspace'),
+      ),
     ),
   ),
 );
 
 Future<void> inspectStatus(WidgetTester tester, double width) async {
   if (width < 600) {
-    // The existing compact equivalent is the keyboard-operable More sheet.
+    // Chat exposes the same status sheet through its header navigation action.
     for (var i = 0; i < 60; i++) {
       final context = FocusManager.instance.primaryFocus?.context;
-      if (context
-              ?.findAncestorWidgetOfExactType<NavigationDestination>()
-              ?.label ==
-          'More') {
+      if (context?.findAncestorWidgetOfExactType<IconButton>()?.key ==
+          const ValueKey('app-shell-menu-button')) {
         break;
       }
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);

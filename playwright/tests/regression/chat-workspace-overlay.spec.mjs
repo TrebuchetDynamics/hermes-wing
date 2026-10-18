@@ -26,11 +26,9 @@ async function shellOpen(page, width, destination, actor) {
   };
   let returnFocus;
   if (width < 600) {
-    returnFocus = await activate(page.getByRole('tab', { name: destination === 'Settings' ? 'More' : 'Profiles', exact: true }));
-    if (destination === 'Settings') {
-      if (actor) await activate(page.getByRole('button', { name: 'Settings', exact: true }));
-      else await page.getByText('Settings', { exact: true }).last().click();
-    }
+    returnFocus = await activate(page.getByRole('button', { name: 'Open more destinations', exact: true }));
+    if (actor) await activate(page.getByRole('button', { name: destination, exact: true }));
+    else await page.getByText(destination, { exact: true }).last().click();
   } else {
     returnFocus = await activate(page.getByRole('button', { name: destination === 'Settings' ? /^Settings(?: Settings)?$/ : /^Profiles(?: Profiles)?$/, exact: true }));
   }
@@ -298,16 +296,7 @@ for (const width of [390, 1280]) {
       await expect(page.getByRole('group', { name: /E2E Hermes is ready\.$/ })).toBeVisible();
       expect(await state(page)).toMatchObject({ status: 'connected', active_session_id: 'e2e-hermes-session', has_error: false });
       const location = page.url();
-      const open = async () => {
-        if (rendered && width < 600 && !await page.getByRole('tab', { name: 'More', exact: true }).isVisible()) {
-          await page.getByRole('textbox').last().click();
-          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-          await page.keyboard.type('/settings');
-          await expect(page.locator('input:focus, textarea:focus')).toHaveValue('/settings');
-          await page.getByRole('button', { name: /^\/settings / }).click();
-          await expect(closeButton(page)).toBeVisible();
-        } else await shellOpen(page, width, destination);
-      };
+      const open = () => shellOpen(page, width, destination);
       const prompt = 'Synthetic connection switch pending run';
       if (activeRun) {
         await page.getByRole('textbox').last().click();

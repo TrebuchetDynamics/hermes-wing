@@ -541,24 +541,16 @@ void main() {
                 .map((position) => position.pixels)
                 .toList();
             if (width < 600) {
-              if (destination == AppRoutes.settings) {
-                await tester.tap(
-                  find.descendant(
-                    of: find.byType(NavigationBar),
-                    matching: find.text('More'),
-                  ),
-                );
-                await settleRoutes(tester);
-                await tester.ensureVisible(find.text('Settings').last);
-                await tester.tap(find.text('Settings').last);
-              } else {
-                await tester.tap(
-                  find.descendant(
-                    of: find.byType(NavigationBar),
-                    matching: find.text('Profiles'),
-                  ),
-                );
-              }
+              await tester.tap(
+                find.byKey(const ValueKey('app-shell-menu-button')),
+              );
+              await settleRoutes(tester);
+              final entry = find.widgetWithText(
+                ListTile,
+                destination == AppRoutes.settings ? 'Settings' : 'Profiles',
+              );
+              await tester.ensureVisible(entry);
+              await tester.tap(entry);
             } else if (destination == AppRoutes.profiles) {
               await tester.tap(
                 find.byKey(const ValueKey('desktop-manage-profiles')),

@@ -73,10 +73,18 @@ class AppShell extends ConsumerWidget {
 class _AppShellNavigationScope extends InheritedWidget {
   const _AppShellNavigationScope({
     required this.suppressPageMenu,
+    this.keepPageMenu = false,
     required super.child,
   });
 
   final bool suppressPageMenu;
+  final bool keepPageMenu;
+
+  static bool keepMenuOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<_AppShellNavigationScope>()
+          ?.keepPageMenu ??
+      false;
 
   static bool suppressMenuOf(BuildContext context) =>
       context
@@ -86,7 +94,8 @@ class _AppShellNavigationScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_AppShellNavigationScope oldWidget) =>
-      suppressPageMenu != oldWidget.suppressPageMenu;
+      suppressPageMenu != oldWidget.suppressPageMenu ||
+      keepPageMenu != oldWidget.keepPageMenu;
 }
 
 class _MobileShell extends StatelessWidget {
@@ -106,10 +115,12 @@ class _MobileShell extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
     valueListenable: appShellNavigationVisible,
     builder: (context, visible, _) => _AppShellNavigationScope(
-      suppressPageMenu: visible,
+      // Chat keeps the transcript/composer primary, with navigation in its header.
+      suppressPageMenu: visible && !_isChat,
+      keepPageMenu: _isChat,
       child: Scaffold(
         body: child,
-        bottomNavigationBar: visible
+        bottomNavigationBar: visible && !_isChat
             ? NavigationBar(
                 key: const ValueKey('mobile-shell-navigation-bar'),
                 selectedIndex: _selectedIndex,
@@ -166,6 +177,11 @@ class _MobileShell extends StatelessWidget {
     ),
   );
 
+  bool get _isChat => AppRoutes.isNavigationDestinationLocation(
+    location: location,
+    destinationPath: AppRoutes.hermes,
+  );
+
   int get _selectedIndex {
     if (AppRoutes.isNavigationDestinationLocation(
       location: location,
@@ -195,7 +211,7 @@ class AppShellMenuButton extends ConsumerWidget {
       builder: (context, _) => ValueListenableBuilder<bool>(
         valueListenable: appShellNavigationVisible,
         builder: (context, visible, _) {
-          if (!visible ||
+          if ((!visible && !_AppShellNavigationScope.keepMenuOf(context)) ||
               MediaQuery.sizeOf(context).width >= 600 ||
               _AppShellNavigationScope.suppressMenuOf(context)) {
             return const SizedBox.shrink();

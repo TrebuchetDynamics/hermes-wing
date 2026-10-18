@@ -41,6 +41,7 @@ Future<GoRouter> pumpShell(
             GoRoute(
               path: path,
               builder: (_, _) => Scaffold(
+                appBar: AppBar(actions: const [AppShellMenuButton()]),
                 body: Column(
                   children: [
                     Text('Page $path'),
@@ -260,7 +261,7 @@ void main() {
       }
       tester.view.physicalSize = const Size(390, 844);
       await tester.pumpAndSettle();
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
       expect(find.bySemanticsLabel('Workflow'), findsNothing);
       for (final label in [
         'Schedules',
@@ -269,7 +270,12 @@ void main() {
         'Persona',
         'Settings',
       ]) {
-        await tester.tap(find.text('More').hitTestable());
+        final headerMenu = find.byKey(const ValueKey('app-shell-menu-button'));
+        await tester.tap(
+          headerMenu.evaluate().isNotEmpty
+              ? headerMenu
+              : find.text('More').hitTestable(),
+        );
         await tester.pumpAndSettle();
         final row = find.widgetWithText(ListTile, label);
         await tester.ensureVisible(row);

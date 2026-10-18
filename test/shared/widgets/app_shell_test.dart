@@ -53,7 +53,7 @@ void main() {
   });
 
   testWidgets(
-    'mobile shell keeps Chat, Profiles, Connections, and More in bottom navigation',
+    'mobile Chat prioritizes the workspace and exposes navigation in its header',
     (tester) async {
       _usePhoneSize(tester);
 
@@ -72,21 +72,59 @@ void main() {
       expect(find.byKey(const ValueKey('body')), findsOneWidget);
       expect(
         find.byKey(const ValueKey('mobile-shell-navigation-bar')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('app-shell-menu-button')),
         findsOneWidget,
       );
-      expect(find.text('Chat'), findsOneWidget);
-      expect(find.text('Profiles'), findsOneWidget);
-      expect(find.text('Connections'), findsOneWidget);
-      expect(find.text('More'), findsOneWidget);
-      expect(find.byKey(const ValueKey('app-shell-menu-button')), findsNothing);
 
-      await tester.tap(find.text('More').hitTestable());
+      appShellNavigationVisible.value = false;
+      addTearDown(() => appShellNavigationVisible.value = true);
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('app-shell-menu-button')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('app-shell-menu-button')));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(ListTile, 'Office'), findsNothing);
+      expect(find.widgetWithText(ListTile, 'Profiles'), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Connections'), findsOneWidget);
       expect(find.widgetWithText(ListTile, 'Schedules'), findsOneWidget);
-      expect(find.widgetWithText(ListTile, 'Chat'), findsNothing);
     },
   );
+
+  testWidgets('compact Chat navigation remains usable at 200% text', (
+    tester,
+  ) async {
+    _usePhoneSize(tester);
+    await tester.pumpWidget(
+      _testApp(
+        MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+          child: AppShell(
+            location: AppRoutes.hermes,
+            child: Scaffold(
+              appBar: AppBar(actions: const [AppShellMenuButton()]),
+              body: const Text('Conversation workspace'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const ValueKey('app-shell-menu-button')));
+    await tester.pumpAndSettle();
+    final settings = find.widgetWithText(ListTile, 'Settings');
+    await tester.scrollUntilVisible(
+      settings,
+      120,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(settings.hitTestable(), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('bottom tabs navigate to Profiles and retain selection', (
     tester,
@@ -104,7 +142,10 @@ void main() {
             path: path,
             builder: (_, _) => AppShell(
               location: path,
-              child: Scaffold(body: Text('Page $path')),
+              child: Scaffold(
+                appBar: AppBar(actions: const [AppShellMenuButton()]),
+                body: Text('Page $path'),
+              ),
             ),
           ),
       ],
@@ -124,7 +165,9 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.text('Profiles'));
+    await tester.tap(find.byKey(const ValueKey('app-shell-menu-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, 'Profiles'));
     await tester.pumpAndSettle();
     expect(find.text('Page ${AppRoutes.profiles}'), findsOneWidget);
     expect(

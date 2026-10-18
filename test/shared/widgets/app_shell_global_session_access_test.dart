@@ -553,7 +553,7 @@ void main() {
       expect(create, findsNothing);
       expect(
         find.byKey(const ValueKey('mobile-shell-navigation-bar')),
-        findsOneWidget,
+        findsNothing,
       );
       tester.view.physicalSize = const Size(1280, 900);
       await tester.pumpAndSettle();

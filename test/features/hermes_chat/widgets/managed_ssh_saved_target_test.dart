@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:wing/core/hermes/ssh/ssh_connection_request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -129,6 +130,52 @@ void main() {
       expect(serveSelected(tester), isTrue);
       expect(submissions, 0);
       expect(find.text(targetLabels.loaded), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'API profile saves, reloads and submits without reusing previous credentials',
+    (tester) async {
+      SshConnectionRequest? submitted;
+      Widget form() => MaterialApp(
+        home: Scaffold(
+          body: ManagedSshConnectionForm(
+            labels: labels,
+            targetLabels: targetLabels,
+            onSubmit: (input) async => submitted = input,
+            onCancel: () {},
+          ),
+        ),
+      );
+      await tester.pumpWidget(form());
+      await tester.enterText(field('host'), 'example.invalid');
+      await tester.enterText(field('username'), 'tester');
+      await tester.enterText(field('agent-profile'), 'demo');
+      await tester.ensureVisible(find.text(targetLabels.save));
+      await tester.tap(find.text(targetLabels.save));
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(form());
+      await tester.enterText(field('agent-token'), 'synthetic-other-token');
+      await tester.ensureVisible(find.text(targetLabels.load));
+      await tester.tap(find.text(targetLabels.load));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextFormField>(field('agent-profile')).controller!.text,
+        'demo',
+      );
+      expect(
+        tester.widget<TextFormField>(field('agent-token')).controller!.text,
+        isEmpty,
+      );
+      expect(submitted, isNull);
+      await tester.enterText(field('password'), 'synthetic-password');
+      await tester.enterText(field('agent-token'), 'synthetic-demo-token');
+      await tester.ensureVisible(find.byType(FilledButton));
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      expect(submitted!.agentProfile, 'demo');
+      expect(submitted!.agentBearerToken, 'synthetic-demo-token');
     },
   );
 

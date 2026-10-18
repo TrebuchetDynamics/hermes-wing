@@ -673,6 +673,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get managedSshAgentProfileLabel => 'Agent API profile (optional)';
+
+  @override
+  String get managedSshAgentProfileHelp =>
+      'Leave blank for the root API. For a shared gateway, enter only the profile ID (for example hermes-wing), not /p/ or a URL. Use that profile’s Agent token. SSH login alone does not authenticate to Agent.';
+
+  @override
+  String get managedSshInvalidAgentProfile =>
+      'Use 1–64 lowercase letters, numbers, hyphens or underscores, starting with a letter or number.';
+
+  @override
   String get appTitle => 'Hermes Wing';
 
   @override

@@ -42,6 +42,11 @@ class ManagedSshConnectionLabels {
     required this.invalidPassword,
     required this.invalidToken,
     required this.failure,
+    this.agentProfile = 'Agent API profile (optional)',
+    this.agentProfileHelp =
+        'Leave blank for the root API. For a shared gateway, enter only the profile ID, not /p/ or a URL.',
+    this.invalidAgentProfile =
+        'Use 1–64 lowercase letters, numbers, hyphens or underscores, starting with a letter or number.',
     this.serveReads,
     this.serveToken,
   });
@@ -57,6 +62,7 @@ class ManagedSshConnectionLabels {
   final String invalidHost, invalidPort, invalidUsername, invalidPassword;
   final String invalidToken, failure;
   final String? serveReads, serveToken;
+  final String agentProfile, agentProfileHelp, invalidAgentProfile;
 }
 
 @immutable
@@ -146,6 +152,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   final _passphrase = TextEditingController();
   final _agentPort = TextEditingController(text: '8642');
   final _agentToken = TextEditingController();
+  final _agentProfile = TextEditingController();
 
   @override
   void initState() {
@@ -156,6 +163,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
     _sshPort.text = '${target.configuration.sshPort}';
     _username.text = target.configuration.username;
     _agentPort.text = '${target.configuration.agentPort}';
+    _agentProfile.text = target.configuration.agentProfile ?? '';
     _serveReads =
         target.transport == SshAgentTransport.serve &&
         widget.labels.serveReads != null;
@@ -211,6 +219,10 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
         return v.isNotEmpty && v.length <= 4096 && !v.contains('\u0000')
             ? null
             : l.invalidPassword;
+      case 'agent-profile':
+        return ManagedSshConfig.validAgentProfile(v.isEmpty ? null : v)
+            ? null
+            : l.invalidAgentProfile;
       case 'agent-token':
         return (!_serveReads && v.isEmpty) ||
                 (v.isNotEmpty &&
@@ -238,7 +250,9 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
         (!_validHost(_host.text.trim()) ||
             _port(_sshPort.text) == null ||
             _port(_agentPort.text) == null ||
-            _validate('username', _username.text) != null)) {
+            _validate('username', _username.text) != null ||
+            (!_serveReads &&
+                _validate('agent-profile', _agentProfile.text) != null))) {
       _form.currentState!.validate();
       return;
     }
@@ -250,6 +264,9 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
               sshPort: _port(_sshPort.text)!,
               username: _username.text.trim(),
               agentPort: _port(_agentPort.text)!,
+              agentProfile: _serveReads || _agentProfile.text.isEmpty
+                  ? null
+                  : _agentProfile.text,
             ),
             serveReads: _serveReads,
           )
@@ -276,6 +293,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
         _sshPort.text = '${loaded.config.sshPort}';
         _username.text = loaded.config.username;
         _agentPort.text = '${loaded.config.agentPort}';
+        _agentProfile.text = loaded.config.agentProfile ?? '';
         setState(() {
           _serveReads = loaded.serveReads && widget.labels.serveReads != null;
           _targetNotice = labels.loaded;
@@ -326,6 +344,9 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
           ? _passphrase.text
           : null,
       agentPort: _port(_agentPort.text)!,
+      agentProfile: _serveReads || _agentProfile.text.isEmpty
+          ? null
+          : _agentProfile.text,
       agentBearerToken: _agentToken.text.isEmpty ? null : _agentToken.text,
       transport: _serveReads
           ? SshAgentTransport.serve
@@ -555,6 +576,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
       _passphrase,
       _agentPort,
       _agentToken,
+      _agentProfile,
     ]) {
       c.dispose();
     }
@@ -583,6 +605,9 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
             controller: controller,
             enabled: !_busy,
             validator: (value) => _validate(id, value),
+            onChanged: id == 'agent-profile'
+                ? (_) => _agentToken.clear()
+                : null,
             obscureText: secret,
             autocorrect: false,
             enableSuggestions: false,
@@ -769,6 +794,13 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
                 if (_keyError != null) Text(_keyError!),
               ],
               _field('agent-port', l.agentPort, _agentPort, port: true),
+              if (!_serveReads) ...[
+                _field('agent-profile', l.agentProfile, _agentProfile),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(l.agentProfileHelp),
+                ),
+              ],
               if (l.serveReads != null)
                 CheckboxListTile(
                   key: const ValueKey('managed-ssh-serve-reads'),

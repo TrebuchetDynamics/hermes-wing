@@ -15,6 +15,7 @@ class SshConnectionRequest {
     this.privateKey,
     this.passphrase,
     required this.agentPort,
+    this.agentProfile,
     required this.agentBearerToken,
     this.transport = SshAgentTransport.advertisedApi,
   });
@@ -24,6 +25,7 @@ class SshConnectionRequest {
   final String password;
   final String? privateKey, passphrase;
   final int agentPort;
+  final String? agentProfile;
   final String? agentBearerToken;
   final SshAgentTransport transport;
 

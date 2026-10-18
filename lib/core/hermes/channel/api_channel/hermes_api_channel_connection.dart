@@ -84,10 +84,13 @@ extension _ConnectionExtension on HermesApiChannel {
       final basicHealth = await client.health();
       if (!_isCurrentConnection(generation, client)) return;
       final capabilities = await client.capabilities();
+      // An explicit multiplexer URL is already the request's profile identity.
+      // Never bootstrap it with the root/default query identity.
       final initialProfileId =
-          capabilities.profileContext.isSupportedQueryContext
-          ? capabilities.profileContext.defaultProfileId
-          : null;
+          client.config.pathProfileId ??
+          (capabilities.profileContext.isSupportedQueryContext
+              ? capabilities.profileContext.defaultProfileId
+              : null);
       final optionalResourceErrors = <HermesOptionalResource, String>{};
       final detailedHealthFuture = _loadOptional<HermesHealthStatus>(
         advertised: _capabilityEndpointAuthorized(

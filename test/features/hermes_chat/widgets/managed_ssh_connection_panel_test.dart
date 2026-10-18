@@ -34,6 +34,12 @@ const input = SshConnectionRequest(
   agentBearerToken: 'synthetic-agent-token',
 );
 
+class _Denied implements HermesApiStatusException {
+  const _Denied();
+  @override
+  int get statusCode => 401;
+}
+
 class FakeChannel extends ChangeNotifier implements HermesChannel {
   @override
   Stream<HermesApprovalRequest> get approvalRequests => const Stream.empty();
@@ -178,6 +184,122 @@ class _ServeReadChannel extends HermesApiChannel {
 
 void main() {
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
+  test(
+    'controller passes explicit profile into reviewed forward and Agent client',
+    () async {
+      final reads = <String>[];
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            reads.add(uri.path);
+            expect(headers['Authorization'], 'Bearer synthetic-profile-token');
+            return switch (uri.path) {
+              '/p/demo/health' => '{"status":"ok"}',
+              '/p/demo/v1/capabilities' =>
+                '{"object":"hermes.api_server.capabilities","platform":"test","model":"test","auth":{"type":"bearer","required":true,"granted_scopes":[]},"features":{},"endpoints":{}}',
+              '/p/demo/api/sessions' => '{"sessions":[],"total":0}',
+              _ => throw StateError('Unexpected read'),
+            };
+          },
+          post: (_, _, _) async => throw StateError('No mutations authorized'),
+        ),
+      );
+      final forward = FakeForward()..autoVerify = true;
+      final controller = ManagedSshConnectionController(forward, channel);
+      addTearDown(() async {
+        await controller.cancel();
+        controller.dispose();
+        channel.dispose();
+      });
+      final connecting = controller.connectSsh(
+        const SshConnectionRequest(
+          host: 'example.invalid',
+          sshPort: 22,
+          username: 'tester',
+          password: 'synthetic-password',
+          agentPort: 8642,
+          agentProfile: 'demo',
+          agentBearerToken: 'synthetic-profile-token',
+        ),
+        verifyHostKey: (config, _) => config.agentProfile == 'demo',
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(forward.config!.agentProfile, 'demo');
+      forward.waiting.complete(
+        ManagedSshTunnel(
+          agentUri: forward.config!.forwardedAgentUri(45678),
+          done: forward.ended.future,
+          close: () async {},
+        ),
+      );
+      expect(await connecting, isTrue);
+      expect(channel.state.connectedBaseUrl, 'http://127.0.0.1:45678/p/demo');
+      expect(reads, [
+        '/p/demo/health',
+        '/p/demo/v1/capabilities',
+        '/p/demo/api/sessions',
+      ]);
+      expect(channel.state.selectedProfileId, 'demo');
+      expect(controller.recoveryTarget!.configuration.agentProfile, 'demo');
+      expect(await forward.credentials!.password!(), isNull);
+    },
+  );
+
+  test(
+    'profile Agent denial never falls back to root or reuses SSH authentication',
+    () async {
+      final paths = <String>[];
+      final channel = HermesApiChannel(
+        clientBuilder: (config) => HermesApiClient(
+          config: config,
+          get: (uri, headers) async {
+            paths.add(uri.path);
+            expect(
+              headers['Authorization'],
+              'Bearer synthetic-wrong-profile-token',
+            );
+            throw const _Denied();
+          },
+        ),
+      );
+      final forward = FakeForward()..autoVerify = true;
+      final controller = ManagedSshConnectionController(forward, channel);
+      addTearDown(() async {
+        await controller.cancel();
+        controller.dispose();
+        channel.dispose();
+      });
+      final connecting = controller.connectSsh(
+        const SshConnectionRequest(
+          host: 'example.invalid',
+          sshPort: 22,
+          username: 'tester',
+          password: 'synthetic-password',
+          agentPort: 8642,
+          agentProfile: 'demo',
+          agentBearerToken: 'synthetic-wrong-profile-token',
+        ),
+        verifyHostKey: (_, _) => true,
+      );
+      await Future<void>.delayed(Duration.zero);
+      forward.waiting.complete(
+        ManagedSshTunnel(
+          agentUri: forward.config!.forwardedAgentUri(45678),
+          done: forward.ended.future,
+          close: () async {
+            forward.closes++;
+          },
+        ),
+      );
+      expect(await connecting, isFalse);
+      expect(paths, ['/p/demo/health']);
+      expect(forward.closes, 1);
+      expect(await forward.credentials!.password!(), isNull);
+      expect(controller.recoveryTarget, isNull);
+    },
+  );
 
   for (final scenario in [
     (failCleanup: false, reentrant: false),

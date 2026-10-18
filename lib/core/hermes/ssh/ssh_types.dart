@@ -34,6 +34,7 @@ class ManagedSshConfig {
     required this.username,
     this.sshPort = 22,
     required this.agentPort,
+    this.agentProfile,
   }) {
     if (host.isEmpty ||
         host.length > 253 ||
@@ -44,7 +45,8 @@ class ManagedSshConfig {
         sshPort < 1 ||
         sshPort > 65535 ||
         agentPort < 1 ||
-        agentPort > 65535) {
+        agentPort > 65535 ||
+        !validAgentProfile(agentProfile)) {
       throw const ManagedSshException(ManagedSshFailure.invalidConfiguration);
     }
   }
@@ -52,6 +54,19 @@ class ManagedSshConfig {
   final String username;
   final int sshPort;
   final int agentPort;
+
+  /// Explicit API multiplexer identity, not an arbitrary base URL or host path.
+  /// Null retains the historical root endpoint; never infer a profile from SSH.
+  final String? agentProfile;
+  static bool validAgentProfile(String? value) =>
+      value == null || RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$').hasMatch(value);
+
+  Uri forwardedAgentUri(int localPort) => Uri(
+    scheme: 'http',
+    host: '127.0.0.1',
+    port: localPort,
+    path: agentProfile == null ? '' : '/p/$agentProfile',
+  );
   @override
   String toString() => 'ManagedSshConfig(redacted)';
 }

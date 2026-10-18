@@ -74,11 +74,18 @@ class ManagedSshConnectionController {
             input.agentBearerToken!.isEmpty)) {
       throw const ManagedSshException(ManagedSshFailure.invalidConfiguration);
     }
+    // The /p/{profile} prefix belongs only to the advertised API multiplexer,
+    // never to the separately authenticated native serve surface.
+    if (input.transport == SshAgentTransport.serve &&
+        input.agentProfile != null) {
+      throw const ManagedSshException(ManagedSshFailure.invalidConfiguration);
+    }
     final configuration = ManagedSshConfig(
       host: input.host,
       username: input.username,
       sshPort: input.sshPort,
       agentPort: input.agentPort,
+      agentProfile: input.agentProfile,
     );
     _serveAdoption = input.transport == SshAgentTransport.serve;
     final generation = ++_generation;

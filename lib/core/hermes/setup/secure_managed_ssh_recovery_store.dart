@@ -32,13 +32,14 @@ class ManagedSshRecovery {
   };
 
   static String runOwner(ManagedSshConfig config, ManagedSshHostKey key) =>
-      'ssh-forward:${sha256.convert(utf8.encode(jsonEncode([config.host, config.sshPort, config.username, config.agentPort, key.algorithm, base64.encode(key.sha256)])))}';
+      'ssh-forward:${sha256.convert(utf8.encode(jsonEncode([config.host, config.sshPort, config.username, config.agentPort, key.algorithm, base64.encode(key.sha256), if (config.agentProfile != null) config.agentProfile])))}';
 
   bool matches(ManagedSshConfig other, SshAgentTransport protocol) =>
       configuration.host == other.host &&
       configuration.sshPort == other.sshPort &&
       configuration.username == other.username &&
       configuration.agentPort == other.agentPort &&
+      configuration.agentProfile == other.agentProfile &&
       transport == protocol;
 
   Map<String, Object> toJson() => {
@@ -46,6 +47,7 @@ class ManagedSshRecovery {
     'sshPort': configuration.sshPort,
     'username': configuration.username,
     'agentPort': configuration.agentPort,
+    'agentProfile': ?configuration.agentProfile,
     'transport': transport.name,
     'algorithm': hostKey.algorithm,
     'fingerprint': base64.encode(hostKey.sha256),
@@ -93,6 +95,9 @@ class ManagedSshRecovery {
       }
       unresolved.add((row['profile'] as String, row['session'] as String));
     }
+    if (value['agentProfile'] != null && value['transport'] == 'serve') {
+      throw const FormatException();
+    }
     final fingerprint = base64.decode(text('fingerprint', 44));
     if (fingerprint.length != 32 ||
         value['uncertain'] is! bool ||
@@ -106,6 +111,7 @@ class ManagedSshRecovery {
         username: text('username', 128),
         sshPort: value['sshPort'] as int,
         agentPort: value['agentPort'] as int,
+        agentProfile: value['agentProfile'] as String?,
       ),
       transport: SshAgentTransport.values.singleWhere(
         (p) => p.name == text('transport', 32),

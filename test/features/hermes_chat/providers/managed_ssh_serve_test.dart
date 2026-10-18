@@ -75,7 +75,11 @@ class _Forward extends ManagedSshForward {
     }
     if (ended.isCompleted) ended = Completer<void>();
     return ManagedSshTunnel(
-      agentUri: Uri.parse(origin),
+      agentUri: Uri.parse(origin).replace(
+        path: configuration.agentProfile == null
+            ? ''
+            : '/p/${configuration.agentProfile}',
+      ),
       done: ended.future,
       close: disconnect,
     );
@@ -315,107 +319,122 @@ void main() {
     },
   );
 
-  test(
-    'advertised SSH restores only the remembered owner without reading default-session history',
-    () async {
-      controller.dispose();
-      channel.dispose();
-      final admitted = <String>[];
-      final histories = <String>[];
-      final capabilities = {
-        'schema_version': 1,
-        'profile_context': {
-          'type': 'query',
-          'name': 'profile',
-          'required': true,
-          'default_profile_id': 'default',
-        },
-        'auth': {
-          'type': 'bearer',
-          'required': true,
-          'granted_scopes': ['profiles:read'],
-        },
-        'features': <String, bool>{},
-        'endpoints': {
-          'profiles': {
-            'method': 'GET',
-            'path': '/api/profiles',
-            'required_scopes': ['profiles:read'],
+  for (final prefix in [null, 'demo']) {
+    test(
+      'advertised SSH restores only the remembered owner without reading default-session history prefix=$prefix',
+      () async {
+        controller.dispose();
+        channel.dispose();
+        final admitted = <String>[];
+        final histories = <String>[];
+        final capabilities = {
+          'schema_version': 1,
+          'profile_context': {
+            'type': 'query',
+            'name': 'profile',
+            'required': true,
+            'default_profile_id': 'default',
           },
-          'session_messages': {
-            'method': 'GET',
-            'path': '/api/sessions/{session_id}/messages',
-            'profile_scoped': true,
+          'auth': {
+            'type': 'bearer',
+            'required': true,
+            'granted_scopes': ['profiles:read'],
           },
-        },
-      };
-      channel = HermesApiChannel(
-        clientBuilder: (config) => HermesApiClient(
-          config: config,
-          get: (uri, _) async {
-            if (uri.path.endsWith('/messages')) {
-              histories.add(uri.path);
-              expect(uri.queryParameters['profile'], 'demo');
-              expect(uri.path, '/api/sessions/remembered/messages');
-              return '{"object":"list","session_id":"remembered","data":[]}';
-            }
-            return switch (uri.path) {
-              '/health' => '{"status":"ok"}',
-              '/v1/capabilities' => jsonEncode(capabilities),
-              '/api/profiles' =>
-                '{"data":[{"id":"default","name":"Default"},{"id":"demo","name":"Demo"}]}',
-              '/api/sessions' =>
-                '{"data":[{"id":"wrong-default","source":"api_server"},{"id":"remembered","source":"api_server"}],"has_more":false}',
-              _ => throw StateError('Unexpected read'),
-            };
+          'features': <String, bool>{},
+          'endpoints': {
+            'profiles': {
+              'method': 'GET',
+              'path': '/api/profiles',
+              'required_scopes': ['profiles:read'],
+            },
+            'session_messages': {
+              'method': 'GET',
+              'path': '/api/sessions/{session_id}/messages',
+              'profile_scoped': true,
+            },
           },
-        ),
-      );
-      channel.addListener(() {
-        if (channel.state.activeSessionId != null) {
-          admitted.add(channel.state.activeSessionId!);
-        }
-      });
-      final config = ManagedSshConfig(
-        host: 'example.invalid',
-        username: 'synthetic',
-        agentPort: 8642,
-      );
-      await sshStore.save(
-        ManagedSshRecovery(
-          configuration: config,
-          transport: SshAgentTransport.advertisedApi,
-          hostKey: ManagedSshHostKey('ssh-ed25519', List.filled(32, 0)),
-          profile: 'demo',
-          session: 'remembered',
-          uncertain: false,
-        ),
-      );
-      controller = ManagedSshConnectionController(
-        forward,
-        channel,
-        recoveryStore: sshStore,
-      );
-      expect(
-        await controller.connectSsh(
-          const SshConnectionRequest(
-            host: 'example.invalid',
-            sshPort: 22,
-            username: 'synthetic',
-            password: 'synthetic-password',
-            agentPort: 8642,
-            agentBearerToken: LocalServeReadFixture.token,
+        };
+        channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, _) async {
+              if (uri.path.endsWith('/messages')) {
+                histories.add(uri.path);
+                expect(
+                  uri.queryParameters['profile'],
+                  prefix == null ? 'demo' : isNull,
+                );
+                expect(
+                  uri.path,
+                  '${prefix == null ? '' : '/p/$prefix'}/api/sessions/remembered/messages',
+                );
+                return '{"object":"list","session_id":"remembered","data":[]}';
+              }
+              return switch (uri.path.replaceFirst(
+                prefix == null ? '' : '/p/$prefix',
+                '',
+              )) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' => jsonEncode(capabilities),
+                '/api/profiles' =>
+                  '{"data":[{"id":"default","name":"Default"},{"id":"demo","name":"Demo"}]}',
+                '/api/sessions' =>
+                  '{"data":[{"id":"wrong-default","source":"api_server"},{"id":"remembered","source":"api_server"}],"has_more":false}',
+                _ => throw StateError('Unexpected read'),
+              };
+            },
           ),
-          verifyHostKey: (_, _) => true,
-        ),
-        true,
-      );
-      expect(admitted, isNotEmpty);
-      expect(admitted.toSet(), {'remembered'});
-      expect(histories, ['/api/sessions/remembered/messages']);
-      expect(channel.state.selectedProfileId, 'demo');
-    },
-  );
+        );
+        channel.addListener(() {
+          if (channel.state.activeSessionId != null) {
+            admitted.add(channel.state.activeSessionId!);
+          }
+        });
+        final config = ManagedSshConfig(
+          host: 'example.invalid',
+          username: 'synthetic',
+          agentPort: 8642,
+          agentProfile: prefix,
+        );
+        await sshStore.save(
+          ManagedSshRecovery(
+            configuration: config,
+            transport: SshAgentTransport.advertisedApi,
+            hostKey: ManagedSshHostKey('ssh-ed25519', List.filled(32, 0)),
+            profile: 'demo',
+            session: 'remembered',
+            uncertain: false,
+          ),
+        );
+        controller = ManagedSshConnectionController(
+          forward,
+          channel,
+          recoveryStore: sshStore,
+        );
+        expect(
+          await controller.connectSsh(
+            SshConnectionRequest(
+              host: 'example.invalid',
+              sshPort: 22,
+              username: 'synthetic',
+              password: 'synthetic-password',
+              agentPort: 8642,
+              agentProfile: prefix,
+              agentBearerToken: LocalServeReadFixture.token,
+            ),
+            verifyHostKey: (_, _) => true,
+          ),
+          true,
+        );
+        expect(admitted, isNotEmpty);
+        expect(admitted.toSet(), {'remembered'});
+        expect(histories, [
+          '${prefix == null ? '' : '/p/$prefix'}/api/sessions/remembered/messages',
+        ]);
+        expect(channel.state.selectedProfileId, 'demo');
+      },
+    );
+  }
 
   test(
     'failed SSH stream uncertainty survives navigation and reconnect without resubmission',

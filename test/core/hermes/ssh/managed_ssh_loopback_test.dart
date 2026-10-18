@@ -35,6 +35,37 @@ void main() {
         (fixture['host_sha256_bytes'] as List).cast<int>(),
       );
 
+  test('real SSH preserves explicit API profile path end to end', () async {
+    config = ManagedSshConfig(
+      host: config.host,
+      username: config.username,
+      sshPort: config.sshPort,
+      agentPort: config.agentPort,
+      agentProfile: 'demo',
+    );
+    final tunnel = await service!.connect(
+      configuration: config,
+      authentication: ManagedSshCredentials(
+        password: () => File(fixture['password_file'] as String).readAsString(),
+      ),
+      verifyHostKey: trusted,
+    );
+    expect(tunnel.agentUri.path, '/p/demo');
+    final client = HttpClient();
+    try {
+      final response = await (await client.getUrl(
+        Uri.parse('${tunnel.agentUri}/v1/capabilities'),
+      )).close();
+      expect(response.statusCode, 200);
+      expect(
+        await utf8.decoder.bind(response).join(),
+        'owned-ssh-profile:/p/demo/v1/capabilities\n',
+      );
+    } finally {
+      client.close(force: true);
+    }
+  }, skip: path == null);
+
   test('no verifier rejects host before password disclosure', () async {
     var requests = 0;
     await expectLater(

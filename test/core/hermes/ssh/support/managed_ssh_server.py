@@ -59,8 +59,10 @@ async def start(scratch):
 
         async def http(reader, writer):
             try:
-                await asyncio.wait_for(reader.readuntil(b"\r\n\r\n"), 5)
-                body = b"owned-ssh-fixture\n"
+                header = await asyncio.wait_for(reader.readuntil(b"\r\n\r\n"), 5)
+                request_path = header.split(b" ", 2)[1]
+                body = (b"owned-ssh-profile:" + request_path + b"\n"
+                        if request_path.startswith(b"/p/") else b"owned-ssh-fixture\n")
                 writer.write(b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n"
                              b"Cache-Control: no-store\r\nConnection: close\r\n"
                              b"Content-Length: " + str(len(body)).encode() +

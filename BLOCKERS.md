@@ -34,6 +34,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T08:41:56Z
 - Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PARITY-NATIVE-LINUX — USER_INPUT — effort input — unblocks 0
+
+- Task: PARITY-NATIVE-LINUX — Execute and extend native Linux
+- Needs: worker reported a blocker: The mandatory offline unit/widget gate fails in unchanged chat UI tests (50 assertions before timeout). Coordinator must provide a green source-bound baseline for that required command, or explicitly revise the task/validation scope to include those existing listener-count, reasoning-focus and transcript-position/reachability failures. Scoped candidate changes are retained uncommitted. After resol…
+- Since: 2026-10-18T09:33:36Z
+- Answer: Answer in PARITY-NATIVE-LINUX's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
 
 - Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.

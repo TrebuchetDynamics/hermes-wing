@@ -5457,6 +5457,7 @@
       "status": "unmet",
       "tasks": [
         "DOC-M4-KANBAN-CONTRACT",
+        "DOC-M4-KANBAN-CONTRACT-LIVE",
         "DOC-M4-KANBAN-PAGINATION-EVIDENCE"
       ],
       "title": "Inspect and manage Agent-owned Kanban cards and outcomes"
@@ -6885,7 +6886,6 @@
       "DOC-M5-LARGE-TEXT-EVIDENCE",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
-      "DOC-M4-KANBAN-CONTRACT",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
       "DOC-M4-MEMORY-CONTRACT",
@@ -6930,7 +6930,8 @@
       "DOC-M4-MCP-CONTRACT-LIVE",
       "DOC-M4-SCHEDULE-CONTRACT-LIVE",
       "DOC-M5-ANDROID-FIXTURE-LIVE",
-      "DOC-M4-CONTRACT-CHECKPOINT-LIVE"
+      "DOC-M4-CONTRACT-CHECKPOINT-LIVE",
+      "DOC-M4-KANBAN-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7051,14 +7052,6 @@
       "section": "Next",
       "status": "open",
       "title": "Attribute one Wing Link host-lifecycle approval boundary"
-    },
-    {
-      "depends_on": [],
-      "goal": "M4-KANBAN",
-      "id": "DOC-M4-KANBAN-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one bounded Project board read"
     },
     {
       "depends_on": [
@@ -7431,6 +7424,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-CONTRACT-CHECKPOINT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-KANBAN-CONTRACT"
+      ],
+      "goal": "M4-KANBAN",
+      "id": "DOC-M4-KANBAN-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-KANBAN-CONTRACT"
     },
     {
       "depends_on": [
@@ -8166,6 +8169,14 @@
       "section": "Done",
       "status": "done",
       "title": "Map one Tools inventory journey to current-source evidence"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-KANBAN",
+      "id": "DOC-M4-KANBAN-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one bounded Project board read"
     },
     {
       "depends_on": [],

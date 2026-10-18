@@ -695,20 +695,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M4-PLATFORM-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M4-KANBAN-CONTRACT** —  Trace one bounded Project board read.
-  Goal: M4-KANBAN
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Read-only models/contracts/test trace; exclude tracker mutation, shadow cards and directory file access.
-  Acceptance: Identify board/Project ownership, pagination/bounds and exact authorization or missing contract; specify one next read-only slice.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M4-KANBAN-PAGINATION-EVIDENCE** — Goal: M4-KANBAN. Section: Next. Map stale-owner pagination for a board read.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses).
@@ -1433,4 +1419,12 @@ does not mark any check passed or authorize live actions.
   - After an eligible unmodified Agent discovery contract is available: target-specific authenticated catalog/read-denial, profile isolation and accessible native journeys. No platform, browser, native UI or live Agent was exercised by this documentation task.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-CONTRACT-CHECKPOINT.
+  Status: open
+
+- [ ] DOC-M4-KANBAN-CONTRACT-LIVE — Live checks for DOC-M4-KANBAN-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-KANBAN-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No platform was exercised. Authenticated bounded board reads/denials, exact board/Project ownership and accessible target-native inspection require a separately admitted disposable target after an eligible unmodified authoritative contract exists; no credentials or operations activated here.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-KANBAN-CONTRACT.
   Status: open

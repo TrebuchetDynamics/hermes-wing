@@ -579,6 +579,7 @@
       "source": "docs/quality/merge-train-shell-status-bar.md",
       "status": "partial",
       "tasks": [
+        "DEV-001-c7",
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
         "MT-VERIFY-BROWSER-GATES",
@@ -6894,6 +6895,7 @@
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
+      "DEV-001-c7",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -6973,6 +6975,14 @@
       "section": "Next",
       "status": "open",
       "title": "Android chat touch polish"
+    },
+    {
+      "depends_on": [],
+      "goal": "INTEGRATION",
+      "id": "DEV-001-c7",
+      "section": "Next",
+      "status": "open",
+      "title": "Use official Flutter MCP for a bounded Wing architecture review"
     },
     {
       "depends_on": [

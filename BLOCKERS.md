@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
+### Q-DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE — Goal: ARTIFACTS. Section: Next. Map hostile-content rejection for one permitted artifact type.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T11:05:57Z
+- Answer: Fix DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-DOC-M3-PROJECT-ASSIGNMENT-CONTRACT — USER_DECISION — effort decision — unblocks 1
 
 - Task: DOC-M3-PROJECT-ASSIGNMENT-CONTRACT — Goal: M3-PROJECT. Section: Next. Trace primary-folder assignment separately from creation.

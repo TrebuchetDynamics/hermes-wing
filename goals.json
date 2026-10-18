@@ -3027,6 +3027,7 @@
         "DOC-SECURITY-REPLAY-EVIDENCE",
         "FIX-NPM-AUDIT",
         "SECURITY-RETAINED-RELEASE-AUDIT",
+        "SECURITY-RETAINED-RELEASE-AUDIT-LIVE",
         "VERIFY-OMNIROUTE-NODE22-CLOSURE"
       ],
       "title": "Preserve exact authority, isolation, privacy and no replay"
@@ -6887,7 +6888,6 @@
       "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
       "MT-RERUN-TRAIN",
       "MT-VERIFY-BROWSER-GATES",
-      "SECURITY-RETAINED-RELEASE-AUDIT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "FILES-TERMINAL-BROWSE",
       "FILES-TERMINAL-DOWNLOAD",
@@ -6949,7 +6949,8 @@
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT-LIVE",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE",
-      "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE"
+      "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE",
+      "SECURITY-RETAINED-RELEASE-AUDIT-LIVE"
     ]
   },
   "tasks": [
@@ -7076,16 +7077,6 @@
       "section": "Next",
       "status": "open",
       "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
-    },
-    {
-      "depends_on": [
-        "VERIFY-OMNIROUTE-NODE22-CLOSURE"
-      ],
-      "goal": "SECURITY",
-      "id": "SECURITY-RETAINED-RELEASE-AUDIT",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify retained root dependencies and release audit after retirement closure"
     },
     {
       "depends_on": [
@@ -7562,6 +7553,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-OFFICIAL-MATRIX"
+    },
+    {
+      "depends_on": [
+        "SECURITY-RETAINED-RELEASE-AUDIT"
+      ],
+      "goal": "SECURITY",
+      "id": "SECURITY-RETAINED-RELEASE-AUDIT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for SECURITY-RETAINED-RELEASE-AUDIT"
     },
     {
       "depends_on": [
@@ -9043,6 +9044,16 @@
       "section": "Done",
       "status": "done",
       "title": "Implement the bounded QA store/state observer through production injection seams"
+    },
+    {
+      "depends_on": [
+        "VERIFY-OMNIROUTE-NODE22-CLOSURE"
+      ],
+      "goal": "SECURITY",
+      "id": "SECURITY-RETAINED-RELEASE-AUDIT",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify retained root dependencies and release audit after retirement closure"
     },
     {
       "depends_on": [

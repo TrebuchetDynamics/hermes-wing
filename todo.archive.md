@@ -7385,3 +7385,36 @@ Section: Next.
   Verify changed Markdown targets, obtain independent contract/security review,
   and run `git diff --check`. No memory content, config values, secrets or writes.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **SECURITY-RETAINED-RELEASE-AUDIT** — Goal: SECURITY.
+  Qualify retained root dependencies and release audit after retirement closure.
+  Payoff: preserve the release security bar after deleting an embedded dependency tree.
+  Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
+  [retained dependency verification](docs/test-plan.md#acceptance-records-and-gaps),
+  [required checks](CONTRIBUTING.md#required-checks) and
+  [temporary risk decision](BLOCKERS.md#blk-20261007-006--remaining-npm-audit-highs-with-no-published-fix).
+  Scope: root manifest/lock and retained release dependency inputs on Node.js 22.
+  Reuse the predecessor's unchanged passing receipts; investigate only remaining
+  findings or changed inputs. No installer recreation, installs, service actions,
+  forced overrides, audit suppression, upstream edits or publication.
+  Acceptance: record exact candidate/toolchain identity and root audit exit/result;
+  distinguish removed embedded findings from current retained findings. Map any
+  remaining advisory to its consumer and compatible fix or the existing temporary
+  risk decision. Removal and prior acceptance never substitute for a passing audit.
+  Dependencies: VERIFY-OMNIROUTE-NODE22-CLOSURE. Section: Next.
+  Ownership: existing security/remediation owner; verify tracker/lease before dispatch.
+  Status: done
+  Checks: on Node.js 22, capture `git rev-parse HEAD`, `node --version` and
+  `npm --version`; compare the retained inputs and receipt in
+  [Node 22 verification](docs/quality/omniroute-node22-verification.md#input-sha-256-bindings).
+  Run `npm audit` and retain its terminal exit and advisory/consumer mapping;
+  for changed retirement inputs run `node --test test/tooling/omniroute_retirement_test.mjs`.
+  Verify changed local Markdown links and run `git diff --check`. These are required
+  procedures, not fresh passes. Do not install, suppress findings or reconstruct
+  deleted Go checks. Any remaining finding retains the existing risk-decision limits.
+  Touches: docs/quality/

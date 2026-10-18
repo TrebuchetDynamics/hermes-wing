@@ -2761,7 +2761,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         ),
         PopupMenuItem(
           value: _ComposerMenuAction.dictate,
-          enabled: handsFreeAvailable && !_voiceInputController.capturing,
+          enabled:
+              canSendTurns &&
+              !channel.state.isServeReadOnly &&
+              !_voiceInputController.capturing &&
+              !_voiceInputController.speaking,
           child: ListTile(
             leading: const Icon(Icons.edit_note_outlined),
             title: Text(strings.chatVoiceDictateAction),
@@ -3051,7 +3055,6 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       final current = channel.state;
       return current.isConnected &&
           _canSendTurns(current) &&
-          ref.read(wingVoiceSettingsProvider).continuousVoiceEnabled &&
           owner ==
               (
                 current.connectedBaseUrl,
@@ -3069,7 +3072,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final captureGeneration = _voiceInputController.captureGeneration;
     final enabled =
         canSendTurns &&
-        ref.watch(wingVoiceSettingsProvider).continuousVoiceEnabled &&
+        !_voiceInputController.capturing &&
+        !_voiceInputController.speaking &&
         isCurrent();
     return IconButton(
       key: const ValueKey('hermes-draft-mic-button'),

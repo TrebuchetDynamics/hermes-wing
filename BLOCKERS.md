@@ -13,13 +13,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
-### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_INPUT — effort input — unblocks 1
-
-- Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered
-- Needs: worker reported a blocker: The mandatory offline suite is red on the supplied baseline. Coordinator must provide a green baseline for the 50 existing failures across hermes_chat_session_mutation_owner_test.dart (40), hermes_chat_queued_dialog_intent_test.dart (4), hermes_reasoning_disclosure_accessibility_test.dart (2), hermes_reasoning_disclosure_adaptive_test.dart (2), hermes_chat_transcript_accessibility_test.dart (1), a…
-- Since: 2026-10-18T10:07:12Z
-- Answer: Answer in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
 
 - Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.

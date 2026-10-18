@@ -6964,3 +6964,21 @@ Section: Next.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-ACCOUNT-CONTRACT** —  Trace one provider OAuth acquisition contract.
+  Goal: ACCOUNT
+Section: Next.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Read-only accepted parity scope and credential boundaries; exclude account provisioning, wallet transactions and secret acquisition.
+  Acceptance: Document exact authority, supported private handoff, expiry/logout/revocation and fail-closed limits or precise unavailable operation. No account route without a qualified contract.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/quality/

@@ -713,20 +713,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M4-MEMORY-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-ACCOUNT-CONTRACT** —  Trace one provider OAuth acquisition contract.
-  Goal: ACCOUNT
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Read-only accepted parity scope and credential boundaries; exclude account provisioning, wallet transactions and secret acquisition.
-  Acceptance: Document exact authority, supported private handoff, expiry/logout/revocation and fail-closed limits or precise unavailable operation. No account route without a qualified contract.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Goal: ACCOUNT. Section: Next. Map account expiry and logout separately from acquisition.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses).
@@ -1416,4 +1402,13 @@ does not mark any check passed or authorize live actions.
   - After a suitable unmodified contract and separately admitted disposable target exist, qualify authenticated read/denial, local approval binding, stale-resource/conflict/replay rejection, persistence versus activation receipts, and accessible target-native recovery. No native/device/live Agent or Telegram qualification was performed.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-PLATFORM-CONTRACT.
+  Status: open
+
+- [ ] DOC-ACCOUNT-CONTRACT-LIVE — Live checks for DOC-ACCOUNT-CONTRACT
+  Scope: Run the live checks the offline work for DOC-ACCOUNT-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - Before future OAuth exposure, separately qualify an unmodified Agent's exact advertised operations/grants and private browser handoff on an isolated authorized target; Wing acquisition and account navigation remain unavailable.
+  - Actual provider approval/expiry/refresh/revocation, cross-process commit/cancellation, native secure storage and platform end-to-end behavior were not exercised. No Flutter or upstream tests were run for this documentation-only task. DOC-ACCOUNT-REVOCATION-EVIDENCE retains the separate lifecycle evidence work.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-ACCOUNT-CONTRACT.
   Status: open

@@ -5635,6 +5635,7 @@
       "status": "unmet",
       "tasks": [
         "DOC-ACCOUNT-CONTRACT",
+        "DOC-ACCOUNT-CONTRACT-LIVE",
         "DOC-ACCOUNT-REVOCATION-EVIDENCE"
       ],
       "title": "Qualify account/OAuth/pools/credits/wallet authority before exposure"
@@ -6890,7 +6891,6 @@
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
-      "DOC-ACCOUNT-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-DESIGN-REVIEW",
       "DOC-NATIVE-FAILURE-BOUNDARY",
@@ -6933,7 +6933,8 @@
       "DOC-M4-CONTRACT-CHECKPOINT-LIVE",
       "DOC-M4-KANBAN-CONTRACT-LIVE",
       "DOC-M4-MEMORY-CONTRACT-LIVE",
-      "DOC-M4-PLATFORM-CONTRACT-LIVE"
+      "DOC-M4-PLATFORM-CONTRACT-LIVE",
+      "DOC-ACCOUNT-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -6976,14 +6977,6 @@
       "section": "Next",
       "status": "open",
       "title": "Retire Wing Link packaging and legacy setup after Agent-only native Local flows and migration checks pass"
-    },
-    {
-      "depends_on": [],
-      "goal": "ACCOUNT",
-      "id": "DOC-ACCOUNT-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one provider OAuth acquisition contract"
     },
     {
       "depends_on": [
@@ -7320,6 +7313,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for CONNECTION-SETUP-AUTH-MATRIX"
+    },
+    {
+      "depends_on": [
+        "DOC-ACCOUNT-CONTRACT"
+      ],
+      "goal": "ACCOUNT",
+      "id": "DOC-ACCOUNT-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-ACCOUNT-CONTRACT"
     },
     {
       "depends_on": [
@@ -7758,6 +7761,14 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify same-profile/session collisions across two saved hosts through native selection, delayed failure and explicit retry"
+    },
+    {
+      "depends_on": [],
+      "goal": "ACCOUNT",
+      "id": "DOC-ACCOUNT-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one provider OAuth acquisition contract"
     },
     {
       "depends_on": [],

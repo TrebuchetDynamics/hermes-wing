@@ -136,6 +136,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   bool _speakNextReply = false;
   bool _playbackUnavailable = false;
   bool _outputMuted = false;
+  bool _replyInterruptedByCapture = false;
   int _operationGeneration = 0;
   bool Function()? _draftCaptureIsCurrent;
   int _speechGeneration = 0;
@@ -362,6 +363,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     bool Function()? draftIsCurrent,
   }) async {
     if (_capturing || _disposed || !(draftIsCurrent?.call() ?? true)) return;
+    _replyInterruptedByCapture = false;
     _draftCaptureIsCurrent = draftIsCurrent;
     final conversation = _bindConversation();
     final operationGeneration = ++_operationGeneration;
@@ -424,6 +426,9 @@ class HermesVoiceInputController extends ChangeNotifier {
         if ((continuous || _continuousEnabled) &&
             _speaking &&
             !_isPossibleSpokenReplyEcho(trimmed)) {
+          // Stream notifications must not restart the old reply while the
+          // recognizer is still collecting the interruption.
+          _replyInterruptedByCapture = true;
           unawaited(_interruptActiveSpeech());
         }
         notifyListeners();
@@ -600,6 +605,7 @@ class HermesVoiceInputController extends ChangeNotifier {
           duration: capture.duration,
           confidence: capture.confidence,
         );
+        _replyInterruptedByCapture = false;
         channel.submitVoiceRun(voiceRunId);
         final run = channel.state.voiceRuns[voiceRunId];
         if (run?.status == WingVoiceRunStatus.failed) {
@@ -638,7 +644,7 @@ class HermesVoiceInputController extends ChangeNotifier {
       return;
     }
     if (!await _awaitSpeechTeardown()) return;
-    if (_outputMuted) return;
+    if (_outputMuted || _replyInterruptedByCapture) return;
     if (!_ownsConversation(conversation)) return;
     if ((!_continuousEnabled && !_speakNextReply) || _speaking || _disposed) {
       return;
@@ -765,6 +771,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     await Future<void>.delayed(_rearmDelay);
     if (!_ownsConversation(conversation)) return;
     if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
+    _replyInterruptedByCapture = false;
     if (_settings().speakRepliesEnabled) await maybeContinue();
     if (!_ownsConversation(conversation)) return;
     if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
@@ -910,6 +917,7 @@ class HermesVoiceInputController extends ChangeNotifier {
 
   void pause([String? notice, bool playbackUnavailable = false]) {
     _draftCaptureIsCurrent = null;
+    _replyInterruptedByCapture = false;
     _conversationGeneration += 1;
     _ownedChannel?.removeListener(_onConversationChanged);
     _ownedChannel = null;

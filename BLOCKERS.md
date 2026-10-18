@@ -20,13 +20,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T16:31:16Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
-### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
-
-- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
-- Needs: worker reported a blocker: Coordinator must supply this worker the actual combined source input described by the updated handoff. The current task workspace remains on the old baseline: delivered lock commit 80e41ed8 is not an ancestor and pubspec.lock still has blob 104e43950f4c7ceb4ed15836a3345e2739facd46, not the stated compatible blob. No new lock repair or lockfile authority is requested. Worker merges, cherry-picks, r… (+1 more in report.json)
-- Since: 2026-10-18T16:28:16Z
-- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
 
 - Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.

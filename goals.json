@@ -5417,6 +5417,7 @@
       "status": "partial",
       "tasks": [
         "DOC-ARTIFACT-CONTRACT",
+        "DOC-ARTIFACT-CONTRACT-LIVE",
         "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
       ],
       "title": "Retrieve/preview/save supported artifacts without arbitrary paths"
@@ -6874,7 +6875,6 @@
       "DOC-M3-ROLLBACK-EVIDENCE",
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
       "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
-      "DOC-ARTIFACT-CONTRACT",
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
       "DOC-M4-MCP-CONFIG-CONTRACT",
       "DOC-M4-MCP-CONTRACT",
@@ -6925,7 +6925,8 @@
       "CONNECTION-SETUP-AUTH-MATRIX-LIVE",
       "DOC-M3-CONTRACT-CHECKPOINT-LIVE",
       "DOC-M3-PROJECT-CONTRACT-LIVE",
-      "DOC-M3-PROVIDER-CONTRACT-LIVE"
+      "DOC-M3-PROVIDER-CONTRACT-LIVE",
+      "DOC-ARTIFACT-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -6986,14 +6987,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map account expiry and logout separately from acquisition"
-    },
-    {
-      "depends_on": [],
-      "goal": "ARTIFACTS",
-      "id": "DOC-ARTIFACT-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one bounded Agent artifact retrieval operation"
     },
     {
       "depends_on": [
@@ -7399,6 +7392,16 @@
     },
     {
       "depends_on": [
+        "DOC-ARTIFACT-CONTRACT"
+      ],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-ARTIFACT-CONTRACT"
+    },
+    {
+      "depends_on": [
         "DOC-BACKEND-DISCONNECT-CONTRACT"
       ],
       "goal": "REMOTE-BACKENDS",
@@ -7742,6 +7745,14 @@
       "section": "Done",
       "status": "done",
       "title": "Verify owned code-first HTTP contract against handlers"
+    },
+    {
+      "depends_on": [],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one bounded Agent artifact retrieval operation"
     },
     {
       "depends_on": [],

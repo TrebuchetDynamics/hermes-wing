@@ -633,20 +633,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M3-PROVIDER-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-ARTIFACT-CONTRACT** —  Trace one bounded Agent artifact retrieval operation.
-  Goal: ARTIFACTS
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Current media/export and read-only artifact contracts; exclude host-file enumeration, unsafe rendering and artifact requests.
-  Acceptance: Specify identity/authentication/MIME/size/content bounds and inert preview oracle or absent operation. Folder grants must not imply artifact access.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-  Readiness: restored check procedure only; existing access and qualification gates remain.
-
 ### **P3** — Integrated delivery, diagnostics and contracts
 
 - [ ] **DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE** — Goal: ARTIFACTS. Section: Next. Map hostile-content rejection for one permitted artifact type.
@@ -1469,4 +1455,12 @@ does not mark any check passed or authorize live actions.
   - Android/device and native UI qualification remain NOT_CHECKED; source and fixture test inspection does not qualify those platforms.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M3-PROVIDER-CONTRACT.
+  Status: open
+
+- [ ] DOC-ARTIFACT-CONTRACT-LIVE — Live checks for DOC-ARTIFACT-CONTRACT
+  Scope: Run the live checks the offline work for DOC-ARTIFACT-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No application/platform or live Agent artifact retrieval/preview/save was exercised. Any future implementation needs separate named-platform/live authentication, hostile-content and persistence qualification; the artifact operation remains unavailable in Wing.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-ARTIFACT-CONTRACT.
   Status: open

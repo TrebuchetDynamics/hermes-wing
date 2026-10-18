@@ -6809,3 +6809,22 @@ Section: Next.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-ARTIFACT-CONTRACT** —  Trace one bounded Agent artifact retrieval operation.
+  Goal: ARTIFACTS
+Section: Next.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Current media/export and read-only artifact contracts; exclude host-file enumeration, unsafe rendering and artifact requests.
+  Acceptance: Specify identity/authentication/MIME/size/content bounds and inert preview oracle or absent operation. Folder grants must not imply artifact access.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/quality/
+  Readiness: restored check procedure only; existing access and qualification gates remain.

@@ -18,6 +18,9 @@ operation, authorization and secret-handling rules are unchanged.
 
 ## Current delivery assessment
 
+Current feature comparison: [October 18 upstream refresh](../quality/official-desktop-parity-refresh-2026-10-18.md), pinned to `a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70`. Existing priorities remain unchanged; new contract follow-ups are appended. Canonical gateway/submission/queue changes are source gaps, not newly qualified functionality. The retained checkpoints below describe their original sources and targets.
+
+
 Port-wide fidelity includes welcome, screen structure, layout and visual hierarchy,
 not only feature coverage and equivalent outcomes. The owner-supplied APK screenshot
 shows Profiles/gateway-first entry and a Chat-selected/Profiles-title mismatch.

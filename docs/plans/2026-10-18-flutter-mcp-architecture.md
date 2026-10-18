@@ -104,3 +104,11 @@ Inspected 2026-10-18; upstream documentation is not a compatibility guarantee:
 
 Detailed MCP responses stay in private task evidence, not public transcripts or
 repository fixtures. This plan authorizes neither implementation nor scheduling.
+
+## Backlog connection
+
+`DEV-001-c7` in [TODO.md](../../TODO.md) owns the bounded read-only architecture
+assessment. Its implementation/refactor suggestions are not pre-approved changes.
+The [plan-to-task coverage](README.md#plan-to-task-coverage) is the plan index;
+`goals.json` remains the execution index. Temporary SDK access is verified,
+not persistent connector installation.

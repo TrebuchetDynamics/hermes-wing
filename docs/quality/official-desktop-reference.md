@@ -2,6 +2,9 @@
 
 ## Authority
 
+The current source mapping is pinned to `a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70`; see the [October 18 refresh](official-desktop-parity-refresh-2026-10-18.md). The permanent checkout remains at its older pin. The initial serve-child findings below are historical: current Desktop uses canonical gateway attachment/private tickets, not per-profile serve ownership.
+
+
 The owner corrected the product reference to [Nous Research Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop).
 Use `hermes-agent/apps/desktop/` in the read-only Agent checkout.
 Do not use the separate retired Desktop checkout for product decisions, feature matrices, UI comparisons or implementation guidance.
@@ -37,9 +40,11 @@ Existing Agent authority, profile isolation, secret handling and strict host-key
 
 ## Follow-up
 
-`CONNECTION-OFFICIAL-DESKTOP-PORT` in [TODO](../../TODO.md) owns official-source connection tracing and the smallest production welcome/connection correction with regression tests.
-`PARITY-OFFICIAL-MATRIX` owns the source-mapping rebuild after that connection slice;
-its local documentation candidate is not coordinator integration or runtime acceptance.
+`CONNECTION-OFFICIAL-DESKTOP-PORT` and `PARITY-OFFICIAL-MATRIX` retain their
+completed historical scopes in the [task archive](../../todo.archive.md); this
+refresh does not reopen them. The [current refresh](official-desktop-parity-refresh-2026-10-18.md#follow-up-decisions)
+and its four source-only contract tasks in [TODO](../../TODO.md) own the newly
+identified contract frontier, not product implementation or runtime acceptance.
 `PARITY-NATIVE-LINUX` and `PARITY-MAESTRO-ANDROID-DEVICE` own separate named-target
 qualification. Preserve active ownership, existing task IDs and historical test
 results. Do not patch Agent or invent transport compatibility.

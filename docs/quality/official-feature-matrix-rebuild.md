@@ -2,6 +2,9 @@
 
 ## Scope and verdict
 
+This records the earlier rebuild. The [October 18 refresh](official-desktop-parity-refresh-2026-10-18.md) now owns the current matrix snapshot; its source changes do not invalidate or rerun historical Wing receipts.
+
+
 `PARITY-OFFICIAL-MATRIX` rebuilds the [human matrix](../product/hermes-desktop-feature-matrix.md)
 and [JSON](../product/hermes-desktop-feature-matrix.json) from the official
 `hermes-agent/apps/desktop` checkout. This is documentation/source mapping only.

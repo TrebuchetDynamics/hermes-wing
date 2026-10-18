@@ -173,8 +173,10 @@ literal noninteractive content or be rejected before rendering, with zero script
 subresource/network requests, host reads, external-app launches and implicit saves;
 rejected/oversize/stale-owner results must publish no content. These are admission
 requirements, **not implemented checks or a new protocol**. The separate dependent
-`DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE` task owns mapping one permitted type; this
-receipt neither executes it nor selects a type/UI/renderer on its behalf.
+[plain-text evidence slice](artifact-text-preview-evidence.md) maps `text/plain`
+hostile-content and denial/cancel oracles under
+`DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE`; it does not enable retrieval or qualify a
+renderer. This retrieval receipt did not execute that dependent task.
 
 Folder grants are **directory-only** under the [API/state decision](../adr/api-and-state.md):
 opaque child-folder lookup is not file enumeration and never implies artifact

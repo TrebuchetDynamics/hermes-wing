@@ -1074,24 +1074,23 @@ class _TurnBubble extends StatelessWidget {
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         key: ValueKey('hermes-turn-${turn.id}'),
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        margin: EdgeInsets.symmetric(vertical: isUser ? 8 : 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: isUser ? 16 : 4,
+          vertical: 12,
+        ),
         constraints: BoxConstraints(
-          maxWidth: screenWidth < 600 ? screenWidth * 0.84 : 560,
+          maxWidth: screenWidth < 600 ? screenWidth * 0.90 : 760,
         ),
         decoration: BoxDecoration(
           color: isUser
-              ? colors.primary.withValues(alpha: 0.22)
+              ? colors.surfaceContainerHigh
               : structuredError != null
               ? colors.error.withValues(alpha: 0.1)
-              : colors.surfaceContainerHigh,
-          border: Border.all(
-            color: isUser
-                ? colors.primary.withValues(alpha: 0.18)
-                : structuredError != null
-                ? colors.error.withValues(alpha: 0.35)
-                : colors.outlineVariant.withValues(alpha: 0.32),
-          ),
+              : Colors.transparent,
+          border: structuredError != null
+              ? Border.all(color: colors.error.withValues(alpha: 0.35))
+              : null,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),

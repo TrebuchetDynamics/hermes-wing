@@ -19,6 +19,18 @@ import 'sheet_presenter.dart';
 // ponytail: one app shell; route state can replace this if nested shells arrive.
 final appShellNavigationVisible = ValueNotifier(true);
 
+/// Identifies the shell-owned session navigation, avoiding a second chat rail.
+class AppShellSessionNavigation extends InheritedWidget {
+  const AppShellSessionNavigation({required super.child, super.key});
+
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppShellSessionNavigation>() !=
+      null;
+
+  @override
+  bool updateShouldNotify(AppShellSessionNavigation oldWidget) => false;
+}
+
 class AppShell extends ConsumerWidget {
   const AppShell({required this.location, required this.child, super.key});
 
@@ -61,7 +73,7 @@ class AppShell extends ConsumerWidget {
                 desktopPresentation.destinations[index].path,
               ),
               status: status,
-              child: child,
+              child: AppShellSessionNavigation(child: child),
             );
           },
         ),

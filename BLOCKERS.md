@@ -13,34 +13,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
-### Q-DOC-NATIVE-FAILURE-BOUNDARY — USER_DECISION — effort decision — unblocks 1
-
-- Task: DOC-NATIVE-FAILURE-BOUNDARY — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-18T12:39:48Z
-- Answer: Fix DOC-NATIVE-FAILURE-BOUNDARY's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-DOC-VOICE-OUTPUT-CANCEL-EVIDENCE — USER_DECISION — effort decision — unblocks 1
-
-- Task: DOC-VOICE-OUTPUT-CANCEL-EVIDENCE — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-18T12:45:12Z
-- Answer: Fix DOC-VOICE-OUTPUT-CANCEL-EVIDENCE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-SECURITY-RETAINED-RELEASE-AUDIT — USER_DECISION — effort decision — unblocks 1
-
-- Task: SECURITY-RETAINED-RELEASE-AUDIT — Goal: SECURITY.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-18T09:05:25Z
-- Answer: Fix SECURITY-RETAINED-RELEASE-AUDIT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-FILES-TERMINAL-BROWSE — USER_INPUT — effort input — unblocks 1
-
-- Task: FILES-TERMINAL-BROWSE — Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
-- Needs: worker reported a blocker: Coordinator must widen Touches to include lib/l10n/app_en.arb, lib/l10n/app_localizations.dart and lib/l10n/app_localizations_en.dart. The required Files surface needs Files-specific accessible labels and empty, denied, unsupported, bounded-preview and root-ownership explanations absent from existing localization. AGENTS.md requires English copy in app_en.arb and flutter gen-l10n rather than hardc…
-- Since: 2026-10-18T08:58:55Z
-- Answer: Answer in FILES-TERMINAL-BROWSE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
 
 - Task: MT-RERUN-TRAIN — Rerun canonical integration gates

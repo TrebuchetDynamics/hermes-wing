@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('public onboarding links resolve to maintained files and anchors', () {
-    final linkPattern = RegExp(r'\]\(([^)]+)\)|href="([^"]+)"');
+  test('public onboarding links and assets resolve to maintained targets', () {
+    final linkPattern = RegExp(r'\]\(([^)]+)\)|(?:href|src|srcset)="([^"]+)"');
     for (final path in [
       'README.md',
       'docs/README.md',

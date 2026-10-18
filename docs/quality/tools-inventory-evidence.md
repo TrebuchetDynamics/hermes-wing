@@ -38,6 +38,9 @@ and `toolsets: GET /v1/toolsets` endpoint descriptors. Every declared required s
 must be granted (including the existing wildcard rule). A descriptor marked
 `profile_scoped` also requires the supported explicit query-profile context.
 Read visibility grants no install/update/delete, toolset toggle, MCP or discovery authority.
+The later [one-toolset toggle trace](toolset-toggle-contract.md) separates the
+official Desktop/dashboard write from this API-server inventory and records its
+profile/platform, authentication and conflict limits; Wing writes remain unavailable.
 
 Important distinction: the inspected Agent `gateway/platforms/api_server.py`
 lines 78–89, 2536–2575 advertises those exact read routes, bearer authentication,

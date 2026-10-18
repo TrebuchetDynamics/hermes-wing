@@ -5517,7 +5517,8 @@
       "status": "unmet",
       "tasks": [
         "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
-        "DOC-M4-PLATFORM-CONTRACT"
+        "DOC-M4-PLATFORM-CONTRACT",
+        "DOC-M4-PLATFORM-CONTRACT-LIVE"
       ],
       "title": "Administer messaging gateways through typed per-platform operations"
     },
@@ -6889,7 +6890,6 @@
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
-      "DOC-M4-PLATFORM-CONTRACT",
       "DOC-ACCOUNT-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-DESIGN-REVIEW",
@@ -6932,7 +6932,8 @@
       "DOC-M5-ANDROID-FIXTURE-LIVE",
       "DOC-M4-CONTRACT-CHECKPOINT-LIVE",
       "DOC-M4-KANBAN-CONTRACT-LIVE",
-      "DOC-M4-MEMORY-CONTRACT-LIVE"
+      "DOC-M4-MEMORY-CONTRACT-LIVE",
+      "DOC-M4-PLATFORM-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7083,14 +7084,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace memory capacity/provider reads separately from entry reads"
-    },
-    {
-      "depends_on": [],
-      "goal": "M4-PLATFORMS",
-      "id": "DOC-M4-PLATFORM-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one messaging-platform status/admin contract"
     },
     {
       "depends_on": [
@@ -7447,6 +7440,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-MEMORY-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-PLATFORM-CONTRACT"
+      ],
+      "goal": "M4-PLATFORMS",
+      "id": "DOC-M4-PLATFORM-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-PLATFORM-CONTRACT"
     },
     {
       "depends_on": [
@@ -8196,6 +8199,14 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one bounded profile-memory read"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-PLATFORMS",
+      "id": "DOC-M4-PLATFORM-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one messaging-platform status/admin contract"
     },
     {
       "depends_on": [],

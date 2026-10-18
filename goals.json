@@ -5543,7 +5543,8 @@
       "tasks": [
         "DOC-M4-SCHEDULE-CONTRACT",
         "DOC-M4-SCHEDULE-CONTRACT-LIVE",
-        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE"
       ],
       "title": "Create/edit/pause/resume/run/delete scheduled jobs and delivery targets"
     },
@@ -6889,7 +6890,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
       "DOC-M5-LARGE-TEXT-EVIDENCE",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
@@ -6943,7 +6943,8 @@
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE",
       "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE",
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE",
-      "DOC-M4-MCP-CONFIG-CONTRACT-LIVE"
+      "DOC-M4-MCP-CONFIG-CONTRACT-LIVE",
+      "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7026,16 +7027,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace memory capacity/provider reads separately from entry reads"
-    },
-    {
-      "depends_on": [
-        "DOC-M4-SCHEDULE-CONTRACT"
-      ],
-      "goal": "M4-SCHEDULES",
-      "id": "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one schedule-delivery configuration operation"
     },
     {
       "depends_on": [
@@ -7448,6 +7439,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-SCHEDULE-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+      ],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
     },
     {
       "depends_on": [
@@ -8301,6 +8302,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one schedule pause/resume operation"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-SCHEDULE-CONTRACT"
+      ],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one schedule-delivery configuration operation"
     },
     {
       "depends_on": [

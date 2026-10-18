@@ -605,25 +605,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-M4-SCHEDULE-DELIVERY-CONTRACT** — Trace one schedule-delivery configuration operation.
-  Goal: M4-SCHEDULES
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [schedule trace](docs/quality/schedule-pause-resume-contract.md#review-validation-and-next-boundary).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name exact job/profile identity, revision and write-only credential requirements or the absent operation. No job execution, delivery or credentials.
-  Dependencies: DOC-M4-SCHEDULE-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace one exact
-  delivery-configuration handler/model, nearest tests and Wing caller or absence.
-  Compare job/profile identity, revision and write-only credential guarantees with
-  Acceptance; verify changed Markdown targets, obtain independent contract/security
-  review, and run `git diff --check`. No job execution, delivery or credential access.
-  Touches: docs/quality/
-
 - [ ] **DOC-M5-LARGE-TEXT-EVIDENCE** — Attribute one 200-percent-text message-action journey.
   Goal: M5
 Section: Next.
@@ -1425,4 +1406,12 @@ does not mark any check passed or authorize live actions.
   - No application, browser, native desktop, physical Android/device, live authentication, provider or Agent operation was exercised. After a suitable unmodified Agent advertises a bounded sanitized exact-authorized MCP config read, separately admit a disposable native/live read-refresh and auth-denial/profile-isolation-recreation journey. This source-only task authorizes no installation, config write, probe, OAuth or arbitrary command execution.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-MCP-CONFIG-CONTRACT.
+  Status: open
+
+- [ ] DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE — Live checks for DOC-M4-SCHEDULE-DELIVERY-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-SCHEDULE-DELIVERY-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No browser/native/device UI, live authentication, job execution or delivery was exercised. Any future existing-job delivery edit requires a separately authorized disposable target exposing a suitable unmodified advertised operation, exact grants, identity/revision checks and safe reconciliation; credential provisioning for another target requires its own write-only contract. These absent guarantees do not block this read-only evidence task.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-SCHEDULE-DELIVERY-CONTRACT.
   Status: open

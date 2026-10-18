@@ -7228,3 +7228,27 @@ Section: Next.
   verify changed Markdown targets, obtain independent contract/security review,
   and run `git diff --check`. Inspect source only, not actual MCP configuration.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-SCHEDULE-DELIVERY-CONTRACT** — Trace one schedule-delivery configuration operation.
+  Goal: M4-SCHEDULES
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [schedule trace](docs/quality/schedule-pause-resume-contract.md#review-validation-and-next-boundary).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name exact job/profile identity, revision and write-only credential requirements or the absent operation. No job execution, delivery or credentials.
+  Dependencies: DOC-M4-SCHEDULE-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace one exact
+  delivery-configuration handler/model, nearest tests and Wing caller or absence.
+  Compare job/profile identity, revision and write-only credential guarantees with
+  Acceptance; verify changed Markdown targets, obtain independent contract/security
+  review, and run `git diff --check`. No job execution, delivery or credential access.
+  Touches: docs/quality/

@@ -144,8 +144,12 @@ verification therefore covers real rendering, keyboard activation and unavailabl
 recovery, not recognition; deterministic widget services cover capture. Wide-web
 focus restoration is implemented but acoustic/browser speech is not qualified.
 Physical microphone, live backend/provider, native Linux runtime, packaged branch
-execution, and full transcript/IME parity are NOT_CHECKED. No platform support
-claim, new API, dependency, grant or host operation follows from these results.
+execution, and full transcript/IME parity are NOT_CHECKED. The
+[physical capture preparation](voice-capture-qualification.md) traces the current
+capture → reviewed draft → explicit Send scenario and keeps device execution,
+consent and content-free observations separate from this deterministic evidence.
+No platform support claim, new API, dependency, grant or host operation follows
+from these results.
 
 Questions: none. Existing no-system-change, device-trust and publication defaults
 remain applied. Native review entry is the final implementation step; approval

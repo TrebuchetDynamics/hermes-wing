@@ -7154,3 +7154,28 @@ Section: Next.
   obtain independent contract/security review, and run `git diff --check`.
   Source inspection only; do not assign a Project or activate Chat.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-PROVIDER-REMOVAL-CONTRACT** — Trace credential removal separately from replacement.
+  Goal: M3-PROVIDER
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3-PROVIDER](docs/adr/api-and-state.md#required-agent-owned-mutation-contract);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [credential trace](docs/quality/m3-provider-credential-contract.md).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name expected revision, secret-safe errors and unknown-outcome reconciliation, or the absent operation. No credential access or writes.
+  Dependencies: DOC-M3-PROVIDER-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; compare removal
+  handler/model, nearest upstream tests and Wing client/channel/sheet with the
+  ADR and Acceptance. Record revision, secret-safe failure and unknown-outcome
+  guarantees or their absence; verify changed Markdown targets, obtain independent
+  contract/security review, and run `git diff --check`. No credential access or writes.
+  Touches: docs/quality/
+  Readiness: source-only documentation; native/live qualification stays separate.

@@ -603,26 +603,6 @@ code, not a production channel. Each slice must reuse verified behavior where
 possible and preserve the existing messaging API path. No task authorizes Agent
 patches, personal credential discovery, service restarts or provider spending.
 
-- [ ] **DOC-M3-PROVIDER-REMOVAL-CONTRACT** — Trace credential removal separately from replacement.
-  Goal: M3-PROVIDER
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M3-PROVIDER](docs/adr/api-and-state.md#required-agent-owned-mutation-contract);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [credential trace](docs/quality/m3-provider-credential-contract.md).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name expected revision, secret-safe errors and unknown-outcome reconciliation, or the absent operation. No credential access or writes.
-  Dependencies: DOC-M3-PROVIDER-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; compare removal
-  handler/model, nearest upstream tests and Wing client/channel/sheet with the
-  ADR and Acceptance. Record revision, secret-safe failure and unknown-outcome
-  guarantees or their absence; verify changed Markdown targets, obtain independent
-  contract/security review, and run `git diff --check`. No credential access or writes.
-  Touches: docs/quality/
-  Readiness: source-only documentation; native/live qualification stays separate.
-
 ### **P3** — Integrated delivery, diagnostics and contracts
 
 - [ ] **DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE** — Map hostile-content rejection for one permitted artifact type.
@@ -1459,4 +1439,13 @@ does not mark any check passed or authorize live actions.
   - No browser, native desktop, Android/physical device, production or live Agent exercised. Future assignment/Project-aware Chat runtime qualification requires a separately approved disposable target and a suitable unmodified authoritative contract. Current source gaps do not authorize activation; M3-PROJECT remains unmet.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M3-PROJECT-ASSIGNMENT-CONTRACT.
+  Status: open
+
+- [ ] DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE — Live checks for DOC-M3-PROVIDER-REMOVAL-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M3-PROVIDER-REMOVAL-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - Only if an eligible unmodified Agent contract becomes available: qualify deployed removal authority, exact credential/profile incarnation and revision, concurrent CLI/API edits, preserved siblings/selection/suppressions, crash/timeout/changed-payload replay, revoked or expired requests, secret-safe errors/audits and separate persistence/activation outcomes using isolated state and explicit authorization. Current source absence leaves removal unavailable; no live removal or credential provisioning was attempted.
+  - Native UI, Android/physical devices and live provider behavior were not exercised. Historical synthetic native removal receipts do not establish authoritative removal or remote provider-key revocation.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M3-PROVIDER-REMOVAL-CONTRACT.
   Status: open

@@ -5400,7 +5400,8 @@
       "tasks": [
         "DOC-M3-PROVIDER-CONTRACT",
         "DOC-M3-PROVIDER-CONTRACT-LIVE",
-        "DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE"
       ],
       "title": "Manage existing-profile provider credentials and atomic model assignment"
     },
@@ -6886,7 +6887,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
       "DOC-M4-MCP-CONFIG-CONTRACT",
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
@@ -6940,7 +6940,8 @@
       "LANDING-PAGES-QUALITY-LIVE",
       "BACKEND-SSH-KEY-NATIVE-LIVE",
       "DOC-M3-ROLLBACK-EVIDENCE-LIVE",
-      "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE"
+      "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE",
+      "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -6993,16 +6994,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map hostile-content rejection for one permitted artifact type"
-    },
-    {
-      "depends_on": [
-        "DOC-M3-PROVIDER-CONTRACT"
-      ],
-      "goal": "M3-PROVIDER",
-      "id": "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace credential removal separately from replacement"
     },
     {
       "depends_on": [
@@ -7375,6 +7366,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M3-PROVIDER-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+      ],
+      "goal": "M3-PROVIDER",
+      "id": "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M3-PROVIDER-REMOVAL-CONTRACT"
     },
     {
       "depends_on": [
@@ -8202,6 +8203,16 @@
       "section": "Done",
       "status": "done",
       "title": "Recheck the existing-profile credential replacement contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-PROVIDER-CONTRACT"
+      ],
+      "goal": "M3-PROVIDER",
+      "id": "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace credential removal separately from replacement"
     },
     {
       "depends_on": [

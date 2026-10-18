@@ -20,13 +20,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T16:31:16Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
-### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
-
-- Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.
-- Needs: worker reported a blocker: Provide an exact advertised authoritative command catalog/completion/dispatch contract from an unmodified Hermes Agent that Wing can consume, including its transport, operation identifiers, authorization grants and endpoint/profile/session ownership semantics. The task contract explicitly retains the absent-authoritative-transport hold; docs/quality/slash-catalog-contract.md documents catalog/comp…
-- Since: 2026-10-18T05:27:05Z
-- Answer: Answer in VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

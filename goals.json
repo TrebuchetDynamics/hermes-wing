@@ -5523,6 +5523,7 @@
       "status": "unmet",
       "tasks": [
         "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
+        "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE",
         "DOC-M4-PLATFORM-CONTRACT",
         "DOC-M4-PLATFORM-CONTRACT-LIVE"
       ],
@@ -6892,7 +6893,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
@@ -6946,7 +6946,8 @@
       "DOC-M4-MCP-CONFIG-CONTRACT-LIVE",
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE",
       "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE",
-      "DOC-M4-DISCOVERY-SELECTION-CONTRACT-LIVE"
+      "DOC-M4-DISCOVERY-SELECTION-CONTRACT-LIVE",
+      "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -6989,16 +6990,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map account expiry and logout separately from acquisition"
-    },
-    {
-      "depends_on": [
-        "DOC-M4-PLATFORM-CONTRACT"
-      ],
-      "goal": "M4-PLATFORMS",
-      "id": "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Attribute one Wing Link host-lifecycle approval boundary"
     },
     {
       "depends_on": [
@@ -7371,6 +7362,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-DISCOVERY-SELECTION-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-HOST-LIFECYCLE-EVIDENCE"
+      ],
+      "goal": "M4-PLATFORMS",
+      "id": "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-HOST-LIFECYCLE-EVIDENCE"
     },
     {
       "depends_on": [
@@ -8256,6 +8257,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace catalog selection separately from search"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-PLATFORM-CONTRACT"
+      ],
+      "goal": "M4-PLATFORMS",
+      "id": "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Attribute one Wing Link host-lifecycle approval boundary"
     },
     {
       "depends_on": [],

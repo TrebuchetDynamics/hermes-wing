@@ -7306,3 +7306,32 @@ Section: Next.
   changed Markdown targets, obtain independent contract/security review, and
   run `git diff --check`.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-HOST-LIFECYCLE-EVIDENCE** — Attribute one Wing Link host-lifecycle approval boundary.
+  Goal: M4-PLATFORMS
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-PLATFORMS](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [platform trace](docs/quality/m4-messaging-platform-contract.md);
+  [Agent-only delivery](docs/adr/runtime-and-delivery.md#agent-only-delivery).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: separate messaging-platform administration from retained legacy
+  host restart approval, health and rollback receipts. These are historical/retirement
+  checks, not replacement acceptance or permission to expand Link. Coordinate with
+  CONNECTION-LINK-RETIREMENT; name missing proof without service actions.
+  Dependencies: DOC-M4-PLATFORM-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin inspected revisions with `git rev-parse HEAD`; inspect retained
+  historical approval/health/rollback tests and sanitized receipts separately
+  from the current messaging-platform contract and retirement evidence. Attribute
+  one historical boundary or its missing proof against Acceptance; verify changed
+  Markdown targets, obtain independent contract/security review, and run
+  `git diff --check`. No service action or recreation of retired Link code/tests.
+  Touches: docs/quality/

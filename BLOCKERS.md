@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
+
+- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
+- Needs: worker reported a blocker: Provide a disk-backed TMPDIR with at least 2GiB free, or free sufficient space in shared /run/user/1000, then resume this preserved candidate at baseline 2ddbb51b69044c71411e32168750a9a92db4c731. The assigned task directory now owns only about19MiB; remaining shared usage is not this task's to delete. Repeated ENOSPC prevents the fresh web build, browser journeys, full merged Chat/router terminal …
+- Since: 2026-10-18T22:22:11Z
+- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_INPUT — effort input — unblocks 1
 
 - Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered

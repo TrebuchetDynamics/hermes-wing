@@ -603,29 +603,6 @@ code, not a production channel. Each slice must reuse verified behavior where
 possible and preserve the existing messaging API path. No task authorizes Agent
 patches, personal credential discovery, service restarts or provider spending.
 
-- [ ] **DOC-M3-PROJECT-ASSIGNMENT-CONTRACT** — Trace primary-folder assignment separately from creation.
-  Goal: M3-PROJECT
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M3-PROJECT](docs/product/prd.md#core-journeys);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [creation trace](docs/quality/m3-project-creation-contract.md#one-bounded-next-slice).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: name exact Project/profile identity, approved-handle containment and
-  revision semantics, or the absent operation. Also trace Project-to-session/Chat
-  binding, stale-owner rejection and no implicit create/send/global selection.
-  Record the supported contract or precise absence. No assignment or Chat mutation.
-  Dependencies: DOC-M3-PROJECT-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace the exact
-  authoritative handler/model, nearest upstream tests and Wing caller against
-  every Acceptance item. Record source-bound supported versus unavailable
-  assignment and session-binding guarantees; verify changed Markdown targets,
-  obtain independent contract/security review, and run `git diff --check`.
-  Source inspection only; do not assign a Project or activate Chat.
-  Touches: docs/quality/
-
 - [ ] **DOC-M3-PROVIDER-REMOVAL-CONTRACT** — Trace credential removal separately from replacement.
   Goal: M3-PROVIDER
 Section: Next.
@@ -1474,4 +1451,12 @@ does not mark any check passed or authorize live actions.
   - Native/device secure-storage and target-specific onboarding behavior remain separately unqualified; no platform was exercised by this task.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M3-ROLLBACK-EVIDENCE.
+  Status: open
+
+- [ ] DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE — Live checks for DOC-M3-PROJECT-ASSIGNMENT-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M3-PROJECT-ASSIGNMENT-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No browser, native desktop, Android/physical device, production or live Agent exercised. Future assignment/Project-aware Chat runtime qualification requires a separately approved disposable target and a suitable unmodified authoritative contract. Current source gaps do not authorize activation; M3-PROJECT remains unmet.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M3-PROJECT-ASSIGNMENT-CONTRACT.
   Status: open

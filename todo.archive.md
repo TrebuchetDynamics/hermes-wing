@@ -7126,3 +7126,31 @@ Section: Next.
   exact supported proof or gap, not a new rollback run. Verify changed Markdown
   targets, obtain independent contract/security review, and run `git diff --check`.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-PROJECT-ASSIGNMENT-CONTRACT** — Trace primary-folder assignment separately from creation.
+  Goal: M3-PROJECT
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3-PROJECT](docs/product/prd.md#core-journeys);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [creation trace](docs/quality/m3-project-creation-contract.md#one-bounded-next-slice).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: name exact Project/profile identity, approved-handle containment and
+  revision semantics, or the absent operation. Also trace Project-to-session/Chat
+  binding, stale-owner rejection and no implicit create/send/global selection.
+  Record the supported contract or precise absence. No assignment or Chat mutation.
+  Dependencies: DOC-M3-PROJECT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace the exact
+  authoritative handler/model, nearest upstream tests and Wing caller against
+  every Acceptance item. Record source-bound supported versus unavailable
+  assignment and session-binding guarantees; verify changed Markdown targets,
+  obtain independent contract/security review, and run `git diff --check`.
+  Source inspection only; do not assign a Project or activate Chat.
+  Touches: docs/quality/

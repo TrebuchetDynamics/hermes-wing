@@ -25,6 +25,35 @@ Widget testApp() => ProviderScope(
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  test('default themes project official Desktop Nous applied surfaces', () {
+    final light = wingLightTheme.colorScheme;
+    final dark = wingDarkTheme.colorScheme;
+    expect(light.primary, const Color(0xff0053fd));
+    expect(dark.primary, const Color(0xff4a84fe));
+    expect(
+      light.surface,
+      Color.lerp(const Color(0xfff3f3f3), Colors.white, 0.92),
+    );
+    expect(
+      dark.surface,
+      Color.lerp(const Color(0xff0d0d0e), const Color(0xff0d1117), 0.74),
+    );
+    expect(light.surfaceContainerLow, const Color(0xfff6f8fa));
+    expect(dark.surfaceContainerLow, const Color(0xff010409));
+    for (final colors in [light, dark]) {
+      final background = colors.surface;
+      for (final ink in [colors.onSurface, colors.onSurfaceVariant]) {
+        final painted = Color.alphaBlend(ink, background);
+        final a = painted.computeLuminance();
+        final b = background.computeLuminance();
+        expect(
+          (a > b ? a + 0.05 : b + 0.05) / (a < b ? a + 0.05 : b + 0.05),
+          greaterThanOrEqualTo(4.5),
+        );
+      }
+    }
+  });
+
   test('primary button labels retain readable contrast in every palette', () {
     for (final palette in WingThemePalette.values) {
       for (final brightness in Brightness.values) {
@@ -46,7 +75,7 @@ void main() {
     'Hermes Wing themes provide Telegram Light and Hermes Dark palettes',
     () {
       expect(wingTelegramBlue, const Color(0xff229ed9));
-      expect(wingHermesBlue, const Color(0xff3b82f6));
+      expect(wingHermesBlue, const Color(0xff0053fd));
       expect(wingLightTheme.useMaterial3, isTrue);
       expect(wingHermesDarkTheme.useMaterial3, isTrue);
       expect(wingLightTheme.colorScheme.brightness, Brightness.light);

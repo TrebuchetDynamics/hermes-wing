@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 
+import 'hermes_desktop_tokens.dart';
+
 const wingTelegramBlue = Color(0xff229ed9);
-const wingHermesBlue = Color(0xff3b82f6);
-const wingHermesDarkBackground = Color(0xff111214);
-const wingHermesDarkPane = Color(0xff1f2023);
-const wingHermesDarkRail = Color(0xff15171a);
-const wingHermesDarkCard = Color(0xff1b1d21);
-const wingHermesDarkCardHigh = Color(0xff24272d);
-const wingHermesDarkOutline = Color(0xff30343b);
+const wingHermesBlue = HermesDesktopTokens.primary;
+final wingHermesDarkBackground = HermesDesktopTokens.colors(
+  Brightness.dark,
+).surface;
+final wingHermesDarkPane = HermesDesktopTokens.colors(
+  Brightness.dark,
+).surfaceContainerLowest;
+const wingHermesDarkRail = Color(0xff010409);
+final wingHermesDarkCard = HermesDesktopTokens.colors(
+  Brightness.dark,
+).surfaceContainer;
+const wingHermesDarkCardHigh = Color(0xff161b22);
+const wingHermesDarkOutline = Color(0xff30363d);
 
 /// The five shipped color palettes (ROADMAP 5.1). [wing] is the default
 /// hand-tuned pair; the others derive both brightnesses from one seed
 /// through the same [_buildWingTheme] pipeline.
 enum WingThemePalette {
-  wing(wingTelegramBlue),
+  wing(wingHermesBlue),
   indigo(Color(0xff6366f1)),
   forest(Color(0xff059669)),
   amber(Color(0xffd97706)),
@@ -52,55 +60,19 @@ ThemeData wingThemeFor(WingThemePalette palette, Brightness brightness) {
   return brightness == Brightness.dark ? pair.dark : pair.light;
 }
 
-final wingLightTheme = _buildTelegramLightTheme();
-final wingHermesDarkTheme = _buildHermesDarkTheme();
-
-/// Backwards-compatible name used by existing app/tests. This is now the
-/// Hermes Desktop-inspired dark theme, while [wingLightTheme] remains the
-/// Telegram-light mobile-friendly variant.
-final wingDarkTheme = wingHermesDarkTheme;
-
-ThemeData _buildTelegramLightTheme() => _buildWingTheme(
-  ColorScheme.fromSeed(seedColor: wingTelegramBlue).copyWith(
-    surface: const Color(0xfff7f7f5),
-    surfaceContainerLowest: Colors.white,
-    surfaceContainerLow: const Color(0xffefefec),
-    surfaceContainer: const Color(0xffe9eae7),
-    surfaceContainerHigh: const Color(0xffe2e4e0),
-    surfaceContainerHighest: const Color(0xffdcdfda),
-    onSurface: const Color(0xff252927),
-    onSurfaceVariant: const Color(0xff5d655f),
-    outlineVariant: const Color(0xffd9ddd7),
-  ),
+final wingLightTheme = _buildWingTheme(
+  HermesDesktopTokens.colors(Brightness.light),
   selectedTileAlpha: 24,
   dividerAlpha: 96,
 );
+final wingHermesDarkTheme = _buildWingTheme(
+  HermesDesktopTokens.colors(Brightness.dark),
+  selectedTileAlpha: 36,
+  dividerAlpha: 92,
+);
 
-ThemeData _buildHermesDarkTheme() {
-  final seeded = ColorScheme.fromSeed(
-    seedColor: wingHermesBlue,
-    brightness: Brightness.dark,
-  );
-  return _buildWingTheme(
-    seeded.copyWith(
-      primary: const Color(0xff8ab4ff),
-      onPrimary: const Color(0xff10294c),
-      secondary: const Color(0xff7dd3fc),
-      surface: wingHermesDarkBackground,
-      onSurface: const Color(0xfff4f4f5),
-      surfaceContainerLowest: wingHermesDarkPane,
-      surfaceContainerLow: wingHermesDarkRail,
-      surfaceContainer: wingHermesDarkCard,
-      surfaceContainerHigh: wingHermesDarkCardHigh,
-      surfaceContainerHighest: const Color(0xff2b2f36),
-      onSurfaceVariant: const Color(0xffc4c8cf),
-      outline: const Color(0xff565b65),
-      outlineVariant: wingHermesDarkOutline,
-    ),
-    selectedTileAlpha: 36,
-    dividerAlpha: 92,
-  );
-}
+/// Backwards-compatible theme name; both modes use official Desktop roles.
+final wingDarkTheme = wingHermesDarkTheme;
 
 ThemeData _buildWingTheme(
   ColorScheme colorScheme, {

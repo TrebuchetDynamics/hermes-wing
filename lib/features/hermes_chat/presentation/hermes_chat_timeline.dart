@@ -282,7 +282,6 @@ class _HermesTranscriptList extends StatelessWidget {
       );
     }
 
-    final colors = Theme.of(context).colorScheme;
     final gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
     return RawGestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -316,21 +315,8 @@ class _HermesTranscriptList extends StatelessWidget {
             textScale,
           ),
         ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.alphaBlend(
-                  colors.primary.withValues(alpha: 0.025),
-                  colors.surface,
-                ),
-                colors.surface,
-              ],
-            ),
-          ),
-          child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) => Column(
             children: [
               if (viewport.windowStart > 0)
                 OutlinedButton.icon(
@@ -372,7 +358,13 @@ class _HermesTranscriptList extends StatelessWidget {
                       reverse: true,
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            _HermesConversationGeometry.transcriptGutter(
+                              constraints.maxWidth,
+                            ),
+                        vertical: 12,
+                      ),
                       children: rows.reversed.toList(growable: false),
                     ),
                   ),
@@ -417,61 +409,15 @@ class _HermesTranscriptList extends StatelessWidget {
   }
 }
 
+// Desktop assistant-message.tsx is a full-width, flat prose column. Identity
+// lives in session chrome, not a second avatar rail that indents every reply.
 class _AssistantTimelineItem extends StatelessWidget {
-  const _AssistantTimelineItem({
-    required this.child,
-    this.profileId = 'default',
-    this.profileColor,
-    this.showAvatar = true,
-  });
+  const _AssistantTimelineItem({required this.child});
 
   final Widget child;
-  final String profileId;
-  final String? profileColor;
-  final bool showAvatar;
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 720) return child;
-        final identityColor = hermesProfileColor(
-          profileId,
-          advertisedColor: profileColor,
-        );
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (showAvatar)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: CircleAvatar(
-                    key: const ValueKey('hermes-assistant-avatar'),
-                    radius: 15,
-                    backgroundColor: identityColor,
-                    child: Text(
-                      profileId.trim().isEmpty
-                          ? 'H'
-                          : profileId.trim().characters.first.toUpperCase(),
-                      style: TextStyle(
-                        color: hermesProfileForeground(identityColor),
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                )
-              else
-                const SizedBox(width: 30),
-              const SizedBox(width: 10),
-              Expanded(child: child),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => child;
 }
 
 class _ReasoningCard extends StatefulWidget {
@@ -499,9 +445,6 @@ class _ReasoningCardState extends State<_ReasoningCard> {
   @override
   Widget build(BuildContext context) {
     return _AssistantTimelineItem(
-      profileId: widget.profileId,
-      profileColor: widget.profileColor,
-      showAvatar: widget.showAvatar,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
@@ -685,9 +628,6 @@ class _ToolActivityGroup extends StatelessWidget {
     );
 
     return _AssistantTimelineItem(
-      profileId: profileId,
-      profileColor: profileColor,
-      showAvatar: showAvatar,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
@@ -1069,29 +1009,28 @@ class _TurnBubble extends StatelessWidget {
       futureLabel: compactTimestamp,
     );
     final colors = Theme.of(context).colorScheme;
-    final screenWidth = MediaQuery.sizeOf(context).width;
+
     final bubble = Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         key: ValueKey('hermes-turn-${turn.id}'),
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-        constraints: BoxConstraints(
-          maxWidth: screenWidth < 600 ? screenWidth * 0.84 : 560,
+        margin: EdgeInsets.symmetric(vertical: isUser ? 8 : 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: isUser ? 16 : 0,
+          vertical: 12,
         ),
+        // The parent transcript owns width; assistant prose must not acquire
+        // a second independent cap when panes resize the conversation.
+        width: isUser ? null : double.infinity,
         decoration: BoxDecoration(
           color: isUser
-              ? colors.primary.withValues(alpha: 0.22)
+              ? colors.surfaceContainerHigh
               : structuredError != null
               ? colors.error.withValues(alpha: 0.1)
-              : colors.surfaceContainerHigh,
-          border: Border.all(
-            color: isUser
-                ? colors.primary.withValues(alpha: 0.18)
-                : structuredError != null
-                ? colors.error.withValues(alpha: 0.35)
-                : colors.outlineVariant.withValues(alpha: 0.32),
-          ),
+              : Colors.transparent,
+          border: structuredError != null
+              ? Border.all(color: colors.error.withValues(alpha: 0.35))
+              : null,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -1136,7 +1075,13 @@ class _TurnBubble extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                 ],
-                const SizedBox(width: 8),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              key: ValueKey('hermes-turn-metadata-${turn.id}'),
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 Semantics(
                   key: ValueKey('hermes-turn-timestamp-${turn.id}'),
                   container: true,
@@ -1254,21 +1199,14 @@ class _TurnBubble extends StatelessWidget {
       child: bubble,
     );
     final desktopInteractiveBubble = enableDesktopContextMenu
-        ? Listener(
-            onPointerDown: (event) {
-              if (event.buttons & kSecondaryMouseButton == 0) return;
-              unawaited(_showDesktopActions(context, event.position));
-            },
+        ? GestureDetector(
+            onSecondaryTapDown: (details) =>
+                unawaited(_showDesktopActions(context, details.globalPosition)),
             child: interactiveBubble,
           )
         : interactiveBubble;
     if (isUser) return desktopInteractiveBubble;
-    return _AssistantTimelineItem(
-      profileId: profileId,
-      profileColor: profileColor,
-      showAvatar: showAvatar,
-      child: desktopInteractiveBubble,
-    );
+    return _AssistantTimelineItem(child: desktopInteractiveBubble);
   }
 
   Future<void> _showActions(BuildContext context) async {

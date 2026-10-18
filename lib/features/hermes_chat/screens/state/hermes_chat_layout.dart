@@ -1,5 +1,15 @@
 part of '../hermes_chat_screen.dart';
 
+// Desktop styles.css uses --composer-width for both surfaces: the panel's
+// available width, with 24px transcript and 16px composer outer gutters.
+abstract final class _HermesConversationGeometry {
+  static const desktopBreakpoint = 720.0;
+  static double transcriptGutter(double width) =>
+      width >= desktopBreakpoint ? 24 : 12;
+  static double composerGutter(double width) =>
+      width >= desktopBreakpoint ? 16 : 8;
+}
+
 String _connectionModeLabel(
   AppLocalizations strings,
   HermesConnectionMode mode,
@@ -1015,7 +1025,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final showSessionRail = constraints.maxWidth >= 900;
+        // Reserve a readable conversation beside the 280px session inventory.
+        // Smaller workspaces retain the same inventory through the session picker.
+        final showSessionRail =
+            constraints.maxWidth >= 1100 &&
+            !AppShellSessionNavigation.of(context);
         final chatPane = _buildChatPane(
           context: context,
           channel: channel,
@@ -1091,7 +1105,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         final strings = AppLocalizations.of(context);
         final activeSession = state.activeSession;
         final showActiveSessionBar =
-            constraints.maxWidth >= 600 && activeSession != null;
+            constraints.maxWidth >= 600 &&
+            activeSession != null &&
+            !AppShellSessionNavigation.of(context);
         final switchableSessions = _switchableHermesSessions(
           state,
           retainedSessionIds: _unreadCompletedSessionIds,
@@ -1824,14 +1840,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final useDesktopCommandBar = constraints.maxWidth >= 720;
+            final useDesktopCommandBar =
+                constraints.maxWidth >=
+                _HermesConversationGeometry.desktopBreakpoint;
+            final gutter = _HermesConversationGeometry.composerGutter(
+              constraints.maxWidth,
+            );
             return Padding(
-              padding: EdgeInsets.fromLTRB(
-                8,
-                useDesktopCommandBar ? 6 : 8,
-                8,
-                8,
-              ),
+              padding: EdgeInsets.fromLTRB(gutter, 8, gutter, 10),
               child: useDesktopCommandBar
                   ? _buildDesktopComposerCommandBar(
                       context,
@@ -2757,7 +2773,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         ),
         PopupMenuItem(
           value: _ComposerMenuAction.dictate,
-          enabled: handsFreeAvailable && !_voiceInputController.capturing,
+          enabled:
+              canSendTurns &&
+              !channel.state.isServeReadOnly &&
+              !_voiceInputController.capturing &&
+              !_voiceInputController.speaking,
           child: ListTile(
             leading: const Icon(Icons.edit_note_outlined),
             title: Text(strings.chatVoiceDictateAction),
@@ -3047,7 +3067,6 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       final current = channel.state;
       return current.isConnected &&
           _canSendTurns(current) &&
-          ref.read(wingVoiceSettingsProvider).continuousVoiceEnabled &&
           owner ==
               (
                 current.connectedBaseUrl,
@@ -3065,7 +3084,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final captureGeneration = _voiceInputController.captureGeneration;
     final enabled =
         canSendTurns &&
-        ref.watch(wingVoiceSettingsProvider).continuousVoiceEnabled &&
+        !_voiceInputController.capturing &&
+        !_voiceInputController.speaking &&
         isCurrent();
     return IconButton(
       key: const ValueKey('hermes-draft-mic-button'),

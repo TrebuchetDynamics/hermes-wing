@@ -60,11 +60,24 @@ class ChatWorkspaceOverlay extends StatelessWidget {
             ),
             child: Material(
               clipBehavior: Clip.antiAlias,
-              borderRadius: BorderRadius.circular(16),
-              child: Column(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      appBarTheme: Theme.of(context).appBarTheme.copyWith(
+                        // Share the existing page title row with overlay close.
+                        actionsPadding: const EdgeInsetsDirectional.only(
+                          end: 48,
+                        ),
+                      ),
+                    ),
+                    child: SelectionArea(child: child),
+                  ),
+                  PositionedDirectional(
+                    top: 4,
+                    end: 0,
                     child: IconButton(
                       key: const ValueKey('chat-workspace-overlay-close'),
                       autofocus: true,
@@ -73,7 +86,6 @@ class ChatWorkspaceOverlay extends StatelessWidget {
                       icon: const Icon(Icons.close),
                     ),
                   ),
-                  Expanded(child: SelectionArea(child: child)),
                 ],
               ),
             ),

@@ -952,54 +952,66 @@ class _HermesComposerStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = _hermesStrings(context);
-    // Keep dynamically inserted Stop/Retry controls in the strip's toolbar slot.
+    // Stop is pinned outside the overflow viewport: a long model/status label
+    // must never scroll the active run's escape action out of reach.
     return FocusTraversalGroup(
-      child: SingleChildScrollView(
+      child: Row(
         key: const ValueKey('hermes-composer-strip'),
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            if (isTurnActive)
-              ActionChip(
-                key: const ValueKey('hermes-composer-stop-chip'),
-                avatar: const Icon(Icons.stop_circle_outlined, size: 18),
-                label: Text(strings.chatRailStopAction),
-                onPressed: onStop,
-              )
-            else if (canRetry)
-              ActionChip(
-                key: const ValueKey('hermes-composer-retry-chip'),
-                avatar: const Icon(Icons.refresh, size: 18),
-                label: Text(strings.retryAction),
-                onPressed: onRetry,
-              ),
-            if (isTurnActive || canRetry) const SizedBox(width: 8),
-            Tooltip(
-              message: strings.chatComposerModelPickerTooltip,
-              child: ActionChip(
-                key: const ValueKey('hermes-composer-model-chip'),
-                avatar: const Icon(Icons.memory_outlined, size: 18),
-                label: Text(_safeHermesUiPreview(modelLabel, maxLength: 32)),
-                onPressed: onSelectModel,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isTurnActive)
+            FilledButton.icon(
+              key: const ValueKey('hermes-composer-stop-chip'),
+              icon: const Icon(Icons.stop_rounded, size: 18),
+              label: Text(strings.chatRailStopAction),
+              onPressed: onStop,
+            )
+          else if (canRetry)
+            TextButton.icon(
+              key: const ValueKey('hermes-composer-retry-chip'),
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(strings.retryAction),
+              onPressed: onRetry,
+            ),
+          if (isTurnActive || canRetry) const SizedBox(width: 8),
+          Flexible(
+            child: SingleChildScrollView(
+              key: const ValueKey('hermes-composer-secondary-controls'),
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Tooltip(
+                    message: strings.chatComposerModelPickerTooltip,
+                    child: ActionChip(
+                      key: const ValueKey('hermes-composer-model-chip'),
+                      avatar: const Icon(Icons.memory_outlined, size: 16),
+                      side: BorderSide.none,
+                      backgroundColor: Colors.transparent,
+                      disabledColor: Colors.transparent,
+                      label: Text(
+                        _safeHermesUiPreview(modelLabel, maxLength: 32),
+                      ),
+                      onPressed: onSelectModel,
+                    ),
+                  ),
+                  if (!isTurnActive &&
+                      (hasUnreconciledRun || !canSendTurns)) ...[
+                    const SizedBox(width: 8),
+                    _ComposerChip(
+                      icon: hasUnreconciledRun
+                          ? Icons.hourglass_top
+                          : Icons.block,
+                      label: hasUnreconciledRun
+                          ? strings.chatErrorRunStillActiveTitle
+                          : strings.chatRailStatusTransportUnavailableLabel,
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (!isTurnActive && (hasUnreconciledRun || !canSendTurns)) ...[
-              const SizedBox(width: 8),
-              _ComposerChip(
-                icon: hasUnreconciledRun
-                    ? Icons.hourglass_top
-                    : canSendTurns
-                    ? Icons.bolt_outlined
-                    : Icons.block,
-                label: hasUnreconciledRun
-                    ? strings.chatErrorRunStillActiveTitle
-                    : canSendTurns
-                    ? strings.chatRailStatusReadyLabel
-                    : strings.chatRailStatusTransportUnavailableLabel,
-              ),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

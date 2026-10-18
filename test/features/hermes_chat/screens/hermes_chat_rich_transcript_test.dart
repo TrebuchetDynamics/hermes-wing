@@ -992,34 +992,37 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(find.text('Compare constraints before answering.'), findsOneWidget);
   });
 
-  testWidgets('wide assistant runs show one shared avatar', (tester) async {
-    tester.view.physicalSize = const Size(1400, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final channel = FakeHermesChannel();
-    channel.beginStreamingTurn('Reason and use a tool.');
-    channel.addReasoningTurn('Inspect the available evidence.');
-    channel.completeStreamingTurn(text: 'Evidence reviewed.');
-    channel.addToolCallTurn(
-      const HermesToolCall(name: 'search_files', status: 'completed'),
-    );
-    channel.beginStreamingTurn('Start a separate request.');
-    channel.completeStreamingTurn(text: 'Separate answer.');
+  testWidgets(
+    'wide assistant runs use flat Desktop prose without avatar rail',
+    (tester) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel();
+      channel.beginStreamingTurn('Reason and use a tool.');
+      channel.addReasoningTurn('Inspect the available evidence.');
+      channel.completeStreamingTurn(text: 'Evidence reviewed.');
+      channel.addToolCallTurn(
+        const HermesToolCall(name: 'search_files', status: 'completed'),
+      );
+      channel.beginStreamingTurn('Start a separate request.');
+      channel.completeStreamingTurn(text: 'Separate answer.');
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [hermesChannelProvider.overrideWithValue(channel)],
-        child: _localizedApp(const HermesChatScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const ValueKey('hermes-assistant-avatar')),
-      findsNWidgets(2),
-    );
-  });
+      expect(
+        find.byKey(const ValueKey('hermes-assistant-avatar')),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets('assistant replies show server-reported token usage', (
     tester,

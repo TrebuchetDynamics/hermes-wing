@@ -135,6 +135,9 @@ Bundled Wing Link compilation is not packaged service execution.
 Next milestone slice remains the separately authorized live daily workflow and
 integration-owner protected-PR qualification; no extra card or reviewer lane was
 created. Implemented and synthetic-qualified do not mean merged delivery.
+The [read-only recovery handoff](live-workflow-recovery.md) records fresh offline
+regressions and the pending reconnect/route-return procedure; it does not qualify
+the predecessor live workflow or authorize new inference.
 
 Questions: none. Defaults applied: honest unknown identity, explicit reselection,
 synthetic-only scope, preserve predecessor ownership, no release or live inference.

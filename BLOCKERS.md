@@ -13,33 +13,12 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
-### Q-FILES-TERMINAL-BROWSE — USER_INPUT — effort input — unblocks 1
+### Q-FILES-TERMINAL-BROWSE — USER_DECISION — effort decision — unblocks 1
 
 - Task: FILES-TERMINAL-BROWSE — Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
-- Needs: worker reported a blocker: Provide a reviewed existing unmodified Agent contract/reference and a source-bound eligibility rule that can establish exact selected connection/profile/session effective terminal root, execution backend, file authorization and matching server-enforced canonical confinement without incidental writes. This is an offline contract/design prerequisite, not a request for device access or a live passing…
+- Needs: 1 waiting task(s) depend on "FILES-TERMINAL-BROWSE", which is not a Now/Next task (an outside condition, or a task in Needs decision).
 - Since: 2026-10-18T16:31:16Z
-- Answer: Answer in FILES-TERMINAL-BROWSE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
-
-- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
-- Needs: worker reported a blocker: Coordinator must supply this worker the actual combined source input described by the updated handoff. The current task workspace remains on the old baseline: delivered lock commit 80e41ed8 is not an ancestor and pubspec.lock still has blob 104e43950f4c7ceb4ed15836a3345e2739facd46, not the stated compatible blob. No new lock repair or lockfile authority is requested. Worker merges, cherry-picks, r… (+1 more in report.json)
-- Since: 2026-10-18T16:28:16Z
-- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
-
-- Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.
-- Needs: worker reported a blocker: Provide an exact advertised authoritative command catalog/completion/dispatch contract from an unmodified Hermes Agent that Wing can consume, including its transport, operation identifiers, authorization grants and endpoint/profile/session ownership semantics. The task contract explicitly retains the absent-authoritative-transport hold; docs/quality/slash-catalog-contract.md documents catalog/comp…
-- Since: 2026-10-18T05:27:05Z
-- Answer: Answer in VERIFY-SLASH-AUTHORITATIVE-TRANSPORT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 3
-
-- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
-- Needs: merge conflict; worker and canonical checkout preserved
-- Since: 2026-10-18T08:15:07Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/), then rescope or split DOC-PARITY-TAB-CONTRACT in its TODO.md entry. The runner reruns it when the entry changes.
+- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 <!-- pi-autowork:questions:end -->
 

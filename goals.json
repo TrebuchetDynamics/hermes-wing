@@ -3027,6 +3027,7 @@
         "DOC-SECURITY-REPLAY-EVIDENCE",
         "FIX-NPM-AUDIT",
         "SECURITY-RETAINED-RELEASE-AUDIT",
+        "SECURITY-RETAINED-RELEASE-AUDIT-LIVE",
         "VERIFY-OMNIROUTE-NODE22-CLOSURE"
       ],
       "title": "Preserve exact authority, isolation, privacy and no replay"
@@ -6884,12 +6885,9 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
       "MT-RERUN-TRAIN",
       "MT-VERIFY-BROWSER-GATES",
-      "SECURITY-RETAINED-RELEASE-AUDIT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
-      "FILES-TERMINAL-BROWSE",
       "FILES-TERMINAL-DOWNLOAD",
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
@@ -6898,6 +6896,8 @@
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
+      "FILES-TERMINAL-BROWSE",
+      "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
       "CONNECTION-LINK-REMOVAL",
       "CONNECTION-CRON-CANARY",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
@@ -6949,7 +6949,8 @@
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT-LIVE",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE",
-      "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE"
+      "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE",
+      "SECURITY-RETAINED-RELEASE-AUDIT-LIVE"
     ]
   },
   "tasks": [
@@ -7032,14 +7033,6 @@
       "title": "Prepare one speech-output cancellation scenario"
     },
     {
-      "depends_on": [],
-      "goal": "PARITY",
-      "id": "FILES-TERMINAL-BROWSE",
-      "section": "Next",
-      "status": "open",
-      "title": "Browse and read the selected Agent terminal working-directory files on Linux and Android"
-    },
-    {
       "depends_on": [
         "FILES-TERMINAL-BROWSE"
       ],
@@ -7079,16 +7072,6 @@
     },
     {
       "depends_on": [
-        "VERIFY-OMNIROUTE-NODE22-CLOSURE"
-      ],
-      "goal": "SECURITY",
-      "id": "SECURITY-RETAINED-RELEASE-AUDIT",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify retained root dependencies and release audit after retirement closure"
-    },
-    {
-      "depends_on": [
         "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
       ],
       "goal": "CHAT-FIDELITY",
@@ -7106,16 +7089,6 @@
       "section": "Next",
       "status": "open",
       "title": "Restore canonical tool ordering and retire approval actions after isolated native process restart without replay"
-    },
-    {
-      "depends_on": [
-        "DOC-SLASH-DENIAL-EVIDENCE"
-      ],
-      "goal": "SLASH-CATALOG",
-      "id": "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify supported authoritative slash execution and unavailable-action recovery"
     },
     {
       "depends_on": [
@@ -7486,6 +7459,14 @@
       "title": "Live checks for DOC-VOICE-QUALIFICATION"
     },
     {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "FILES-TERMINAL-BROWSE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Browse and read the selected Agent terminal working-directory files on Linux and Android"
+    },
+    {
       "depends_on": [
         "LANDING-PAGES-QUALITY"
       ],
@@ -7565,6 +7546,16 @@
     },
     {
       "depends_on": [
+        "SECURITY-RETAINED-RELEASE-AUDIT"
+      ],
+      "goal": "SECURITY",
+      "id": "SECURITY-RETAINED-RELEASE-AUDIT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for SECURITY-RETAINED-RELEASE-AUDIT"
+    },
+    {
+      "depends_on": [
         "DOC-DESKTOP-UNINSTALL-EVIDENCE"
       ],
       "goal": "DESKTOP-DELIVERY",
@@ -7632,6 +7623,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Qualify sidebar persistence and adaptive return through physical OS controls"
+    },
+    {
+      "depends_on": [
+        "DOC-SLASH-DENIAL-EVIDENCE"
+      ],
+      "goal": "SLASH-CATALOG",
+      "id": "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Qualify supported authoritative slash execution and unavailable-action recovery"
     },
     {
       "depends_on": [
@@ -9043,6 +9044,16 @@
       "section": "Done",
       "status": "done",
       "title": "Implement the bounded QA store/state observer through production injection seams"
+    },
+    {
+      "depends_on": [
+        "VERIFY-OMNIROUTE-NODE22-CLOSURE"
+      ],
+      "goal": "SECURITY",
+      "id": "SECURITY-RETAINED-RELEASE-AUDIT",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify retained root dependencies and release audit after retirement closure"
     },
     {
       "depends_on": [

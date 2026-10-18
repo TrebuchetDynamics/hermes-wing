@@ -12,7 +12,7 @@ and withdrawal of earlier separate-app parity conclusions.
 
 The inspected local Agent revision is
 `158fd638da1629c8e62caf9ade1515d162def8ab`.
-This identifies a checkout, not live upstream freshness or a released application.
+This identifies a checkout, not live upstream freshness or a released application. The [October 18 source refresh](../quality/official-desktop-parity-refresh-2026-10-18.md) records the separately acquired current comparison snapshot; the permanent checkout remains unchanged.
 Keep the upstream checkout read-only. A Flutter port reproduces official app
 behavior without copying Electron internals or modifying Hermes Agent.
 
@@ -106,12 +106,15 @@ remain separate; this test does not prove requirement coverage or implementation
 | `docs/plans/2026-08-10_210519-nostr-gateway-channel-roadmap.md` | Deferred | None — explicitly deferred | No executable Nostr tasks. Reopening the decision is required before booking implementation. [Open](2026-08-10_210519-nostr-gateway-channel-roadmap.md) |
 | `docs/plans/2026-09-01_111952-project-setup-contract.md` | Superseded | `DOC-M3-PROJECT-CONTRACT`, `DOC-M3-PROJECT-ASSIGNMENT-CONTRACT` | Project contract-assessment successors only; no legacy adapter expansion. [Open](2026-09-01_111952-project-setup-contract.md) |
 | `docs/plans/2026-09-02_162056-hermes-wing-rehabilitation-audit.md` | Historical | `PARITY-OFFICIAL-MATRIX`, `VERIFY-CHAT-TRANSCRIPT-NATIVE`, `MT-RERUN-TRAIN` | Dated findings require fresh reproduction; successors are not historical completion proof. [Open](2026-09-02_162056-hermes-wing-rehabilitation-audit.md) |
-| `docs/plans/2026-10-03-desktop-daily-workflow.md` | Current | `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-LIVE-WORKFLOW`, `VERIFY-LIVE-WORKFLOW-RECOVERY`, `WING-TASK-405`, `WING-TASK-406`, `WING-TASK-407`, `WING-TASK-408` | Accepted daily-use outcome remains incomplete; native/live acceptance stays separate. [Open](2026-10-03-desktop-daily-workflow.md) |
+| `docs/plans/2026-10-03-desktop-daily-workflow.md` | Current | `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-LIVE-WORKFLOW`, `VERIFY-LIVE-WORKFLOW-RECOVERY`, `WING-TASK-405`, `WING-TASK-406`, `WING-TASK-407`, `WING-TASK-408`, `PARITY-LIVE-WORKFLOW-LIVE`, `VERIFY-LIVE-WORKFLOW-RECOVERY-LIVE`, `WING-TASK-408-LIVE` | Accepted daily-use outcome remains incomplete; native/live acceptance stays separate. [Open](2026-10-03-desktop-daily-workflow.md) |
 | `docs/plans/2026-10-03-desktop-local-integration-design.md` | Proposal | `DOC-NATIVE-DESIGN-REVIEW`, `DOC-NATIVE-FAILURE-BOUNDARY` | Design review only; the proposed coordinator and old Link mechanism are not implementation authority. [Open](2026-10-03-desktop-local-integration-design.md) |
 | `docs/plans/2026-10-03-desktop-port-first-wave.md` | Historical | `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-OFFICIAL-MATRIX`, `DOC-PARITY-TAB-CONTRACT`, `DOC-PARITY-TAB-RECONNECT-CONTRACT` | Current continuation owns re-baselining; original lanes are not redispatched. [Open](2026-10-03-desktop-port-first-wave.md) |
-| `docs/plans/2026-10-03-desktop-port-goal.md` | Current | `CONNECTION-CRON-ADMISSION`, `CONNECTION-CRON-CANARY`, `CONNECTION-LINK-REMOVAL`, `CONNECTION-OFFICIAL-DESKTOP-PORT`, `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-SETUP-AUTH-MATRIX`, `CONNECTION-LINK-RETIREMENT` | Accepted port and gated restart plan; native admission and product completion remain unverified. [Open](2026-10-03-desktop-port-goal.md) |
+| `docs/plans/2026-10-03-desktop-port-goal.md` | Current | `CONNECTION-CRON-ADMISSION`, `CONNECTION-CRON-CANARY`, `CONNECTION-LINK-REMOVAL`, `CONNECTION-OFFICIAL-DESKTOP-PORT`, `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-SETUP-AUTH-MATRIX`, `CONNECTION-LINK-RETIREMENT`, `DOC-PARITY-TAB-CONTRACT`, `DOC-PARITY-TAB-RECONNECT-CONTRACT`, `ANDROID-CANONICAL-BOT-CHAT`, `ANDROID-CHAT-TOUCH-POLISH`, `CONNECTION-SETUP-AUTH-MATRIX-LIVE` | Accepted port and gated restart plan; native admission and product completion remain unverified. [Open](2026-10-03-desktop-port-goal.md) |
 | `docs/plans/2026-10-03-study-follow-through.md` | Current | `CONNECTION-OWNER-RECONNECT`, `PARITY-LIVE-WORKFLOW`, `M2-DEVICE-QUALIFICATION`, `DOC-M5-ANDROID-FIXTURE`, `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M6-INTEGRATED-RECEIPT-GAP`, `DOC-NATIVE-DESIGN-REVIEW` | Retained follow-through uses current owners; M2 device work remains Needs decision. [Open](2026-10-03-study-follow-through.md) |
-| `docs/plans/2026-10-12-wing-landing-onboarding.md` | Current | `LANDING-PRODUCT-PROOF`, `LANDING-PAGES-QUALITY`, `CONNECTION-SETUP-AUTH-MATRIX`, `PARITY-LIVE-WORKFLOW` | First-reply onboarding is complete and archived; visual proof, delivery quality and live acceptance remain distinct. [Open](2026-10-12-wing-landing-onboarding.md) |
+| `docs/plans/2026-10-12-wing-landing-onboarding.md` | Current | `LANDING-PRODUCT-PROOF`, `LANDING-PAGES-QUALITY`, `CONNECTION-SETUP-AUTH-MATRIX`, `PARITY-LIVE-WORKFLOW`, `LANDING-PRODUCT-PROOF-LIVE`, `LANDING-PAGES-QUALITY-LIVE`, `CONNECTION-SETUP-AUTH-MATRIX-LIVE`, `PARITY-LIVE-WORKFLOW-LIVE` | First-reply onboarding is complete and archived; visual proof, delivery quality and live acceptance remain distinct. [Open](2026-10-12-wing-landing-onboarding.md) |
+| `docs/plans/2026-10-18-flutter-mcp-architecture.md` | Current | `DEV-001-c7` | Official SDK MCP read-only architecture assessment; not persistent connector support or refactor approval. [Open](2026-10-18-flutter-mcp-architecture.md) |
+| `docs/plans/2026-10-18-ssh-failure-feedback.md` | Current | `WING-001-b3` | Reused code-first SSH failure-feedback task; no live reproduction or transport expansion. [Open](2026-10-18-ssh-failure-feedback.md) |
+| `docs/plans/2026-10-18-plan-traceability-ids.md` | Current | `PLANGAP-001-2f` | Exact hashed-ID recognition in existing traceability tooling; implementation unperformed and observed test remains red. [Open](2026-10-18-plan-traceability-ids.md) |
 | `docs/plans/README.md` | Policy | `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-OFFICIAL-MATRIX` | Reference and traceability policy, not a separate implementation plan. [Open](README.md) |
 | `docs/plans/wing-link-remote-management.md` | Superseded | `CONNECTION-LINK-REMOVAL`, `CONNECTION-LINK-RETIREMENT`, `DOC-M3-PROVIDER-CONTRACT`, `DOC-M3-PROJECT-CONTRACT` | Retirement and Agent-contract successors only; no Link expansion. [Open](wing-link-remote-management.md) |
 | `docs/superpowers/plans/2026-07-13-android-auth-profiles.md` | Superseded | `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M3-ROLLBACK-EVIDENCE` | Persona evidence is complete and archived; remaining owners assess supported enrollment/rollback only, not proposed Agent routes. [Open](../superpowers/plans/2026-07-13-android-auth-profiles.md) |
@@ -132,3 +135,19 @@ remain separate; this test does not prove requirement coverage or implementation
 | `docs/superpowers/plans/2026-09-04-resource-consistency.md` | Historical | `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-SETUP-AUTH-MATRIX`, `VERIFY-LIVE-WORKFLOW-RECOVERY`, `WING-TASK-406`, `WING-TASK-407` | Owner isolation and terminal certainty retained; old race/performance matrices are not fully qualified. [Open](../superpowers/plans/2026-09-04-resource-consistency.md) |
 | `docs/superpowers/plans/2026-09-04-voice-ownership.md` | Historical | `DOC-VOICE-QUALIFICATION`, `DOC-VOICE-OUTPUT-CANCEL-EVIDENCE`, `PARITY-OFFICIAL-MATRIX` | Physical voice and output cancellation remain bounded qualification, not old controller-test parity. [Open](../superpowers/plans/2026-09-04-voice-ownership.md) |
 <!-- plan-task-map:end -->
+
+## Current planning gap disposition
+
+The October 18 gap pass adds only the reused SSH feedback implementation plan and
+the hash-suffixed-ID tooling fix. Existing Android tab/Bot/touch plans and four
+PARITYUPDATE contract tasks remain their owners, not another set of preflights.
+Attachment-picker mismatch was investigated and rejected: the native-serve
+read-only composer gates picking/keyboard insertion and transport rejects uploads.
+No speculative attachment fix or unsupported upload implementation is booked.
+
+The MCP mapping/backlog notice and missing Goal/Sources metadata on held live tasks
+are corrected documentation, not new feature plans. Those held tasks retain all
+prior acceptance, dependencies, status, order and live-access gates. Current-plan
+rows retain completed offline parents for evidence and name open live successors;
+this is not permission to run them or evidence that they passed. The source-tooling
+traceability test remains red until the separately booked parser fix is implemented.

@@ -21,11 +21,11 @@ const _field = ValueKey('hermes-composer-field');
 const _attachment = ValueKey('hermes-attachment-button');
 const _draft = ValueKey('hermes-draft-mic-button');
 const _model = ValueKey('hermes-composer-model-chip');
-const _switch = ValueKey('hermes-continuous-voice-switch');
 const _voice = ValueKey('hermes-mic-button');
 const _send = ValueKey('hermes-send-button');
 const _stop = ValueKey('hermes-composer-stop-chip');
-const _order = [_attachment, _draft, _model, _switch, _voice, _send];
+const _options = ValueKey('hermes-composer-voice-options');
+const _order = [_model, _attachment, _draft, _options, _voice, _send];
 
 final _scale = ValueNotifier<double>(2);
 void main() {
@@ -73,26 +73,36 @@ void main() {
         await tester.pumpAndSettle();
         await _resize(tester, 600);
         await _reach(tester, _field);
-        for (final key in [_attachment, _send]) {
+        for (final key in [
+          _model,
+          _attachment,
+          _draft,
+          _options,
+          _voice,
+          _send,
+        ]) {
           await _tab(tester);
           _expectFocus(tester, key);
         }
-        for (final key in [_attachment, _field]) {
+        for (final key in [
+          _voice,
+          _options,
+          _draft,
+          _attachment,
+          _model,
+          _field,
+        ]) {
           await _tab(tester, reverse: true);
           _expectFocus(tester, key);
         }
-        _readable(tester, [
-          _attachment,
-          _send,
-          const ValueKey('hermes-composer-menu-button'),
-        ]);
-        final switcher = tester.widget<AnimatedSwitcher>(
+        _readable(tester, [_attachment, _send]);
+        expect(
           find.descendant(
             of: find.byKey(const ValueKey('hermes-composer-surface')),
-            matching: find.byType(AnimatedSwitcher),
+            matching: find.byType(ScaleTransition),
           ),
+          findsNothing,
         );
-        expect(switcher.duration, Duration.zero);
         // Real text scaling changes, without remounting the channel or editor.
         _scale.value = 1.5;
         await tester.pumpAndSettle();

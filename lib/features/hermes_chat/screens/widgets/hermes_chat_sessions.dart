@@ -660,21 +660,6 @@ class _HermesActiveSessionBar extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final strings = _hermesStrings(context);
-    final statusLabel = isTurnActive
-        ? strings.chatRailStatusStreamingLabel
-        : hasUnreconciledRun
-        ? strings.chatErrorRunStillActiveTitle
-        : canSendTurns
-        ? strings.chatRailStatusReadyLabel
-        : strings.chatRailStatusTransportUnavailableLabel;
-    final statusIcon = isTurnActive
-        ? Icons.autorenew
-        : hasUnreconciledRun
-        ? Icons.hourglass_top
-        : canSendTurns
-        ? Icons.bolt_outlined
-        : Icons.block;
-
     return Semantics(
       label: strings.chatRailActiveHermesSessionLabel,
       child: Container(
@@ -772,83 +757,9 @@ class _HermesActiveSessionBar extends StatelessWidget {
               );
             }
 
-            final showStatus =
-                isTurnActive || hasUnreconciledRun || !canSendTurns;
-            final showModel =
-                modelLabel != strings.chatLayoutModelFallbackLabel;
-            final statusChip = _HermesTopBarChip(
-              icon: statusIcon,
-              label: statusLabel,
-            );
-            final modelChip = _HermesTopBarChip(
-              icon: Icons.memory_outlined,
-              label: _safeHermesUiPreview(modelLabel, maxLength: 28),
-            );
-            final count = Text(
-              strings.chatRailMessageCountLabel(messageCount),
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            );
-            final scaled = MediaQuery.textScalerOf(context).scale(14) > 18;
-            if (constraints.maxWidth < 900 || scaled) {
-              final titleWidth = constraints.maxWidth.clamp(160.0, 360.0);
-              return Wrap(
-                spacing: 10,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  SizedBox(width: titleWidth, child: sessionSwitcher()),
-                  if (showStatus) statusChip,
-                  if (showModel) modelChip,
-                  count,
-                ],
-              );
-            }
-            return Row(
-              children: [
-                Flexible(flex: 3, child: sessionSwitcher()),
-                const SizedBox(width: 10),
-                if (showStatus) ...[statusChip, const SizedBox(width: 8)],
-                if (showModel) ...[modelChip, const SizedBox(width: 8)],
-                count,
-                const Spacer(),
-              ],
-            );
+            return sessionSwitcher();
           },
         ),
-      ),
-    );
-  }
-}
-
-class _HermesTopBarChip extends StatelessWidget {
-  const _HermesTopBarChip({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: colors.primary),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: colors.onSurface,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }

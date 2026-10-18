@@ -19,11 +19,11 @@ const _field = ValueKey('hermes-composer-field');
 const _attachment = ValueKey('hermes-attachment-button');
 const _draft = ValueKey('hermes-draft-mic-button');
 const _model = ValueKey('hermes-composer-model-chip');
-const _switch = ValueKey('hermes-continuous-voice-switch');
 const _voice = ValueKey('hermes-mic-button');
 const _send = ValueKey('hermes-send-button');
 const _stop = ValueKey('hermes-composer-stop-chip');
-const _order = [_attachment, _draft, _model, _switch, _voice, _send];
+const _options = ValueKey('hermes-composer-voice-options');
+const _order = [_model, _attachment, _draft, _options, _voice, _send];
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -36,12 +36,11 @@ void main() {
       await tester.enterText(find.byKey(_field), 'retained draft');
       final editor = tester.widget<TextField>(find.byKey(_field));
       expect(editor.focusNode!.hasFocus, isTrue);
-      for (var i = 1; i < _order.length; i++) {
-        expect(
-          tester.getCenter(find.byKey(_order[i - 1])).dx,
-          lessThan(tester.getCenter(find.byKey(_order[i])).dx),
-        );
-      }
+      expect(tester.getRect(find.byKey(_field)).width, greaterThan(600));
+      expect(
+        tester.getRect(find.byKey(_model)).bottom,
+        lessThanOrEqualTo(tester.getRect(find.byKey(_attachment)).top),
+      );
       for (final key in _order) {
         await _tab(tester);
         _expectFocus(tester, key);
@@ -70,7 +69,7 @@ void main() {
           ..loadGate = Completer<void>();
         await _mount(tester, channel);
         await tester.enterText(find.byKey(_field), 'retained draft');
-        for (final key in [_attachment, _draft, _model]) {
+        for (final key in [_model]) {
           await _tab(tester);
           _expectFocus(tester, key);
         }
@@ -131,12 +130,12 @@ void main() {
           tester.widget<IconButton>(find.byKey(_send)).onPressed,
           isNotNull,
         );
-        for (final key in [_attachment, _draft, _stop]) {
+        for (final key in [_stop]) {
           await _tab(tester);
           _expectFocus(tester, key);
         }
         await _tab(tester);
-        _expectFocus(tester, _switch);
+        _expectFocus(tester, _attachment);
         await _tab(tester, reverse: true);
         _expectFocus(tester, _stop);
         _noMutations(channel, restorePlatform: false);

@@ -40,13 +40,13 @@ void main() {
         lessThan(tester.getTopLeft(draft).dx),
       );
       expect(
-        tester.getTopLeft(draft).dx,
-        lessThan(
+        tester.getTopLeft(draft).dy,
+        greaterThan(
           tester
               .getTopLeft(
                 find.byKey(const ValueKey('hermes-composer-model-chip')),
               )
-              .dx,
+              .dy,
         ),
       );
       final semantics = tester.getSemantics(draft);
@@ -86,6 +86,10 @@ void main() {
         composer.controller!.text.length,
       );
       expect(composer.focusNode!.hasFocus, isTrue);
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-composer-voice-options')),
+      );
+      await tester.pumpAndSettle();
       expect(
         tester
             .widget<Switch>(

@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
@@ -47,11 +51,171 @@ Widget _testApp(
       ).copyWith(textScaler: TextScaler.linear(textScale)),
       child: child!,
     ),
-    home: const SelectionArea(child: ToolsScreen()),
+    home: const RepaintBoundary(
+      key: ValueKey('tools-capture'),
+      child: SelectionArea(child: ToolsScreen()),
+    ),
   ),
 );
 
 void main() {
+  testWidgets('capabilities exposes only supported inventory tabs', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      skillDetails: const [HermesSkill(name: 'review')],
+      toolsets: const [HermesToolset(name: 'web')],
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    expect(find.byType(TabBar), findsOneWidget);
+    expect(find.text('review'), findsOneWidget);
+    expect(find.byKey(const ValueKey('toolsets-search')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('tools-tab-toolsets')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('toolsets-search')), findsOneWidget);
+    expect(find.byKey(const ValueKey('installed-skills-search')), findsNothing);
+    expect(find.text('Connectors'), findsNothing);
+    expect(find.text('Plugins'), findsNothing);
+    expect(find.byType(Card), findsNothing);
+    expect(channel.loadToolInventoryCalls, 0);
+  });
+  testWidgets('tab visits retain search and resolved-tool disclosure', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      capabilities: _capabilities(),
+      skillDetails: const [HermesSkill(name: 'browser')],
+      toolsets: const [
+        HermesToolset(name: 'web', tools: ['web_search']),
+      ],
+    );
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('installed-skills-search')),
+      'browser',
+    );
+    await tester.tap(find.byKey(const ValueKey('tools-tab-toolsets')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('toolsets-search')),
+      'web_search',
+    );
+    await tester.tap(find.text('web'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(Chip, 'web_search'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('tools-tab-skills')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey('installed-skills-search')),
+          )
+          .controller!
+          .text,
+      'browser',
+    );
+    await tester.tap(find.byKey(const ValueKey('tools-tab-toolsets')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('toolsets-search')))
+          .controller!
+          .text,
+      'web_search',
+    );
+    expect(find.widgetWithText(Chip, 'web_search'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const ValueKey('toolsets-search')),
+      'absent',
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('toolsets-search')),
+      'web',
+    );
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(Chip, 'web_search'), findsOneWidget);
+    expect(channel.loadToolInventoryCalls, 0);
+  });
+
+  for (final width in [390.0, 1280.0]) {
+    testWidgets('keyboard tabs preserve disclosure at $width / 200%', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel(
+        capabilities: _capabilities(),
+        skillDetails: const [HermesSkill(name: 'browser')],
+        toolsets: const [
+          HermesToolset(name: 'web', tools: ['web_search']),
+        ],
+      );
+      addTearDown(channel.dispose);
+      final captureDir = Platform.environment['TOOLS_CAPTURE_DIR'];
+      if (captureDir != null) {
+        final flutter = Directory(Platform.environment['FLUTTER_ROOT']!);
+        await tester.runAsync(() async {
+          final font = FontLoader('Roboto')
+            ..addFont(
+              File(
+                '${flutter.path}/bin/cache/artifacts/material_fonts/Roboto-Regular.ttf',
+              ).readAsBytes().then((bytes) => ByteData.sublistView(bytes)),
+            );
+          await font.load();
+          final icons = FontLoader('MaterialIcons')
+            ..addFont(
+              File(
+                '${flutter.path}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+              ).readAsBytes().then((bytes) => ByteData.sublistView(bytes)),
+            );
+          await icons.load();
+        });
+      }
+      await tester.pumpWidget(_testApp(channel, textScale: 2));
+      await tester.pumpAndSettle();
+      Focus.of(tester.element(find.text('Skills'))).requestFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('toolsets-search')), findsOneWidget);
+      await tester.ensureVisible(find.text('web'));
+      Focus.of(tester.element(find.text('web'))).requestFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(Chip, 'web_search'), findsOneWidget);
+      await _tab(tester, true);
+      expect(find.widgetWithText(Chip, 'web_search'), findsNothing);
+      await _tab(tester, false);
+      expect(find.widgetWithText(Chip, 'web_search'), findsOneWidget);
+      if (captureDir != null) {
+        final boundary = tester.renderObject<RenderRepaintBoundary>(
+          find.byKey(const ValueKey('tools-capture')),
+        );
+        await tester.runAsync(() async {
+          final image = await boundary.toImage();
+          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+          await File(
+            '$captureDir/tools-$width.png',
+          ).writeAsBytes(bytes!.buffer.asUint8List());
+          image.dispose();
+        });
+      }
+      expect(tester.takeException(), isNull);
+      expect(channel.loadToolInventoryCalls, 0);
+    });
+  }
+
   testWidgets('filtering a long selectable inventory preserves layout', (
     tester,
   ) async {
@@ -74,6 +238,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(skills, '');
     await tester.pumpAndSettle();
+    await _tab(tester, false);
     final toolsets = find.byKey(const ValueKey('toolsets-search'));
     await tester.scrollUntilVisible(
       toolsets,
@@ -147,10 +312,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tools'), findsWidgets);
-    expect(find.text('Installed skills'), findsOneWidget);
+    expect(find.text('Skills'), findsOneWidget);
     expect(find.text('browser-use'), findsOneWidget);
     expect(find.text('github'), findsOneWidget);
-    expect(find.text('Enabled toolsets'), findsOneWidget);
+    await _tab(tester, false);
     expect(find.text('web'), findsOneWidget);
     expect(find.text('memory'), findsOneWidget);
   });
@@ -175,7 +340,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('duplicate'), findsNWidgets(4));
+    expect(find.text('duplicate'), findsNWidgets(2));
+    await _tab(tester, false);
+    expect(find.text('duplicate'), findsNWidgets(2));
   });
 
   testWidgets('shows and searches bounded installed skill metadata', (
@@ -253,6 +420,7 @@ void main() {
     await tester.pumpWidget(_testApp(channel));
     await tester.pumpAndSettle();
 
+    await _tab(tester, false);
     await tester.scrollUntilVisible(
       find.text('Toolsets'),
       200,
@@ -353,9 +521,11 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('browser-use'), findsOneWidget);
     expect(find.text('Automate an approved browser session.'), findsOneWidget);
-    await tester.drag(find.byType(Scrollable).first, const Offset(0, -700));
+    await _tab(tester, false);
+    await tester.drag(find.byType(Scrollable).last, const Offset(0, -700));
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(Scrollable).first, const Offset(0, -700));
+    await _tab(tester, false);
+    await tester.drag(find.byType(Scrollable).last, const Offset(0, -700));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('Web Tools'), findsOneWidget);
@@ -392,6 +562,7 @@ void main() {
       find.byKey(const ValueKey('installed-skills-search')),
       'browser',
     );
+    await _tab(tester, false);
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('toolsets-search')),
       250,
@@ -407,7 +578,10 @@ void main() {
     expect(
       tester
           .widget<TextField>(
-            find.byKey(const ValueKey('installed-skills-search')),
+            find.byKey(
+              const ValueKey('installed-skills-search'),
+              skipOffstage: false,
+            ),
           )
           .controller
           ?.text,
@@ -420,8 +594,10 @@ void main() {
           ?.text,
       'web',
     );
+    await _tab(tester, true);
     expect(find.text('browser-new'), findsOneWidget);
     expect(find.text('terminal-new'), findsNothing);
+    await _tab(tester, false);
     expect(find.text('Web New'), findsOneWidget);
     expect(find.text('Local New'), findsNothing);
   });
@@ -506,6 +682,7 @@ void main() {
       find.text('Installed skills could not be loaded from Hermes.'),
       findsOneWidget,
     );
+    await _tab(tester, false);
     expect(
       find.text('Enabled toolsets could not be loaded from Hermes.'),
       findsOneWidget,
@@ -550,6 +727,7 @@ void main() {
       find.text('This gateway did not advertise installed skill inventory.'),
       findsOneWidget,
     );
+    await _tab(tester, false);
     expect(
       find.text('This gateway did not advertise enabled toolset inventory.'),
       findsOneWidget,
@@ -578,6 +756,7 @@ void main() {
       find.text('This gateway did not advertise installed skill inventory.'),
       findsOneWidget,
     );
+    await _tab(tester, false);
     expect(
       find.text('This gateway did not advertise enabled toolset inventory.'),
       findsOneWidget,
@@ -618,4 +797,11 @@ class _DeferredToolsChannel extends FakeHermesChannel {
     gates.add(gate);
     return gate.future;
   }
+}
+
+Future<void> _tab(WidgetTester tester, bool skills) async {
+  await tester.tap(
+    find.byKey(ValueKey(skills ? 'tools-tab-skills' : 'tools-tab-toolsets')),
+  );
+  await tester.pumpAndSettle();
 }

@@ -100,24 +100,65 @@ Widget _app(HermesChannel channel, {double scale = 1}) => ProviderScope(
 );
 
 Future<void> _query(WidgetTester tester, Key key, String value) async {
+  await _tab(tester, key == _skillsSearch || key == _skillsClear);
   final field = find.byKey(key);
   await tester.ensureVisible(field);
   await tester.enterText(field, value);
   await tester.pumpAndSettle();
 }
 
-String _text(WidgetTester tester, Key key) =>
-    tester.widget<TextField>(find.byKey(key)).controller!.text;
+Future<void> _tab(WidgetTester tester, bool skills) async {
+  await tester.tap(
+    find.byKey(ValueKey(skills ? 'tools-tab-skills' : 'tools-tab-toolsets')),
+  );
+  await tester.pumpAndSettle();
+}
 
-void _expectCleared(WidgetTester tester) {
+String _text(WidgetTester tester, Key key) => tester
+    .widget<TextField>(find.byKey(key, skipOffstage: false))
+    .controller!
+    .text;
+
+Future<void> _expectCleared(WidgetTester tester) async {
+  await _tab(tester, false);
+  await _tab(tester, true);
   expect(_text(tester, _skillsSearch), '');
   expect(_text(tester, _toolsetsSearch), '');
-  expect(find.text('alpha'), findsOneWidget);
-  expect(find.text('Zulu Tools'), findsOneWidget);
+  expect(find.text('alpha', skipOffstage: false), findsOneWidget);
+  expect(find.text('Zulu Tools', skipOffstage: false), findsOneWidget);
   expect(find.textContaining('private-query'), findsNothing);
 }
 
 void main() {
+  for (final loss in ['host', 'profile', 'grant', 'disconnected']) {
+    testWidgets('same-frame $loss roundtrip discards disclosure and queries', (
+      tester,
+    ) async {
+      final channel = _Channel();
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_app(channel));
+      await tester.pumpAndSettle();
+      await _query(tester, _skillsSearch, 'alpha');
+      await _query(tester, _toolsetsSearch, 'Alpha');
+      await tester.tap(find.text('Alpha Tools'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(Chip, 'web_search'), findsOneWidget);
+      final original = channel.state;
+      channel.emit(switch (loss) {
+        'host' => _inventory(host: 'https://beta.invalid'),
+        'profile' => _inventory(profile: 'writer'),
+        'grant' => original.copyWith(
+          capabilities: _capabilities(granted: false),
+        ),
+        _ => original.copyWith(status: HermesConnectionStatus.disconnected),
+      });
+      channel.emit(original);
+      await tester.pumpAndSettle();
+      await _expectCleared(tester);
+      await _tab(tester, false);
+      expect(find.widgetWithText(Chip, 'web_search'), findsNothing);
+    });
+  }
   for (final transition in ['host', 'profile']) {
     for (final fails in [false, true]) {
       testWidgets(
@@ -210,6 +251,7 @@ void main() {
           }
           await tester.pumpAndSettle();
           expect(_text(tester, _skillsSearch), '');
+          await _tab(tester, false);
           expect(_text(tester, _toolsetsSearch), '');
           if (transition == 'host') {
             await channel.connect(baseUrl: 'http://127.0.0.1:8642');
@@ -236,7 +278,10 @@ void main() {
           expect(_text(tester, _toolsetsSearch), 'current');
           expect(find.textContaining('obsolete'), findsNothing);
           expect(
-            find.text('Tool inventory could not be refreshed.'),
+            find.text(
+              'Tool inventory could not be refreshed.',
+              skipOffstage: false,
+            ),
             findsNothing,
           );
         },
@@ -260,12 +305,12 @@ void main() {
             : _inventory(profile: 'writer'),
       );
       await tester.pumpAndSettle();
-      _expectCleared(tester);
+      await _expectCleared(tester);
       await _query(tester, _skillsSearch, 'private-query-beta');
       await _query(tester, _toolsetsSearch, 'private-query-beta');
       channel.emit(_inventory());
       await tester.pumpAndSettle();
-      _expectCleared(tester);
+      await _expectCleared(tester);
       expect(channel.loadToolInventoryCalls, 0);
     });
   }
@@ -285,7 +330,7 @@ void main() {
       await _query(tester, _toolsetsSearch, 'private-query-alpha');
       await tester.pumpWidget(_app(beta));
       await tester.pumpAndSettle();
-      _expectCleared(tester);
+      await _expectCleared(tester);
     },
   );
 
@@ -311,7 +356,13 @@ void main() {
         StateError('old synthetic client failure'),
       );
       await tester.pump();
-      expect(find.text('Tool inventory could not be refreshed.'), findsNothing);
+      expect(
+        find.text(
+          'Tool inventory could not be refreshed.',
+          skipOffstage: false,
+        ),
+        findsNothing,
+      );
       expect(tester.widget<IconButton>(refresh).onPressed, isNull);
       beta.gates.single.complete();
       await tester.pumpAndSettle();
@@ -357,6 +408,7 @@ void main() {
     expect(_text(tester, _toolsetsSearch), 'terminal');
     channel.emit(granted);
     await tester.pumpAndSettle();
+    await _tab(tester, true);
     expect(_text(tester, _skillsSearch), '');
     expect(_text(tester, _toolsetsSearch), 'terminal');
   });
@@ -372,8 +424,15 @@ void main() {
       );
       await tester.pumpWidget(_app(channel));
       await tester.pumpAndSettle();
-      expect(find.text('No installed skills were reported.'), findsOneWidget);
-      expect(find.text('No toolsets were reported.'), findsOneWidget);
+      expect(
+        find.text('No installed skills were reported.', skipOffstage: false),
+        findsOneWidget,
+      );
+      await _tab(tester, false);
+      expect(
+        find.text('No toolsets were reported.', skipOffstage: false),
+        findsOneWidget,
+      );
       expect(find.byType(TextField), findsNothing);
       channel.emit(
         channel.current.copyWith(
@@ -383,7 +442,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(TextField), findsNothing);
-      final chips = tester.widgetList<Chip>(find.byType(Chip));
+      await _tab(tester, true);
+      final chips = tester.widgetList<Chip>(
+        find.byType(Chip, skipOffstage: false),
+      );
       expect(chips.map((chip) => (chip.label as Text).data), [
         'alpha',
         'zulu',
@@ -423,11 +485,11 @@ void main() {
       expect(find.byType(TextField), findsNothing);
       expect(find.byKey(_skillsClear), findsNothing);
       expect(find.byKey(_toolsetsClear), findsNothing);
-      expect(find.text('alpha'), findsNothing);
-      expect(find.text('Zulu Tools'), findsNothing);
+      expect(find.text('alpha', skipOffstage: false), findsNothing);
+      expect(find.text('Zulu Tools', skipOffstage: false), findsNothing);
       channel.emit(original);
       await tester.pumpAndSettle();
-      _expectCleared(tester);
+      await _expectCleared(tester);
     });
   }
 
@@ -451,7 +513,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(_text(tester, _skillsSearch), 'sOuRcE');
       expect(_text(tester, _toolsetsSearch), 'TERMINAL');
-      expect(find.text('fresh'), findsOneWidget);
+      expect(find.text('fresh', skipOffstage: false), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('tools-refresh')));
       await tester.pump();
       channel.gates.single.completeError(
@@ -459,7 +521,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        find.text('Tool inventory could not be refreshed.'),
+        find.text(
+          'Tool inventory could not be refreshed.',
+          skipOffstage: false,
+        ),
         findsOneWidget,
       );
       expect(_text(tester, _skillsSearch), 'sOuRcE');
@@ -474,13 +539,25 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(TextField), findsNothing);
-      expect(find.text('No installed skills match this search.'), findsNothing);
       expect(
-        find.text('Installed skills could not be loaded from Hermes.'),
+        find.text(
+          'No installed skills match this search.',
+          skipOffstage: false,
+        ),
+        findsNothing,
+      );
+      expect(
+        find.text(
+          'Installed skills could not be loaded from Hermes.',
+          skipOffstage: false,
+        ),
         findsOneWidget,
       );
       expect(
-        find.text('Enabled toolsets could not be loaded from Hermes.'),
+        find.text(
+          'Enabled toolsets could not be loaded from Hermes.',
+          skipOffstage: false,
+        ),
         findsOneWidget,
       );
     },
@@ -499,14 +576,17 @@ void main() {
     await tester.pump();
     channel.emit(_inventory(host: 'https://beta.invalid'));
     await tester.pumpAndSettle();
-    _expectCleared(tester);
+    await _expectCleared(tester);
     await _query(tester, _skillsSearch, 'browser');
     await _query(tester, _toolsetsSearch, 'web_search');
     await tester.tap(find.byKey(const ValueKey('tools-refresh')));
     await tester.pump();
     channel.gates.first.completeError(StateError('old synthetic failure'));
     await tester.pump();
-    expect(find.text('Tool inventory could not be refreshed.'), findsNothing);
+    expect(
+      find.text('Tool inventory could not be refreshed.', skipOffstage: false),
+      findsNothing,
+    );
     expect(
       tester
           .widget<IconButton>(find.byKey(const ValueKey('tools-refresh')))
@@ -536,6 +616,7 @@ void main() {
           find.bySemanticsLabel('Search installed skills'),
           findsOneWidget,
         );
+        await _tab(tester, false);
         expect(
           find.bySemanticsLabel('Search toolsets and resolved tools'),
           findsOneWidget,
@@ -553,15 +634,19 @@ void main() {
           isSemantics(isFocusable: true, hasTapAction: true),
         );
         expect(
-          find.text('No installed skills match this search.'),
+          find.text(
+            'No installed skills match this search.',
+            skipOffstage: false,
+          ),
           findsOneWidget,
         );
-        expect(find.text('Zulu Tools'), findsOneWidget);
-        expect(find.text('Alpha Tools'), findsNothing);
+        expect(find.text('Zulu Tools', skipOffstage: false), findsOneWidget);
+        expect(find.text('Alpha Tools', skipOffstage: false), findsNothing);
         for (final entry in [
           (_skillsSearch, _skillsClear, 'Clear installed skills search'),
           (_toolsetsSearch, _toolsetsClear, 'Clear toolsets search'),
         ]) {
+          await _tab(tester, entry.$1 == _skillsSearch);
           await tester.ensureVisible(find.byKey(entry.$1));
           await tester.tap(find.byKey(entry.$1));
           await tester.sendKeyEvent(LogicalKeyboardKey.tab);
@@ -585,15 +670,18 @@ void main() {
           expect(_text(tester, entry.$1), '');
           if (entry.$1 == _skillsSearch) {
             expect(_text(tester, _toolsetsSearch), 'terminal');
-            expect(find.text('alpha'), findsOneWidget);
+            expect(find.text('alpha', skipOffstage: false), findsOneWidget);
             final tiles = tester
                 .widgetList<ListTile>(find.byType(ListTile))
                 .toList();
             expect((tiles.first.title! as Text).data, 'alpha');
           }
         }
+        await _tab(tester, false);
         await tester.ensureVisible(find.text('Alpha Tools'));
-        Focus.of(tester.element(find.text('Alpha Tools'))).requestFocus();
+        Focus.of(
+          tester.element(find.text('Alpha Tools', skipOffstage: false)),
+        ).requestFocus();
         await tester.pump();
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         await tester.pumpAndSettle();

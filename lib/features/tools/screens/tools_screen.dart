@@ -33,6 +33,12 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
   HermesChannel? _inventoryChannel;
   Object? _inventoryContext;
   Object _inventoryOwner = Object();
+  Object? _presentationContext;
+  Object _presentationOwner = Object();
+  Object _skillsOwner = Object();
+  Object _toolsetsOwner = Object();
+  bool? _skillsReadable;
+  bool? _toolsetsReadable;
 
   @override
   void dispose() {
@@ -104,11 +110,9 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
                 // Search and disclosure belong to this client/host/profile,
                 // not to inventory content or capability-document identity.
                 child: _ToolsBody(
-                  key: ValueKey((
-                    channel,
-                    channel.state.connectedBaseUrl,
-                    channel.state.selectedProfileId,
-                  )),
+                  key: ValueKey(_presentationOwner),
+                  skillsOwner: _skillsOwner,
+                  toolsetsOwner: _toolsetsOwner,
                   state: channel.state,
                   strings: strings,
                 ),
@@ -194,6 +198,25 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
       state.canReadSkills,
       state.canReadToolsets,
     );
+    final presentationContext = (
+      channel,
+      state.connectedBaseUrl,
+      state.selectedProfileId,
+      state.status,
+      state.isSelectingProfile,
+    );
+    if (_presentationContext != presentationContext) {
+      _presentationContext = presentationContext;
+      _presentationOwner = Object();
+    }
+    if (_skillsReadable != state.canReadSkills) {
+      _skillsReadable = state.canReadSkills;
+      _skillsOwner = Object();
+    }
+    if (_toolsetsReadable != state.canReadToolsets) {
+      _toolsetsReadable = state.canReadToolsets;
+      _toolsetsOwner = Object();
+    }
     if (_inventoryContext == context) return false;
     _inventoryContext = context;
     _inventoryOwner = Object();
@@ -219,7 +242,16 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
 }
 
 class _ToolsBody extends StatelessWidget {
-  const _ToolsBody({super.key, required this.state, required this.strings});
+  const _ToolsBody({
+    super.key,
+    required this.state,
+    required this.strings,
+    required this.skillsOwner,
+    required this.toolsetsOwner,
+  });
+
+  final Object skillsOwner;
+  final Object toolsetsOwner;
 
   final HermesChannelState state;
   final AppLocalizations strings;
@@ -251,33 +283,47 @@ class _ToolsBody extends StatelessWidget {
     final skillsAdvertised = state.canReadSkills;
     final toolsetsAdvertised = state.canReadToolsets;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-      // Both inventory sections change height while filtering. Lay them out
-      // together so the route selection delegate never sees unlaid-out text.
+    return DefaultTabController(
+      length: 2,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _SkillsInventorySection(
-            key: ValueKey(('skills', skillsAdvertised)),
-            advertised: skillsAdvertised,
-            loadFailed: state.optionalResourceErrors.containsKey(
-              HermesOptionalResource.skills,
-            ),
-            details: state.skillDetails,
-            fallbackNames: state.skills,
-            strings: strings,
+          TabBar(
+            tabs: [
+              Tab(
+                key: const ValueKey('tools-tab-skills'),
+                text: strings.chatStatusSkillsLabel,
+              ),
+              Tab(
+                key: const ValueKey('tools-tab-toolsets'),
+                text: strings.toolsetsTitle,
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          _ToolsetsInventorySection(
-            key: ValueKey(('toolsets', toolsetsAdvertised)),
-            advertised: toolsetsAdvertised,
-            loadFailed: state.optionalResourceErrors.containsKey(
-              HermesOptionalResource.toolsets,
+          Expanded(
+            child: TabBarView(
+              children: [
+                _SkillsInventorySection(
+                  key: ValueKey(skillsOwner),
+                  advertised: skillsAdvertised,
+                  loadFailed: state.optionalResourceErrors.containsKey(
+                    HermesOptionalResource.skills,
+                  ),
+                  details: state.skillDetails,
+                  fallbackNames: state.skills,
+                  strings: strings,
+                ),
+                _ToolsetsInventorySection(
+                  key: ValueKey(toolsetsOwner),
+                  advertised: toolsetsAdvertised,
+                  loadFailed: state.optionalResourceErrors.containsKey(
+                    HermesOptionalResource.toolsets,
+                  ),
+                  details: state.toolsets,
+                  fallbackNames: state.enabledToolsets,
+                  strings: strings,
+                ),
+              ],
             ),
-            details: state.toolsets,
-            fallbackNames: state.enabledToolsets,
-            strings: strings,
           ),
         ],
       ),
@@ -306,7 +352,10 @@ class _SkillsInventorySection extends StatefulWidget {
       _SkillsInventorySectionState();
 }
 
-class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
+class _SkillsInventorySectionState extends State<_SkillsInventorySection>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   final _searchController = TextEditingController();
   String _query = '';
 
@@ -318,6 +367,7 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final details = [...widget.details]
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     final fallbackNames = [...widget.fallbackNames]
@@ -345,27 +395,12 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection> {
       container: true,
       explicitChildNodes: true,
       label: widget.strings.installedSkillsTitle,
-      child: Card(
+      child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.extension_outlined, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ExcludeSemantics(
-                      child: Text(
-                        widget.strings.installedSkillsTitle,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
               if (message != null)
                 Text(
                   message,
@@ -479,7 +514,11 @@ class _ToolsetsInventorySection extends StatefulWidget {
       _ToolsetsInventorySectionState();
 }
 
-class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
+class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  final _expanded = <String>{};
   final _searchController = TextEditingController();
   String _query = '';
 
@@ -491,6 +530,7 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final details = [...widget.details]
       ..sort(
         (left, right) => left.displayName.toLowerCase().compareTo(
@@ -527,29 +567,12 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
       label: details.isEmpty
           ? widget.strings.enabledToolsetsTitle
           : widget.strings.toolsetsTitle,
-      child: Card(
+      child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.build_outlined, size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ExcludeSemantics(
-                      child: Text(
-                        details.isEmpty
-                            ? widget.strings.enabledToolsetsTitle
-                            : widget.strings.toolsetsTitle,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
               if (message != null)
                 Text(
                   message,
@@ -604,7 +627,16 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
                     Semantics(
                       container: true,
                       child: _ToolsetTile(
+                        key: ValueKey((filtered[index].name, index)),
                         toolset: filtered[index],
+                        expanded: _expanded.contains(filtered[index].name),
+                        onExpansionChanged: (value) {
+                          if (value) {
+                            _expanded.add(filtered[index].name);
+                          } else {
+                            _expanded.remove(filtered[index].name);
+                          }
+                        },
                         index: index,
                         strings: widget.strings,
                       ),
@@ -620,11 +652,16 @@ class _ToolsetsInventorySectionState extends State<_ToolsetsInventorySection> {
 
 class _ToolsetTile extends StatelessWidget {
   const _ToolsetTile({
+    super.key,
+    required this.expanded,
+    required this.onExpansionChanged,
     required this.toolset,
     required this.index,
     required this.strings,
   });
 
+  final bool expanded;
+  final ValueChanged<bool> onExpansionChanged;
   final HermesToolset toolset;
   final int index;
   final AppLocalizations strings;
@@ -657,7 +694,9 @@ class _ToolsetTile extends StatelessWidget {
       );
     }
     return ExpansionTile(
-      key: ValueKey('toolset-${toolset.name}-$index'),
+      key: ValueKey(('toolset-${toolset.name}-$index', expanded)),
+      initiallyExpanded: expanded,
+      onExpansionChanged: onExpansionChanged,
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 12),
       title: Text(toolset.displayName),

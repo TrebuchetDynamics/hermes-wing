@@ -6,12 +6,12 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 3
+### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
 
-- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
-- Needs: worker timeout after 5400 s while running (11 min): export PATH="$AUTOWORK_CACHE/flutter-3.44.2/bin:/home/xel/.nvm/versions/node/v22.22.2/bin:$PATH" PUB_CACHE="$AUTOWORK_CA
-- Since: 2026-10-18T19:44:12Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/), then rescope or split DOC-PARITY-TAB-CONTRACT in its TODO.md entry. The runner reruns it when the entry changes.
+- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
+- Needs: worker reported a blocker: Existing DOC-PARITY-TAB-CONTRACT/source owners must provide the mandatory Chat-suite repairs and reconcile the new syntax failure at test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59-82 and 4-pixel overflow at test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart:1524. The original 44 listener failures and disclosure/position failures still occur. Only the au… (+3 more in report.json)
+- Since: 2026-10-18T20:25:50Z
+- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 

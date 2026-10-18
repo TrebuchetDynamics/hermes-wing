@@ -267,3 +267,7 @@ claiming original acceptance. TalkBack, native keyboard/IME and physical-device
 qualification remain unverified. No install or device operation is authorized by
 this offline follow-up. Revisit these selectors and the acceptance mismatch when
 the production guide, composer labels or native sharing surface changes.
+
+The subsequent [200%-text message-action attribution](m5-large-text-message-actions.md)
+traces the existing in-sheet Tab/Enter Save oracle and the missing keyboard Copy
+journey at a pinned Wing revision; it adds no Android or TalkBack qualification.

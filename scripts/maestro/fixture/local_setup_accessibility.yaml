@@ -15,20 +15,55 @@ appId: com.trebuchetdynamics.hermes.wing.qa
     file: open.yaml
     env:
       SCREEN: Local setup fixture
-- assertVisible: '(?s).*Termux.*'
+# The current production route is a manual guide, not the retired command/share UI.
 - scrollUntilVisible:
     element:
-      text: Termux is installed and opens
+      text: Set up Termux and Agent
     direction: DOWN
-- tapOn: Termux is installed and opens
+- tapOn: Set up Termux and Agent
 - scrollUntilVisible:
     element:
-      text: Copy setup command
+      text: '(?s).*Automatic installation is unavailable in Wing.*'
     direction: DOWN
-- tapOn: Copy setup command
-- assertVisible: Setup command copied. Open Termux and run it without changes.
+- assertVisible: '(?s).*Automatic installation is unavailable in Wing.*'
+- scrollUntilVisible:
+    element:
+      text: Agent is installed — configure it
+    direction: DOWN
+- tapOn: Agent is installed — configure it
+- scrollUntilVisible:
+    element:
+      text: I started Agent — continue to connection
+    direction: DOWN
+- tapOn: I started Agent — continue to connection
+- scrollUntilVisible:
+    element:
+      text: Agent API token
+    direction: DOWN
+- assertVisible: Agent API token
+# Only navigate the guide; never enter credentials or press Add Hermes.
+- scrollUntilVisible:
+    element:
+      text: Back to guidance
+    direction: DOWN
+- tapOn: Back to guidance
+- scrollUntilVisible:
+    element:
+      text: Back to guidance
+    direction: DOWN
+- tapOn: Back to guidance
+- scrollUntilVisible:
+    element:
+      text: Set up Termux and Agent
+    direction: UP
+- assertVisible: Set up Termux and Agent
 - tapOn: Fixture home
+- assertVisible: Maestro fixture
 - runFlow:
     file: control.yaml
     env:
       ACTION: Use normal text
+- runFlow:
+    file: receipt.yaml
+    env:
+      RECEIPT: 'Layout overflows: 0'

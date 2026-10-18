@@ -210,3 +210,60 @@ The owned emulator received `adb -s emulator-5580 emu kill` (exit 0). A subseque
 process/device readback confirms shutdown. No pre-existing AVD or real device was
 started, cleared, uninstalled or modified. Scratch AVD/output remain local and
 untracked for diagnosis; no destructive cleanup was applied to the shared tree.
+
+## Offline fixture follow-up — DOC-M5-ANDROID-FIXTURE
+
+Prepared against baseline `a854c27c038940cab5c4d67e3f3fe48b9f24cf78`.
+The discovery results above remain historical failures, not rerun receipts.
+Only the two fixture YAML files and this receipt change; no product behavior,
+Agent contract, dependency or deterministic harness implementation changes.
+
+- [Transcript fixture](../../scripts/maestro/fixture/transcript_export.yaml):
+  replace the old generic composer selector with `Message Fixture profile`,
+  matching the fixture profile (`integration_test/support/maestro/feature_channel.dart:113`)
+  and the existing approval fixture. Keep both existing clipboard readback
+  actions and exact text/Markdown receipts; neither has been reached on Android
+  by this follow-up.
+- [Setup fixture](../../scripts/maestro/fixture/local_setup_accessibility.yaml):
+  the discovery-era command/share UI is no longer present. The current
+  [Termux route](../../lib/features/local_setup/screens/termux_hermes_setup_screen.dart)
+  opens the direct Local connection form (lines 10–14), whose
+  [phone guide](../../lib/features/hermes_chat/widgets/platform_local_connection_panel.dart)
+  offers manual preparation, configuration, authentication and guidance Back
+  (lines 191–255). Replace the retired selectors with those existing controls,
+  retaining 200% Flutter text, returning through both guidance steps to the
+  fixture hub, restoring normal text and checking the existing zero-overflow
+  receipt. Do not enter credentials, choose Add Hermes, open documentation or
+  perform any actual Agent preparation. There is no share sheet to dismiss on
+  this current path; adding an unconditional Android Back would not repair it.
+
+Offline checks (Linux host, cached Flutter 3.44.2 dependencies; Maestro with
+Java 21 and a task-local cache):
+
+```sh
+flutter pub get --offline
+maestro check-syntax scripts/maestro/fixture/transcript_export.yaml
+maestro check-syntax scripts/maestro/fixture/local_setup_accessibility.yaml
+flutter test --no-pub --concurrency=1 test/integration/maestro_feature_fixture_test.dart test/integration/maestro_approval_attachment_controls_test.dart test/features/local_setup/termux_hermes_setup_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart --reporter expanded
+python3 -B test/tooling/android_maestro_features_wrapper_test.py
+git diff --check
+```
+
+Dependency resolution and both syntax checks passed; **58 Flutter tests** and
+**6 stubbed wrapper tests** passed. Existing setup tests exercise Android-targeted
+widgets at 320/1024dp and 200% text; these remain Linux-hosted widget tests, not
+Android execution. No new test duplicates the existing behavior coverage for
+these fixture-configuration changes.
+
+**Live acceptance remains pending.** This follow-up ran no build, install,
+Maestro device flow, clipboard readback, share-sheet dismissal or TalkBack.
+Before execution, establish a named owned disposable Android target, exclusive
+build/device access and a matching isolated `.qa` artifact. Run only these two
+flows, retain both actual clipboard receipts and the setup return/overflow
+receipts, and record target/artifact identities. The original requirement for
+share-sheet dismissal is **unmet**, not waived or replaced by guide navigation:
+the coordinator must reconcile it with the removed command/share surface before
+claiming original acceptance. TalkBack, native keyboard/IME and physical-device
+qualification remain unverified. No install or device operation is authorized by
+this offline follow-up. Revisit these selectors and the acceptance mismatch when
+the production guide, composer labels or native sharing surface changes.

@@ -55,6 +55,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T11:27:26Z
 - Answer: Fix DOC-M4-SCHEDULE-DELIVERY-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-DOC-M5-LARGE-TEXT-EVIDENCE — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-M5-LARGE-TEXT-EVIDENCE — Goal: M5. Section: Next. Attribute one 200-percent-text message-action journey.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T11:34:48Z
+- Answer: Fix DOC-M5-LARGE-TEXT-EVIDENCE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-SECURITY-RETAINED-RELEASE-AUDIT — USER_DECISION — effort decision — unblocks 1
 
 - Task: SECURITY-RETAINED-RELEASE-AUDIT — Goal: SECURITY.

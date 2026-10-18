@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
+### Q-DOC-PARITY-TAB-CONTRACT — USER_DECISION — effort investigate — unblocks 3
+
+- Task: DOC-PARITY-TAB-CONTRACT — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
+- Needs: integration validation failed or changed the integration tree
+- Since: 2026-10-18T05:17:37Z
+- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/), then rescope or split DOC-PARITY-TAB-CONTRACT in its TODO.md entry. The runner reruns it when the entry changes.
+
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

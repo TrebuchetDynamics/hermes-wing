@@ -502,34 +502,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE** — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [VOICE](docs/product/prd.md#core-journeys),
-  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
-  [output qualification gap](docs/quality/voice-capture-qualification.md#remaining-named-target-qualification),
-  [microphone ownership runbook](docs/runbooks/android/live-mic-smoke.md#conversation-ownership-qualification-2026-09-04).
-  Status: open
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name target/engine, pending-configuration cancellation and no-late-audio expected outcomes from existing TTS tests/runbooks. Preparation is not physical or acoustic qualification.
-  Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: capture `git rev-parse HEAD`; inspect
-  `lib/features/voice/services/tts/platform_text_to_speech_service.dart`,
-  `test/features/voice/services/tts/platform_text_to_speech_service_test.dart`,
-  `test/features/voice/services/tts/hermes_agent_text_to_speech_service_test.dart`,
-  `test/features/hermes_chat/providers/hermes_tts_provider_test.dart` and
-  `test/features/hermes_chat/voice/hermes_voice_input_controller_test.dart`.
-  Trace pending configuration through stop/disposal and late completion; distinguish
-  an existing oracle from a missing one. Check the planned target/actual engine,
-  no-late-audio expectations and consent/route/artifact gates against the linked
-  runbook. Verify changed Markdown links and run `git diff --check`.
-  Touches: docs/quality/
-  Next action: prepare the one output-cancellation scenario and identify missing
-  deterministic proof, not a product repair or an observed acoustic result.
-  No engine invocation, playback, capture, device selection or live receipt is
-  authorized by this read-only preparation.
-
 - [ ] **DEV-001-c7** — Use official Flutter MCP for a bounded Wing architecture review.
   Goal: INTEGRATION
 Section: Next.
@@ -1643,4 +1615,13 @@ does not mark any check passed or authorize live actions.
   - Other named-platform behavior and any future privileged operation require their own reviewed contracts and runtime receipts. Preparation grants no native activation rights; this review does not qualify OS rollback, keyring/authentication, process cleanup or NATIVE-INTEGRATION.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-NATIVE-FAILURE-BOUNDARY.
+  Status: open
+
+- [ ] DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE — Live checks for DOC-VOICE-OUTPUT-CANCEL-EVIDENCE
+  Scope: Run the live checks the offline work for DOC-VOICE-OUTPUT-CANCEL-EVIDENCE left pending.
+  Acceptance: Each check passes on the real target:
+  - Separately authorize and identify a physical Android QA target, exact installed APK/source/build, built-in speaker route, effective system TTS package/version and voice/locale, including playback/bystander/content and network-processing consent. No target or actual engine was selected here.
+  - On that approved artifact, establish the pending-configuration ordering and actual settlement for stop/disposal, then observe no late audio, replay or stale callback; verify retained text/draft, zero automatic capture/re-arm/sends and bounded diagnostic privacy. If ordering cannot be established on the unchanged artifact, leave that branch NOT_CHECKED. No physical or acoustic acceptance is claimed.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-VOICE-OUTPUT-CANCEL-EVIDENCE.
   Status: open

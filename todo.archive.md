@@ -7477,3 +7477,36 @@ Source section: Now / Next
   Next action: deepen the existing metadata-only operation's failure review;
   the reviewed proposal does not admit a launcher, helper, privileged implementation
   or activation. Source/test inspection is not named-platform runtime evidence.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE** — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [VOICE](docs/product/prd.md#core-journeys),
+  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
+  [output qualification gap](docs/quality/voice-capture-qualification.md#remaining-named-target-qualification),
+  [microphone ownership runbook](docs/runbooks/android/live-mic-smoke.md#conversation-ownership-qualification-2026-09-04).
+  Status: done
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name target/engine, pending-configuration cancellation and no-late-audio expected outcomes from existing TTS tests/runbooks. Preparation is not physical or acoustic qualification.
+  Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: capture `git rev-parse HEAD`; inspect
+  `lib/features/voice/services/tts/platform_text_to_speech_service.dart`,
+  `test/features/voice/services/tts/platform_text_to_speech_service_test.dart`,
+  `test/features/voice/services/tts/hermes_agent_text_to_speech_service_test.dart`,
+  `test/features/hermes_chat/providers/hermes_tts_provider_test.dart` and
+  `test/features/hermes_chat/voice/hermes_voice_input_controller_test.dart`.
+  Trace pending configuration through stop/disposal and late completion; distinguish
+  an existing oracle from a missing one. Check the planned target/actual engine,
+  no-late-audio expectations and consent/route/artifact gates against the linked
+  runbook. Verify changed Markdown links and run `git diff --check`.
+  Touches: docs/quality/
+  Next action: prepare the one output-cancellation scenario and identify missing
+  deterministic proof, not a product repair or an observed acoustic result.
+  No engine invocation, playback, capture, device selection or live receipt is
+  authorized by this read-only preparation.

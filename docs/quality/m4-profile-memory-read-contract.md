@@ -134,6 +134,12 @@ into receipts. This task changes neither runtime code nor M4-MEMORY status.
 
 ## One next read-only slice
 
+The separately admitted [capacity/provider trace](m4-memory-capacity-provider-contract.md)
+now records this follow-up's source findings: file bytes and provider setup/status
+are not entry inventory or actual capacity, and the status GET can invoke probes
+and hydration. This does not activate an operation or change M4-MEMORY status.
+The original slice boundary follows.
+
 Use the already indexed **`DOC-M4-MEMORY-CAPACITY-CONTRACT`**, after its own
 coordinator admission; do not start it here. Trace the metadata-only
 `GET /api/memory` status model and Desktop caller separately from entry reads.

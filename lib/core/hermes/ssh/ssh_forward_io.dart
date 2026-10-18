@@ -140,7 +140,7 @@ class ManagedSshForward {
       final server = await attempt.wait(binding);
       attempt.server = server;
       final tunnel = ManagedSshTunnel(
-        agentUri: Uri(scheme: 'http', host: '127.0.0.1', port: server.port),
+        agentUri: configuration.forwardedAgentUri(server.port),
         done: attempt.closed.future,
         close: () => _stop(attempt),
       );

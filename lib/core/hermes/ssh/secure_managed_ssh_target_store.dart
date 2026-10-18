@@ -23,6 +23,7 @@ class ManagedSshTarget {
       config.sshPort == other.config.sshPort &&
       config.username == other.config.username &&
       config.agentPort == other.config.agentPort &&
+      config.agentProfile == other.config.agentProfile &&
       serveReads == other.serveReads;
 
   @override
@@ -50,7 +51,7 @@ class SecureManagedSshTargetStore {
       if (raw.length > 1024) throw const FormatException();
       final data = jsonDecode(raw);
       if (data is! List ||
-          (data.length != 5 && data.length != 7) ||
+          (data.length != 5 && data.length != 7 && data.length != 8) ||
           data[0] is! String ||
           data[1] is! int ||
           data[2] is! String ||
@@ -58,6 +59,15 @@ class SecureManagedSshTargetStore {
           data[4] is! bool) {
         throw const FormatException();
       }
+      if (data.length == 8 &&
+          (data[7] is! String ||
+              data[4] == true ||
+              data[5] != null ||
+              data[6] != null ||
+              !ManagedSshConfig.validAgentProfile(data[7] as String))) {
+        throw const FormatException();
+      }
+      // Five/seven fields are legacy root records; eight adds only an API ID.
       if (data.length == 7 &&
           (data[4] != true ||
               !_identity(data[5]) ||
@@ -70,9 +80,10 @@ class SecureManagedSshTargetStore {
           sshPort: data[1] as int,
           username: data[2] as String,
           agentPort: data[3] as int,
+          agentProfile: data.length == 8 ? data[7] as String : null,
         ),
         serveReads: data[4] as bool,
-        selection: data.length == 7
+        selection: data.length >= 7 && data[5] != null
             ? (profile: data[5] as String, session: data[6] as String?)
             : null,
       );
@@ -110,13 +121,23 @@ class SecureManagedSshTargetStore {
         throw const FormatException();
       }
       final config = target.config;
+      if (target.serveReads && config.agentProfile != null) {
+        throw const FormatException();
+      }
       final raw = jsonEncode([
         config.host,
         config.sshPort,
         config.username,
         config.agentPort,
         target.serveReads,
-        if (selection != null) ...[selection.profile, selection.session],
+        if (selection != null) ...[
+          selection.profile,
+          selection.session,
+        ] else if (config.agentProfile != null) ...[
+          null,
+          null,
+        ],
+        if (config.agentProfile != null) config.agentProfile,
       ]);
       if (raw.length > 1024) throw const FormatException();
       await storage.write(key: _slot, value: raw);

@@ -46,6 +46,34 @@ void main() {
   );
 
   test(
+    'profile destination survives recreation and cannot inherit root selection',
+    () async {
+      const store = SecureManagedSshTargetStore();
+      final profiled = ManagedSshTarget(
+        config: ManagedSshConfig(
+          host: target.config.host,
+          sshPort: 2222,
+          username: 'tester',
+          agentPort: 8643,
+          agentProfile: 'demo',
+        ),
+        serveReads: false,
+      );
+      await store.save(target);
+      final legacy = values[slot];
+      expect((await store.load())!.config.agentProfile, isNull);
+      await store.rememberSelection(profiled);
+      expect(values[slot], legacy);
+      await store.save(profiled);
+      final reopened = await store.load();
+      expect(reopened!.config.agentProfile, 'demo');
+      expect(reopened.selection, isNull);
+      expect(reopened.sameDestination(target), isFalse);
+      expect((jsonDecode(values[slot]!) as List).last, 'demo');
+    },
+  );
+
+  test(
     'recreated store restores destination and mode, not a forwarded endpoint',
     () async {
       expect(await const SecureManagedSshTargetStore().load(), isNull);
@@ -76,6 +104,36 @@ void main() {
       jsonEncode(['example.invalid', 0, 'tester', 8642, false]),
       jsonEncode(['example.invalid', 22, 'tester', 8642, 'false']),
       jsonEncode(['example.invalid', 22, 'tester', 8642, false, 'extra']),
+      jsonEncode([
+        'example.invalid',
+        22,
+        'tester',
+        8642,
+        false,
+        null,
+        'orphan',
+        'demo',
+      ]),
+      jsonEncode([
+        'example.invalid',
+        22,
+        'tester',
+        8642,
+        false,
+        null,
+        null,
+        '../demo',
+      ]),
+      jsonEncode([
+        'example.invalid',
+        22,
+        'tester',
+        8642,
+        true,
+        null,
+        null,
+        'demo',
+      ]),
     ]) {
       values[slot] = raw;
       await expectLater(

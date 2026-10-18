@@ -1228,6 +1228,24 @@ abstract class AppLocalizations {
   /// **'Message {profile}…'**
   String chatNamedComposerHint(String profile);
 
+  /// No description provided for @managedSshAgentProfileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent API profile (optional)'**
+  String get managedSshAgentProfileLabel;
+
+  /// No description provided for @managedSshAgentProfileHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank for the root API. For a shared gateway, enter only the profile ID (for example hermes-wing), not /p/ or a URL. Use that profile’s Agent token. SSH login alone does not authenticate to Agent.'**
+  String get managedSshAgentProfileHelp;
+
+  /// No description provided for @managedSshInvalidAgentProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 1–64 lowercase letters, numbers, hyphens or underscores, starting with a letter or number.'**
+  String get managedSshInvalidAgentProfile;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:

@@ -76,6 +76,28 @@ Future<void> connect(WidgetTester tester) async {
 
 void main() {
   testWidgets(
+    'explicit profile validates, clears previous Agent token and submits literal identity',
+    (tester) async {
+      SshConnectionRequest? submitted;
+      await showForm(tester, submit: (input) async => submitted = input);
+      await fillValid(tester);
+      await tester.enterText(field('agent-token'), 'synthetic-root-token');
+      await tester.enterText(field('agent-profile'), '/p/demo');
+      expect(
+        tester.widget<TextFormField>(field('agent-token')).controller!.text,
+        isEmpty,
+      );
+      await connect(tester);
+      expect(submitted, isNull);
+      await tester.enterText(field('agent-profile'), 'demo');
+      await tester.enterText(field('agent-token'), 'synthetic-profile-token');
+      await connect(tester);
+      expect(submitted!.agentProfile, 'demo');
+      expect(submitted!.agentBearerToken, 'synthetic-profile-token');
+    },
+  );
+
+  testWidgets(
     'explicit serve selection clears API token and requires its own credential',
     (tester) async {
       SshConnectionRequest? submitted;
@@ -320,6 +342,7 @@ void main() {
       'username',
       'password',
       'agent-port',
+      'agent-profile',
       'agent-token',
     ]) {
       if (id == 'password') {
@@ -460,6 +483,7 @@ void main() {
       'username',
       'password',
       'agent-port',
+      'agent-profile',
       'agent-token',
     ]) {
       expect(field(id), findsOneWidget);

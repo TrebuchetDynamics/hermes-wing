@@ -53,11 +53,13 @@ ManagedSshConfig config({
   int port = 22,
   String user = 'tester',
   int agentPort = 8642,
+  String? agentProfile,
 }) => ManagedSshConfig(
   host: host,
   username: user,
   sshPort: port,
   agentPort: agentPort,
+  agentProfile: agentProfile,
 );
 ManagedSshHostKey key([int byte = 0, String algorithm = 'ssh-ed25519']) =>
     ManagedSshHostKey(algorithm, List.filled(32, byte));
@@ -83,6 +85,17 @@ void main() {
           );
       expect(await verify(config()), isTrue);
       expect(await verify(config(user: 'other', agentPort: 9999)), isTrue);
+      expect(await verify(config(agentProfile: 'demo')), isTrue);
+      await expectLater(
+        SecureManagedSshHostTrustStore(storage: storage).verify(
+          config(agentProfile: 'demo'),
+          key(1),
+          review: () async =>
+              throw StateError('Changed host must not ask again'),
+          isCurrent: () => true,
+        ),
+        failure(ManagedSshFailure.hostKeyChanged),
+      );
       expect(reviews, 1);
       expect(await verify(config(port: 2222)), isTrue);
       expect(await verify(config(host: 'other.invalid')), isTrue);

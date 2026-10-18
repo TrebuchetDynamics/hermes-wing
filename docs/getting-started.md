@@ -86,7 +86,12 @@ On Android, the fresh welcome offers these choices in order:
 
 1. **Connect via SSH** — connect to Agent on another computer. Verify the host
    fingerprint before choosing **Trust this connection**; SSH login alone does not
-   prove Agent readiness. Enter SSH details and the separate Agent token.
+   prove Agent readiness. Enter SSH details and the separate Agent token. For a
+   shared API gateway, set **Agent API profile (optional)** to the exact profile
+   ID (for example `hermes-wing`); Wing adds `/p/<profile>` to every Agent API
+   request. Leave it blank for a root API. Do not enter a URL, `/p/` or `/v1`
+   in this field. Use that profile’s Agent token; changing the profile clears
+   the previous token. This field does not apply to the separate serve mode.
 2. **Connect to Remote Hermes** — enter the host-provided Agent endpoint and its
    credential in the masked field. Do not guess an address or embed a token.
 3. **Use this phone (Termux)** — follow **This phone** guidance or choose

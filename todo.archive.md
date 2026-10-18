@@ -7360,3 +7360,28 @@ Section: Next.
   Markdown targets, obtain independent contract/security review, and run
   `git diff --check`. Source inspection only; no board requests or writes.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-MEMORY-CAPACITY-CONTRACT** — Trace memory capacity/provider reads separately from entry reads.
+  Goal: M4-MEMORY
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-MEMORY](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [memory-read trace](docs/quality/m4-profile-memory-read-contract.md#one-next-read-only-slice).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Distinguish entry inventory from capacity/provider reporting and exact authorization, or absent operations. No memory writes or shadow state.
+  Dependencies: DOC-M4-MEMORY-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; inspect the
+  metadata status handler/model, nearest error/isolation tests and Desktop/Wing
+  callers against Acceptance. Distinguish file bytes, provider availability and
+  actual capacity; record exact authorization or absence without invoking probes.
+  Verify changed Markdown targets, obtain independent contract/security review,
+  and run `git diff --check`. No memory content, config values, secrets or writes.
+  Touches: docs/quality/

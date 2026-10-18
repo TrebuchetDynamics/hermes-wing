@@ -5504,6 +5504,7 @@
       "status": "unmet",
       "tasks": [
         "DOC-M4-MEMORY-CAPACITY-CONTRACT",
+        "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE",
         "DOC-M4-MEMORY-CONTRACT",
         "DOC-M4-MEMORY-CONTRACT-LIVE"
       ],
@@ -6894,7 +6895,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M4-MEMORY-CAPACITY-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
@@ -6948,7 +6948,8 @@
       "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT-LIVE",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE",
-      "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE"
+      "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE",
+      "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -6991,16 +6992,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map account expiry and logout separately from acquisition"
-    },
-    {
-      "depends_on": [
-        "DOC-M4-MEMORY-CONTRACT"
-      ],
-      "goal": "M4-MEMORY",
-      "id": "DOC-M4-MEMORY-CAPACITY-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace memory capacity/provider reads separately from entry reads"
     },
     {
       "depends_on": [
@@ -7403,6 +7394,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-MCP-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-MEMORY-CAPACITY-CONTRACT"
+      ],
+      "goal": "M4-MEMORY",
+      "id": "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-MEMORY-CAPACITY-CONTRACT"
     },
     {
       "depends_on": [
@@ -8312,6 +8313,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one toolset enable/disable contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-MEMORY-CONTRACT"
+      ],
+      "goal": "M4-MEMORY",
+      "id": "DOC-M4-MEMORY-CAPACITY-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace memory capacity/provider reads separately from entry reads"
     },
     {
       "depends_on": [],

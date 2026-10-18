@@ -605,26 +605,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-M4-MEMORY-CAPACITY-CONTRACT** — Trace memory capacity/provider reads separately from entry reads.
-  Goal: M4-MEMORY
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-MEMORY](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [memory-read trace](docs/quality/m4-profile-memory-read-contract.md#one-next-read-only-slice).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Distinguish entry inventory from capacity/provider reporting and exact authorization, or absent operations. No memory writes or shadow state.
-  Dependencies: DOC-M4-MEMORY-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; inspect the
-  metadata status handler/model, nearest error/isolation tests and Desktop/Wing
-  callers against Acceptance. Distinguish file bytes, provider availability and
-  actual capacity; record exact authorization or absence without invoking probes.
-  Verify changed Markdown targets, obtain independent contract/security review,
-  and run `git diff --check`. No memory content, config values, secrets or writes.
-  Touches: docs/quality/
-
 - [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Map account expiry and logout separately from acquisition.
   Goal: ACCOUNT
 Section: Next.
@@ -1360,4 +1340,12 @@ does not mark any check passed or authorize live actions.
   - Only after an eligible unmodified advertised operation and separately authorized disposable target exist: qualify bounded initial/continued reads, authoritative empty/partial/exhausted and denied outcomes, in-flight revocation, connection/profile/board/Project replacement including same-name recreation, and an accessible target-native journey. No platform or live Agent was exercised; current board inspection remains unavailable.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-KANBAN-PAGINATION-EVIDENCE.
+  Status: open
+
+- [ ] DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE — Live checks for DOC-M4-MEMORY-CAPACITY-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-MEMORY-CAPACITY-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No platform exercised. Only after separate admission and a suitable unmodified exact advertised bounded status/capacity contract: qualify authenticated reads/denials, profile A-to-B-to-A/recreation, owner-change recovery, declared effects and accessible target-native inspection using disposable state. No Agent/provider operation was invoked here.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-MEMORY-CAPACITY-CONTRACT.
   Status: open

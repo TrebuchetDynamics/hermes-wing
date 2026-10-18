@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-PARITY-NATIVE-LINUX — USER_INPUT — effort input — unblocks 0
+
+- Task: PARITY-NATIVE-LINUX — Execute and extend native Linux
+- Needs: worker reported a blocker: Coordinator must finish and provide the DOC-PARITY-TAB-CONTRACT combined-source repair with its required source-bound green Chat-suite gate, then supply the repaired baseline for this worker. The task explicitly requires waiting for that evidence; the repair worker is still active and its current report is absent. Once available, inspect/adopt the retained native candidate after confirming inactiv…
+- Since: 2026-10-18T20:45:00Z
+- Answer: Answer in PARITY-NATIVE-LINUX's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

@@ -5,12 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import 'package:wing/shared/widgets/app_shell.dart';
 
 import '../support/fake_hermes_channel.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
-  for (final width in [390.0, 960.0, 1280.0]) {
+  for (final width in [390.0, 960.0, 1149.0, 1150.0, 1440.0]) {
     testWidgets('chat preserves reading space at $width', (tester) async {
       tester.view.physicalSize = Size(width, 900);
       tester.view.devicePixelRatio = 1;
@@ -24,12 +25,20 @@ void main() {
           child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: HermesChatScreen(),
+            home: AppShellSessionNavigation(child: HermesChatScreen()),
           ),
         ),
       );
       await tester.pumpAndSettle();
       final composer = find.byKey(const ValueKey('hermes-composer-field'));
+      expect(
+        find.byKey(const ValueKey('hermes-active-session-bar')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('hermes-session-rail-search-field')),
+        findsNothing,
+      );
       if (width == 960) {
         expect(tester.getSize(composer).width, greaterThan(650));
       }

@@ -1095,7 +1095,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         final strings = AppLocalizations.of(context);
         final activeSession = state.activeSession;
         final showActiveSessionBar =
-            constraints.maxWidth >= 600 && activeSession != null;
+            constraints.maxWidth >= 600 &&
+            activeSession != null &&
+            !AppShellSessionNavigation.of(context);
         final switchableSessions = _switchableHermesSessions(
           state,
           retainedSessionIds: _unreadCompletedSessionIds,

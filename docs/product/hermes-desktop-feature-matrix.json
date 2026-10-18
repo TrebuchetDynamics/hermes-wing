@@ -2085,7 +2085,13 @@
         "lib/features/hermes_chat/export/hermes_transcript_export_io.dart"
       ],
       "current_wing_subset": "Wing exports/copies only loaded turns as text/Markdown; native saver is Linux-only and web uses its own download adapter. Owner fencing rechecks native chooser completion.",
-      "remaining_gap": "Full authoritative paginated JSON export and Desktop metadata shape are absent. Android native save is unsupported; clipboard/loaded text is not full-session export.",
+      "remaining_gap": "Contract trace resolves oldest-first compacted/ancestor message paging and client JSON assembly, not a frozen multi-page snapshot, stable lineage/revision or owner-safe download. Wing still lacks all-message JSON; Android native save remains unsupported and loaded text is not completeness.",
+      "unowned_outcome_contract": {
+        "task_id": "PARITYUPDATE-004-48",
+        "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-export",
+        "disposition": "source_resolved_paging_snapshot_guarantees_unavailable",
+        "wing_inspected_head": "8ed7c2fc8fe5391e44d9417b10f631dd3b57fec6"
+      },
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [
@@ -4534,7 +4540,13 @@
         "lib/core/hermes/models/hermes_web_reads.dart"
       ],
       "current_wing_subset": "Production Wing route tree has no foreign-session import destination or foreign import request path.",
-      "remaining_gap": "Source-hosted Claude/Codex foreign list/preview/continue are absent. Need exact Agent authorization, bounded/redacted preview, immutable source identity, import idempotency/conflict and resulting canonical session readback; never seed local history as import.",
+      "remaining_gap": "Contract trace resolves Agent-host foreign list/preview/import and transactional provenance dedupe, not preview-content immutability or redaction. Wing has no consumer or qualified admission/readback; close suppresses navigation, not import commit. Backup recovery and local history seeding are not equivalents.",
+      "unowned_outcome_contract": {
+        "task_id": "PARITYUPDATE-004-48",
+        "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-import",
+        "disposition": "source_resolved_provenance_dedupe_preview_binding_unavailable",
+        "wing_inspected_head": "8ed7c2fc8fe5391e44d9417b10f631dd3b57fec6"
+      },
       "linux_native": {
         "runtime_result": "not_run",
         "candidate_paths": [],
@@ -4991,7 +5003,13 @@
       ],
       "wing_outcome": "unsupported",
       "current_wing_subset": "No matching Wing route/action observed in current router or supported Tools tabs.",
-      "remaining_gap": "No Radio outcome in Wing. Requires optional non-autoplay audio/search/mute/error path, accessible non-waveform controls and platform qualification; streaming has external network effects.",
+      "remaining_gap": "Contract trace identifies client-local default-disabled Radio, plugin-local pins and explicit external search/playback; no Agent operation/grant dependency. Wing has no player. Optional media/network consent, disposal/stale-event behavior, accessible text controls and named-platform audio remain separate work.",
+      "unowned_outcome_contract": {
+        "task_id": "PARITYUPDATE-004-48",
+        "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-radio",
+        "disposition": "client_local_authority_resolved_not_implemented",
+        "wing_inspected_head": "8ed7c2fc8fe5391e44d9417b10f631dd3b57fec6"
+      },
       "wing_sources": [
         "lib/router/providers/app_router.dart",
         "lib/features/tools/screens/tools_screen.dart"
@@ -5098,7 +5116,13 @@
       ],
       "wing_outcome": "unsupported",
       "current_wing_subset": "No matching Wing route/action observed in current router or supported Tools tabs.",
-      "remaining_gap": "No credential-vault UI/API caller in Wing; endpoint secure storage/provider API keys are different assets. Need exact operation, grants, profile/connection identity and write-only secret handling; never expose vault secrets to model/log/deep link.",
+      "remaining_gap": "Contract trace resolves metadata-only vault sources/items, local add/remove and external source enable/lock/unlock, not revision-safe edits, durable add dedupe or unlock lifetime. Wing has no Vault consumer/qualified admission. Endpoint secure storage and provider revocation remain different assets/outcomes; secrets stay write-only.",
+      "unowned_outcome_contract": {
+        "task_id": "PARITYUPDATE-004-48",
+        "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-vault",
+        "disposition": "source_resolved_secret_and_concurrency_integration_unavailable",
+        "wing_inspected_head": "8ed7c2fc8fe5391e44d9417b10f631dd3b57fec6"
+      },
       "wing_sources": [
         "lib/router/providers/app_router.dart",
         "lib/features/tools/screens/tools_screen.dart"
@@ -5207,7 +5231,13 @@
       ],
       "wing_outcome": "unsupported",
       "current_wing_subset": "No matching Wing route/action observed in current router or supported Tools tabs.",
-      "remaining_gap": "No package catalog/update/remove or scoped plugin settings in Wing. Need safe authoritative Agent package operations distinct from client-local code loading; do not introduce Flutter plugin ABI, arbitrary Git/shell installer or copied Electron disk loader.",
+      "remaining_gap": "Contract trace distinguishes profile-scoped plugins.manage actions/catalog lookup from Electron app-global probe/install/reconcile/remove and JS loading. No Wing package manager, atomic dual-half transaction or durable retry receipt is established. MCP configuration is not package lifecycle; no Flutter ABI or Git/shell fallback is admitted.",
+      "unowned_outcome_contract": {
+        "task_id": "PARITYUPDATE-004-48",
+        "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-plugin-packages",
+        "disposition": "agent_client_authority_split_resolved_lifecycle_unavailable",
+        "wing_inspected_head": "8ed7c2fc8fe5391e44d9417b10f631dd3b57fec6"
+      },
       "wing_sources": [
         "lib/router/providers/app_router.dart",
         "lib/features/tools/screens/tools_screen.dart"
@@ -5317,7 +5347,13 @@
       ],
       "wing_outcome": "unsupported",
       "current_wing_subset": "No matching Wing route/action observed in current router or supported Tools tabs.",
-      "remaining_gap": "No Wing display/status/viewer/lease surface. Canonical Bot Chat task does not authorize remote computer control. Need unmodified exact display operations, ephemeral observe credentials, server lease enforcement, target identity, cancellation and accessible non-canvas path.",
+      "remaining_gap": "Contract trace resolves display status/observe, transport-minted viewers, server input leases and clean-close versus dropped-link exclusion. Wing has no viewer; upstream ticket-in-URL delivery violates Wing custody rules, full RPC reconnect cannot reclaim an old viewer, and non-canvas access is unresolved. Bot Chat and lifecycle authority remain separate.",
+      "unowned_outcome_contract": {
+        "task_id": "PARITYUPDATE-004-48",
+        "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-screen",
+        "disposition": "source_lease_resolved_secure_delivery_accessible_equivalent_unavailable",
+        "wing_inspected_head": "8ed7c2fc8fe5391e44d9417b10f631dd3b57fec6"
+      },
       "wing_sources": [
         "lib/router/providers/app_router.dart",
         "lib/features/tools/screens/tools_screen.dart"
@@ -5424,7 +5460,13 @@
       ],
       "wing_outcome": "unsupported",
       "current_wing_subset": "No matching Wing route/action observed in current router or supported Tools tabs.",
-      "remaining_gap": "No matching Wing pet generator/gallery/adoption outcome. Branding mascot assets do not qualify it. Exact Agent pet/image generation contracts, provider effects/spending, cancellation and accessible preview/adoption need bounded review; no image calls authorized.",
+      "remaining_gap": "Contract trace resolves pet generate/hatch/install versus select/adopt/remove and cooperative token cancellation, not universal profile/run fencing or durable reconnect/spend reconciliation. Wing has no pet flow; mascot assets do not qualify it. Exact admission, provider consent, accessible preview and named-platform execution remain gated; no image calls authorized.",
+      "unowned_outcome_contract": {
+        "task_id": "PARITYUPDATE-004-48",
+        "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-pets",
+        "disposition": "source_stages_resolved_profile_run_recovery_unavailable",
+        "wing_inspected_head": "8ed7c2fc8fe5391e44d9417b10f631dd3b57fec6"
+      },
       "wing_sources": [
         "lib/router/providers/app_router.dart",
         "lib/features/tools/screens/tools_screen.dart"

@@ -602,7 +602,24 @@ void main() {
             await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
             await settleRoutes(tester);
             if (destination == AppRoutes.settings && dismissal == 'back') {
-              await tester.tap(find.text('Voice & speech'));
+              final categoryPicker = find.byKey(
+                const ValueKey('settings-category-picker'),
+              );
+              if (categoryPicker.evaluate().isNotEmpty) {
+                await tester.tap(categoryPicker);
+                await settleRoutes(tester);
+                await tester.tap(find.text('Chat').last);
+              } else {
+                await tester.tap(
+                  find.byKey(const ValueKey('settings-category-chat')),
+                );
+              }
+              await settleRoutes(tester);
+              final voiceLink = find.byKey(
+                const ValueKey('settings-voice-link'),
+              );
+              await tester.ensureVisible(voiceLink);
+              await tester.tap(voiceLink);
               await settleRoutes(tester);
               expect(chat.mounted, isTrue);
               await tester.binding.handlePopRoute();

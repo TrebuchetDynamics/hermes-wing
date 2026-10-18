@@ -97,6 +97,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T11:34:48Z
 - Answer: Fix DOC-M5-LARGE-TEXT-EVIDENCE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-DOC-NATIVE-FAILURE-BOUNDARY — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-NATIVE-FAILURE-BOUNDARY — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T12:39:48Z
+- Answer: Fix DOC-NATIVE-FAILURE-BOUNDARY's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-SECURITY-RETAINED-RELEASE-AUDIT — USER_DECISION — effort decision — unblocks 1
 
 - Task: SECURITY-RETAINED-RELEASE-AUDIT — Goal: SECURITY.

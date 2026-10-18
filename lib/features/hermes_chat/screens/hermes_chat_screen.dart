@@ -560,8 +560,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       (_, enabled) {
         _draftVoiceGateGeneration++;
         if (!enabled &&
-            _voiceInputController.capturing &&
-            !_voiceInputController.continuousEnabled) {
+            (_voiceInputController.capturing ||
+                _voiceInputController.continuousEnabled ||
+                _voiceInputController.speaking)) {
           _voiceInputController.pause();
         }
       },

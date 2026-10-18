@@ -13,6 +13,95 @@ import 'package:wing/shared/voice/voice_settings.dart';
 import '../support/fake_hermes_channel.dart';
 
 void main() {
+  test(
+    'silence during playback re-arms interruption capture before TTS ends',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _FirstTranscriptThenNoSpeechService();
+      final tts = _QueuedTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(speakRepliesEnabled: true),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+      await controller.enableContinuous();
+      unawaited(controller.maybeContinue());
+      await pumpEventQueue();
+      expect(controller.speaking, isTrue);
+      expect(capture.captureCalls, 2);
+      capture.completeNoSpeech();
+      await pumpEventQueue();
+      expect(controller.speaking, isTrue);
+      expect(controller.capturing, isTrue);
+      expect(capture.captureCalls, 3);
+    },
+  );
+
+  test(
+    'session speech consent expires on end and mute waits for teardown',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _ControlledVoiceCaptureService();
+      final tts = FakeTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(),
+        onDraft: (_) {},
+      );
+      addTearDown(controller.dispose);
+      unawaited(controller.enableContinuous(sessionSpeechConsent: true));
+      await pumpEventQueue();
+      controller.muteMicrophone();
+      await pumpEventQueue();
+      expect(controller.continuousEnabled, isTrue);
+      expect(controller.microphoneMuted, isTrue);
+      expect(controller.capturing, isFalse);
+      await channel.sendText('synthetic consent check');
+      await controller.maybeContinue();
+      expect(tts.spoken, ['echo: synthetic consent check']);
+      controller.pause();
+      unawaited(controller.enableContinuous());
+      await pumpEventQueue();
+      await channel.sendText('new session without speech consent');
+      await controller.maybeContinue();
+      expect(controller.continuousEnabled, isFalse);
+      expect(tts.spoken, ['echo: synthetic consent check']);
+    },
+  );
+
+  test(
+    'microphone unmute waits for cancellation and never overlaps capture',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _SlowCancellationCaptureService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => FakeTextToSpeechService(),
+        settings: () => const WingVoiceSettings(),
+        onDraft: (_) {},
+      );
+      addTearDown(controller.dispose);
+      unawaited(controller.enableContinuous(sessionSpeechConsent: true));
+      await pumpEventQueue();
+      controller.muteMicrophone();
+      unawaited(controller.unmuteMicrophone());
+      await pumpEventQueue();
+      expect(capture.captureCalls, 1);
+      capture.completeCancellation();
+      await pumpEventQueue();
+      expect(capture.captureCalls, 2);
+      expect(capture.overlappingCaptureCalls, 0);
+      expect(controller.continuousEnabled, isTrue);
+    },
+  );
+
   testWidgets('spoken streaming chunks do not wait for microphone rearm', (
     tester,
   ) async {
@@ -1171,7 +1260,8 @@ void main() {
       await controller.enableContinuous();
       await pumpEventQueue();
 
-      expect(capture.captureCalls, 2);
+      expect(capture.captureCalls, 3);
+      expect(controller.capturing, isTrue);
       expect(channel.stopActiveTurnCalls, 1);
       expect(channel.sentVoiceTranscripts, [
         'first question',

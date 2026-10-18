@@ -198,10 +198,21 @@ recognition and preserves the draft; Send and hands-free remain separate actions
 Owner or voice-gate changes reject stale callbacks and late recognition. See the
 [bounded delivery evidence](../quality/chat-direct-dictation.md); browser recovery
 is qualified only for unavailable capture, not physical recognition.
-Hands-free voice shows simultaneous listening and playback with separate labeled
-controls. After interruption, **Resume hands-free** requires an explicit tap and
-waits for teardown; **Continue in text** dismisses the notice. See the
-[profile and voice UI regression report](../quality/profile-voice-ui-2026-09-08.md).
+Chat exposes **Start Live voice** directly beside the composer. It starts the
+existing recognition → Agent turn → speech-playback loop; it is not a realtime
+voice-model transport. If saved spoken-reply consent is off, an explicit dialog
+explains continuous listening, automatic sends and speech for this session only;
+starting or ending Live voice never changes that preference. Missing capture or
+playback services block entry with a text fallback. Dictation remains separate.
+Live voice displays listening, reply playback, interruption listening and microphone
+mute. Recognition re-arms after silence even while playback remains pending;
+non-echo partial speech stops output while collecting the next turn. Speech mute
+and microphone mute are independent, and **End · return to text** preserves the
+draft. Foreground/session/voice-gate loss ends the local loop; resumption requires
+an explicit action. See the [Live voice receipt](../quality/chat-live-voice.md)
+for deterministic checks and acoustic/device exclusions. The earlier
+[profile and voice UI regression report](../quality/profile-voice-ui-2026-09-08.md)
+remains historical evidence.
 
 Linux Local setup now opens the existing direct Agent form. Hermes-home discovery
 checks directory metadata only; the native folder chooser does not save the path,

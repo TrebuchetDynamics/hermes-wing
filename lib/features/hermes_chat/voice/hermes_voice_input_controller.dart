@@ -131,6 +131,8 @@ class HermesVoiceInputController extends ChangeNotifier {
 
   bool _capturing = false;
   bool _continuousEnabled = false;
+  bool _sessionSpeechConsent = false;
+  bool _microphoneMuted = false;
   bool _disposed = false;
   bool _speaking = false;
   bool _speakNextReply = false;
@@ -165,6 +167,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   String? get liveTranscript => _liveTranscript;
   double? get soundLevel => _soundLevel;
   bool get continuousEnabled => _continuousEnabled;
+  bool get microphoneMuted => _microphoneMuted;
   String? get error => _error;
   bool get speaking => _speaking;
   String? get readAloudTurnId => _readAloudTurnId;
@@ -303,9 +306,9 @@ class HermesVoiceInputController extends ChangeNotifier {
     unawaited(maybeContinue());
   }
 
-  void pauseMicrophone() {
+  void pauseMicrophone({bool keepContinuous = false}) {
     _operationGeneration += 1;
-    _continuousEnabled = false;
+    if (!keepContinuous) _continuousEnabled = false;
     _capturing = false;
     _liveTranscript = null;
     _soundLevel = null;
@@ -325,6 +328,18 @@ class HermesVoiceInputController extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
+  void muteMicrophone() {
+    _microphoneMuted = true;
+    pauseMicrophone(keepContinuous: true);
+    if (!_disposed) notifyListeners();
+  }
+
+  Future<void> unmuteMicrophone() async {
+    _microphoneMuted = false;
+    if (!_disposed) notifyListeners();
+    if (_continuousEnabled) await _capture(autoSend: true, continuous: true);
+  }
+
   Future<void> captureAndSend() async {
     _outputMuted = false;
     _bindConversation();
@@ -333,7 +348,10 @@ class HermesVoiceInputController extends ChangeNotifier {
     await _capture(autoSend: true);
   }
 
-  Future<void> enableContinuous() async {
+  /// [sessionSpeechConsent] is volatile and never changes saved speech settings.
+  Future<void> enableContinuous({bool sessionSpeechConsent = false}) async {
+    _sessionSpeechConsent = sessionSpeechConsent;
+    _microphoneMuted = false;
     _outputMuted = false;
     _bindConversation();
     _baselineAssistantReplies();
@@ -364,7 +382,12 @@ class HermesVoiceInputController extends ChangeNotifier {
     bool continuous = false,
     bool Function()? draftIsCurrent,
   }) async {
-    if (_capturing || _disposed || !(draftIsCurrent?.call() ?? true)) return;
+    if (_capturing ||
+        _disposed ||
+        (continuous && _microphoneMuted) ||
+        !(draftIsCurrent?.call() ?? true)) {
+      return;
+    }
     _replyInterruptedByCapture = false;
     _draftCaptureIsCurrent = draftIsCurrent;
     final conversation = _bindConversation();
@@ -652,7 +675,9 @@ class HermesVoiceInputController extends ChangeNotifier {
       return;
     }
     final settings = _settings();
-    if (_continuousEnabled && !settings.speakRepliesEnabled) {
+    if (_continuousEnabled &&
+        !settings.speakRepliesEnabled &&
+        !_sessionSpeechConsent) {
       pause();
       return;
     }
@@ -775,11 +800,19 @@ class HermesVoiceInputController extends ChangeNotifier {
     final conversation = _conversationGeneration;
     await Future<void>.delayed(_rearmDelay);
     if (!_ownsConversation(conversation)) return;
-    if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
+    if (_disposed || !_continuousEnabled || _microphoneMuted || _capturing) {
+      return;
+    }
     _replyInterruptedByCapture = false;
-    if (_settings().speakRepliesEnabled) await maybeContinue();
+    // Listening must re-arm even while a playback future is still pending.
+    // Silence/echo from one recognition window cannot disable barge-in.
+    if (_settings().speakRepliesEnabled || _sessionSpeechConsent) {
+      unawaited(maybeContinue());
+    }
     if (!_ownsConversation(conversation)) return;
-    if (_disposed || !_continuousEnabled || _capturing || _speaking) return;
+    if (_disposed || !_continuousEnabled || _microphoneMuted || _capturing) {
+      return;
+    }
     await _capture(autoSend: true, continuous: true);
   }
 
@@ -951,6 +984,8 @@ class HermesVoiceInputController extends ChangeNotifier {
     _speechTeardown = Future.wait<void>([_speechTeardown, speechStop]);
     fireAndForget(_speechTeardown, 'speech teardown on pause');
     _continuousEnabled = false;
+    _microphoneMuted = false;
+    _sessionSpeechConsent = false;
     _speakNextReply = false;
     _spokenReplyPrefix = null;
     _spokenReplyUserTurn = null;

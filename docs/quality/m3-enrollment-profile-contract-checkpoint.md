@@ -104,8 +104,9 @@ profile plus provider/model setup. Neither the Wing caller nor the inspected RES
 composition establishes that combined transaction, crash-safe deduplication, exact
 incarnation binding, or unchanged sibling profiles after a failed setup. Historical
 Wing Link rollback-by-deletion does not qualify the current path or existing-profile
-provider mutation. Attribution of a failed setup receipt belongs to
-`DOC-M3-ROLLBACK-EVIDENCE`, not an operation to run here.
+provider mutation. The [failed-setup attribution receipt](m3-setup-rollback-evidence.md)
+(`DOC-M3-ROLLBACK-EVIDENCE`) traces historical compensating cleanup and names the
+missing failure-specific existing-profile identity proof; it runs no operation.
 
 ### 4. Chat entry remains a separate explicit choice
 

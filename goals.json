@@ -5800,6 +5800,7 @@
       "tasks": [
         "LANDING-FIRST-REPLY",
         "LANDING-PAGES-QUALITY",
+        "LANDING-PAGES-QUALITY-LIVE",
         "LANDING-PRODUCT-PROOF",
         "LANDING-PRODUCT-PROOF-LIVE"
       ],
@@ -6896,7 +6897,6 @@
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
-      "LANDING-PAGES-QUALITY",
       "BACKEND-SSH-KEY-NATIVE",
       "CONNECTION-LINK-REMOVAL",
       "CONNECTION-CRON-CANARY",
@@ -6936,7 +6936,8 @@
       "DOC-M4-PLATFORM-CONTRACT-LIVE",
       "DOC-ACCOUNT-CONTRACT-LIVE",
       "DOC-NATIVE-DESIGN-REVIEW-LIVE",
-      "DOC-VOICE-QUALIFICATION-LIVE"
+      "DOC-VOICE-QUALIFICATION-LIVE",
+      "LANDING-PAGES-QUALITY-LIVE"
     ]
   },
   "tasks": [
@@ -7155,14 +7156,6 @@
       "section": "Next",
       "status": "open",
       "title": "Download a selected terminal working-directory file to the Wing device with verified bytes"
-    },
-    {
-      "depends_on": [],
-      "goal": "LANDING-ONBOARDING",
-      "id": "LANDING-PAGES-QUALITY",
-      "section": "Next",
-      "status": "open",
-      "title": "Extend artifact-bound Pages quality and delivery regressions"
     },
     {
       "depends_on": [
@@ -7479,6 +7472,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-VOICE-QUALIFICATION"
+    },
+    {
+      "depends_on": [
+        "LANDING-PAGES-QUALITY"
+      ],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PAGES-QUALITY-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for LANDING-PAGES-QUALITY"
     },
     {
       "depends_on": [
@@ -8516,6 +8519,14 @@
       "section": "Done",
       "status": "done",
       "title": "Provide connection-first landing entry and exact API readiness guidance"
+    },
+    {
+      "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PAGES-QUALITY",
+      "section": "Done",
+      "status": "done",
+      "title": "Extend artifact-bound Pages quality and delivery regressions"
     },
     {
       "depends_on": [

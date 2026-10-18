@@ -742,47 +742,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **LANDING-PAGES-QUALITY** — Goal: LANDING-ONBOARDING. Deliver landing changes
-  with artifact-bound accessibility, performance and subpath regression coverage.
-  Section: Next.
-  Status: open
-  Payoff: prove the actual artifact and its setup/proof links, not old deployed content.
-  Sources: [accepted landing outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
-  [Pages quality plan](docs/plans/2026-10-12-wing-landing-onboarding.md#delivery-slices-and-acceptance),
-  [landing-led identity](docs/plans/2026-10-12-wing-landing-onboarding.md#landing-led-product-identity-across-readme-and-docs),
-  `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`,
-  `test/tooling/pages_workflow_contract_test.dart`, `scripts/generate_readme_assets.mjs`.
-  Scope: preserve the current README/docs-index/tutorial/images refinement through artifact
-  checks without creating a second support matrix or duplicating live-QA work.
-  Extend existing candidate artifact checks, relevant workflow inputs,
-  link/CTA/image/provenance metadata, keyboard/zoom/motion/accessibility and controlled
-  performance budgets; preserve landing root and nested production app initialization.
-  Public readback must distinguish exact artifact freshness from old cached content.
-  Extend existing guards for landing-led headline/user-path hierarchy, preserved
-  current-logo/alpha policies and valid README/docs asset links; no new docs stack.
-  No publication in planning, privileged fork/PR deployment or new hosting/backend.
-  Acceptance: focused source contracts and assembled-artifact Pages smoke pass;
-  no console/same-origin HTTP errors; meaningful checks cover new setup paths;
-  performance results identify device/throttle/cache conditions and are not promoted
-  to field Core Web Vitals; staging/deploy permissions and scoped base href remain
-  intact. Document previous-artifact forward recovery without destructive history.
-  Checks: planned `flutter test --no-pub
-  test/tooling/pages_workflow_contract_test.dart
-  test/tooling/plan_backlog_traceability_test.dart
-  test/tooling/readme_assets_contract_test.dart`; build/assemble the production
-  Pages artifact using .github/workflows/pages.yml's existing non-deploy steps in
-  an owned scratch directory, then serve it loopback-only and run
-  `PAGES_BASE_URL=http://127.0.0.1:8769/hermes-wing/ npx playwright test
-  --config=playwright.config.mjs playwright/tests/regression/pages-landing.spec.mjs
-  --reporter=list`; `git diff --check`. Preserve Node 22, CI's recorded Flutter
-  3.44.6, local toolchain distinction, fixture and resource/cleanup evidence.
-  No workflow dispatch, deployment or source-destructive cleanup is part of checks.
-  Dependencies: none for offline pipeline/guard work; coordinate with the landing
-  implementer when copy/assets change. Live first reply uses existing qualified QA.
-  Ownership: wing; no worker claimed. Next action: add focused artifact regression
-  and safe workflow input/quality coverage, not another broad repository audit.
-  Touches: site/, assets/readme/, scripts/generate_readme_assets.mjs, .github/workflows/pages.yml, playwright/tests/regression/pages-landing.spec.mjs, playwright.config.mjs, test/tooling/, docs/getting-started.md, docs/quality/
-
 - [ ] **BACKEND-SSH-KEY-NATIVE** —  Qualify full-app
   managed-key SSH on native Linux and Android against the approved host.
   Goal: REMOTE-BACKENDS
@@ -1391,4 +1350,14 @@ does not mark any check passed or authorize live actions.
   - Output cancellation/TTS, provider reply, hands-free/re-arm, broader ownership scenarios, wired/Bluetooth routes and acoustic behavior require separately approved named-target execution. This input-only preparation cannot satisfy the existing sanitized physical-voice recorder's broader gates or close VOICE acceptance.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-VOICE-QUALIFICATION.
+  Status: open
+
+- [ ] LANDING-PAGES-QUALITY-LIVE — Live checks for LANDING-PAGES-QUALITY
+  Scope: Run the live checks the offline work for LANDING-PAGES-QUALITY left pending.
+  Acceptance: Each check passes on the real target:
+  - Authorized CI execution with its pinned Flutter 3.44.6 and any Pages publication/public CDN freshness readback were not performed. Coordinator integration and publication remain separate from this local commit.
+  - Actual browser-chrome zoom, screen readers, physical devices and real-device/field performance remain unqualified; automated text scaling/effective-viewport reflow and focused semantic/contrast guards are not full accessibility certification.
+  - Authenticated first reply and combined real-Agent/provider workflows remain with existing CONNECTION-SETUP-AUTH-MATRIX and PARITY-LIVE-WORKFLOW owners; this task creates no duplicate live QA requirement.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: LANDING-PAGES-QUALITY.
   Status: open

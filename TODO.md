@@ -148,7 +148,7 @@ Section: Next.
   [pinned comparison](docs/quality/graphify-wing-recomparison.md).
   Official source leads: [pane composition and identity findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Imports alone do not establish keyboard/close behavior. Preserve per-pane drafts, reject stale owner events, release request leases on failure and keep expired input inoperable through switch/disconnect/resume. Qualify supported transport behavior without claiming JSON-RPC adoption.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: recover and verify the candidate's `test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart` ownership/switching regressions, then `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`; `flutter analyze`; rebuilt deterministic browser and isolated Android public-control journeys. First run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart test/features/hermes_chat/screens/hermes_chat_queued_dialog_intent_test.dart` on the captured merged candidate; retain the full Chat/router, fresh web build/E2E and independent-review requirements below. Run native fixture and browser suites serially: their assigned port range is shared. A timeout or missing terminal aggregate is incomplete verification, never a pass.
+  Checks: recover and verify the candidate's `test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart` ownership/switching regressions, then `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`; `flutter analyze`; rebuilt deterministic browser and isolated Android public-control journeys. First run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart test/features/hermes_chat/screens/hermes_chat_queued_dialog_intent_test.dart` on the captured merged candidate. The refreshed integration report also names `hermes_chat_layout_width_test.dart:59-82` (test registration outside `main`, formatter/analyzer/compile failure) and `hermes_chat_slash_commands_test.dart:1524` (4-pixel overflow in the narrow-phone 200% queue-manager case). Reconcile these in the existing Chat repair, without dropping the width, large-text or no-exception assertions. Run `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart`, then `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart test/features/hermes_chat/screens/hermes_chat_window_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_adaptive_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart`. Retain the full Chat/router, fresh web build/E2E and independent-review requirements below. Run native fixture and browser suites serially: their assigned port range is shared. A timeout or missing terminal aggregate is incomplete verification, never a pass.
   Android focus: ordinary multiple conversations per profile and across profiles
   retain independent drafts/history/run and attention state while switching. Use a
   touch-accessible compact session switcher as the Desktop tab equivalent; do not
@@ -169,7 +169,7 @@ Section: Next.
   The later integration receipt `autowork-execution/f12ff11360124dc78c39313d92c0af0c.json`
   records timeout on candidate `cc17733cd3df5405a8627d6acc924620228f21ff`, based on
   `b5c4a4bff404c72b08e816f3f429db13252049e3`; it supplies no passing acceptance.
-  Next action: integration-only recovery for retained worker commit 153226bf5e943c160ebf1fec93ef35035a71f491 (tree 99a5b6a47f9447236faed9aa238f398ee796379f), not another implementation. The recorded worker PID birth identity is no longer live. Preserve its dirty pubspec.lock separately; the commit and latest report retain reported focused, Chat/router and compiled-browser checks plus independent source review. The existing coordinator must reconcile its reported merge conflict with current Wing source, preserve both sides' ownership/transport tests and settings, and rerun affected checks on the integrated candidate before delivery. Do not repin old receipts or use an obsolete source workspace. Native-serve tabs remain explicitly unavailable; Android, accessibility and live acceptance stay open. No worker launch, branch integration, push or live action is performed by this planning update.
+  Next action: recover retained worker commit 153226bf5e943c160ebf1fec93ef35035a71f491 (tree 99a5b6a47f9447236faed9aa238f398ee796379f) through the existing coordinator, not another tab implementation. It is not an ancestor of inspected input fe0cc6b4029400683f4e96ae104ff46c7ccb1fb2. The recorded worker birth identity is no longer live; preserve its dirty pubspec.lock separately. Reconcile the reported merge conflict with current Wing source and preserve both sides' ownership/transport tests and settings. The MT-RERUN-TRAIN refreshed report at `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json` records the listener, disclosure/position, layout-compile and queue-overflow failures on that input. Integration-only recovery is not a waiver of this task's existing merged Chat-suite repair: resolve remaining failures within its existing Touches and rerun the checks above on the combined candidate. Worker-tree reported passes and independent review are not integrated acceptance; do not repin them. Native-serve tabs remain explicitly unavailable; Android, accessibility and live acceptance stay open. This handoff performs no worker launch, integration, push or live action.
 
 - [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Goal: PARITY-TABS. Section: Next. Implement and
   qualify reconnect for two distinct session-owned conversation tabs.
@@ -295,40 +295,50 @@ Section: Next.
   blob below; record any preserved worker overlay separately. A handoff edit
   does not refresh that workspace. Do not resolve dependencies to repair a stale
   source input or copy the lock from another checkout.
-  Evidence: the retained `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json`
-  under the Git common directory records a formatter failure at
-  `8d8141b761c5bd92157fdbe84567ef2e8ba6c95e` in the explicitly added test path,
-  plus 51 full-suite failures. The existing integration owner may apply only that
-  mechanical formatting repair here; feature failures retain their existing owners.
-  Dependency reconciliation: `80e41ed8` already delivered the SDK-compatible lock
-  in [Node 22 closure](docs/quality/omniroute-node22-verification.md#commands-and-observed-outcomes).
-  At inspected maintenance input `f7341ed03871c2fe39155e6f426575e6d13d4d09`
-  (tree `cb13201f201f28eb61632f6f2845e611a8c52da8`), it is an ancestor and
-  `pubspec.lock` blob `8a84003a7a7b1fbc26f25e2e09892baec2e6e66d` matches the
-  report's resolved lock. This identifies the inspected input, not a passing
-  combined tree or the worker's baseline. The resumed worker report still names
-  `8d8141b761c5bd92157fdbe84567ef2e8ba6c95e`, tree
-  `1c9dde45a9471fe056cb02654fbc70612b5dfb97`, with incompatible lock blob
-  `104e43950f4c7ceb4ed15836a3345e2739facd46` and a failing ancestor check.
-  No new lockfile authority is needed or granted. Only the existing coordinator's
-  supported source-refresh path can supply the combined input; no worker merge,
-  cherry-pick, rebase, branch switch or lock copying is authorized. Stop before
-  Flutter if the input preflight fails, and retain all original failure evidence.
-  Readiness: DOC-PARITY-TAB-CONTRACT already owns the mandatory Chat-suite repair,
-  including the 44 listener failures and remaining disclosure/position failures.
-  Reuse that owner rather than create a duplicate repair task. The additional
-  `test/integration/linux_profile_footer_native_runner_test.dart` focus-pixel failure
-  still needs existing native fixture-owner investigation. This report alone does
-  not establish flakiness or three isolated passing revisions. Keep all full gates;
-  do not treat a focused pass as a full-suite pass or speculate a product repair.
-  Next action: the existing integration coordinator reconciles those source-owner
-  results and supplies a refreshed native task workspace, preserving the retained
-  uncommitted formatter repair and receipt. The resumed report already records
-  the named test's mechanical formatting and a passing format gate (614 files,
-  zero further changes); compare that repair before reapplying it. After the
-  execution-workspace preflight passes, rerun every listed gate on one stable
-  captured input. Source refresh is still pending; this documentation repair
-  neither performs integration nor qualifies the combined source.
+  Evidence: resolve `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json`
+  from `git rev-parse --git-common-dir`. Its refreshed run exercised
+  `fe0cc6b4029400683f4e96ae104ff46c7ccb1fb2`, tree
+  `72dd034c963254351cee20b97f1e63f771a084e0`, plus only the retained gateway-test
+  formatter repair. Preflight and offline enforced-lockfile resolution passed;
+  committed and working lock blob `8a84003a7a7b1fbc26f25e2e09892baec2e6e66d`
+  matched and `80e41ed8` was an ancestor. The old stale-workspace/lock blocker is
+  resolved for this attempt, not for every future input. The report retains the
+  earlier `8d8141b761c5bd92157fdbe84567ef2e8ba6c95e` failure history separately;
+  do not use its 51 failures or 614-file format pass as this run's results.
+  Current outcomes: 75 gateway tests passed; global format exited 65 and analysis
+  exited 1 on `hermes_chat_layout_width_test.dart:59-82`. The full Flutter command
+  timed out after 1700 seconds (wrapper 124), with interim progress +1877/-56 and
+  56 failure headers across 12 files, not a terminal suite total. Audit and diff
+  checks passed. The report binds 1515 unchanged gate-input hashes; it records no
+  commit and no full-suite pass. Preserve its uncommitted formatter repair/receipt.
+  Readiness: DOC-PARITY-TAB-CONTRACT retains the mandatory Chat-suite repair:
+  44 listener failures, disclosure/position failures, and the named layout syntax
+  and narrow-phone 200% queue-manager overflow regressions. Its Checks now name
+  those files explicitly; reuse that owner rather than duplicate feature work.
+  PLANGAP-001-2f already owns the traceability parser failure reported at
+  `test/tooling/plan_backlog_traceability_test.dart:52` for
+  `docs/plans/2026-10-18-flutter-mcp-architecture.md`; reuse its existing guarded
+  parser repair, not a new product-plan disposition or invented acceptance.
+  Existing SSH fixture owners must reconcile allocated-port 20110 bind failures
+  and disposed-channel teardown in
+  `test/features/hermes_chat/providers/managed_ssh_serve_test.dart`,
+  `test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart` and
+  `test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart`.
+  The native fixture owner still retains the earlier
+  `test/integration/linux_profile_footer_native_runner_test.dart` focus-pixel
+  investigation; the refreshed run did not reach it. No evidence establishes
+  three isolated passing revisions or a flaky-test classification. These are
+  source/fixture reconciliation holds, not requests for credentials or product
+  decisions, and do not expand this task's write boundary or transfer ownership.
+  Next action: the existing coordinator combines source-owner repairs, captures
+  the repaired input and verifies preflight again. Compare the exact retained
+  gateway formatting repair before reapplying it. Run every listed gate on that
+  stable input with supported execution that can retain a terminal result within
+  the command limit; the last full run exceeded its 1700-second bound. A timeout,
+  focused pass or interim count never replaces the required full command. No
+  lock copying, worker merge/rebase/branch switch, source-refresh bypass or new
+  lockfile authority is granted. This docs-only repair does not run those gates,
+  perform integration or qualify the combined source.
 
 - [ ] **MT-VERIFY-BROWSER-GATES** — Goal: INTEGRATION. Section: Next. Prove the same combined
   source's compiled browser journeys and exact request counts.

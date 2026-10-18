@@ -140,8 +140,9 @@ uncertain response/retry and no reconnect replay. Only after those contracts exi
 can a separately authorized isolated native/live target qualify enable, disable
 and exact authoritative readback, distinguishing saved state from new-session
 activation. Those future proofs do not hold this documentation slice. MCP config
-read is the separate `DOC-M4-MCP-CONFIG-CONTRACT` task; this trace does not authorize
-MCP installation, secret access or arbitrary commands. See [route status](../product/routes.md)
+read is covered separately by the [MCP configuration-read trace](mcp-config-read-contract.md)
+(`DOC-M4-MCP-CONFIG-CONTRACT`); neither trace authorizes MCP installation, secret
+access or arbitrary commands. See [route status](../product/routes.md)
 and [M4-MCP status](../product/hermes-desktop-parity.md#statuses).
 
 [desktop-tab]: https://github.com/NousResearch/hermes-agent/blob/158fd638da1629c8e62caf9ade1515d162def8ab/apps/desktop/src/app/capabilities/toolsets/toolsets-tab.tsx#L80-L103

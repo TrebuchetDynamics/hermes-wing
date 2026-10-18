@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
+### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
+
+- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
+- Needs: worker reported a blocker: Existing source owner must provide the formatting repair for test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart; it is outside docs/quality/. (+2 more in report.json)
+- Since: 2026-10-18T08:41:56Z
+- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
 
 - Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.

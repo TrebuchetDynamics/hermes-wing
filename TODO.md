@@ -742,28 +742,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **BACKEND-SSH-KEY-NATIVE** —  Qualify full-app
-  managed-key SSH on native Linux and Android against the approved host.
-  Goal: REMOTE-BACKENDS
-Section: Next.
-  Payoff: prove actual app authentication and device reachability, not terminal login.
-  Scope: production managed form, isolated app state and named-platform execution.
-  Acceptance: independently record host trust, SSH/Agent authentication,
-  profile/model/history loading, disconnect and explicit reconnect without replay.
-  Exercise denied/changed keys and cancellation. Include generated-key secure
-  storage denial, public-only native clipboard, deliberate saved-key reuse and
-  unchanged key identity across real process restart. Retain existing generation limits;
-  do not infer permission for provider spending or personal-runtime mutations.
-  Sources: [native qualification](docs/test-plan.md#ssh-private-key-qualification).
-  Dependencies: BACKEND-SSH-KEY-AUTH.
-  Ownership: unclaimed; both platform results remain NOT_CHECKED. Reuse the new
-  `scripts/run_managed_ssh_key_native.sh` and integration test rather than rebuild
-  the harness. Seven Python preparation tests pass in its isolated QA venv.
-  Native execution and the real operating-system chooser remain separate checks.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Use the existing scripts/run_managed_ssh_key_native.sh and the linked SSH private-key qualification procedure with approved target/authentication and isolated state. Record Linux and Android cells, trust/key-denial/cancel and process-restart identity separately; no provider generation or OS chooser/storage pass is implied.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
-
 ## Needs decision
 
 - [ ] **CONNECTION-LINK-REMOVAL** — Goal: CONNECTION-PATHS. Remove Wing Link
@@ -1360,4 +1338,18 @@ does not mark any check passed or authorize live actions.
   - Authenticated first reply and combined real-Agent/provider workflows remain with existing CONNECTION-SETUP-AUTH-MATRIX and PARITY-LIVE-WORKFLOW owners; this task creates no duplicate live QA requirement.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: LANDING-PAGES-QUALITY.
+  Status: open
+
+- [ ] BACKEND-SSH-KEY-NATIVE-LIVE — Live checks for BACKEND-SSH-KEY-NATIVE
+  Scope: Run the live checks the offline work for BACKEND-SSH-KEY-NATIVE left pending.
+  Acceptance: Each check passes on the real target:
+  - Full-app qualification remains open. Provide the approved host, independently reviewed fingerprint, permitted SSH authentication and separate Agent credential through an approved secret channel; none was supplied with this invocation. Do not infer authorization for provider spending or personal-runtime changes.
+  - Native Linux: execute the production managed form with isolated app state against the approved host; independently record reachability, host trust, SSH authentication, Agent authentication/denial, exact profile/model/history reads, disconnect and explicit reconnect without mutation replay. All cells remain NOT_CHECKED.
+  - Native Android: provide an explicitly approved disposable app/device and route, then independently execute the same production managed-form acceptance cells. Dry-run placeholder serial and ADB-reverse preparation do not qualify actual Android reachability. All cells remain NOT_CHECKED.
+  - On each native platform, exercise denied/replaced client keys, changed host fingerprint rejection and cancellation during document selection, host review and bootstrap, including late-result rejection. Python fixture rejection is not a full-app result.
+  - On each native platform, qualify generated-key secure-storage denial, public-only native clipboard, deliberate saved-key reuse and unchanged public identity after an actual process exit/relaunch retaining only owned isolated app state. Same-process reconnects and substituted storage do not qualify these cells.
+  - Qualify real Linux chooser and Android document selection independently, including cancellation, revoked/unreadable input, bounded/malformed inputs and encrypted-key recovery. Existing harness substitutes document acquisition and excludes physical storage/chooser/encrypted-key qualification.
+  - Before a later native fixture execution, reconcile the reusable launcher's scratch source-copy/SDK-copy preparation with the execution environment's worktree-only scratch-copy and shared-SDK rules. The --run path was not invoked or modified here; retain source/artifact-bound sanitized fixture receipts separately from approved-host evidence.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: BACKEND-SSH-KEY-NATIVE.
   Status: open

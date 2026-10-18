@@ -7076,3 +7076,29 @@ Source section: Now / Next
   Ownership: wing; no worker claimed. Next action: add focused artifact regression
   and safe workflow input/quality coverage, not another broad repository audit.
   Touches: site/, assets/readme/, scripts/generate_readme_assets.mjs, .github/workflows/pages.yml, playwright/tests/regression/pages-landing.spec.mjs, playwright.config.mjs, test/tooling/, docs/getting-started.md, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **BACKEND-SSH-KEY-NATIVE** —  Qualify full-app
+  managed-key SSH on native Linux and Android against the approved host.
+  Goal: REMOTE-BACKENDS
+Section: Next.
+  Payoff: prove actual app authentication and device reachability, not terminal login.
+  Scope: production managed form, isolated app state and named-platform execution.
+  Acceptance: independently record host trust, SSH/Agent authentication,
+  profile/model/history loading, disconnect and explicit reconnect without replay.
+  Exercise denied/changed keys and cancellation. Include generated-key secure
+  storage denial, public-only native clipboard, deliberate saved-key reuse and
+  unchanged key identity across real process restart. Retain existing generation limits;
+  do not infer permission for provider spending or personal-runtime mutations.
+  Sources: [native qualification](docs/test-plan.md#ssh-private-key-qualification).
+  Dependencies: BACKEND-SSH-KEY-AUTH.
+  Ownership: unclaimed; both platform results remain NOT_CHECKED. Reuse the new
+  `scripts/run_managed_ssh_key_native.sh` and integration test rather than rebuild
+  the harness. Seven Python preparation tests pass in its isolated QA venv.
+  Native execution and the real operating-system chooser remain separate checks.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Use the existing scripts/run_managed_ssh_key_native.sh and the linked SSH private-key qualification procedure with approved target/authentication and isolated state. Record Linux and Android cells, trust/key-denial/cancel and process-restart identity separately; no provider generation or OS chooser/storage pass is implied.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/

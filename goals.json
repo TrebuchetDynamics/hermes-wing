@@ -5738,6 +5738,7 @@
         "BACKEND-SSH-CONNECT-LIVE",
         "BACKEND-SSH-KEY-AUTH",
         "BACKEND-SSH-KEY-NATIVE",
+        "BACKEND-SSH-KEY-NATIVE-LIVE",
         "DOC-BACKEND-CONTRACT",
         "DOC-BACKEND-DISCONNECT-CONTRACT",
         "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE"
@@ -6897,7 +6898,6 @@
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
-      "BACKEND-SSH-KEY-NATIVE",
       "CONNECTION-LINK-REMOVAL",
       "CONNECTION-CRON-CANARY",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
@@ -6937,7 +6937,8 @@
       "DOC-ACCOUNT-CONTRACT-LIVE",
       "DOC-NATIVE-DESIGN-REVIEW-LIVE",
       "DOC-VOICE-QUALIFICATION-LIVE",
-      "LANDING-PAGES-QUALITY-LIVE"
+      "LANDING-PAGES-QUALITY-LIVE",
+      "BACKEND-SSH-KEY-NATIVE-LIVE"
     ]
   },
   "tasks": [
@@ -6960,16 +6961,6 @@
       "section": "Next",
       "status": "open",
       "title": "Android chat touch polish"
-    },
-    {
-      "depends_on": [
-        "BACKEND-SSH-KEY-AUTH"
-      ],
-      "goal": "REMOTE-BACKENDS",
-      "id": "BACKEND-SSH-KEY-NATIVE",
-      "section": "Next",
-      "status": "open",
-      "title": "Exercise full Wing managed-key SSH and recovery on native Linux and Android against the approved host"
     },
     {
       "depends_on": [
@@ -7234,6 +7225,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for BACKEND-SSH-CONNECT"
+    },
+    {
+      "depends_on": [
+        "BACKEND-SSH-KEY-NATIVE"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "BACKEND-SSH-KEY-NATIVE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for BACKEND-SSH-KEY-NATIVE"
     },
     {
       "depends_on": [
@@ -7648,6 +7649,16 @@
       "section": "Done",
       "status": "done",
       "title": "Connect through deliberate private-key selection and encrypted-key passphrase entry on Linux and Android"
+    },
+    {
+      "depends_on": [
+        "BACKEND-SSH-KEY-AUTH"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "BACKEND-SSH-KEY-NATIVE",
+      "section": "Done",
+      "status": "done",
+      "title": "Exercise full Wing managed-key SSH and recovery on native Linux and Android against the approved host"
     },
     {
       "depends_on": [],

@@ -317,7 +317,15 @@ for (const width of [390, 1280]) {
       await open();
       if (rendered) {
         // Leave Settings through Connections and explicitly activate the saved host.
-        await page.getByRole('button', { name: 'Connections', exact: true }).click();
+        const category = page.getByRole('button', { name: /^Settings Appearance$/ });
+        if (await category.isVisible()) {
+          await category.click();
+          await page.getByRole('menuitem', { name: 'Connections', exact: true }).click();
+        } else {
+          await page.getByRole('button', { name: 'Connections', exact: true }).first().click();
+        }
+        await expect(page.getByRole('button', { name: /^Hermes diagnostics/ })).toBeVisible();
+        await page.getByRole('button', { name: 'Connections', exact: true }).last().click();
         await page.getByRole('button', { name: /^Synthetic replacement host http:/ }).click();
         await page.getByRole('button', { name: 'Connect chat', exact: true }).click();
         await expect.poll(async () => (await state(page)).active_session_id).toBe(session);

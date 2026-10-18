@@ -55,3 +55,28 @@ void main() {
     });
   }
 }
+
+testWidgets('wide chat shows the session rail and suppresses the active session bar', (tester) async {
+  final channel = FakeHermesChannel();
+  tester.view.physicalSize = Size(1440.0, 1000.0);
+  addTearDown(tester.view.resetPhysicalSize);
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [hermesChannelProvider.overrideWithValue(channel)],
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: HermesChatScreen(),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  expect(
+    find.byKey(const ValueKey('hermes-session-rail-search-field')),
+    findsOneWidget,
+  );
+  expect(
+    find.byKey(const ValueKey('hermes-active-session-bar')),
+    findsNothing,
+  );
+});

@@ -605,29 +605,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-M4-DISCOVERY-SELECTION-CONTRACT** — Trace catalog selection separately from search.
-  Goal: M4-DISCOVER
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-DISCOVER](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [catalog trace](docs/quality/m4-discovery-catalog-contract.md).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: distinguish local selection from installation. Assess one exact
-  profile-targeted install contract, consent/effects, authoritative result/readback
-  and failure/no-replay oracle, or its evidenced absence. Catalog availability
-  grants no install authority. No installation or shadow catalog.
-  Dependencies: DOC-M4-CONTRACT-CHECKPOINT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace selection
-  and one profile-targeted install handler/model, nearest tests and Desktop/Wing
-  callers against every Acceptance item. Record consent/effects, readback and
-  failure/no-replay guarantees or absence without installing anything. Verify
-  changed Markdown targets, obtain independent contract/security review, and
-  run `git diff --check`.
-  Touches: docs/quality/
-
 - [ ] **DOC-M4-HOST-LIFECYCLE-EVIDENCE** — Attribute one Wing Link host-lifecycle approval boundary.
   Goal: M4-PLATFORMS
 Section: Next.
@@ -1402,4 +1379,12 @@ does not mark any check passed or authorize live actions.
   - Android save/share remains unsupported by the current native saver gate; injected supported-saving fixtures do not qualify it. Existing fixture share-sheet acceptance reconciliation remains unchanged.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M5-LARGE-TEXT-EVIDENCE.
+  Status: open
+
+- [ ] DOC-M4-DISCOVERY-SELECTION-CONTRACT-LIVE — Live checks for DOC-M4-DISCOVERY-SELECTION-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-DISCOVERY-SELECTION-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No platform/native/browser/live journey exercised. Only after an eligible authoritative install contract exists and a separately authorized isolated target is available: authenticated install/denial, exact-profile authoritative readback, failure/uncertainty/no-replay and named-platform accessible selection/consent/recovery journeys. This receipt authorizes no installation.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-DISCOVERY-SELECTION-CONTRACT.
   Status: open

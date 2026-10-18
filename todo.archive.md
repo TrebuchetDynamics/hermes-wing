@@ -7418,3 +7418,29 @@ Source section: Now / Next
   procedures, not fresh passes. Do not install, suppress findings or reconstruct
   deleted Go checks. Any remaining finding retains the existing risk-decision limits.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Map account expiry and logout separately from acquisition.
+  Goal: ACCOUNT
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [acquisition lifecycle limits](docs/quality/account-oauth-acquisition-contract.md#expiry-cancellation-logout-and-revocation-are-distinct).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name exact fail-closed expiry/revocation proof or unavailable authority. No provisioning, wallet use or secret acquisition.
+  Dependencies: DOC-ACCOUNT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace expiry,
+  logout/revocation and fallback authority through handlers/models, nearest tests
+  and Desktop/Wing callers against Acceptance. Attribute exact fail-closed proof
+  or unavailable authority; verify changed Markdown targets, obtain independent
+  contract/security review, and run `git diff --check`. No sign-in, refresh,
+  logout/revocation request, provisioning, wallet action or credential access.
+  Touches: docs/quality/
+  Readiness: source-only documentation; native/live qualification stays separate.

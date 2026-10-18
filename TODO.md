@@ -500,27 +500,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Map account expiry and logout separately from acquisition.
-  Goal: ACCOUNT
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [acquisition lifecycle limits](docs/quality/account-oauth-acquisition-contract.md#expiry-cancellation-logout-and-revocation-are-distinct).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name exact fail-closed expiry/revocation proof or unavailable authority. No provisioning, wallet use or secret acquisition.
-  Dependencies: DOC-ACCOUNT-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace expiry,
-  logout/revocation and fallback authority through handlers/models, nearest tests
-  and Desktop/Wing callers against Acceptance. Attribute exact fail-closed proof
-  or unavailable authority; verify changed Markdown targets, obtain independent
-  contract/security review, and run `git diff --check`. No sign-in, refresh,
-  logout/revocation request, provisioning, wallet action or credential access.
-  Touches: docs/quality/
-  Readiness: source-only documentation; native/live qualification stays separate.
-
 ### **P1** — Daily use, recovery and core Desktop composition
 
 - [ ] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
@@ -1673,4 +1652,14 @@ does not mark any check passed or authorize live actions.
   - Named-target release signing, installation, activation, rollback and distribution remain separate qualification; no release workflow or publication was executed.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: SECURITY-RETAINED-RELEASE-AUDIT.
+  Status: open
+
+- [ ] DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE — Live checks for DOC-ACCOUNT-REVOCATION-EVIDENCE
+  Scope: Run the live checks the offline work for DOC-ACCOUNT-REVOCATION-EVIDENCE left pending.
+  Acceptance: Each check passes on the real target:
+  - Separately authorized isolated-provider qualification of actual access-token expiry, rejected refresh and provider-side invalidation scope/acknowledgement; none executed here.
+  - Separately authorized logout followed by authoritative root/pool/CLI resolution checks, in-flight login/refresh and cross-process races, and other-profile/device effects; source findings do not establish post-logout closure.
+  - Current deployed Agent exact lifecycle capabilities/grants and named-platform secure-storage/end-to-end behavior remain unverified; no Wing account lifecycle operation is admitted by this study.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-ACCOUNT-REVOCATION-EVIDENCE.
   Status: open

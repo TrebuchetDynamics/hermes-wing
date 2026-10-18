@@ -5654,6 +5654,7 @@
         "DOC-ACCOUNT-CONTRACT",
         "DOC-ACCOUNT-CONTRACT-LIVE",
         "DOC-ACCOUNT-REVOCATION-EVIDENCE",
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE",
         "PARITYUPDATE-003-b1"
       ],
       "title": "Qualify account/OAuth/pools/credits/wallet authority before exposure"
@@ -6898,7 +6899,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
       "DEV-001-c7",
@@ -6964,7 +6964,8 @@
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT-LIVE",
-      "SECURITY-RETAINED-RELEASE-AUDIT-LIVE"
+      "SECURITY-RETAINED-RELEASE-AUDIT-LIVE",
+      "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -6995,16 +6996,6 @@
       "section": "Next",
       "status": "open",
       "title": "Use official Flutter MCP for a bounded Wing architecture review"
-    },
-    {
-      "depends_on": [
-        "DOC-ACCOUNT-CONTRACT"
-      ],
-      "goal": "ACCOUNT",
-      "id": "DOC-ACCOUNT-REVOCATION-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Map account expiry and logout separately from acquisition"
     },
     {
       "depends_on": [
@@ -7239,6 +7230,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-ACCOUNT-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE"
+      ],
+      "goal": "ACCOUNT",
+      "id": "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-ACCOUNT-REVOCATION-EVIDENCE"
     },
     {
       "depends_on": [
@@ -7873,6 +7874,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one provider OAuth acquisition contract"
+    },
+    {
+      "depends_on": [
+        "DOC-ACCOUNT-CONTRACT"
+      ],
+      "goal": "ACCOUNT",
+      "id": "DOC-ACCOUNT-REVOCATION-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Map account expiry and logout separately from acquisition"
     },
     {
       "depends_on": [],

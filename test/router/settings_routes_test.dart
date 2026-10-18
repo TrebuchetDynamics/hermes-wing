@@ -50,6 +50,19 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    Future<void> selectCategory(String label) async {
+      final picker = find.byKey(const ValueKey('settings-category-picker'));
+      if (picker.evaluate().isNotEmpty) {
+        await tester.tap(picker);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(label).last);
+      } else {
+        await tester.tap(find.text(label).last);
+      }
+      await tester.pumpAndSettle();
+    }
+
+    await selectCategory('Chat');
     final voice = find.byKey(const ValueKey('settings-voice-link'));
     await Scrollable.ensureVisible(tester.element(voice), alignment: 0.5);
     await tester.pumpAndSettle();
@@ -77,6 +90,7 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
+    await selectCategory('Connections');
     final diagnostics = find.byKey(const ValueKey('settings-diagnostics-link'));
     await Scrollable.ensureVisible(tester.element(diagnostics), alignment: 0.5);
     await tester.pumpAndSettle();

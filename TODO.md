@@ -169,11 +169,7 @@ Section: Next.
   The later integration receipt `autowork-execution/f12ff11360124dc78c39313d92c0af0c.json`
   records timeout on candidate `cc17733cd3df5405a8627d6acc924620228f21ff`, based on
   `b5c4a4bff404c72b08e816f3f429db13252049e3`; it supplies no passing acceptance.
-  Next action: reconcile the existing worker commit with the current Wing baseline,
-  retaining its two test-harness corrections and transport gate; reproduce/repair
-  any remaining failures and finish source-bound merged-candidate checks/review.
-  Do not recreate the presentation, repin old receipts or mark this task done from
-  worker-only evidence. Android, native accessibility and live qualification remain open.
+  Next action: integration-only recovery for retained worker commit 153226bf5e943c160ebf1fec93ef35035a71f491 (tree 99a5b6a47f9447236faed9aa238f398ee796379f), not another implementation. The recorded worker PID birth identity is no longer live. Preserve its dirty pubspec.lock separately; the commit and latest report retain reported focused, Chat/router and compiled-browser checks plus independent source review. The existing coordinator must reconcile its reported merge conflict with current Wing source, preserve both sides' ownership/transport tests and settings, and rerun affected checks on the integrated candidate before delivery. Do not repin old receipts or use an obsolete source workspace. Native-serve tabs remain explicitly unavailable; Android, accessibility and live acceptance stay open. No worker launch, branch integration, push or live action is performed by this planning update.
 
 - [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Goal: PARITY-TABS. Section: Next. Implement and
   qualify reconnect for two distinct session-owned conversation tabs.
@@ -268,25 +264,6 @@ Section: Next.
 
 ### **P4** — Extended experiences and physical qualification
 
-- [ ] **VERIFY-SLASH-AUTHORITATIVE-TRANSPORT** —  Qualify supported authoritative slash execution and unavailable-action recovery.
-  Goal: SLASH-CATALOG
-Section: Next.
-  Payoff: match official Desktop command outcomes without treating ordinary chat fallback as command execution.
-  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
-  [catalog contract](docs/quality/slash-catalog-contract.md),
-  [denial and recovery evidence](docs/quality/slash-denial-evidence.md).
-  Scope: implement only exact advertised unmodified Agent command contracts and their
-  coherent composer/recovery consumers; preserve direct Agent ownership and no replay.
-  Acceptance: catalog/completion/dispatch identity and grants match the selected Agent;
-  unavailable-action disclosure and zero specialized I/O have production-path oracles;
-  ordinary chat fallback is explicit. Record separate native/live proof before parity.
-  Dependencies: DOC-SLASH-DENIAL-EVIDENCE.
-  Ownership: unclaimed; blocked by absent advertised authoritative command transport.
-  No shell bridge, invented routes, upstream edits or repeated contract audit may substitute.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Trace exact advertised operation/grant ownership and add production-path catalog/dispatch/denial oracles; rebuild the deterministic E2E target before browser checks. Preserve the absent-authoritative-transport hold and explicit ordinary-chat fallback; no invented command route, live execution or refusal-only parity claim.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
-
 - [ ] **MT-RERUN-TRAIN** —  Rerun canonical integration gates
   on a newly captured combined tree, not the repaired historical candidate.
   Goal: INTEGRATION
@@ -353,6 +330,7 @@ Section: Next.
   captured input. Source refresh is still pending; this documentation repair
   neither performs integration nor qualifies the combined source.
 
+  Next action: integration-only source handoff, not another lock repair: the coordinator must refresh the retained worker workspace from the actual combined current Wing input before any full rerun. Main already contains 80e41ed8 and pubspec.lock blob 8a84003a7a7b1fbc26f25e2e09892baec2e6e66d; the latest worker still reports HEAD 8d8141b761c5bd92157fdbe84567ef2e8ba6c95e and old blob 104e43950f4c7ceb4ed15836a3345e2739facd46. Preserve its uncommitted formatter correction and merge-train receipt, do not ask the worker to merge/rebase or copy a lock to fake eligibility. Reconcile the existing tab/source-owner repairs and native focus-pixel investigation, then capture one fresh source/tool/dependency tree and rerun all required gates. Old failures remain historical; neither a source-refresh instruction nor a focused pass is gate success.
 
 - [ ] **MT-VERIFY-BROWSER-GATES** — Goal: INTEGRATION. Section: Next. Prove the same combined
   source's compiled browser journeys and exact request counts.
@@ -388,27 +366,6 @@ Section: Next.
   independent; no CLI/direct-file substitute, Agent patch or restore execution.
 
 ### **P2** — Remaining supported feature parity and accessibility
-
-- [ ] **FILES-TERMINAL-BROWSE** —  Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
-  Goal: PARITY
-Section: Next.
-  Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
-  [FILES-1, FILES-2 and FILES-4](docs/product/prd.md#terminal-working-directory-files), owner-confirmed terminal working directory.
-  Scope: [source tracing is complete](docs/analysis/terminal-files-feasibility.md); implement the read-only Files surface through qualified authenticated `hermes serve` routes. Qualify actual file authentication, authoritative session/profile root and server-enforced canonical containment before enabling access. List/read-text lack session parameters; local default-cwd and non-SSH execution backends need explicit qualification. Messaging-API-only connections remain unsupported. No Wing Link requirement, Agent edits, arbitrary shell, host-wide browser, file writes or prompt-based retrieval.
-  Acceptance: folders/files and read-only bounded text previews; exact connection/profile/session root; keyboard/touch access; loading/empty/denied/unsupported/retry states; context-change stale-result rejection; traversal/symlink denial; no incidental mutation or content logs. Linux and Android device checks remain separately recorded.
-  Dependencies: none. Preserve the current leading connection milestone. Ownership: unassigned.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Add the specified root/authentication/containment/owner-race oracles, then rebuild `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Linux/Android and actual-Agent cells require their existing target/access gates; no fixture pass qualifies live file access.
-  Run `flutter gen-l10n` after editing English copy in `lib/l10n/app_en.arb`;
-  never hand-edit generated localization output. Include regenerated output in
-  analysis and the affected UI checks above.
-  Touches: lib/core/hermes/, lib/features/, lib/router/, test/core/hermes/, test/features/, test/router/, integration_test/, playwright/tests/, docs/quality/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
-  Evidence: `autowork-execution/slot-data/FILES-TERMINAL-BROWSE/attempt-1/report.json`
-  under the Git common directory names exactly these three localization paths for
-  the already-required accessible labels, empty/denied/unsupported states, bounded
-  preview and root-ownership explanations. No new product behavior or live access
-  is admitted. The worker stopped before edits; resume the existing implementation
-  contract with localized copy and unchanged authentication/containment gates.
-
 
 - [ ] **FILES-TERMINAL-DOWNLOAD** — Goal: PARITY. Download an individual selected workspace file to the device running Wing.
   Sources: [FILES-3 and FILES-4](docs/product/prd.md#terminal-working-directory-files) and [existing raw-download contract](docs/analysis/terminal-files-feasibility.md#existing-contracts-and-official-consumers). Use the qualified owning `serve` connection and authenticated headers, not preview text or a token-bearing URL. Save-picker and byte-readback qualification remain open on both platforms.
@@ -747,6 +704,51 @@ Section: Next.
   authorized by this read-only preparation.
 
 ## Needs decision
+
+- [ ] **FILES-TERMINAL-BROWSE** —  Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
+  Goal: PARITY
+Section: Needs decision.
+  Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
+  [FILES-1, FILES-2 and FILES-4](docs/product/prd.md#terminal-working-directory-files), owner-confirmed terminal working directory.
+  Scope: [source tracing is complete](docs/analysis/terminal-files-feasibility.md); implement the read-only Files surface through qualified authenticated `hermes serve` routes. Qualify actual file authentication, authoritative session/profile root and server-enforced canonical containment before enabling access. List/read-text lack session parameters; local default-cwd and non-SSH execution backends need explicit qualification. Messaging-API-only connections remain unsupported. No Wing Link requirement, Agent edits, arbitrary shell, host-wide browser, file writes or prompt-based retrieval.
+  Acceptance: folders/files and read-only bounded text previews; exact connection/profile/session root; keyboard/touch access; loading/empty/denied/unsupported/retry states; context-change stale-result rejection; traversal/symlink denial; no incidental mutation or content logs. Linux and Android device checks remain separately recorded.
+  Dependencies: none. Preserve the current leading connection milestone. Ownership: unassigned.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Add the specified root/authentication/containment/owner-race oracles, then rebuild `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Linux/Android and actual-Agent cells require their existing target/access gates; no fixture pass qualifies live file access.
+  Run `flutter gen-l10n` after editing English copy in `lib/l10n/app_en.arb`;
+  never hand-edit generated localization output. Include regenerated output in
+  analysis and the affected UI checks above.
+  Touches: lib/core/hermes/, lib/features/, lib/router/, test/core/hermes/, test/features/, test/router/, integration_test/, playwright/tests/, docs/quality/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
+  Evidence: `autowork-execution/slot-data/FILES-TERMINAL-BROWSE/attempt-1/report.json`
+  under the Git common directory names exactly these three localization paths for
+  the already-required accessible labels, empty/denied/unsupported states, bounded
+  preview and root-ownership explanations. No new product behavior or live access
+  is admitted. The worker stopped before edits; resume the existing implementation
+  contract with localized copy and unchanged authentication/containment gates.
+  Readiness: CONTRACT-UNREADY: the latest source-bound attempt established no safe positive enablement rule for exact session/profile/backend root and canonical server confinement. Localization scope is already repaired; do not repeat that repair or submit an always-disabled feature as completed Files support.
+  Planner decision: skip positive Files implementation until an existing unmodified Agent contract establishes all FILES-4 guarantees. Keep the original acceptance and FILES-TERMINAL-DOWNLOAD dependency; missing API authority is not a question the owner can waive. No shell/SFTP substitute, Agent edits, incidental-write probe or speculative qualification flag. Reconsider only with new source-bound contract evidence and independent review.
+  Next action: retain the clean candidate at 0b9cc27d9b7df5265dedd19622b106579c385ee9 and its latest report as evidence. Resume only after the missing offline contract is supplied and reviewed; native/live cells remain separately gated.
+
+- [ ] **VERIFY-SLASH-AUTHORITATIVE-TRANSPORT** —  Qualify supported authoritative slash execution and unavailable-action recovery.
+  Goal: SLASH-CATALOG
+Section: Needs decision.
+  Payoff: match official Desktop command outcomes without treating ordinary chat fallback as command execution.
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [catalog contract](docs/quality/slash-catalog-contract.md),
+  [denial and recovery evidence](docs/quality/slash-denial-evidence.md).
+  Scope: implement only exact advertised unmodified Agent command contracts and their
+  coherent composer/recovery consumers; preserve direct Agent ownership and no replay.
+  Acceptance: catalog/completion/dispatch identity and grants match the selected Agent;
+  unavailable-action disclosure and zero specialized I/O have production-path oracles;
+  ordinary chat fallback is explicit. Record separate native/live proof before parity.
+  Dependencies: DOC-SLASH-DENIAL-EVIDENCE.
+  Ownership: unclaimed; blocked by absent advertised authoritative command transport.
+  No shell bridge, invented routes, upstream edits or repeated contract audit may substitute.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Trace exact advertised operation/grant ownership and add production-path catalog/dispatch/denial oracles; rebuild the deterministic E2E target before browser checks. Preserve the absent-authoritative-transport hold and explicit ordinary-chat fallback; no invented command route, live execution or refusal-only parity claim.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+  Readiness: CONTRACT-UNREADY: the latest attempt confirms no authoritative catalog/completion/dispatch contract on Wing's consumed transport. No changed inputs justify another unchanged audit or refusal-only implementation.
+  Planner decision: skip command execution qualification until the exact advertised unmodified Agent operation, grants and owner identity contract exists. Preserve original acceptance, dependencies and unavailable behavior; no ordinary-chat success substitution, shell bridge, invented routes or upstream changes.
+  Next action: retain the clean b5c4a4bff404c72b08e816f3f429db13252049e3 attempt/report; reconsider only on new qualifying contract evidence, then keep native/live execution separately gated.
+
 
 - [ ] **CONNECTION-LINK-REMOVAL** — Goal: CONNECTION-PATHS. Remove Wing Link
   from all product connection/setup, profile/catalog and management paths, including

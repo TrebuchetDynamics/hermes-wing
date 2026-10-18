@@ -307,7 +307,8 @@ Section: Next.
   Dependencies: MT-APP-SHELL-STATUS-BAR (done). Ownership: existing integration
   owner only; this entry creates no board lane and must not be independently claimed.
   Checks: On the captured combined tree, `dart format --output=none --set-exit-if-changed lib test integration_test`; `flutter analyze`; `flutter test --concurrency=1`; `npm audit`; `git diff --check`. Browser gates stay with MT-VERIFY-BROWSER-GATES. Retired service Go checks do not authorize recreating the removed service. Only the existing integration owner runs this task; retain every applicable canonical gate and terminal failure.
-  Touches: docs/quality/, test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart
+  Touches: docs/quality/, test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart, pubspec.lock
+  Touches widened by the runner from worker evidence: pubspec.lock
   Evidence: the retained `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json`
   under the Git common directory records a formatter failure at
   `8d8141b761c5bd92157fdbe84567ef2e8ba6c95e` in the explicitly added test path,

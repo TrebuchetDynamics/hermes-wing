@@ -85,8 +85,18 @@ ThemeData _buildWingTheme(
   return ThemeData(
     colorScheme: colorScheme,
     useMaterial3: true,
-    fontFamily: 'sans-serif',
-    fontFamilyFallback: const ['Helvetica Neue', 'Arial', 'DejaVu Sans'],
+    // Native equivalents of official Desktop's SYSTEM_SANS font stack.
+    fontFamily: 'Segoe UI',
+    fontFamilyFallback: const [
+      'SF Pro Text',
+      'SF Pro Display',
+      'Roboto',
+      'DejaVu Sans',
+      'sans-serif',
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Noto Color Emoji',
+    ],
     scaffoldBackgroundColor: colorScheme.surface,
     textTheme: const TextTheme(
       headlineLarge: TextStyle(
@@ -143,7 +153,7 @@ ThemeData _buildWingTheme(
       style: FilledButton.styleFrom(
         minimumSize: const Size(48, 48),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2.5)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -151,13 +161,13 @@ ThemeData _buildWingTheme(
         minimumSize: const Size(48, 48),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         side: BorderSide(color: colorScheme.outlineVariant),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2.5)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         minimumSize: const Size(48, 48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2.5)),
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(

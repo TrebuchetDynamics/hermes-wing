@@ -25,6 +25,20 @@ Widget testApp() => ProviderScope(
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  test('Desktop control shape retains accessible targets and native fonts', () {
+    for (final theme in [wingLightTheme, wingDarkTheme]) {
+      expect(theme.textTheme.bodyMedium?.fontFamily, 'Segoe UI');
+      for (final style in [
+        theme.filledButtonTheme.style!,
+        theme.outlinedButtonTheme.style!,
+        theme.textButtonTheme.style!,
+      ]) {
+        expect(style.minimumSize!.resolve({}), const Size(48, 48));
+        final shape = style.shape!.resolve({})! as RoundedRectangleBorder;
+        expect(shape.borderRadius, BorderRadius.circular(2.5));
+      }
+    }
+  });
   test('default themes project official Desktop Nous applied surfaces', () {
     final light = wingLightTheme.colorScheme;
     final dark = wingDarkTheme.colorScheme;

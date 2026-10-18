@@ -1,4 +1,13 @@
-# Exact-artifact Linux service observations
+# Historical exact-artifact Linux service observations
+
+**Archived recorder contract, not current setup or an executable procedure.**
+Wing Link and `scripts/record_linux_service_qualification.mjs` were removed by
+`bce4ec5fb9109d29520b81260f13bad93c6f2cb7`. Commands and inputs below describe
+that retired tool only; do not restore or run it. No installed personal service
+was removed by source retirement. See the [host-lifecycle attribution](m4-host-lifecycle-approval-evidence.md)
+for approval, liveness and recovered-health evidence limits, and
+[Agent-only delivery](../adr/runtime-and-delivery.md#agent-only-delivery) for the
+current boundary. These service phases do not qualify the replacement client.
 
 `scripts/record_linux_service_qualification.mjs` records local manual observations
 without installing, starting, stopping, updating, or removing services. No live

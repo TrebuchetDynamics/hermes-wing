@@ -387,7 +387,8 @@ Section: Next.
   card t_a466ece0 against removed inputs before execution. No card or lease change
   is authorized here. Queued in Next, not dispatched by this documentation pass.
   Checks: On Node.js 22 run `npm audit --audit-level=high`, `node --test test/tooling/omniroute_retirement_test.mjs`, and `flutter test --no-pub test/features/profiles/profile_catalog_test.dart`; `git diff --check`. Preserve the Acceptance above: any missing or retired historical Go check is recorded explicitly as unavailable/not run, never fabricated or silently passed. No installer recreation or audit suppression.
-  Touches: package.json, package-lock.json, test/tooling/, test/features/profiles/, docs/quality/
+  Touches: package.json, package-lock.json, test/tooling/, test/features/profiles/, docs/quality/, pubspec.lock
+  Touches widened by the runner from worker evidence: pubspec.lock
 
 
 - [ ] **FILES-TERMINAL-BROWSE** —  Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.

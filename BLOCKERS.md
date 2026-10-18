@@ -20,13 +20,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T08:41:56Z
 - Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
-### Q-VERIFY-OMNIROUTE-NODE22-CLOSURE — USER_INPUT — effort input — unblocks 1
-
-- Task: VERIFY-OMNIROUTE-NODE22-CLOSURE — Verify retired OmniRoute paths and retained dependencies on Node.js 22.
-- Needs: worker reported a blocker: Coordinator must add the explicit protected path pubspec.lock to Touches to allow SDK-compatible locked dependency resolution. The committed lock cannot be resolved unchanged by installed Flutter 3.44.2; flutter pub get --offline --enforce-lockfile requires seven downgrades. No lock edit or unlocked substitute verification was performed. After scope expansion, repair the lock and rerun the require…
-- Since: 2026-10-18T08:56:41Z
-- Answer: Answer in VERIFY-OMNIROUTE-NODE22-CLOSURE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — USER_INPUT — effort input — unblocks 0
 
 - Task: VERIFY-SLASH-AUTHORITATIVE-TRANSPORT — Qualify supported authoritative slash execution and unavailable-action recovery.

@@ -7252,3 +7252,29 @@ Section: Next.
   Acceptance; verify changed Markdown targets, obtain independent contract/security
   review, and run `git diff --check`. No job execution, delivery or credential access.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M5-LARGE-TEXT-EVIDENCE** — Attribute one 200-percent-text message-action journey.
+  Goal: M5
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M5](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [fixture follow-up](docs/quality/2026-10-03-android-qualification-discovery.md#offline-fixture-follow-up--doc-m5-android-fixture).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify source-bound keyboard focus and reachable copy/export controls or a missing deterministic oracle. Do not label this TalkBack or device qualification.
+  Dependencies: DOC-M5-ANDROID-FIXTURE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin Wing with `git rev-parse HEAD`; inspect
+  `test/features/hermes_chat/screens/hermes_chat_message_actions_a11y_test.dart`,
+  `test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart`
+  and their production callers against the retained receipts. Attribute the
+  200-percent-text focus/copy/export proof or missing oracle, verify changed
+  Markdown targets, and run `git diff --check`. Source/receipt inspection only;
+  do not run a device journey or promote fixtures to TalkBack qualification.
+  Touches: docs/quality/

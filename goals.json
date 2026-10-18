@@ -5564,7 +5564,8 @@
       "tasks": [
         "DOC-M5-ANDROID-FIXTURE",
         "DOC-M5-ANDROID-FIXTURE-LIVE",
-        "DOC-M5-LARGE-TEXT-EVIDENCE"
+        "DOC-M5-LARGE-TEXT-EVIDENCE",
+        "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE"
       ],
       "title": "Qualify native output and accessible interaction"
     },
@@ -6890,7 +6891,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M5-LARGE-TEXT-EVIDENCE",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
@@ -6944,7 +6944,8 @@
       "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE",
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE",
       "DOC-M4-MCP-CONFIG-CONTRACT-LIVE",
-      "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE"
+      "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE",
+      "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -7027,16 +7028,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace memory capacity/provider reads separately from entry reads"
-    },
-    {
-      "depends_on": [
-        "DOC-M5-ANDROID-FIXTURE"
-      ],
-      "goal": "M5",
-      "id": "DOC-M5-LARGE-TEXT-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Attribute one 200-percent-text message-action journey"
     },
     {
       "depends_on": [
@@ -7459,6 +7450,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M5-ANDROID-FIXTURE"
+    },
+    {
+      "depends_on": [
+        "DOC-M5-LARGE-TEXT-EVIDENCE"
+      ],
+      "goal": "M5",
+      "id": "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M5-LARGE-TEXT-EVIDENCE"
     },
     {
       "depends_on": [
@@ -8330,6 +8331,16 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify native output and accessible interaction"
+    },
+    {
+      "depends_on": [
+        "DOC-M5-ANDROID-FIXTURE"
+      ],
+      "goal": "M5",
+      "id": "DOC-M5-LARGE-TEXT-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Attribute one 200-percent-text message-action journey"
     },
     {
       "depends_on": [],

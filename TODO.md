@@ -605,27 +605,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-M5-LARGE-TEXT-EVIDENCE** — Attribute one 200-percent-text message-action journey.
-  Goal: M5
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M5](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [fixture follow-up](docs/quality/2026-10-03-android-qualification-discovery.md#offline-fixture-follow-up--doc-m5-android-fixture).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify source-bound keyboard focus and reachable copy/export controls or a missing deterministic oracle. Do not label this TalkBack or device qualification.
-  Dependencies: DOC-M5-ANDROID-FIXTURE; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin Wing with `git rev-parse HEAD`; inspect
-  `test/features/hermes_chat/screens/hermes_chat_message_actions_a11y_test.dart`,
-  `test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart`
-  and their production callers against the retained receipts. Attribute the
-  200-percent-text focus/copy/export proof or missing oracle, verify changed
-  Markdown targets, and run `git diff --check`. Source/receipt inspection only;
-  do not run a device journey or promote fixtures to TalkBack qualification.
-  Touches: docs/quality/
-
 - [ ] **DOC-M4-DISCOVERY-SELECTION-CONTRACT** — Trace catalog selection separately from search.
   Goal: M4-DISCOVER
 Section: Next.
@@ -1414,4 +1393,13 @@ does not mark any check passed or authorize live actions.
   - No browser/native/device UI, live authentication, job execution or delivery was exercised. Any future existing-job delivery edit requires a separately authorized disposable target exposing a suitable unmodified advertised operation, exact grants, identity/revision checks and safe reconciliation; credential provisioning for another target requires its own write-only contract. These absent guarantees do not block this read-only evidence task.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-SCHEDULE-DELIVERY-CONTRACT.
+  Status: open
+
+- [ ] DOC-M5-LARGE-TEXT-EVIDENCE-LIVE — Live checks for DOC-M5-LARGE-TEXT-EVIDENCE
+  Scope: Run the live checks the offline work for DOC-M5-LARGE-TEXT-EVIDENCE left pending.
+  Acceptance: Each check passes on the real target:
+  - Named owned Android target and matching isolated QA artifact are still needed for actual clipboard readback, Android system 200% text, keyboard/CJK IME and TalkBack focus/actions; no device, browser or native runtime journey ran in this source-inspection task.
+  - Android save/share remains unsupported by the current native saver gate; injected supported-saving fixtures do not qualify it. Existing fixture share-sheet acceptance reconciliation remains unchanged.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M5-LARGE-TEXT-EVIDENCE.
   Status: open

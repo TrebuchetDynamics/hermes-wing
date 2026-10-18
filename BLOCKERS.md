@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
+### Q-DOC-ACCOUNT-REVOCATION-EVIDENCE — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-ACCOUNT-REVOCATION-EVIDENCE — Goal: ACCOUNT. Section: Next. Map account expiry and logout separately from acquisition.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T12:27:55Z
+- Answer: Fix DOC-ACCOUNT-REVOCATION-EVIDENCE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE — USER_DECISION — effort decision — unblocks 1
 
 - Task: DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE — Goal: ARTIFACTS. Section: Next. Map hostile-content rejection for one permitted artifact type.

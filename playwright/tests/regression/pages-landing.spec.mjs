@@ -1,4 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { writeFile } from "node:fs/promises";
+import { cpus } from "node:os";
+import { enableFlutterAccessibility } from "../../support/flutter_semantics.mjs";
 
 test.skip(
   !process.env.PAGES_BASE_URL,
@@ -6,6 +11,11 @@ test.skip(
 );
 
 const root = process.env.PAGES_BASE_URL ?? "http://127.0.0.1:8769/hermes-wing/";
+
+// Explicit input in CI; local smoke binds to the checked-out candidate, not the old public site.
+const revision = process.env.PAGES_EXPECTED_REVISION ?? (process.env.PAGES_BASE_URL
+  ? execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim()
+  : "");
 
 function collectPageFailures(page) {
   const failures = [];
@@ -16,8 +26,13 @@ function collectPageFailures(page) {
     }
   });
   page.on("response", (response) => {
-    if (response.status() >= 400 && response.url().startsWith(root)) {
+    if (response.status() >= 400 && new URL(response.url()).origin === new URL(root).origin) {
       failures.push(`http ${response.status()}: ${response.url()}`);
+    }
+  });
+  page.on("requestfailed", (request) => {
+    if (new URL(request.url()).origin === new URL(root).origin) {
+      failures.push(`requestfailed: ${request.url()}: ${request.failure()?.errorText}`);
     }
   });
   return failures;
@@ -74,6 +89,24 @@ async function expectLanding(page) {
   ).toBeTruthy();
 }
 
+test("assembled entrypoints and proof assets belong to this exact candidate", async ({ request }) => {
+  const response = await request.get(`${root}artifact.json`);
+  expect(response.ok()).toBeTruthy();
+  const manifest = await response.json();
+  expect(manifest.revision).toBe(revision);
+  expect(Object.keys(manifest.files)).toEqual(expect.arrayContaining([
+    "index.html", "styles.css", "assets/app-icon.png", "assets/showcase.png",
+    "assets/showcase-mobile.png", "app/index.html", "app/flutter_bootstrap.js", "app/main.dart.js",
+  ]));
+  for (const [path, expected] of Object.entries(manifest.files)) {
+    const asset = await request.get(new URL(path, root).href);
+    expect(asset.ok(), path).toBeTruthy();
+    const bytes = await asset.body();
+    expect(bytes.length, path).toBe(expected.bytes);
+    expect(createHash("sha256").update(bytes).digest("hex"), path).toBe(expected.sha256);
+  }
+});
+
 test("Pages root is a responsive Hermes Wing landing page", async ({
   page,
 }) => {
@@ -96,6 +129,108 @@ test("Pages root is a responsive Hermes Wing landing page", async ({
       }),
     )
     .toBeTruthy();
+  expect(failures).toEqual([]);
+});
+
+test("assembled setup, proof and local navigation destinations resolve", async ({ page, request }) => {
+  const failures = collectPageFailures(page);
+  await page.goto(root, { waitUntil: "networkidle" });
+  const links = await page.locator("a[href]").evaluateAll((links) => links.map((link) => link.href));
+  for (const href of new Set(links)) {
+    const target = new URL(href);
+    if (target.origin !== new URL(root).origin) continue; // Repository anchors are checked offline by the tooling contract.
+    expect(target.pathname.startsWith(new URL(root).pathname), href).toBeTruthy();
+    if (target.hash) {
+      expect(await page.locator(`[id="${target.hash.slice(1)}"]`).count(), href).toBe(1);
+    } else {
+      expect((await request.get(href)).ok(), href).toBeTruthy();
+    }
+  }
+  const share = new URL(await page.locator('meta[property="og:image"]').getAttribute("content"));
+  const localShare = new URL(`assets/${share.pathname.split("/").at(-1)}`, root);
+  expect((await request.get(localShare.href)).ok()).toBeTruthy();
+  await expect(page.locator(".product-frame img")).toHaveAttribute("loading", "lazy");
+  await expect(page.locator(".flow-frame img")).toHaveAttribute("loading", "lazy");
+  expect(failures).toEqual([]);
+});
+
+test("landing exposes named semantic content and readable theme pairs", async ({ page }) => {
+  const failures = collectPageFailures(page);
+  await page.goto(root, { waitUntil: "networkidle" });
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  await expect(page.getByRole("main")).toHaveCount(1);
+  const headings = await page.locator("h1,h2,h3,h4,h5,h6").evaluateAll((elements) => elements.map((element) => Number(element.tagName[1])));
+  headings.forEach((level, index) => expect(level).toBeLessThanOrEqual((headings[index - 1] ?? 0) + 1));
+  for (const link of await page.getByRole("link").all()) await expect(link).toHaveAccessibleName(/\S/);
+  for (const image of await page.locator("main img").all()) await expect(image).toHaveAttribute("alt", /\S/);
+  // Focused theme-pair guard, not a full WCAG/gradient/image contrast audit.
+  const contrast = await page.evaluate(() => {
+    const luminance = (color) => color.match(/[\d.]+/g).slice(0, 3).map(Number).map((value) => {
+      const s = value / 255;
+      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    }).reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+    return [".hero-lede", ".release-note", "#connect p", ".trust-note", ".product-frame figcaption", ".status-copy", ".hero-actions .button-primary"].map((selector) => {
+      const element = document.querySelector(selector);
+      const style = getComputedStyle(element);
+      const foreground = luminance(style.color);
+      // Brightest theme surface bounds these dark text backgrounds; primary CTA is opaque.
+      const background = luminance(element.matches(".button-primary") ? style.backgroundColor : "rgb(16, 24, 39)");
+      return { selector, ratio: (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05) };
+    });
+  });
+  for (const { selector, ratio } of contrast) expect(ratio, selector).toBeGreaterThanOrEqual(4.5);
+  expect(failures).toEqual([]);
+});
+
+test("cold mobile landing stays within controlled lab budgets", async ({ page, context, browser }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Network.enable");
+  await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
+  await cdp.send("Network.setBypassServiceWorker", { bypass: true });
+  await cdp.send("Network.emulateNetworkConditions", {
+    offline: false, latency: 150, downloadThroughput: 200000, uploadThroughput: 93750,
+  });
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await page.addInitScript(() => {
+    window.pagesLab = { lcp: 0, cls: 0 };
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) window.pagesLab.lcp = entry.startTime;
+    }).observe({ type: "largest-contentful-paint", buffered: true });
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) if (!entry.hadRecentInput) window.pagesLab.cls += entry.value;
+    }).observe({ type: "layout-shift", buffered: true });
+  });
+  const failures = collectPageFailures(page);
+  const requests = [];
+  page.on("request", (request) => requests.push(request.url()));
+  await page.goto(root, { waitUntil: "networkidle" });
+  await expect.poll(() => page.evaluate(() => window.pagesLab.lcp)).toBeGreaterThan(0);
+  // A fixed post-load observation window, without scrolling or simulated interaction/INP claims.
+  await page.waitForTimeout(1000);
+  const metrics = await page.evaluate(() => ({
+    ...window.pagesLab,
+    decodedBytes: performance.getEntriesByType("navigation")[0].decodedBodySize +
+      performance.getEntriesByType("resource").reduce((sum, entry) => sum + entry.decodedBodySize, 0),
+    observationMs: performance.now(),
+  }));
+  const lab = JSON.stringify({
+    kind: "single-run lab regression; not field Core Web Vitals or INP",
+    browser: browser.version(), node: process.version, viewport: "390x844",
+    device: "desktop Chromium emulation, not physical mobile",
+    host: { platform: process.platform, architecture: process.arch, cpu: cpus()[0]?.model },
+    devicePixelRatio: await page.evaluate(() => window.devicePixelRatio),
+    cpuSlowdown: 4, latencyMs: 150, downloadBytesPerSecond: 200000, uploadBytesPerSecond: 93750,
+    cache: "fresh context, cache disabled, service worker bypassed", metrics, requests,
+  }, null, 2);
+  await writeFile(testInfo.outputPath("landing-lab.json"), lab);
+  await testInfo.attach("landing-lab.json", { contentType: "application/json", path: testInfo.outputPath("landing-lab.json") });
+  console.log(`Pages lab: ${lab}`);
+  expect(metrics.lcp).toBeLessThanOrEqual(2500);
+  expect(metrics.cls).toBeLessThanOrEqual(0.1);
+  expect(metrics.decodedBytes).toBeLessThanOrEqual(350000);
+  expect(requests.every((url) => new URL(url).origin === new URL(root).origin && !new URL(url).pathname.includes("/app/"))).toBeTruthy();
   expect(failures).toEqual([]);
 });
 
@@ -163,6 +298,10 @@ test("nested Flutter web alpha initializes under the app route", async ({
     timeout: 30000,
   });
   await expect(page).toHaveTitle("Hermes Wing");
+  await expect(page.locator("base")).toHaveAttribute("href", "/hermes-wing/app/");
+  // The production welcome must render, not just mount an empty Flutter engine.
+  await enableFlutterAccessibility(page, { delay: 0 });
+  await expect(page.getByRole("heading", { name: "Welcome to Hermes Wing" })).toBeVisible();
   expect(failures).toEqual([]);
 });
 
@@ -188,6 +327,10 @@ for (const width of [1280, 390]) {
       await page.keyboard.press("Tab");
     }
     await expect(cta).toBeFocused();
+    expect(await cta.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return style.outlineStyle !== "none" && parseFloat(style.outlineWidth) >= 2;
+    })).toBeTruthy();
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(`${root}#connect`);
     await expect(page.getByRole("heading", { name: "From connection to first reply." })).toBeInViewport();
@@ -205,6 +348,15 @@ for (const width of [1280, 390]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
     expect(failures).toEqual([]);
     await page.screenshot({ path: test.info().outputPath(`landing-${width}-200.png`), fullPage: true });
+    if (width === 1280) {
+      // 1280/2 CSS pixels models desktop 200% zoom reflow; it is not browser-chrome zoom qualification.
+      await page.evaluate(() => {
+        for (const element of document.querySelectorAll("body, body *")) element.style.removeProperty("font-size");
+      });
+      await page.setViewportSize({ width: 640, height: 450 });
+      await expectLanding(page);
+      await page.screenshot({ path: test.info().outputPath("landing-desktop-200-zoom-reflow.png"), fullPage: true });
+    }
     await context.close();
   });
 }

@@ -20,12 +20,38 @@ void main() {
     expect(workflow, contains('path: build/pages'));
     expect(workflow, contains('actions/deploy-pages@'));
     expect(workflow, contains('Verify deployed landing and web app'));
-    expect(
-      workflow,
-      contains('<title>Hermes Wing — Hermes Agent everywhere</title>'),
-    );
-    expect(workflow, contains('app/flutter_bootstrap.js'));
-    expect(workflow, contains('app/main.dart.js'));
+    expect(workflow, contains("github.ref == 'refs/heads/main'"));
+    expect(workflow, contains("github.event_name == 'push'"));
+    expect(workflow, contains("github.event_name == 'workflow_dispatch'"));
+    expect(workflow, isNot(contains('pull_request')));
+    final workflowScope = workflow.split('jobs:').first;
+    expect(workflowScope, isNot(contains('pages: write')));
+    expect(workflowScope, isNot(contains('id-token: write')));
+    expect(workflowScope, isNot(contains('concurrency:')));
+    expect(workflow, contains('      group: pages'));
+    expect(workflow, contains('      cancel-in-progress: true'));
+    expect(workflow, contains('node site/pages-artifact.mjs stamp'));
+    expect(workflow, contains('node site/pages-artifact.mjs verify'));
+    expect(workflow, contains(r'PAGES_EXPECTED_REVISION="${GITHUB_SHA}"'));
+    expect(workflow, contains(r'mktemp -d "${RUNNER_TEMP}/wing-pages.XXXXXX"'));
+    expect(workflow, contains('--bind 127.0.0.1'));
+    expect(workflow, contains(r'kill "${server_pid:-}"'));
+    expect(workflow, contains(r'rm -rf "$pages_stage"'));
+    for (final input in [
+      'package.json',
+      'package-lock.json',
+      'playwright.config.mjs',
+      'playwright/tests/regression/pages-landing.spec.mjs',
+      'scripts/generate_readme_assets.mjs',
+      'test/tooling/pages_artifact_test.mjs',
+      'test/tooling/readme_assets_contract_test.dart',
+      'test/tooling/wing_branding_assets_test.dart',
+      'README.md',
+      'docs/README.md',
+      'docs/getting-started.md',
+    ]) {
+      expect(workflow, contains('"$input"'), reason: input);
+    }
     expect(
       workflow,
       contains('cp site/assets/app-icon.png build/pages/assets/app-icon.png'),

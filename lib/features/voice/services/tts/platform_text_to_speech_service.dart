@@ -25,7 +25,12 @@ final class PlatformTextToSpeechService implements TextToSpeechService {
       await _tts.awaitSpeakCompletion(true);
       _configured = true;
     }
-    await _tts.speak(trimmed);
+    final result = await _tts.speak(trimmed);
+    // Android reports a rejected utterance as 0 instead of throwing. Do not
+    // advance the spoken cursor or re-arm as if that chunk was audible.
+    if (result == 0) {
+      throw StateError('Device speech playback was rejected.');
+    }
   }
 
   @override

@@ -583,6 +583,7 @@
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
         "MT-VERIFY-BROWSER-GATES",
+        "PLANGAP-001-2f",
         "WING-TASK-409"
       ],
       "title": "Source-bound merge-train integration verification"
@@ -3719,6 +3720,7 @@
       "tasks": [
         "DOC-CHAT-FIDELITY-REFERENCE",
         "DOC-CHAT-TRANSCRIPT-DISCLOSURE",
+        "PARITYUPDATE-002-5c",
         "PORT-CHAT-COMPOSER-ORDER",
         "PORT-CHAT-DIRECT-DICTATION",
         "PORT-CHAT-TRANSCRIPT-DISCLOSURE",
@@ -3930,7 +3932,8 @@
         "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
         "PARITY-NATIVE-LINUX",
         "PARITY-OFFICIAL-MATRIX",
-        "PARITY-OFFICIAL-MATRIX-LIVE"
+        "PARITY-OFFICIAL-MATRIX-LIVE",
+        "PARITYUPDATE-004-48"
       ],
       "title": "Match the remaining Desktop product outcomes explicitly"
     },
@@ -5230,6 +5233,7 @@
         "CONNECTION-SETUP-AUTH-MATRIX",
         "CONNECTION-SETUP-AUTH-MATRIX-LIVE",
         "CONNECTION-TWO-HOST-RECOVERY",
+        "PARITYUPDATE-001-aa",
         "PORT-DESKTOP-WELCOME",
         "PORT-DESKTOP-WELCOME-RECOVERY",
         "WING-TASK-405",
@@ -5649,7 +5653,8 @@
       "tasks": [
         "DOC-ACCOUNT-CONTRACT",
         "DOC-ACCOUNT-CONTRACT-LIVE",
-        "DOC-ACCOUNT-REVOCATION-EVIDENCE"
+        "DOC-ACCOUNT-REVOCATION-EVIDENCE",
+        "PARITYUPDATE-003-b1"
       ],
       "title": "Qualify account/OAuth/pools/credits/wallet authority before exposure"
     },
@@ -5754,7 +5759,8 @@
         "BACKEND-SSH-KEY-NATIVE-LIVE",
         "DOC-BACKEND-CONTRACT",
         "DOC-BACKEND-DISCONNECT-CONTRACT",
-        "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE"
+        "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE",
+        "WING-001-b3"
       ],
       "title": "Provide typed SSH/Docker/WSL backend lifecycle outcomes"
     },
@@ -6896,6 +6902,12 @@
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
       "DEV-001-c7",
+      "PARITYUPDATE-001-aa",
+      "PARITYUPDATE-002-5c",
+      "PARITYUPDATE-003-b1",
+      "PARITYUPDATE-004-48",
+      "WING-001-b3",
+      "PLANGAP-001-2f",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -7061,6 +7073,46 @@
       "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
     },
     {
+      "depends_on": [],
+      "goal": "CONNECTION-PATHS",
+      "id": "PARITYUPDATE-001-aa",
+      "section": "Next",
+      "status": "open",
+      "title": "Resolve canonical gateway attachment and recovery contracts"
+    },
+    {
+      "depends_on": [],
+      "goal": "CHAT-FIDELITY",
+      "id": "PARITYUPDATE-002-5c",
+      "section": "Next",
+      "status": "open",
+      "title": "Resolve canonical submission, pending queue and clarification contracts"
+    },
+    {
+      "depends_on": [],
+      "goal": "ACCOUNT",
+      "id": "PARITYUPDATE-003-b1",
+      "section": "Next",
+      "status": "open",
+      "title": "Resolve connection-specific remote dashboard OAuth contracts"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITYUPDATE-004-48",
+      "section": "Next",
+      "status": "open",
+      "title": "Resolve uncovered Desktop outcome contracts without expanding active tasks"
+    },
+    {
+      "depends_on": [],
+      "goal": "INTEGRATION",
+      "id": "PLANGAP-001-2f",
+      "section": "Next",
+      "status": "open",
+      "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
+    },
+    {
       "depends_on": [
         "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
       ],
@@ -7079,6 +7131,16 @@
       "section": "Next",
       "status": "open",
       "title": "Restore canonical tool ordering and retire approval actions after isolated native process restart without replay"
+    },
+    {
+      "depends_on": [
+        "BACKEND-SSH-CONNECT"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "WING-001-b3",
+      "section": "Next",
+      "status": "open",
+      "title": "Make SSH connection failures visible and actionable"
     },
     {
       "depends_on": [

@@ -1,5 +1,15 @@
 part of '../hermes_chat_screen.dart';
 
+// Desktop styles.css uses --composer-width for both surfaces: the panel's
+// available width, with 24px transcript and 16px composer outer gutters.
+abstract final class _HermesConversationGeometry {
+  static const desktopBreakpoint = 720.0;
+  static double transcriptGutter(double width) =>
+      width >= desktopBreakpoint ? 24 : 12;
+  static double composerGutter(double width) =>
+      width >= desktopBreakpoint ? 16 : 8;
+}
+
 String _connectionModeLabel(
   AppLocalizations strings,
   HermesConnectionMode mode,
@@ -1830,14 +1840,14 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final useDesktopCommandBar = constraints.maxWidth >= 720;
+            final useDesktopCommandBar =
+                constraints.maxWidth >=
+                _HermesConversationGeometry.desktopBreakpoint;
+            final gutter = _HermesConversationGeometry.composerGutter(
+              constraints.maxWidth,
+            );
             return Padding(
-              padding: EdgeInsets.fromLTRB(
-                8,
-                useDesktopCommandBar ? 6 : 8,
-                8,
-                8,
-              ),
+              padding: EdgeInsets.fromLTRB(gutter, 8, gutter, 10),
               child: useDesktopCommandBar
                   ? _buildDesktopComposerCommandBar(
                       context,

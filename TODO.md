@@ -330,8 +330,6 @@ Section: Next.
   captured input. Source refresh is still pending; this documentation repair
   neither performs integration nor qualifies the combined source.
 
-  Next action: integration-only source handoff, not another lock repair: the coordinator must refresh the retained worker workspace from the actual combined current Wing input before any full rerun. Main already contains 80e41ed8 and pubspec.lock blob 8a84003a7a7b1fbc26f25e2e09892baec2e6e66d; the latest worker still reports HEAD 8d8141b761c5bd92157fdbe84567ef2e8ba6c95e and old blob 104e43950f4c7ceb4ed15836a3345e2739facd46. Preserve its uncommitted formatter correction and merge-train receipt, do not ask the worker to merge/rebase or copy a lock to fake eligibility. Reconcile the existing tab/source-owner repairs and native focus-pixel investigation, then capture one fresh source/tool/dependency tree and rerun all required gates. Old failures remain historical; neither a source-refresh instruction nor a focused pass is gate success.
-
 - [ ] **MT-VERIFY-BROWSER-GATES** — Goal: INTEGRATION. Section: Next. Prove the same combined
   source's compiled browser journeys and exact request counts.
   Payoff: close the historical browser gap without treating unit passes as UI evidence.
@@ -366,12 +364,6 @@ Section: Next.
   independent; no CLI/direct-file substitute, Agent patch or restore execution.
 
 ### **P2** — Remaining supported feature parity and accessibility
-
-- [ ] **FILES-TERMINAL-DOWNLOAD** — Goal: PARITY. Download an individual selected workspace file to the device running Wing.
-  Sources: [FILES-3 and FILES-4](docs/product/prd.md#terminal-working-directory-files) and [existing raw-download contract](docs/analysis/terminal-files-feasibility.md#existing-contracts-and-official-consumers). Use the qualified owning `serve` connection and authenticated headers, not preview text or a token-bearing URL. Save-picker and byte-readback qualification remain open on both platforms.
-  Scope: reuse browse owner/root authorization; explicit Linux Save As and Android document-save picker, bounded/cancellable transfer, sanitized filename and destination handling. No upload, edit/delete, executable preview, recursive folder download or silent overwrite.
-  Acceptance: read back saved bytes against the selected source; cancellation/denial/disconnection/owner-switch leave no claimed successful save; progress and explicit retry; test text and binary downloads and hostile filenames; native Linux and Android save receipts, not download-start-only claims.
-  Dependencies: FILES-TERMINAL-BROWSE. Section: Next. Ownership: unassigned.
 
 ### Queue rules
 
@@ -486,6 +478,98 @@ Section: Next.
 ### Terminal working-directory files (planned)
 
 ### **P1** — Daily use, recovery and core Desktop composition
+
+### Official Desktop production transport successors
+
+These implementation slices follow CONNECTION-OFFICIAL-DESKTOP-PORT. They do not
+repeat its first connection correction or the completed REST/SSE fixture journeys.
+The internal `HermesWebReadClient` and `HermesWebLifecycle` remain qualification
+code, not a production channel. Each slice must reuse verified behavior where
+possible and preserve the existing messaging API path. No task authorizes Agent
+patches, personal credential discovery, service restarts or provider spending.
+
+### **P3** — Integrated delivery, diagnostics and contracts
+
+- [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Map account expiry and logout separately from acquisition.
+  Goal: ACCOUNT
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [acquisition lifecycle limits](docs/quality/account-oauth-acquisition-contract.md#expiry-cancellation-logout-and-revocation-are-distinct).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name exact fail-closed expiry/revocation proof or unavailable authority. No provisioning, wallet use or secret acquisition.
+  Dependencies: DOC-ACCOUNT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace expiry,
+  logout/revocation and fallback authority through handlers/models, nearest tests
+  and Desktop/Wing callers against Acceptance. Attribute exact fail-closed proof
+  or unavailable authority; verify changed Markdown targets, obtain independent
+  contract/security review, and run `git diff --check`. No sign-in, refresh,
+  logout/revocation request, provisioning, wallet action or credential access.
+  Touches: docs/quality/
+  Readiness: source-only documentation; native/live qualification stays separate.
+
+### **P1** — Daily use, recovery and core Desktop composition
+
+- [ ] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [NATIVE-INTEGRATION](docs/adr/client.md#decision),
+  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
+  [reviewed first operation](docs/plans/2026-10-03-desktop-local-integration-design.md#first-operation-existing-metadata-inspection),
+  [failure and removal boundaries](docs/plans/2026-10-03-desktop-local-integration-design.md#failure-and-recovery-contract),
+  [predecessor evidence](docs/quality/native-local-integration-contract-review.md#installedreference-drift-and-unavailable-guarantees).
+  Status: open
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: After operation review, specify cancellation, unknown-outcome and removal criteria against living ADRs. Preparation supplies no native activation rights.
+  Dependencies: DOC-NATIVE-DESIGN-REVIEW; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: pin inspected Wing/reference revisions with `git rev-parse HEAD`;
+  inspect `lib/core/hermes/local_discovery/`,
+  `lib/features/hermes_chat/widgets/platform_local_connection_panel.dart`,
+  `test/core/hermes/local_discovery/local_hermes_home_discovery_test.dart` and
+  `test/features/hermes_chat/widgets/platform_local_connection_behavior_test.dart`.
+  Map cancel/mode-change/disposal, late results, slow/failed metadata IO and
+  unknown outcomes to the living ADRs and reviewed removal criteria. Distinguish
+  existing stale-result fencing from missing hard cancellation/deadline/output bounds;
+  record missing proof without promising OS rollback. Verify changed Markdown links,
+  obtain independent contract/security review and run `git diff --check`.
+  Touches: docs/quality/
+  Next action: deepen the existing metadata-only operation's failure review;
+  the reviewed proposal does not admit a launcher, helper, privileged implementation
+  or activation. Source/test inspection is not named-platform runtime evidence.
+
+- [ ] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE** — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [VOICE](docs/product/prd.md#core-journeys),
+  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
+  [output qualification gap](docs/quality/voice-capture-qualification.md#remaining-named-target-qualification),
+  [microphone ownership runbook](docs/runbooks/android/live-mic-smoke.md#conversation-ownership-qualification-2026-09-04).
+  Status: open
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name target/engine, pending-configuration cancellation and no-late-audio expected outcomes from existing TTS tests/runbooks. Preparation is not physical or acoustic qualification.
+  Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: capture `git rev-parse HEAD`; inspect
+  `lib/features/voice/services/tts/platform_text_to_speech_service.dart`,
+  `test/features/voice/services/tts/platform_text_to_speech_service_test.dart`,
+  `test/features/voice/services/tts/hermes_agent_text_to_speech_service_test.dart`,
+  `test/features/hermes_chat/providers/hermes_tts_provider_test.dart` and
+  `test/features/hermes_chat/voice/hermes_voice_input_controller_test.dart`.
+  Trace pending configuration through stop/disposal and late completion; distinguish
+  an existing oracle from a missing one. Check the planned target/actual engine,
+  no-late-audio expectations and consent/route/artifact gates against the linked
+  runbook. Verify changed Markdown links and run `git diff --check`.
+  Touches: docs/quality/
+  Next action: prepare the one output-cancellation scenario and identify missing
+  deterministic proof, not a product repair or an observed acoustic result.
+  No engine invocation, playback, capture, device selection or live receipt is
+  authorized by this read-only preparation.
+
+## Needs decision
 
 - [ ] **CONNECTION-LINK-RETIREMENT** — Goal: CONNECTION-PATHS. Retire legacy
   Wing Link packaging, installers and compatibility dependencies after replacement.
@@ -603,7 +687,8 @@ Section: Next.
   matrix and review; retire stale docs-test expectations with the actual consumer,
   never by reinstating old setup. Coordinate active Linux Local card t_20130139;
   this planning pass does not expand its frozen contract or start another worker.
-  Dependencies: CONNECTION-LINK-REMOVAL. Section: Next. Ownership: unclaimed.
+  Dependencies: CONNECTION-LINK-REMOVAL.
+  Ownership: unclaimed.
 
 
 Queue order: bounded easy-first work, then the remaining strategic queue.
@@ -612,98 +697,18 @@ The [welcome recovery](docs/quality/desktop-welcome-recovery.md) has bounded Lin
 and Chromium evidence. Android, physical keychain, live authentication and
 protected-main delivery remain open. Unsupported operations
 stay explicit. The ledger controls eligibility; a P label is not an execution lease.
+Section: Needs decision.
+  Owner decision: 2026-10-18 — Apply the existing deferral of CONNECTION-LINK-REMOVAL to this dependent task. Preserve its dependency and original acceptance; no approval question, dispatch or completion is implied. Resume only when the prerequisite's stated qualification/contract gate is satisfied.
 
-### Official Desktop production transport successors
+- [ ] **FILES-TERMINAL-DOWNLOAD** — Goal: PARITY. Download an individual selected workspace file to the device running Wing.
+  Sources: [FILES-3 and FILES-4](docs/product/prd.md#terminal-working-directory-files) and [existing raw-download contract](docs/analysis/terminal-files-feasibility.md#existing-contracts-and-official-consumers). Use the qualified owning `serve` connection and authenticated headers, not preview text or a token-bearing URL. Save-picker and byte-readback qualification remain open on both platforms.
+  Scope: reuse browse owner/root authorization; explicit Linux Save As and Android document-save picker, bounded/cancellable transfer, sanitized filename and destination handling. No upload, edit/delete, executable preview, recursive folder download or silent overwrite.
+  Acceptance: read back saved bytes against the selected source; cancellation/denial/disconnection/owner-switch leave no claimed successful save; progress and explicit retry; test text and binary downloads and hostile filenames; native Linux and Android save receipts, not download-start-only claims.
+  Dependencies: FILES-TERMINAL-BROWSE.
+  Ownership: unassigned.
+Section: Needs decision.
+  Owner decision: 2026-10-18 — Apply the existing deferral of FILES-TERMINAL-BROWSE to this dependent task. Preserve its dependency and original acceptance; no approval question, dispatch or completion is implied. Resume only when the prerequisite's stated qualification/contract gate is satisfied.
 
-These implementation slices follow CONNECTION-OFFICIAL-DESKTOP-PORT. They do not
-repeat its first connection correction or the completed REST/SSE fixture journeys.
-The internal `HermesWebReadClient` and `HermesWebLifecycle` remain qualification
-code, not a production channel. Each slice must reuse verified behavior where
-possible and preserve the existing messaging API path. No task authorizes Agent
-patches, personal credential discovery, service restarts or provider spending.
-
-### **P3** — Integrated delivery, diagnostics and contracts
-
-- [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE** — Map account expiry and logout separately from acquisition.
-  Goal: ACCOUNT
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [ACCOUNT](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [acquisition lifecycle limits](docs/quality/account-oauth-acquisition-contract.md#expiry-cancellation-logout-and-revocation-are-distinct).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name exact fail-closed expiry/revocation proof or unavailable authority. No provisioning, wallet use or secret acquisition.
-  Dependencies: DOC-ACCOUNT-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace expiry,
-  logout/revocation and fallback authority through handlers/models, nearest tests
-  and Desktop/Wing callers against Acceptance. Attribute exact fail-closed proof
-  or unavailable authority; verify changed Markdown targets, obtain independent
-  contract/security review, and run `git diff --check`. No sign-in, refresh,
-  logout/revocation request, provisioning, wallet action or credential access.
-  Touches: docs/quality/
-  Readiness: source-only documentation; native/live qualification stays separate.
-
-### **P1** — Daily use, recovery and core Desktop composition
-
-- [ ] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [NATIVE-INTEGRATION](docs/adr/client.md#decision),
-  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
-  [reviewed first operation](docs/plans/2026-10-03-desktop-local-integration-design.md#first-operation-existing-metadata-inspection),
-  [failure and removal boundaries](docs/plans/2026-10-03-desktop-local-integration-design.md#failure-and-recovery-contract),
-  [predecessor evidence](docs/quality/native-local-integration-contract-review.md#installedreference-drift-and-unavailable-guarantees).
-  Status: open
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: After operation review, specify cancellation, unknown-outcome and removal criteria against living ADRs. Preparation supplies no native activation rights.
-  Dependencies: DOC-NATIVE-DESIGN-REVIEW; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: pin inspected Wing/reference revisions with `git rev-parse HEAD`;
-  inspect `lib/core/hermes/local_discovery/`,
-  `lib/features/hermes_chat/widgets/platform_local_connection_panel.dart`,
-  `test/core/hermes/local_discovery/local_hermes_home_discovery_test.dart` and
-  `test/features/hermes_chat/widgets/platform_local_connection_behavior_test.dart`.
-  Map cancel/mode-change/disposal, late results, slow/failed metadata IO and
-  unknown outcomes to the living ADRs and reviewed removal criteria. Distinguish
-  existing stale-result fencing from missing hard cancellation/deadline/output bounds;
-  record missing proof without promising OS rollback. Verify changed Markdown links,
-  obtain independent contract/security review and run `git diff --check`.
-  Touches: docs/quality/
-  Next action: deepen the existing metadata-only operation's failure review;
-  the reviewed proposal does not admit a launcher, helper, privileged implementation
-  or activation. Source/test inspection is not named-platform runtime evidence.
-
-- [ ] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE** — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [VOICE](docs/product/prd.md#core-journeys),
-  [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
-  [output qualification gap](docs/quality/voice-capture-qualification.md#remaining-named-target-qualification),
-  [microphone ownership runbook](docs/runbooks/android/live-mic-smoke.md#conversation-ownership-qualification-2026-09-04).
-  Status: open
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Name target/engine, pending-configuration cancellation and no-late-audio expected outcomes from existing TTS tests/runbooks. Preparation is not physical or acoustic qualification.
-  Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: capture `git rev-parse HEAD`; inspect
-  `lib/features/voice/services/tts/platform_text_to_speech_service.dart`,
-  `test/features/voice/services/tts/platform_text_to_speech_service_test.dart`,
-  `test/features/voice/services/tts/hermes_agent_text_to_speech_service_test.dart`,
-  `test/features/hermes_chat/providers/hermes_tts_provider_test.dart` and
-  `test/features/hermes_chat/voice/hermes_voice_input_controller_test.dart`.
-  Trace pending configuration through stop/disposal and late completion; distinguish
-  an existing oracle from a missing one. Check the planned target/actual engine,
-  no-late-audio expectations and consent/route/artifact gates against the linked
-  runbook. Verify changed Markdown links and run `git diff --check`.
-  Touches: docs/quality/
-  Next action: prepare the one output-cancellation scenario and identify missing
-  deterministic proof, not a product repair or an observed acoustic result.
-  No engine invocation, playback, capture, device selection or live receipt is
-  authorized by this read-only preparation.
-
-## Needs decision
 
 - [ ] **FILES-TERMINAL-BROWSE** —  Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
   Goal: PARITY

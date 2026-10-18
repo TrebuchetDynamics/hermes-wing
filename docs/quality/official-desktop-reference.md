@@ -26,7 +26,11 @@ Source inspection covered the official Desktop README, engineering guides and de
 Earlier Desktop source comparisons used the wrong application. Their reference citations and conclusions are withdrawn as evidence of official Desktop parity.
 Historical Wing tests and receipts remain records of their exercised Wing behavior, not evidence that the official product has the same behavior.
 Do not transfer old source paths, hashes, screenshot claims, feature groups or parity totals onto the official application by renaming them.
-The old feature matrix is explicitly withdrawn pending a fresh official-source mapping.
+The old feature mapping remains withdrawn. The [rebuilt matrix](../product/hermes-desktop-feature-matrix.md)
+now maps the pinned official source with explicit trace limits and named-target
+acceptance paths. Its historical task/receipt associations are not official parity
+evidence; all rebuilt Linux/Android runtime cells remain `not_run`. See the
+[rebuild record](official-feature-matrix-rebuild.md).
 
 The generated SSH key and copyable Help remain owner-requested Wing functionality. Their passing Wing tests do not establish official Desktop parity.
 Existing Agent authority, profile isolation, secret handling and strict host-key review remain enforced.
@@ -34,5 +38,8 @@ Existing Agent authority, profile isolation, secret handling and strict host-key
 ## Follow-up
 
 `CONNECTION-OFFICIAL-DESKTOP-PORT` in [TODO](../../TODO.md) owns official-source connection tracing and the smallest production welcome/connection correction with regression tests.
-`PARITY-OFFICIAL-MATRIX` owns rebuilding the matrix from the official app after that connection slice.
-Preserve active ownership, existing task IDs and historical test results. Do not patch Agent or invent transport compatibility.
+`PARITY-OFFICIAL-MATRIX` owns the source-mapping rebuild after that connection slice;
+its local documentation candidate is not coordinator integration or runtime acceptance.
+`PARITY-NATIVE-LINUX` and `PARITY-MAESTRO-ANDROID-DEVICE` own separate named-target
+qualification. Preserve active ownership, existing task IDs and historical test
+results. Do not patch Agent or invent transport compatibility.

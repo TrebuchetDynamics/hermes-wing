@@ -88,8 +88,16 @@ for (const width of [390, 1280]) {
       expect(await state(page)).toMatchObject({ selected_profile_id: 'default', active_session_id: 'e2e-hermes-session', has_error: false });
       const prompt = 'Synthetic profile switch pending run';
       if (activeRun) {
-        await page.getByRole('textbox', { name: 'Message Home profile…', exact: true }).click();
-        await page.locator('input:focus, textarea:focus').fill(prompt);
+        // Compact Chat drops the placeholder's accessible name once non-empty.
+        const composer = page.getByRole('textbox', { name: /^(?:Message Home profile…)?$/ });
+        await composer.click();
+        // DOM focus precedes Flutter's semantics/text-input activation. Match
+        // the settled keyboard entry used by the connection-switch journey.
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await expect(composer).toBeFocused();
+        await page.keyboard.type(prompt);
+        await expect(composer).toHaveValue(prompt);
+        await expect(page.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
         await page.getByRole('button', { name: 'Send', exact: true }).click();
         await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).toBeVisible();
         expect(await state(page)).toMatchObject({ selected_profile_id: 'default', active_session_id: 'e2e-hermes-session', last_turn_status: 'streaming', has_error: false });

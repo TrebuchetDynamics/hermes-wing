@@ -6,40 +6,12 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-M5-ANDROID-FIXTURE — USER_DECISION — effort decision — unblocks 2
-
-- Task: DOC-M5-ANDROID-FIXTURE — Goal: M5. Section: Next. Repair only the two reproduced fixture
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T16:04:17Z
-- Answer: Fix DOC-M5-ANDROID-FIXTURE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-DOC-VOICE-QUALIFICATION — USER_DECISION — effort decision — unblocks 2
-
-- Task: DOC-VOICE-QUALIFICATION — Goal: VOICE. Section: Next.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T16:04:17Z
-- Answer: Fix DOC-VOICE-QUALIFICATION's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-M1-NOTIFICATION-CONTRACT — USER_DECISION — effort decision — unblocks 1
-
-- Task: M1-NOTIFICATION-CONTRACT — Goal: M1. Resolve the smallest supported notification path after reliable status.
-- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
-- Since: 2026-10-17T17:24:25Z
-- Answer: Fix M1-NOTIFICATION-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
-
-### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
-
-- Task: DOC-PARITY-TAB-CONTRACT — Goal: PARITY-TABS. Section: Next. Add owner-safe conversation
-- Needs: worker reported a blocker: Coordinator must widen Touches to include lib/l10n/app_en.arb, lib/l10n/app_localizations.dart and lib/l10n/app_localizations_en.dart. The required explicit close/Stop recovery needs localized explanations distinguishing closing presentation from stopping Agent work, unavailable Stop, and an unconfirmed Stop/close outcome. Source inspection found generic Close/Stop actions and a reconnect-before-r…
-- Since: 2026-10-17T17:00:29Z
-- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort investigate — unblocks 1
+### Q-CONNECTION-LINK-REMOVAL — USER_DECISION — effort decision — unblocks 1
 
 - Task: CONNECTION-LINK-REMOVAL — Goal: CONNECTION-PATHS. Remove Wing Link
-- Needs: dead worker without a commit or changes
+- Needs: 1 waiting task(s) depend on "CONNECTION-LINK-REMOVAL", which is not a Now/Next task (an outside condition, or a task in Needs decision).
 - Since: 2026-10-17T16:14:45Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/CONNECTION-LINK-REMOVAL/), then rescope or split CONNECTION-LINK-REMOVAL in its TODO.md entry. The runner reruns it when the entry changes.
+- Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
 <!-- pi-autowork:questions:end -->
 

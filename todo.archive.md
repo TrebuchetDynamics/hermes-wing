@@ -6353,6 +6353,61 @@ Source section: Now / Next
   Agent readback. Android away/process-death proof belongs to its existing task.
 
 
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **PARITY-OFFICIAL-MATRIX** — Rebuild feature mapping and named-target acceptance from the official apps/desktop source; discard withdrawn parity comparisons
+  Replace the withdrawn feature mapping with official-source feature groups and
+  per-platform acceptance. Retain Wing receipts as behavior evidence only.
+  Goal: PARITY
+Section: Next.
+  Scope: official Desktop source/tests, feature-matrix JSON/Markdown and existing
+  task mappings. Preserve task IDs, leases and historical test results.
+  Acceptance: every official feature group has a pinned real source, supported/
+  unsupported/unverified Wing outcome and Linux/Android verification path. No
+  old source paths or totals are transferred without reinspection. Runtime cells
+  advance only from named-target execution; no blanket parity certification.
+  Sources: [2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix](docs/plans/2026-08-09_183623-hermes-desktop-study-roadmap-evidence-matrix.md) (historical planning context)
+  [2026-09-02_162056-hermes-wing-rehabilitation-audit](docs/plans/2026-09-02_162056-hermes-wing-rehabilitation-audit.md) (historical planning context)
+  [2026-08-30-hermes-desktop-parity](docs/superpowers/plans/2026-08-30-hermes-desktop-parity.md) (historical planning context);
+   [withdrawn matrix](docs/product/hermes-desktop-feature-matrix.md),
+  [official reference](docs/quality/official-desktop-reference.md).
+  Knowledge mapping: [official bootstrap/pane/ownership/replay/Stop findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Map only semantically traced outcomes; mark controller/plugin imports and deeper settings/IPC/rollback/Projects/tool/slash/accessibility gaps as unverified. Inspected upstream tests and graph edges do not advance runtime cells.
+  Dependencies: CONNECTION-OFFICIAL-DESKTOP-PORT. Ownership: unclaimed.
+  Checks: Pin the read-only official Agent/Desktop checkout with `git rev-parse HEAD`; recheck every mapped feature source and verification path, run affected existing matrix/tooling tests with `flutter test --no-pub test/tooling/`, validate changed JSON and Markdown targets, then `git diff --check`. Source mapping cannot advance Linux/Android runtime cells.
+  Touches: docs/product/hermes-desktop-feature-matrix.md, docs/quality/, test/tooling/, docs/product/hermes-desktop-feature-matrix.json
+  Touches widened by the runner from worker evidence: docs/product/hermes-desktop-feature-matrix.json
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **CONNECTION-OWNER-RECONNECT** —  Restore the same
+  saved host/profile/session after disconnect without replaying mutations.
+  Goal: CONNECTION-PATHS
+Section: Next.
+  Payoff: connection recovery retains conversation ownership rather than creating
+  a replacement.
+  Sources: [2026-10-03-study-follow-through](docs/plans/2026-10-03-study-follow-through.md) (current planning context)
+  [2026-09-04-chat-continuity](docs/superpowers/plans/2026-09-04-chat-continuity.md) (historical planning context);
+   [CONN-5/6](docs/product/prd.md#connection-path-requirements)
+  and [recovery checks](docs/test-plan.md#connection-path-verification).
+  Scope: existing Agent channel reconciliation, saved selection and nearest
+  production-path tests. This follows initial saved-host workflows, not new
+  connection authority. Exclude managed SSH, OAuth, installs and live providers.
+  Acceptance: deterministic disconnect/reconnect and delayed old-owner results
+  retain the exact host/profile/session and canonical history; public retry does
+  not duplicate sends, approvals or Stop. Add minimal fixes and freshly compiled
+  browser coverage, plus focused widgets, format and analysis. Native/live support
+  requires separate evidence.
+  Dependencies: CONNECTION-SAVED-WORKFLOWS.
+  Ownership: unclaimed backlog only; no board dispatch in this card.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Add the delayed-old-owner/retry request-count regressions, then `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Record exact restored identities and zero recovery mutations; native/live results remain separate.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+  Readiness: restored check procedure only; existing access and qualification gates remain.
+
 <!-- merged from origin/main 35eae410 -->
 
 ### Parallel origin/main deliveries reconciled at merge
@@ -6495,3 +6550,21 @@ pointer in the destination store is superseded by the host-key-bound
   including rendered compact saved-host replacement, with 77 focused regressions
   and analysis passing. Independent native-source review approved. See
   [compact native evidence](docs/quality/chat-workspace-overlay-native.md#compact-settings-during-active-saved-contact-chat).
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **M1-NOTIFICATION-CONTRACT** — Resolve the smallest supported notification path after reliable status. Section: Next.
+  Goal: M1
+  Status: done
+  Payoff: determine whether completion/attention alerts can be implemented without a second Agent backend or credential leakage.
+  Sources: [accepted order](docs/product/prd.md#user-demand-emphasis), [existing proposal](docs/product/notification-contract-proposal.md), official Agent/Desktop source and nearest tests.
+  Scope: one bounded source/capability assessment of current enrollment/routing/revocation and platform delivery support. Reuse existing proposals; identify exact supported operations, grants and privacy boundaries, or explain unavailable contracts. Do not invent endpoints, choose a paid relay, collect credentials, install push SDKs, activate delivery or modify Agent.
+  Acceptance: save an operation-to-source/test map distinguishing shipped API, source-only support and unavailable behavior. Identify one smallest implementable alert path and its permission-denial, generic lock-screen, deduplication and exact-owner tap tests, or name the exact missing authoritative contract. Keep foreground status usable without notifications. Record architecture choices as Proposed; provider/relay consent and real platform delivery remain separate future decisions and checks. This closes assessment only, not notification implementation or M1.
+  Checks: planned documentation-only verification: cross-check the operation-to-source/test map against pinned official Agent/Desktop source and nearest tests; verify local links and anchors in the updated proposal; run `git diff --check -- docs/product/notification-contract-proposal.md`. Review permission-denial, generic lock-screen, deduplication and exact-owner tap test requirements against the accepted PRD and existing proposal; keep those future delivery tests unexecuted/unqualified by this assessment.
+  Dependencies: M1-MOBILE-AWAY-STATUS.
+  Ownership: unassigned; verify existing proposal/board ownership before execution. No worker dispatched by this entry.
+  Next action: record the bounded source/capability assessment in the existing notification proposal, retaining Proposed architecture and exact missing-contract findings rather than implementing delivery.
+  Touches: docs/product/notification-contract-proposal.md

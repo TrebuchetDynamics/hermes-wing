@@ -135,6 +135,12 @@ status, create a board route or mark M4-KANBAN met.
 
 ## One next read-only slice
 
+Follow-up evidence is now recorded in the
+[pagination and stale-owner receipt](m4-kanban-pagination-evidence.md). It records
+absent authoritative pagination and expected owner/revocation outcomes, not a new
+callable operation or live qualification. The original handoff below is retained
+as the scope of that follow-up.
+
 Use the already indexed **`DOC-M4-KANBAN-PAGINATION-EVIDENCE`**, subject to its own
 coordinator admission; do not start it here. Trace a proposed first-page read
 across endpoint/profile/board/Project identity changes, grant loss and same-slug

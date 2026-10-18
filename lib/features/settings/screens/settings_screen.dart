@@ -20,86 +20,224 @@ import '../providers/voice_settings_provider.dart';
 part 'settings_diagnostics_screen.dart';
 part 'settings_voice_screen.dart';
 
-class SettingsScreen extends ConsumerWidget {
+enum _SettingsCategory { appearance, chat, connections }
+
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  _SettingsCategory _category = _SettingsCategory.appearance;
+
+  @override
+  Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
+    final labels = {
+      _SettingsCategory.appearance: strings.settingsAppearanceSection,
+      _SettingsCategory.chat: strings.settingsChatSection,
+      _SettingsCategory.connections: strings.gatewayDestination,
+    };
+    const icons = {
+      _SettingsCategory.appearance: Icons.palette_outlined,
+      _SettingsCategory.chat: Icons.chat_bubble_outline,
+      _SettingsCategory.connections: Icons.dns_outlined,
+    };
+    final hasSpellcheck = WidgetsBinding
+        .instance
+        .platformDispatcher
+        .nativeSpellCheckServiceDefined;
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.settingsDestination),
         actions: const [AppShellMenuButton()],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth >= 820;
-          final horizontalPadding = wide ? 32.0 : 16.0;
-          final hasSpellcheck = WidgetsBinding
-              .instance
-              .platformDispatcher
-              .nativeSpellCheckServiceDefined;
-          final appearance = const _AppearanceSettingsSection();
-          final voice = const _VoiceSettingsSection();
-
-          return ListView(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPadding,
-              wide ? 28 : 8,
-              horizontalPadding,
-              32,
-            ),
-            children: [
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.dns_outlined),
-                  title: Text(strings.gatewayDestination),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.go(AppRoutes.gateway),
+      body: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+            final wide = constraints.maxWidth >= 820 * textScale.clamp(1, 1.5);
+            final content = FocusTraversalGroup(
+              child: ListView(
+                key: ValueKey('settings-content-${_category.name}'),
+                padding: EdgeInsets.fromLTRB(
+                  wide ? 32 : 16,
+                  24,
+                  wide ? 32 : 16,
+                  32,
                 ),
-              ),
-              if (hasSpellcheck) const _ChatSettingsSection(),
-              if (wide)
-                _SettingsColumns(
-                  key: const ValueKey('settings-two-column-layout'),
-                  children: [
-                    appearance,
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [voice, const _DiagnosticsSettingsLink()],
+                children: [
+                  Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 840),
+                      child: _SettingsCategoryContent(
+                        title: wide ? labels[_category]! : null,
+                        children: switch (_category) {
+                          _SettingsCategory.appearance => [
+                            const _AppearanceSettingsSection(),
+                          ],
+                          _SettingsCategory.chat => [
+                            if (hasSpellcheck) const _ChatSettingsSection(),
+                            const _VoiceSettingsSection(),
+                          ],
+                          _SettingsCategory.connections => [
+                            ListTile(
+                              key: const ValueKey('settings-connections-link'),
+                              contentPadding: EdgeInsets.zero,
+                              minTileHeight: 56,
+                              title: Text(strings.gatewayDestination),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () => context.go(AppRoutes.gateway),
+                            ),
+                            const _DiagnosticsSettingsLink(),
+                          ],
+                        },
+                      ),
                     ),
-                  ],
-                )
-              else ...[
-                appearance,
-                voice,
-                const _DiagnosticsSettingsLink(),
+                  ),
+                ],
+              ),
+            );
+            if (!wide) {
+              return Column(
+                key: const ValueKey('settings-compact-layout'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: DropdownButtonFormField<_SettingsCategory>(
+                      key: const ValueKey('settings-category-picker'),
+                      initialValue: _category,
+                      isExpanded: true,
+                      itemHeight: null,
+                      decoration: InputDecoration(
+                        labelText: strings.settingsDestination,
+                      ),
+                      items: [
+                        for (final category in _SettingsCategory.values)
+                          DropdownMenuItem(
+                            value: category,
+                            child: Text(labels[category]!),
+                          ),
+                      ],
+                      onChanged: (category) {
+                        if (category != null) {
+                          setState(() => _category = category);
+                        }
+                      },
+                    ),
+                  ),
+                  Expanded(child: content),
+                ],
+              );
+            }
+            return Row(
+              key: const ValueKey('settings-category-layout'),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 208,
+                  child: Material(
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    child: FocusTraversalGroup(
+                      child: ListView(
+                        padding: const EdgeInsets.all(12),
+                        children: [
+                          for (final category in _SettingsCategory.values)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: ListTile(
+                                key: ValueKey(
+                                  'settings-category-${category.name}',
+                                ),
+                                selected: _category == category,
+                                selectedTileColor: Theme.of(
+                                  context,
+                                ).colorScheme.secondaryContainer,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                leading: Icon(icons[category], size: 20),
+                                title: Text(labels[category]!),
+                                onTap: () =>
+                                    setState(() => _category = category),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const VerticalDivider(width: 1),
+                Expanded(child: content),
               ],
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class _SettingsColumns extends StatelessWidget {
-  const _SettingsColumns({super.key, required this.children});
+class _SettingsCategoryContent extends StatelessWidget {
+  const _SettingsCategoryContent({required this.title, required this.children});
 
+  final String? title;
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var index = 0; index < children.length; index++) ...[
-          if (index > 0) const SizedBox(width: 20),
-          Expanded(child: children[index]),
-        ],
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (title != null) ...[
+        Semantics(
+          headingLevel: 2,
+          child: Text(title!, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        const SizedBox(height: 16),
       ],
-    );
-  }
+      for (var index = 0; index < children.length; index++) ...[
+        if (index > 0) const Divider(height: 1),
+        children[index],
+      ],
+    ],
+  );
+}
+
+// As in Desktop ListRow, the pane's width (not the window) owns control layout.
+class _SettingsControlRow extends StatelessWidget {
+  const _SettingsControlRow({required this.label, required this.control});
+
+  final String label;
+  final Widget control;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final title = Text(label, style: Theme.of(context).textTheme.bodyLarge);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child:
+            constraints.maxWidth >= 640 &&
+                MediaQuery.textScalerOf(context).scale(14) <= 18
+            ? Row(
+                children: [
+                  Expanded(child: title),
+                  const SizedBox(width: 24),
+                  SizedBox(width: 300, child: control),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [title, const SizedBox(height: 12), control],
+              ),
+      );
+    },
+  );
 }
 
 class _AppearanceSettingsSection extends ConsumerWidget {
@@ -110,86 +248,73 @@ class _AppearanceSettingsSection extends ConsumerWidget {
     final strings = AppLocalizations.of(context);
     final appearance = ref.watch(wingThemeSettingsProvider);
     final controller = ref.read(wingThemeSettingsProvider.notifier);
-    return _SettingsSectionCard(
-      title: strings.settingsAppearanceSection,
-      icon: Icons.palette_outlined,
+    final modes = [
+      ButtonSegment(
+        value: ThemeMode.system,
+        label: Text(strings.themeModeSystem),
+      ),
+      ButtonSegment(
+        value: ThemeMode.light,
+        label: Text(strings.themeModeLight),
+      ),
+      ButtonSegment(value: ThemeMode.dark, label: Text(strings.themeModeDark)),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: SegmentedButton<ThemeMode>(
-            key: const ValueKey('settings-theme-mode'),
-            showSelectedIcon: false,
-            style: SegmentedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            segments: [
-              ButtonSegment(
-                value: ThemeMode.system,
-                label: Text(strings.themeModeSystem),
-              ),
-              ButtonSegment(
-                value: ThemeMode.light,
-                label: Text(strings.themeModeLight),
-              ),
-              ButtonSegment(
-                value: ThemeMode.dark,
-                label: Text(strings.themeModeDark),
-              ),
-            ],
-            selected: {appearance.mode},
-            onSelectionChanged: (selection) =>
-                unawaited(controller.setMode(selection.single)),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Vertical native segments preserve full labels at 200% text.
+              final stacked =
+                  constraints.maxWidth < 360 ||
+                  MediaQuery.textScalerOf(context).scale(14) > 18;
+              return SegmentedButton<ThemeMode>(
+                key: const ValueKey('settings-theme-mode'),
+                direction: stacked ? Axis.vertical : Axis.horizontal,
+                showSelectedIcon: false,
+                segments: modes,
+                selected: {appearance.mode},
+                onSelectionChanged: (selection) =>
+                    unawaited(controller.setMode(selection.single)),
+              );
+            },
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: Semantics(
-            container: true,
+        const Divider(height: 1),
+        _SettingsControlRow(
+          label: strings.themePaletteLabel,
+          control: Semantics(
             identifier: 'settings-palette-picker',
-            child: InputDecorator(
-              decoration: InputDecoration(
-                labelText: strings.themePaletteLabel,
-                filled: false,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<WingThemePalette>(
-                  key: const ValueKey('settings-palette-picker'),
-                  value: appearance.palette,
-                  isExpanded: true,
-                  isDense: true,
-                  itemHeight: null,
-                  items: [
-                    for (final palette in WingThemePalette.values)
-                      DropdownMenuItem(
-                        value: palette,
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: palette.seed,
-                              radius: 8,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(_paletteLabel(strings, palette)),
-                            ),
-                          ],
+            label: strings.themePaletteLabel,
+            child: DropdownButtonFormField<WingThemePalette>(
+              key: const ValueKey('settings-palette-picker'),
+              initialValue: appearance.palette,
+              isExpanded: true,
+              itemHeight: null,
+              decoration: const InputDecoration(isDense: false),
+              items: [
+                for (final palette in WingThemePalette.values)
+                  DropdownMenuItem(
+                    value: palette,
+                    child: Row(
+                      children: [
+                        ExcludeSemantics(
+                          child: CircleAvatar(
+                            backgroundColor: palette.seed,
+                            radius: 8,
+                          ),
                         ),
-                      ),
-                  ],
-                  onChanged: (palette) {
-                    if (palette != null) {
-                      unawaited(controller.setPalette(palette));
-                    }
-                  },
-                ),
-              ),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text(_paletteLabel(strings, palette))),
+                      ],
+                    ),
+                  ),
+              ],
+              onChanged: (palette) {
+                if (palette != null) unawaited(controller.setPalette(palette));
+              },
             ),
           ),
         ),
@@ -206,18 +331,13 @@ class _ChatSettingsSection extends ConsumerWidget {
     final strings = AppLocalizations.of(context);
     final preferences = ref.watch(wingChatPreferencesProvider);
     final controller = ref.read(wingChatPreferencesProvider.notifier);
-    return _SettingsSectionCard(
-      title: strings.settingsChatSection,
-      icon: Icons.chat_bubble_outline,
-      children: [
-        SwitchListTile(
-          key: const ValueKey('chat-spellcheck-enabled'),
-          title: Text(strings.chatSpellcheckTitle),
-          subtitle: Text(strings.chatSpellcheckSubtitle),
-          value: preferences.spellcheckEnabled,
-          onChanged: controller.setSpellcheckEnabled,
-        ),
-      ],
+    return SwitchListTile(
+      key: const ValueKey('chat-spellcheck-enabled'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(strings.chatSpellcheckTitle),
+      subtitle: Text(strings.chatSpellcheckSubtitle),
+      value: preferences.spellcheckEnabled,
+      onChanged: controller.setSpellcheckEnabled,
     );
   }
 }
@@ -228,18 +348,16 @@ class _VoiceSettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: ListTile(
-        key: const ValueKey('settings-voice-link'),
-        minTileHeight: 56,
-        minVerticalPadding: 8,
-        leading: const Icon(Icons.graphic_eq),
-        title: Text(strings.voiceSettingsTitle),
-        subtitle: Text(strings.settingsVoiceSummary),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push(AppRoutes.settingsVoice),
-      ),
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      key: const ValueKey('settings-voice-link'),
+      minTileHeight: 56,
+      minVerticalPadding: 8,
+      leading: const Icon(Icons.graphic_eq),
+      title: Text(strings.voiceSettingsTitle),
+      subtitle: Text(strings.settingsVoiceSummary),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => context.push(AppRoutes.settingsVoice),
     );
   }
 }
@@ -254,20 +372,16 @@ class _DiagnosticsSettingsLink extends ConsumerWidget {
       animation: channel,
       builder: (context, _) {
         final strings = AppLocalizations.of(context);
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          child: ListTile(
-            key: const ValueKey('settings-diagnostics-link'),
-            minTileHeight: 56,
-            minVerticalPadding: 8,
-            leading: const Icon(Icons.monitor_heart_outlined),
-            title: Text(strings.chatConnectionDiagnosticsTitle),
-            subtitle: Text(
-              _connectionStatusLabel(strings, channel.state.status),
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.settingsDiagnostics),
-          ),
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          key: const ValueKey('settings-diagnostics-link'),
+          minTileHeight: 56,
+          minVerticalPadding: 8,
+          leading: const Icon(Icons.monitor_heart_outlined),
+          title: Text(strings.chatConnectionDiagnosticsTitle),
+          subtitle: Text(_connectionStatusLabel(strings, channel.state.status)),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.settingsDiagnostics),
         );
       },
     );

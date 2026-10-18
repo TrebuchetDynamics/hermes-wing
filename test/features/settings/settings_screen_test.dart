@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -453,6 +455,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const ValueKey('settings-category-picker')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Chat').last);
+    await tester.pumpAndSettle();
     final spellcheck = find.byKey(const ValueKey('chat-spellcheck-enabled'));
     await Scrollable.ensureVisible(tester.element(spellcheck), alignment: 0.5);
     await tester.pumpAndSettle();
@@ -507,7 +513,7 @@ void main() {
     expect(find.byType(ListView), findsOneWidget);
   });
 
-  testWidgets('settings uses a two-column layout on desktop widths', (
+  testWidgets('settings uses Desktop category navigation and aligned rows', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1200, 800);
@@ -543,17 +549,205 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(
-      find.byKey(const ValueKey('settings-two-column-layout')),
+      find.byKey(const ValueKey('settings-category-layout')),
       findsOneWidget,
     );
-    final voice = tester.getRect(
+    expect(find.byType(Card), findsNothing);
+    expect(find.byKey(const ValueKey('settings-theme-mode')), findsOneWidget);
+    expect(find.byKey(const ValueKey('settings-voice-link')), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('settings-category-chat')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('settings-category-connections')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('settings-connections-link')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('settings-diagnostics-link')),
+      findsOneWidget,
+    );
+    expect(find.byType(Card), findsNothing);
+  });
+
+  for (final size in [const Size(320, 700), const Size(1200, 800)]) {
+    testWidgets('all categories and controls fit at 200% in $size', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.platformDispatcher.nativeSpellCheckServiceDefinedTestValue = true;
+      addTearDown(
+        tester.platformDispatcher.clearNativeSpellCheckServiceDefined,
+      );
+      SharedPreferences.setMockInitialValues({});
+      final channel = FakeHermesChannel.disconnected();
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(2),
+                padding: const EdgeInsets.only(bottom: 24),
+              ),
+              child: child!,
+            ),
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-compact-layout')),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Dark'));
+      await tester.pumpAndSettle();
+      expect(
+        (await SharedPreferences.getInstance()).getString('wing.theme.mode'),
+        'dark',
+      );
+      final palette = find.byKey(const ValueKey('settings-palette-picker'));
+      await tester.ensureVisible(palette);
+      await tester.tap(palette);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Forest').last);
+      await tester.tap(find.text('Forest').last);
+      await tester.pumpAndSettle();
+      expect(
+        (await SharedPreferences.getInstance()).getString('wing.theme.palette'),
+        'forest',
+      );
+      for (final category in ['Chat', 'Connections', 'Appearance']) {
+        await tester.tap(
+          find.byKey(const ValueKey('settings-category-picker')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(category).last);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        if (category == 'Chat') {
+          final voice = find.byKey(const ValueKey('settings-voice-link'));
+          await tester.ensureVisible(voice);
+          await tester.pumpAndSettle();
+          expect(voice.hitTestable(), findsOneWidget);
+          expect(
+            find.byKey(const ValueKey('chat-spellcheck-enabled')),
+            findsOneWidget,
+          );
+        } else if (category == 'Connections') {
+          final diagnostics = find.byKey(
+            const ValueKey('settings-diagnostics-link'),
+          );
+          await tester.ensureVisible(diagnostics);
+          expect(diagnostics.hitTestable(), findsOneWidget);
+        }
+        final viewport = tester.getRect(find.byType(ListView).last);
+        expect(viewport.bottom, lessThanOrEqualTo(size.height - 24));
+      }
+      final selection = tester.widget<SegmentedButton<ThemeMode>>(
+        find.byKey(const ValueKey('settings-theme-mode')),
+      );
+      expect(selection.selected, {ThemeMode.dark});
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('category and destination rows work from the keyboard', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(channel.dispose);
+    final router = GoRouter(
+      initialLocation: '/settings',
+      routes: [
+        GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+        GoRoute(
+          path: '/settings/voice',
+          builder: (_, _) => const Scaffold(body: Text('Voice destination')),
+        ),
+        GoRoute(
+          path: '/settings/diagnostics',
+          builder: (_, _) =>
+              const Scaffold(body: Text('Diagnostics destination')),
+        ),
+        GoRoute(
+          path: '/gateway',
+          builder: (_, _) =>
+              const Scaffold(body: Text('Connections destination')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [hermesChannelProvider.overrideWithValue(channel)],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    Future<void> activateWithKeyboard(Finder target) async {
+      for (var i = 0; i < 20; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pumpAndSettle();
+        final focused = FocusManager.instance.primaryFocus?.context;
+        if (focused != null &&
+            (focused == tester.element(target) ||
+                find
+                    .ancestor(
+                      of: find.byElementPredicate((e) => e == focused),
+                      matching: target,
+                    )
+                    .evaluate()
+                    .isNotEmpty)) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.pumpAndSettle();
+          return;
+        }
+      }
+      fail('Target was not keyboard reachable: $target');
+    }
+
+    await activateWithKeyboard(
+      find.byKey(const ValueKey('settings-category-chat')),
+    );
+    expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
+    await activateWithKeyboard(
       find.byKey(const ValueKey('settings-voice-link')),
     );
-    final diagnostics = tester.getRect(
+    expect(find.text('Voice destination'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    await activateWithKeyboard(
+      find.byKey(const ValueKey('settings-category-connections')),
+    );
+    await activateWithKeyboard(
       find.byKey(const ValueKey('settings-diagnostics-link')),
     );
-    expect(diagnostics.left, voice.left);
-    expect(diagnostics.width, voice.width);
-    expect(diagnostics.top, greaterThanOrEqualTo(voice.bottom));
+    expect(find.text('Diagnostics destination'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    await activateWithKeyboard(
+      find.byKey(const ValueKey('settings-connections-link')),
+    );
+    expect(find.text('Connections destination'), findsOneWidget);
   });
 }

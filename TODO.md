@@ -742,27 +742,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-VOICE-QUALIFICATION; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-VOICE-QUALIFICATION** — Qualify actual physical capture, speech and acoustic behavior
-  Prepare one current-source physical capture → reviewed transcript → explicit
-  send scenario.
-  Goal: VOICE
-Section: Next.
-  Sources: [2026-09-04-voice-ownership](docs/superpowers/plans/2026-09-04-voice-ownership.md) (historical planning context);
-   [microphone runbook](docs/runbooks/android/live-mic-smoke.md).
-  Payoff: distinguish real device speech from simulated recognition.
-  Scope: existing consented capture path and sanitized receipt; exclude app-owned
-  voice models, speech logging, automatic send/replay and speculative audio routes.
-  Acceptance: named device/recognizer/language, actual capture/cancel/failure
-  outcomes and no retained recognized words in diagnostics. Remaining: output,
-  hands-free and acoustic checks only on their named targets.
-  External gates: approved physical target and capture consent; preparation proceeds
-  without recording audio. Ownership: unclaimed; verify tracker before execution.
-  Dependencies: None.
-  Planner repair: the external gate above is not a task identifier and remains unsatisfied. Existing owner deferrals/access limits apply; preparation stays separate from any capture, device execution or live qualification.
-  Checks: Review current capture/cancel/explicit-send ownership against the linked microphone runbook. For changed preparation fixtures, run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/voice/ test/features/voice/services/`; verify changed documentation targets and `git diff --check`. Physical capture and any provider/TTS/re-arm procedure remain deferred until separately approved device, capture consent, QA authentication and budget are available. Do not run the installing/microphone-granting prep helper merely to satisfy this field; no retained recognized speech or fabricated observation receipt.
-  Touches: docs/quality/, test/features/hermes_chat/voice/, test/features/voice/services/
-  Readiness: preparation is distinct from gated execution; original acceptance and owner deferrals remain unchanged.
-
 - [ ] **LANDING-PAGES-QUALITY** — Goal: LANDING-ONBOARDING. Deliver landing changes
   with artifact-bound accessibility, performance and subpath regression coverage.
   Section: Next.
@@ -1402,4 +1381,14 @@ does not mark any check passed or authorize live actions.
   - Installed-host authentication/capability advertisement, native Agent continuation and any future process ownership/cleanup require separately authorized isolated live evidence. No credentials were acquired and no Agent operation was activated; source inspection does not qualify Linux/macOS/Windows/Android or the daily-use milestone.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-NATIVE-DESIGN-REVIEW.
+  Status: open
+
+- [ ] DOC-VOICE-QUALIFICATION-LIVE — Live checks for DOC-VOICE-QUALIFICATION
+  Scope: Run the live checks the offline work for DOC-VOICE-QUALIFICATION left pending.
+  Acceptance: Each check passes on the real target:
+  - Obtain separately approved physical Android target and capture consent, including OS recognizer processing and any permission denial/revoke testing; name actual device, recognizer package/version, effective locale and built-in microphone route. No device was selected or operated.
+  - After isolated QA authentication, provider budget and exact installed-artifact identification are available, execute actual capture -> reviewed draft -> explicit Send plus cancel, permission/no-speech failure, explicit recovery and diagnostic privacy observations. No audio, recognized words or observation receipt was collected; all physical outcomes remain NOT_CHECKED.
+  - Output cancellation/TTS, provider reply, hands-free/re-arm, broader ownership scenarios, wired/Bluetooth routes and acoustic behavior require separately approved named-target execution. This input-only preparation cannot satisfy the existing sanitized physical-voice recorder's broader gates or close VOICE acceptance.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-VOICE-QUALIFICATION.
   Status: open

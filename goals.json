@@ -5759,7 +5759,8 @@
       "status": "unverified",
       "tasks": [
         "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
-        "DOC-VOICE-QUALIFICATION"
+        "DOC-VOICE-QUALIFICATION",
+        "DOC-VOICE-QUALIFICATION-LIVE"
       ],
       "title": "Qualify actual physical capture, speech and acoustic behavior"
     },
@@ -6895,7 +6896,6 @@
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
-      "DOC-VOICE-QUALIFICATION",
       "LANDING-PAGES-QUALITY",
       "BACKEND-SSH-KEY-NATIVE",
       "CONNECTION-LINK-REMOVAL",
@@ -6935,7 +6935,8 @@
       "DOC-M4-MEMORY-CONTRACT-LIVE",
       "DOC-M4-PLATFORM-CONTRACT-LIVE",
       "DOC-ACCOUNT-CONTRACT-LIVE",
-      "DOC-NATIVE-DESIGN-REVIEW-LIVE"
+      "DOC-NATIVE-DESIGN-REVIEW-LIVE",
+      "DOC-VOICE-QUALIFICATION-LIVE"
     ]
   },
   "tasks": [
@@ -7136,14 +7137,6 @@
       "section": "Next",
       "status": "open",
       "title": "Prepare one speech-output cancellation scenario"
-    },
-    {
-      "depends_on": [],
-      "goal": "VOICE",
-      "id": "DOC-VOICE-QUALIFICATION",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify actual physical capture, speech and acoustic behavior"
     },
     {
       "depends_on": [],
@@ -7476,6 +7469,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-NATIVE-DESIGN-REVIEW"
+    },
+    {
+      "depends_on": [
+        "DOC-VOICE-QUALIFICATION"
+      ],
+      "goal": "VOICE",
+      "id": "DOC-VOICE-QUALIFICATION-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-VOICE-QUALIFICATION"
     },
     {
       "depends_on": [
@@ -8465,6 +8468,14 @@
       "section": "Done",
       "status": "done",
       "title": "Map one unavailable slash action and its recovery"
+    },
+    {
+      "depends_on": [],
+      "goal": "VOICE",
+      "id": "DOC-VOICE-QUALIFICATION",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify actual physical capture, speech and acoustic behavior"
     },
     {
       "depends_on": [],

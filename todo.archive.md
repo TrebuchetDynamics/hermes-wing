@@ -7004,3 +7004,29 @@ Section: Next.
   security/design decision. Ownership: existing design lane; verify current lease.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/plans/2026-10-03-desktop-local-integration-design.md, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-VOICE-QUALIFICATION** — Qualify actual physical capture, speech and acoustic behavior
+  Prepare one current-source physical capture → reviewed transcript → explicit
+  send scenario.
+  Goal: VOICE
+Section: Next.
+  Sources: [2026-09-04-voice-ownership](docs/superpowers/plans/2026-09-04-voice-ownership.md) (historical planning context);
+   [microphone runbook](docs/runbooks/android/live-mic-smoke.md).
+  Payoff: distinguish real device speech from simulated recognition.
+  Scope: existing consented capture path and sanitized receipt; exclude app-owned
+  voice models, speech logging, automatic send/replay and speculative audio routes.
+  Acceptance: named device/recognizer/language, actual capture/cancel/failure
+  outcomes and no retained recognized words in diagnostics. Remaining: output,
+  hands-free and acoustic checks only on their named targets.
+  External gates: approved physical target and capture consent; preparation proceeds
+  without recording audio. Ownership: unclaimed; verify tracker before execution.
+  Dependencies: None.
+  Planner repair: the external gate above is not a task identifier and remains unsatisfied. Existing owner deferrals/access limits apply; preparation stays separate from any capture, device execution or live qualification.
+  Checks: Review current capture/cancel/explicit-send ownership against the linked microphone runbook. For changed preparation fixtures, run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/voice/ test/features/voice/services/`; verify changed documentation targets and `git diff --check`. Physical capture and any provider/TTS/re-arm procedure remain deferred until separately approved device, capture consent, QA authentication and budget are available. Do not run the installing/microphone-granting prep helper merely to satisfy this field; no retained recognized speech or fabricated observation receipt.
+  Touches: docs/quality/, test/features/hermes_chat/voice/, test/features/voice/services/
+  Readiness: preparation is distinct from gated execution; original acceptance and owner deferrals remain unchanged.

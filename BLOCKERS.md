@@ -27,6 +27,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T20:59:27Z
 - Answer: Answer in PLANGAP-001-2f's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-WING-001-b3 — USER_INPUT — effort input — unblocks 0
+
+- Task: WING-001-b3 — Make SSH connection failures visible and actionable.
+- Needs: worker reported a blocker: Coordinator must reconcile the canonical backlog disposition for docs/plans/2026-10-18-flutter-mcp-architecture.md: test/tooling/plan_backlog_traceability_test.dart fails with "Current plan has no tasks". TODO.md/goals.json are explicitly coordinator-owned and forbidden to this worker. (+1 more in report.json)
+- Since: 2026-10-18T21:51:54Z
+- Answer: Answer in WING-001-b3's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

@@ -136,7 +136,10 @@ binding and all separately authorized observations, not this worksheet.
 Physical capture/cancel/failure, actual recognizer/language and diagnostic privacy
 remain NOT_CHECKED until the gates above are met. Output engine cancellation,
 TTS/provider reply, hands-free/re-arm and acoustic checks remain separate: name
-their actual target, engine and route before execution. Wired/Bluetooth, route
+their actual target, engine and route before execution. The
+[output-cancellation preparation](voice-output-cancellation.md) traces one pending
+platform-configuration scenario and its missing deterministic oracle; it is not
+physical or acoustic qualification. Wired/Bluetooth, route
 loss, screen lock, sustained use, speaker self-triggering, echo cancellation,
 double-talk and interruption latency are not inferred from built-in input,
 synthetic tests or web compilation. The runbook's broader ownership matrix

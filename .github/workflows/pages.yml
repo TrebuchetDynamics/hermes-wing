@@ -12,20 +12,36 @@ on:
       - "web/**"
       - "pubspec.lock"
       - "pubspec.yaml"
+      - "package.json"
+      - "package-lock.json"
+      - "playwright.config.mjs"
+      - "playwright/tests/regression/pages-landing.spec.mjs"
+      - "playwright/support/flutter_semantics.mjs"
+      - "scripts/generate_readme_assets.mjs"
+      - "test/tooling/pages_artifact_test.mjs"
+      - "test/tooling/pages_workflow_contract_test.dart"
+      - "test/tooling/readme_assets_contract_test.dart"
+      - "test/tooling/wing_branding_assets_test.dart"
+      - "README.md"
+      - "docs/README.md"
+      - "docs/getting-started.md"
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
   deploy:
     name: Build and deploy web app
+    # No PR/fork context or non-main manual ref can acquire publishing rights.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -47,6 +63,12 @@ jobs:
           flutter pub get
           npm ci
           npx playwright install --with-deps chromium
+      - name: Pages source and artifact tooling contracts
+        run: |
+          node --test test/tooling/pages_artifact_test.mjs
+          flutter test --no-pub test/tooling/pages_workflow_contract_test.dart \
+            test/tooling/readme_assets_contract_test.dart \
+            test/tooling/wing_branding_assets_test.dart
       - name: Build Pages artifact
         run: |
           flutter build web --release --base-href /hermes-wing/app/
@@ -60,20 +82,22 @@ jobs:
           cp assets/readme/runtime-flow.svg build/pages/assets/runtime-flow.svg
           cp assets/readme/runtime-flow-mobile.svg build/pages/assets/runtime-flow-mobile.svg
           cp site/assets/app-icon.png build/pages/assets/app-icon.png
+          node site/pages-artifact.mjs stamp build/pages "${GITHUB_SHA}"
       - name: Landing and web client browser smoke
         run: |
-          mkdir -p /tmp/hermes-wing-pages
-          ln -s "${GITHUB_WORKSPACE}/build/pages" /tmp/hermes-wing-pages/hermes-wing
-          python3 -m http.server 8769 --bind 127.0.0.1 --directory /tmp/hermes-wing-pages &
+          pages_stage="$(mktemp -d "${RUNNER_TEMP}/wing-pages.XXXXXX")"
+          trap 'kill "${server_pid:-}" 2>/dev/null || true; rm -rf "$pages_stage"' EXIT
+          ln -s "${GITHUB_WORKSPACE}/build/pages" "$pages_stage/hermes-wing"
+          python3 -m http.server 8769 --bind 127.0.0.1 --directory "$pages_stage" &
           server_pid=$!
-          trap 'kill $server_pid 2>/dev/null || true' EXIT
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8769/hermes-wing/ >/dev/null; then
               break
             fi
             sleep 1
           done
-          PAGES_BASE_URL=http://127.0.0.1:8769/hermes-wing/ \
+          PAGES_EXPECTED_REVISION="${GITHUB_SHA}" \
+            PAGES_BASE_URL=http://127.0.0.1:8769/hermes-wing/ \
             npx playwright test --config=playwright.config.mjs \
             playwright/tests/regression/pages-landing.spec.mjs --reporter=list
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
@@ -86,20 +110,4 @@ jobs:
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
-          page_root="${PAGE_URL%/}/"
-          landing="$(curl --fail --silent --show-error "${page_root}?revision=${GITHUB_SHA}")"
-          if [[ "$landing" != *'<title>Hermes Wing — Hermes Agent everywhere</title>'* ]]; then
-            echo "Deployed root is not the Hermes Wing landing page." >&2
-            exit 1
-          fi
-          curl --fail --silent --show-error \
-            "${page_root}styles.css?revision=${GITHUB_SHA}" >/dev/null
-          app_index="$(curl --fail --silent --show-error "${page_root}app/?revision=${GITHUB_SHA}")"
-          if [[ "$app_index" != *'<base href="/hermes-wing/app/">'* ]]; then
-            echo "Deployed web app is missing its scoped base href." >&2
-            exit 1
-          fi
-          curl --fail --silent --show-error \
-            "${page_root}app/flutter_bootstrap.js?revision=${GITHUB_SHA}" >/dev/null
-          curl --fail --silent --show-error \
-            "${page_root}app/main.dart.js?revision=${GITHUB_SHA}" >/dev/null
+          node site/pages-artifact.mjs verify build/pages/artifact.json "${PAGE_URL}"

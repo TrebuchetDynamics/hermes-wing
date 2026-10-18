@@ -7030,3 +7030,251 @@ Section: Next.
   Checks: Review current capture/cancel/explicit-send ownership against the linked microphone runbook. For changed preparation fixtures, run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/voice/ test/features/voice/services/`; verify changed documentation targets and `git diff --check`. Physical capture and any provider/TTS/re-arm procedure remain deferred until separately approved device, capture consent, QA authentication and budget are available. Do not run the installing/microphone-granting prep helper merely to satisfy this field; no retained recognized speech or fabricated observation receipt.
   Touches: docs/quality/, test/features/hermes_chat/voice/, test/features/voice/services/
   Readiness: preparation is distinct from gated execution; original acceptance and owner deferrals remain unchanged.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **LANDING-PAGES-QUALITY** — Goal: LANDING-ONBOARDING. Deliver landing changes
+  with artifact-bound accessibility, performance and subpath regression coverage.
+  Section: Next.
+  Status: done
+  Payoff: prove the actual artifact and its setup/proof links, not old deployed content.
+  Sources: [accepted landing outcome](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome),
+  [Pages quality plan](docs/plans/2026-10-12-wing-landing-onboarding.md#delivery-slices-and-acceptance),
+  [landing-led identity](docs/plans/2026-10-12-wing-landing-onboarding.md#landing-led-product-identity-across-readme-and-docs),
+  `.github/workflows/pages.yml`, `playwright/tests/regression/pages-landing.spec.mjs`,
+  `test/tooling/pages_workflow_contract_test.dart`, `scripts/generate_readme_assets.mjs`.
+  Scope: preserve the current README/docs-index/tutorial/images refinement through artifact
+  checks without creating a second support matrix or duplicating live-QA work.
+  Extend existing candidate artifact checks, relevant workflow inputs,
+  link/CTA/image/provenance metadata, keyboard/zoom/motion/accessibility and controlled
+  performance budgets; preserve landing root and nested production app initialization.
+  Public readback must distinguish exact artifact freshness from old cached content.
+  Extend existing guards for landing-led headline/user-path hierarchy, preserved
+  current-logo/alpha policies and valid README/docs asset links; no new docs stack.
+  No publication in planning, privileged fork/PR deployment or new hosting/backend.
+  Acceptance: focused source contracts and assembled-artifact Pages smoke pass;
+  no console/same-origin HTTP errors; meaningful checks cover new setup paths;
+  performance results identify device/throttle/cache conditions and are not promoted
+  to field Core Web Vitals; staging/deploy permissions and scoped base href remain
+  intact. Document previous-artifact forward recovery without destructive history.
+  Checks: planned `flutter test --no-pub
+  test/tooling/pages_workflow_contract_test.dart
+  test/tooling/plan_backlog_traceability_test.dart
+  test/tooling/readme_assets_contract_test.dart`; build/assemble the production
+  Pages artifact using .github/workflows/pages.yml's existing non-deploy steps in
+  an owned scratch directory, then serve it loopback-only and run
+  `PAGES_BASE_URL=http://127.0.0.1:8769/hermes-wing/ npx playwright test
+  --config=playwright.config.mjs playwright/tests/regression/pages-landing.spec.mjs
+  --reporter=list`; `git diff --check`. Preserve Node 22, CI's recorded Flutter
+  3.44.6, local toolchain distinction, fixture and resource/cleanup evidence.
+  No workflow dispatch, deployment or source-destructive cleanup is part of checks.
+  Dependencies: none for offline pipeline/guard work; coordinate with the landing
+  implementer when copy/assets change. Live first reply uses existing qualified QA.
+  Ownership: wing; no worker claimed. Next action: add focused artifact regression
+  and safe workflow input/quality coverage, not another broad repository audit.
+  Touches: site/, assets/readme/, scripts/generate_readme_assets.mjs, .github/workflows/pages.yml, playwright/tests/regression/pages-landing.spec.mjs, playwright.config.mjs, test/tooling/, docs/getting-started.md, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **BACKEND-SSH-KEY-NATIVE** —  Qualify full-app
+  managed-key SSH on native Linux and Android against the approved host.
+  Goal: REMOTE-BACKENDS
+Section: Next.
+  Payoff: prove actual app authentication and device reachability, not terminal login.
+  Scope: production managed form, isolated app state and named-platform execution.
+  Acceptance: independently record host trust, SSH/Agent authentication,
+  profile/model/history loading, disconnect and explicit reconnect without replay.
+  Exercise denied/changed keys and cancellation. Include generated-key secure
+  storage denial, public-only native clipboard, deliberate saved-key reuse and
+  unchanged key identity across real process restart. Retain existing generation limits;
+  do not infer permission for provider spending or personal-runtime mutations.
+  Sources: [native qualification](docs/test-plan.md#ssh-private-key-qualification).
+  Dependencies: BACKEND-SSH-KEY-AUTH.
+  Ownership: unclaimed; both platform results remain NOT_CHECKED. Reuse the new
+  `scripts/run_managed_ssh_key_native.sh` and integration test rather than rebuild
+  the harness. Seven Python preparation tests pass in its isolated QA venv.
+  Native execution and the real operating-system chooser remain separate checks.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Use the existing scripts/run_managed_ssh_key_native.sh and the linked SSH private-key qualification procedure with approved target/authentication and isolated state. Record Linux and Android cells, trust/key-denial/cancel and process-restart identity separately; no provider generation or OS chooser/storage pass is implied.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-ROLLBACK-EVIDENCE** — Attribute one failed new-profile setup rollback.
+  Goal: M3
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3](ROADMAP.md#m3--trusted-onboarding-into-a-useful-profile-and-workspace);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [enrollment checkpoint](docs/quality/m3-enrollment-profile-contract-checkpoint.md).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Find source-bound cleanup and preserved existing-profile identity in existing Go tests/receipts, or name the missing proof. No profile creation.
+  Dependencies: DOC-M3-CONTRACT-CHECKPOINT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin inspected Wing and reference revisions with `git rev-parse HEAD` in
+  each checkout; inspect source, nearest tests and sanitized historical receipts
+  for failed-setup cleanup and preserved existing-profile identity. Record the
+  exact supported proof or gap, not a new rollback run. Verify changed Markdown
+  targets, obtain independent contract/security review, and run `git diff --check`.
+  Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-PROJECT-ASSIGNMENT-CONTRACT** — Trace primary-folder assignment separately from creation.
+  Goal: M3-PROJECT
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3-PROJECT](docs/product/prd.md#core-journeys);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [creation trace](docs/quality/m3-project-creation-contract.md#one-bounded-next-slice).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: name exact Project/profile identity, approved-handle containment and
+  revision semantics, or the absent operation. Also trace Project-to-session/Chat
+  binding, stale-owner rejection and no implicit create/send/global selection.
+  Record the supported contract or precise absence. No assignment or Chat mutation.
+  Dependencies: DOC-M3-PROJECT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace the exact
+  authoritative handler/model, nearest upstream tests and Wing caller against
+  every Acceptance item. Record source-bound supported versus unavailable
+  assignment and session-binding guarantees; verify changed Markdown targets,
+  obtain independent contract/security review, and run `git diff --check`.
+  Source inspection only; do not assign a Project or activate Chat.
+  Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M3-PROVIDER-REMOVAL-CONTRACT** — Trace credential removal separately from replacement.
+  Goal: M3-PROVIDER
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M3-PROVIDER](docs/adr/api-and-state.md#required-agent-owned-mutation-contract);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [credential trace](docs/quality/m3-provider-credential-contract.md).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name expected revision, secret-safe errors and unknown-outcome reconciliation, or the absent operation. No credential access or writes.
+  Dependencies: DOC-M3-PROVIDER-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; compare removal
+  handler/model, nearest upstream tests and Wing client/channel/sheet with the
+  ADR and Acceptance. Record revision, secret-safe failure and unknown-outcome
+  guarantees or their absence; verify changed Markdown targets, obtain independent
+  contract/security review, and run `git diff --check`. No credential access or writes.
+  Touches: docs/quality/
+  Readiness: source-only documentation; native/live qualification stays separate.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE** — Map hostile-content rejection for one permitted artifact type.
+  Goal: ARTIFACTS
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [retrieval and preview trace](docs/quality/artifact-retrieval-contract.md#nearest-tests-and-inert-preview-oracle).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify inert preview and denial/cancel oracles or an absent allowed retrieval contract. Folder grants confer no artifact rights; no content requests.
+  Dependencies: DOC-ARTIFACT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; inspect the
+  authoritative retrieval handler/store, nearest tests and Wing media/export
+  callers for one permitted type against Acceptance. Map inert-preview and
+  denial/cancel oracles or the absent allowed contract without fetching content.
+  Verify changed Markdown targets, obtain independent contract/security review,
+  and run `git diff --check`. No artifact request or preview activation.
+  Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-MCP-CONFIG-CONTRACT** — Trace one MCP configuration read separately from toolset toggling.
+  Goal: M4-MCP
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-MCP](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [toolset trace](docs/quality/toolset-toggle-contract.md#revisit-trigger-and-remaining-qualification).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name profile identity, output redaction, bounds and exact grant, or the absent read. No MCP installation, config write or arbitrary commands.
+  Dependencies: DOC-M4-MCP-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace one MCP
+  configuration-read handler/model, nearest tests and Wing caller or its absence.
+  Compare profile identity, redaction, bounds and exact authorization with Acceptance;
+  verify changed Markdown targets, obtain independent contract/security review,
+  and run `git diff --check`. Inspect source only, not actual MCP configuration.
+  Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-SCHEDULE-DELIVERY-CONTRACT** — Trace one schedule-delivery configuration operation.
+  Goal: M4-SCHEDULES
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [schedule trace](docs/quality/schedule-pause-resume-contract.md#review-validation-and-next-boundary).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Name exact job/profile identity, revision and write-only credential requirements or the absent operation. No job execution, delivery or credentials.
+  Dependencies: DOC-M4-SCHEDULE-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; trace one exact
+  delivery-configuration handler/model, nearest tests and Wing caller or absence.
+  Compare job/profile identity, revision and write-only credential guarantees with
+  Acceptance; verify changed Markdown targets, obtain independent contract/security
+  review, and run `git diff --check`. No job execution, delivery or credential access.
+  Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M5-LARGE-TEXT-EVIDENCE** — Attribute one 200-percent-text message-action journey.
+  Goal: M5
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M5](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [fixture follow-up](docs/quality/2026-10-03-android-qualification-discovery.md#offline-fixture-follow-up--doc-m5-android-fixture).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify source-bound keyboard focus and reachable copy/export controls or a missing deterministic oracle. Do not label this TalkBack or device qualification.
+  Dependencies: DOC-M5-ANDROID-FIXTURE; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin Wing with `git rev-parse HEAD`; inspect
+  `test/features/hermes_chat/screens/hermes_chat_message_actions_a11y_test.dart`,
+  `test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart`
+  and their production callers against the retained receipts. Attribute the
+  200-percent-text focus/copy/export proof or missing oracle, verify changed
+  Markdown targets, and run `git diff --check`. Source/receipt inspection only;
+  do not run a device journey or promote fixtures to TalkBack qualification.
+  Touches: docs/quality/

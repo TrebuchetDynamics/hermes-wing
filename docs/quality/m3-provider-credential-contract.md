@@ -4,7 +4,9 @@ Source-only evidence for `DOC-M3-PROVIDER-CONTRACT`. Start with the
 [required Agent-owned mutation contract](../adr/api-and-state.md#required-agent-owned-mutation-contract).
 **Replacement remains unavailable; this report does not enable or qualify any
 provider operation.** Current Wing Set/Remove/Validate shapes cannot establish
-that contract. Exact route/grant checks are necessary, not sufficient.
+that contract. Exact route/grant checks are necessary, not sufficient. See the
+[separate removal trace](m3-provider-removal-contract.md) for env-key deletion,
+pool-index removal, disconnect, failure receipts and unknown-outcome gaps.
 
 ## Scope and source identities
 

@@ -106,6 +106,10 @@ must retain an explicit parity gap until a safe unmodified contract exists.
 
 ## One bounded next slice
 
+The successor [assignment and session-binding trace](m3-project-assignment-contract.md)
+now records this separate source slice. It does not enable assignment or
+Project-aware Chat, or transfer creation guarantees to either operation.
+
 Use the already indexed **`DOC-M3-PROJECT-ASSIGNMENT-CONTRACT`**, not a new adapter
 or a second creation implementation. Its scope is read-only evidence: separately
 trace primary-folder assignment and Project-to-session/Chat binding against pinned

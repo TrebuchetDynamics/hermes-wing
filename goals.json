@@ -5358,7 +5358,8 @@
       "tasks": [
         "DOC-M3-CONTRACT-CHECKPOINT",
         "DOC-M3-CONTRACT-CHECKPOINT-LIVE",
-        "DOC-M3-ROLLBACK-EVIDENCE"
+        "DOC-M3-ROLLBACK-EVIDENCE",
+        "DOC-M3-ROLLBACK-EVIDENCE-LIVE"
       ],
       "title": "Qualify trusted enrollment, profile setup and explicit Chat"
     },
@@ -5377,6 +5378,7 @@
       "status": "unmet",
       "tasks": [
         "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
+        "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE",
         "DOC-M3-PROJECT-CONTRACT",
         "DOC-M3-PROJECT-CONTRACT-LIVE"
       ],
@@ -5398,7 +5400,8 @@
       "tasks": [
         "DOC-M3-PROVIDER-CONTRACT",
         "DOC-M3-PROVIDER-CONTRACT-LIVE",
-        "DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE"
       ],
       "title": "Manage existing-profile provider credentials and atomic model assignment"
     },
@@ -5418,7 +5421,8 @@
       "tasks": [
         "DOC-ARTIFACT-CONTRACT",
         "DOC-ARTIFACT-CONTRACT-LIVE",
-        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE"
       ],
       "title": "Retrieve/preview/save supported artifacts without arbitrary paths"
     },
@@ -5477,6 +5481,7 @@
       "status": "partial",
       "tasks": [
         "DOC-M4-MCP-CONFIG-CONTRACT",
+        "DOC-M4-MCP-CONFIG-CONTRACT-LIVE",
         "DOC-M4-MCP-CONTRACT",
         "DOC-M4-MCP-CONTRACT-LIVE"
       ],
@@ -5538,7 +5543,8 @@
       "tasks": [
         "DOC-M4-SCHEDULE-CONTRACT",
         "DOC-M4-SCHEDULE-CONTRACT-LIVE",
-        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE"
       ],
       "title": "Create/edit/pause/resume/run/delete scheduled jobs and delivery targets"
     },
@@ -5558,7 +5564,8 @@
       "tasks": [
         "DOC-M5-ANDROID-FIXTURE",
         "DOC-M5-ANDROID-FIXTURE-LIVE",
-        "DOC-M5-LARGE-TEXT-EVIDENCE"
+        "DOC-M5-LARGE-TEXT-EVIDENCE",
+        "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE"
       ],
       "title": "Qualify native output and accessible interaction"
     },
@@ -5738,6 +5745,7 @@
         "BACKEND-SSH-CONNECT-LIVE",
         "BACKEND-SSH-KEY-AUTH",
         "BACKEND-SSH-KEY-NATIVE",
+        "BACKEND-SSH-KEY-NATIVE-LIVE",
         "DOC-BACKEND-CONTRACT",
         "DOC-BACKEND-DISCONNECT-CONTRACT",
         "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE"
@@ -5800,6 +5808,7 @@
       "tasks": [
         "LANDING-FIRST-REPLY",
         "LANDING-PAGES-QUALITY",
+        "LANDING-PAGES-QUALITY-LIVE",
         "LANDING-PRODUCT-PROOF",
         "LANDING-PRODUCT-PROOF-LIVE"
       ],
@@ -6882,13 +6891,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M3-ROLLBACK-EVIDENCE",
-      "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
-      "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
-      "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
-      "DOC-M4-MCP-CONFIG-CONTRACT",
-      "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
-      "DOC-M5-LARGE-TEXT-EVIDENCE",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT",
       "DOC-M4-HOST-LIFECYCLE-EVIDENCE",
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
@@ -6896,8 +6898,6 @@
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
-      "LANDING-PAGES-QUALITY",
-      "BACKEND-SSH-KEY-NATIVE",
       "CONNECTION-LINK-REMOVAL",
       "CONNECTION-CRON-CANARY",
       "DOC-API-DEVICE-SELF-CONFORMANCE",
@@ -6936,7 +6936,16 @@
       "DOC-M4-PLATFORM-CONTRACT-LIVE",
       "DOC-ACCOUNT-CONTRACT-LIVE",
       "DOC-NATIVE-DESIGN-REVIEW-LIVE",
-      "DOC-VOICE-QUALIFICATION-LIVE"
+      "DOC-VOICE-QUALIFICATION-LIVE",
+      "LANDING-PAGES-QUALITY-LIVE",
+      "BACKEND-SSH-KEY-NATIVE-LIVE",
+      "DOC-M3-ROLLBACK-EVIDENCE-LIVE",
+      "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE",
+      "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE",
+      "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE",
+      "DOC-M4-MCP-CONFIG-CONTRACT-LIVE",
+      "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE",
+      "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -6962,16 +6971,6 @@
     },
     {
       "depends_on": [
-        "BACKEND-SSH-KEY-AUTH"
-      ],
-      "goal": "REMOTE-BACKENDS",
-      "id": "BACKEND-SSH-KEY-NATIVE",
-      "section": "Next",
-      "status": "open",
-      "title": "Exercise full Wing managed-key SSH and recovery on native Linux and Android against the approved host"
-    },
-    {
-      "depends_on": [
         "CONNECTION-LINK-REMOVAL"
       ],
       "goal": "CONNECTION-PATHS",
@@ -6989,46 +6988,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map account expiry and logout separately from acquisition"
-    },
-    {
-      "depends_on": [
-        "DOC-ARTIFACT-CONTRACT"
-      ],
-      "goal": "ARTIFACTS",
-      "id": "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Map hostile-content rejection for one permitted artifact type"
-    },
-    {
-      "depends_on": [
-        "DOC-M3-PROJECT-CONTRACT"
-      ],
-      "goal": "M3-PROJECT",
-      "id": "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace primary-folder assignment separately from creation"
-    },
-    {
-      "depends_on": [
-        "DOC-M3-PROVIDER-CONTRACT"
-      ],
-      "goal": "M3-PROVIDER",
-      "id": "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace credential removal separately from replacement"
-    },
-    {
-      "depends_on": [
-        "DOC-M3-CONTRACT-CHECKPOINT"
-      ],
-      "goal": "M3",
-      "id": "DOC-M3-ROLLBACK-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Attribute one failed new-profile setup rollback"
     },
     {
       "depends_on": [
@@ -7062,16 +7021,6 @@
     },
     {
       "depends_on": [
-        "DOC-M4-MCP-CONTRACT"
-      ],
-      "goal": "M4-MCP",
-      "id": "DOC-M4-MCP-CONFIG-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one MCP configuration read separately from toolset toggling"
-    },
-    {
-      "depends_on": [
         "DOC-M4-MEMORY-CONTRACT"
       ],
       "goal": "M4-MEMORY",
@@ -7079,26 +7028,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace memory capacity/provider reads separately from entry reads"
-    },
-    {
-      "depends_on": [
-        "DOC-M4-SCHEDULE-CONTRACT"
-      ],
-      "goal": "M4-SCHEDULES",
-      "id": "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one schedule-delivery configuration operation"
-    },
-    {
-      "depends_on": [
-        "DOC-M5-ANDROID-FIXTURE"
-      ],
-      "goal": "M5",
-      "id": "DOC-M5-LARGE-TEXT-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Attribute one 200-percent-text message-action journey"
     },
     {
       "depends_on": [
@@ -7155,14 +7084,6 @@
       "section": "Next",
       "status": "open",
       "title": "Download a selected terminal working-directory file to the Wing device with verified bytes"
-    },
-    {
-      "depends_on": [],
-      "goal": "LANDING-ONBOARDING",
-      "id": "LANDING-PAGES-QUALITY",
-      "section": "Next",
-      "status": "open",
-      "title": "Extend artifact-bound Pages quality and delivery regressions"
     },
     {
       "depends_on": [
@@ -7241,6 +7162,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for BACKEND-SSH-CONNECT"
+    },
+    {
+      "depends_on": [
+        "BACKEND-SSH-KEY-NATIVE"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "BACKEND-SSH-KEY-NATIVE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for BACKEND-SSH-KEY-NATIVE"
     },
     {
       "depends_on": [
@@ -7342,6 +7273,16 @@
     },
     {
       "depends_on": [
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+      ],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+    },
+    {
+      "depends_on": [
         "DOC-BACKEND-DISCONNECT-CONTRACT"
       ],
       "goal": "REMOTE-BACKENDS",
@@ -7372,6 +7313,16 @@
     },
     {
       "depends_on": [
+        "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT"
+      ],
+      "goal": "M3-PROJECT",
+      "id": "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M3-PROJECT-ASSIGNMENT-CONTRACT"
+    },
+    {
+      "depends_on": [
         "DOC-M3-PROJECT-CONTRACT"
       ],
       "goal": "M3-PROJECT",
@@ -7392,6 +7343,26 @@
     },
     {
       "depends_on": [
+        "DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+      ],
+      "goal": "M3-PROVIDER",
+      "id": "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M3-PROVIDER-REMOVAL-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-ROLLBACK-EVIDENCE"
+      ],
+      "goal": "M3",
+      "id": "DOC-M3-ROLLBACK-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M3-ROLLBACK-EVIDENCE"
+    },
+    {
+      "depends_on": [
         "DOC-M4-CONTRACT-CHECKPOINT"
       ],
       "goal": "M4-DISCOVER",
@@ -7409,6 +7380,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-KANBAN-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-MCP-CONFIG-CONTRACT"
+      ],
+      "goal": "M4-MCP",
+      "id": "DOC-M4-MCP-CONFIG-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-MCP-CONFIG-CONTRACT"
     },
     {
       "depends_on": [
@@ -7452,6 +7433,16 @@
     },
     {
       "depends_on": [
+        "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+      ],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
+    },
+    {
+      "depends_on": [
         "DOC-M5-ANDROID-FIXTURE"
       ],
       "goal": "M5",
@@ -7459,6 +7450,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M5-ANDROID-FIXTURE"
+    },
+    {
+      "depends_on": [
+        "DOC-M5-LARGE-TEXT-EVIDENCE"
+      ],
+      "goal": "M5",
+      "id": "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M5-LARGE-TEXT-EVIDENCE"
     },
     {
       "depends_on": [
@@ -7479,6 +7480,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-VOICE-QUALIFICATION"
+    },
+    {
+      "depends_on": [
+        "LANDING-PAGES-QUALITY"
+      ],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PAGES-QUALITY-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for LANDING-PAGES-QUALITY"
     },
     {
       "depends_on": [
@@ -7647,6 +7658,16 @@
       "title": "Connect through deliberate private-key selection and encrypted-key passphrase entry on Linux and Android"
     },
     {
+      "depends_on": [
+        "BACKEND-SSH-KEY-AUTH"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "BACKEND-SSH-KEY-NATIVE",
+      "section": "Done",
+      "status": "done",
+      "title": "Exercise full Wing managed-key SSH and recovery on native Linux and Android against the approved host"
+    },
+    {
       "depends_on": [],
       "goal": "CONNECTION-PATHS",
       "id": "CONNECTION-CRON-ADMISSION",
@@ -7791,6 +7812,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one bounded Agent artifact retrieval operation"
+    },
+    {
+      "depends_on": [
+        "DOC-ARTIFACT-CONTRACT"
+      ],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Map hostile-content rejection for one permitted artifact type"
     },
     {
       "depends_on": [],
@@ -8162,6 +8193,16 @@
       "title": "Qualify trusted enrollment, profile setup and explicit Chat"
     },
     {
+      "depends_on": [
+        "DOC-M3-PROJECT-CONTRACT"
+      ],
+      "goal": "M3-PROJECT",
+      "id": "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace primary-folder assignment separately from creation"
+    },
+    {
       "depends_on": [],
       "goal": "M3-PROJECT",
       "id": "DOC-M3-PROJECT-CONTRACT",
@@ -8176,6 +8217,26 @@
       "section": "Done",
       "status": "done",
       "title": "Recheck the existing-profile credential replacement contract"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-PROVIDER-CONTRACT"
+      ],
+      "goal": "M3-PROVIDER",
+      "id": "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace credential removal separately from replacement"
+    },
+    {
+      "depends_on": [
+        "DOC-M3-CONTRACT-CHECKPOINT"
+      ],
+      "goal": "M3",
+      "id": "DOC-M3-ROLLBACK-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Attribute one failed new-profile setup rollback"
     },
     {
       "depends_on": [],
@@ -8200,6 +8261,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one bounded Project board read"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-MCP-CONTRACT"
+      ],
+      "goal": "M4-MCP",
+      "id": "DOC-M4-MCP-CONFIG-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one MCP configuration read separately from toolset toggling"
     },
     {
       "depends_on": [],
@@ -8235,6 +8306,16 @@
     },
     {
       "depends_on": [
+        "DOC-M4-SCHEDULE-CONTRACT"
+      ],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one schedule-delivery configuration operation"
+    },
+    {
+      "depends_on": [
         "DOC-M4-INVENTORY-EVIDENCE"
       ],
       "goal": "M4",
@@ -8250,6 +8331,16 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify native output and accessible interaction"
+    },
+    {
+      "depends_on": [
+        "DOC-M5-ANDROID-FIXTURE"
+      ],
+      "goal": "M5",
+      "id": "DOC-M5-LARGE-TEXT-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Attribute one 200-percent-text message-action journey"
     },
     {
       "depends_on": [],
@@ -8516,6 +8607,14 @@
       "section": "Done",
       "status": "done",
       "title": "Provide connection-first landing entry and exact API readiness guidance"
+    },
+    {
+      "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "LANDING-PAGES-QUALITY",
+      "section": "Done",
+      "status": "done",
+      "title": "Extend artifact-bound Pages quality and delivery regressions"
     },
     {
       "depends_on": [

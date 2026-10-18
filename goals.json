@@ -5463,7 +5463,8 @@
       "tasks": [
         "DOC-M4-KANBAN-CONTRACT",
         "DOC-M4-KANBAN-CONTRACT-LIVE",
-        "DOC-M4-KANBAN-PAGINATION-EVIDENCE"
+        "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
+        "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE"
       ],
       "title": "Inspect and manage Agent-owned Kanban cards and outcomes"
     },
@@ -6893,7 +6894,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
       "DOC-NATIVE-FAILURE-BOUNDARY",
@@ -6947,7 +6947,8 @@
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT-LIVE",
       "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT-LIVE",
-      "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE"
+      "DOC-M4-HOST-LIFECYCLE-EVIDENCE-LIVE",
+      "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -6990,16 +6991,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map account expiry and logout separately from acquisition"
-    },
-    {
-      "depends_on": [
-        "DOC-M4-KANBAN-CONTRACT"
-      ],
-      "goal": "M4-KANBAN",
-      "id": "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Map stale-owner pagination for a board read"
     },
     {
       "depends_on": [
@@ -7382,6 +7373,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-KANBAN-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-KANBAN-PAGINATION-EVIDENCE"
+      ],
+      "goal": "M4-KANBAN",
+      "id": "DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-KANBAN-PAGINATION-EVIDENCE"
     },
     {
       "depends_on": [
@@ -8283,6 +8284,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one bounded Project board read"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-KANBAN-CONTRACT"
+      ],
+      "goal": "M4-KANBAN",
+      "id": "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Map stale-owner pagination for a board read"
     },
     {
       "depends_on": [

@@ -7335,3 +7335,28 @@ Section: Next.
   Markdown targets, obtain independent contract/security review, and run
   `git diff --check`. No service action or recreation of retired Link code/tests.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-KANBAN-PAGINATION-EVIDENCE** — Map stale-owner pagination for a board read.
+  Goal: M4-KANBAN
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [board-read trace](docs/quality/m4-kanban-board-read-contract.md#one-next-read-only-slice).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Specify bounded pagination and revocation/owner-change expected outcomes or absent authoritative pagination. No writes or shadow cards.
+  Dependencies: DOC-M4-KANBAN-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; inspect the
+  authoritative board handler/model and nearest caller/tests for bounds,
+  continuation and revocation/owner-change outcomes against Acceptance, recording
+  precise absent guarantees rather than inventing pagination. Verify changed
+  Markdown targets, obtain independent contract/security review, and run
+  `git diff --check`. Source inspection only; no board requests or writes.
+  Touches: docs/quality/

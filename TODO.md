@@ -605,26 +605,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-M4-KANBAN-PAGINATION-EVIDENCE** — Map stale-owner pagination for a board read.
-  Goal: M4-KANBAN
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [M4-KANBAN](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [board-read trace](docs/quality/m4-kanban-board-read-contract.md#one-next-read-only-slice).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Specify bounded pagination and revocation/owner-change expected outcomes or absent authoritative pagination. No writes or shadow cards.
-  Dependencies: DOC-M4-KANBAN-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; inspect the
-  authoritative board handler/model and nearest caller/tests for bounds,
-  continuation and revocation/owner-change outcomes against Acceptance, recording
-  precise absent guarantees rather than inventing pagination. Verify changed
-  Markdown targets, obtain independent contract/security review, and run
-  `git diff --check`. Source inspection only; no board requests or writes.
-  Touches: docs/quality/
-
 - [ ] **DOC-M4-MEMORY-CAPACITY-CONTRACT** — Trace memory capacity/provider reads separately from entry reads.
   Goal: M4-MEMORY
 Section: Next.
@@ -1372,4 +1352,12 @@ does not mark any check passed or authorize live actions.
   - Any future Agent-owned lifecycle qualification requires an eligible exact unmodified Agent contract and separately admitted disposable target, including authorization/resource/approval binding, stale/replay denial and artifact/process-correlated activation versus restored-health outcomes. Historical missing Link approval and recovered-service receipts are evidence gaps, not requests or permission to revive Link.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-HOST-LIFECYCLE-EVIDENCE.
+  Status: open
+
+- [ ] DOC-M4-KANBAN-PAGINATION-EVIDENCE-LIVE — Live checks for DOC-M4-KANBAN-PAGINATION-EVIDENCE
+  Scope: Run the live checks the offline work for DOC-M4-KANBAN-PAGINATION-EVIDENCE left pending.
+  Acceptance: Each check passes on the real target:
+  - Only after an eligible unmodified advertised operation and separately authorized disposable target exist: qualify bounded initial/continued reads, authoritative empty/partial/exhausted and denied outcomes, in-flight revocation, connection/profile/board/Project replacement including same-name recreation, and an accessible target-native journey. No platform or live Agent was exercised; current board inspection remains unavailable.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-KANBAN-PAGINATION-EVIDENCE.
   Status: open

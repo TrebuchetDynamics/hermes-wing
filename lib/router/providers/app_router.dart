@@ -48,7 +48,7 @@ Page<void> _chatOverlayPage(
 }) => CustomTransitionPage<void>(
   key: key,
   opaque: false,
-  barrierColor: Colors.black54,
+  barrierColor: Colors.black.withValues(alpha: 0.22),
   barrierDismissible: false,
   transitionDuration: const Duration(milliseconds: 200),
   reverseTransitionDuration: const Duration(milliseconds: 200),

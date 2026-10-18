@@ -2527,9 +2527,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     return Container(
       key: const ValueKey('hermes-voice-mode-surface'),
       decoration: BoxDecoration(
-        color: colors.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.38)),
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.outlineVariant),
       ),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 4),
       child: Column(
@@ -2545,7 +2545,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   capturing
                       ? Icons.mic_rounded
                       : Icons.record_voice_over_rounded,
-                  color: colors.onPrimaryContainer,
+                  color: colors.onSurface,
                 ),
               const SizedBox(width: 12),
               Expanded(
@@ -2554,9 +2554,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   children: [
                     Text(
                       strings.chatLayoutHandsFreeVoiceLabel,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: colors.onPrimaryContainer,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelLarge?.copyWith(color: colors.onSurface),
                     ),
                     Semantics(
                       liveRegion: true,
@@ -2591,27 +2591,27 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   icon: const Icon(Icons.stop_circle_outlined),
                   onPressed: () =>
                       unawaited(_voiceInputController.stopSpeaking()),
-                )
-              else
-                TextButton.icon(
-                  label: Text(
-                    _voiceInputController.outputMuted
-                        ? strings.chatVoiceUnmuteOutputAction
-                        : strings.chatVoiceMuteOutputAction,
-                  ),
-                  icon: Icon(
-                    _voiceInputController.outputMuted
-                        ? Icons.volume_off_outlined
-                        : Icons.volume_up_outlined,
-                  ),
-                  onPressed: () {
-                    if (_voiceInputController.outputMuted) {
-                      _voiceInputController.unmuteOutput();
-                    } else {
-                      unawaited(_voiceInputController.muteOutput());
-                    }
-                  },
                 ),
+              TextButton.icon(
+                key: const ValueKey('hermes-voice-mute-output'),
+                label: Text(
+                  _voiceInputController.outputMuted
+                      ? strings.chatVoiceUnmuteOutputAction
+                      : strings.chatVoiceMuteOutputAction,
+                ),
+                icon: Icon(
+                  _voiceInputController.outputMuted
+                      ? Icons.volume_off_outlined
+                      : Icons.volume_up_outlined,
+                ),
+                onPressed: () {
+                  if (_voiceInputController.outputMuted) {
+                    _voiceInputController.unmuteOutput();
+                  } else {
+                    unawaited(_voiceInputController.muteOutput());
+                  }
+                },
+              ),
               TextButton.icon(
                 label: Text(strings.chatVoicePauseMicrophoneAction),
                 icon: const Icon(Icons.mic_off_outlined),

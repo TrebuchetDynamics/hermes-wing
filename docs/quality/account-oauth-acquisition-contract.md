@@ -6,7 +6,9 @@ Source-only evidence for `DOC-ACCOUNT-CONTRACT`. Start with the
 **Wing OAuth acquisition remains unavailable; no account route is admitted.**
 This traces one official Desktop outcome, not account provisioning, secret
 acquisition, credential-pool administration, credits or wallet transactions.
-The separate `DOC-ACCOUNT-REVOCATION-EVIDENCE` task retains lifecycle qualification.
+The separate [lifecycle evidence map](account-oauth-lifecycle-evidence.md)
+records expiry, logout, revocation and fallback limits; live qualification remains
+separate.
 
 ## Scope and source identities
 
@@ -76,9 +78,10 @@ exports no code, token fragment, private endpoint or user path.
 | Local disconnect/logout | `DELETE /api/providers/oauth/openai-codex?profile=…`, [disconnect handler][disconnect-handler] requires token and calls [`clear_provider_auth`][clear-auth]. It removes the provider singleton and **all** that provider's pool entries from the current auth store, clearing its active marker; 409 means nothing was cleared. [CLI logout][cli-logout] can additionally reset selected model configuration. [Desktop UI][desktop-disconnect] confirms removal and checks `ok`. | Not exact-credential removal, all-profile logout, cancellation of pending sign-ins, clearing another CLI's store, or a provider-side revocation call. The REST handler does not invoke CLI logout's config reset; do not substitute one for the other. |
 | Remote revocation | [Refresh error handling][refresh-resolver] distinguishes invalid/reused grants and 401/403 from 429 quota errors. | No OpenAI revoke operation or authoritative revocation acknowledgement was found on this acquisition/disconnect path. Local deletion cannot revoke copies or terminate existing provider sessions. Runtime recovery may consult a separate CLI grant ([resolver][refresh-resolver]); status reads do not. Do not claim that reauthentication guidance or local removal proves revocation. |
 
-This table supplies acquisition limits only. The dependent revocation evidence task
-must separately trace source fallback, in-flight grants, other profiles/devices and
-provider-side invalidation before lifecycle support is proposed. Nothing here
+This table supplies acquisition limits only. The separate
+[lifecycle evidence map](account-oauth-lifecycle-evidence.md#fallback-authority-after-expiry-or-local-removal)
+traces source fallback, in-flight grants, other profiles/devices and unavailable
+provider-side invalidation authority; it does not qualify lifecycle support. Nothing here
 requests or performs logout, revocation, token refresh or credential acquisition.
 
 ## Nearest tests and Wing caller

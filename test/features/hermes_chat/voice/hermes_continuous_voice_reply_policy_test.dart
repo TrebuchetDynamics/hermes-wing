@@ -46,6 +46,73 @@ void main() {
     },
   );
 
+  test('carries the cursor across IDs only within the reconciled request', () {
+    final user = _user('local-user', 'Synthetic question');
+    for (final sameRequest in [false, true]) {
+      final chunk = hermesContinuousVoiceReplyChunkToSpeak(
+        turns: [
+          sameRequest ? user : _user('other-user', 'Different question'),
+          _assistant('server-answer', 'First sentence. Tail'),
+        ],
+        enabled: true,
+        spokenTurnId: 'local-answer',
+        spokenCharacterCount: 15,
+        spokenText: 'First sentence.',
+        spokenUserTurn: user,
+      );
+      expect(chunk?.text, sameRequest ? 'Tail' : isNull);
+    }
+  });
+
+  test('does not replay a fully spoken canonical replacement', () {
+    final user = _user('u1', 'Synthetic question');
+    final chunk = hermesContinuousVoiceReplyChunkToSpeak(
+      turns: [user, _assistant('server-answer', 'First sentence.')],
+      enabled: true,
+      spokenTurnId: 'local-answer',
+      spokenCharacterCount: 15,
+      spokenText: 'First sentence.',
+      spokenUserTurn: user,
+    );
+    expect(chunk, isNull);
+  });
+
+  test('an identical answer to a new request is not globally deduplicated', () {
+    final firstUser = _user('u1', 'First question');
+    final chunk = hermesContinuousVoiceReplyChunkToSpeak(
+      turns: [
+        firstUser,
+        _assistant('a1', 'Same answer.'),
+        _user('u2', 'Second question'),
+        _assistant('a2', 'Same answer.'),
+      ],
+      enabled: true,
+      spokenTurnId: 'a1',
+      spokenCharacterCount: 12,
+      spokenText: 'Same answer.',
+      spokenUserTurn: firstUser,
+      replyTurnId: 'a2',
+    );
+    expect(chunk?.text, 'Same answer.');
+  });
+
+  test('missing or rewritten replacement prefix fails closed', () {
+    final user = _user('u1', 'Synthetic question');
+    for (final prefix in <String?>[null, 'Other prefix.']) {
+      expect(
+        hermesContinuousVoiceReplyChunkToSpeak(
+          turns: [user, _assistant('server-answer', 'First sentence. Tail')],
+          enabled: true,
+          spokenTurnId: 'local-answer',
+          spokenCharacterCount: 15,
+          spokenText: prefix,
+          spokenUserTurn: user,
+        ),
+        isNull,
+      );
+    }
+  });
+
   test('returns null when auto-speak is disabled', () {
     final reply = hermesContinuousVoiceReplyToSpeak(
       turns: [_assistant('a1', 'reply')],

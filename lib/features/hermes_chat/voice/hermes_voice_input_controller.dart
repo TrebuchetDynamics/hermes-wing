@@ -147,6 +147,7 @@ class HermesVoiceInputController extends ChangeNotifier {
   String? _lastSpokenTurnId;
   String? _expectedVoiceRunId;
   String? _spokenReplyPrefix;
+  HermesChatTurn? _spokenReplyUserTurn;
   String? _activeSpokenChunk;
   String? _readAloudTurnId;
   int _spokenReplyCharacterCount = 0;
@@ -346,6 +347,7 @@ class HermesVoiceInputController extends ChangeNotifier {
 
   void _baselineAssistantReplies() {
     _spokenReplyPrefix = null;
+    _spokenReplyUserTurn = null;
     _activeSpokenChunk = null;
     _lastSpokenTurnId = null;
     _spokenReplyCharacterCount = 0;
@@ -666,17 +668,20 @@ class HermesVoiceInputController extends ChangeNotifier {
         : channel.voiceReplyTurnId(expectedRun);
     if (expectedRun != null && expectedTurn == null) return;
     final reply = hermesContinuousVoiceReplyChunkToSpeak(
-      turns: expectedTurn == null
-          ? channel.state.activeMessages
-          : channel.state.activeMessages
-                .where((turn) => turn.id == expectedTurn)
-                .toList(),
+      turns: channel.state.activeMessages,
+      replyTurnId: expectedTurn,
+      spokenUserTurn: _spokenReplyUserTurn,
       enabled: true,
       spokenTurnId: _lastSpokenTurnId,
       spokenCharacterCount: _spokenReplyCharacterCount,
       spokenText: _spokenReplyPrefix,
     );
     if (reply == null) return;
+    _spokenReplyUserTurn = null;
+    for (final turn in channel.state.activeMessages) {
+      if (turn.id == reply.turn.id) break;
+      if (turn.author == HermesTurnAuthor.user) _spokenReplyUserTurn = turn;
+    }
     _lastSpokenTurnId = reply.turn.id;
     _spokenReplyCharacterCount = reply.spokenCharacterCount;
     _speakNextReply = reply.turn.status == HermesTurnStatus.streaming;
@@ -948,6 +953,7 @@ class HermesVoiceInputController extends ChangeNotifier {
     _continuousEnabled = false;
     _speakNextReply = false;
     _spokenReplyPrefix = null;
+    _spokenReplyUserTurn = null;
     _activeSpokenChunk = null;
     _readAloudTurnId = null;
     _capturing = false;

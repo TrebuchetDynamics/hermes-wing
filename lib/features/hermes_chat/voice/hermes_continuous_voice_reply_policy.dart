@@ -20,9 +20,15 @@ HermesSpokenReplyChunk? hermesContinuousVoiceReplyChunkToSpeak({
   required String? spokenTurnId,
   required int spokenCharacterCount,
   String? spokenText,
+  String? replyTurnId,
+  HermesChatTurn? spokenUserTurn,
 }) {
   if (!enabled) return null;
 
+  final conversationTurns = turns;
+  if (replyTurnId != null) {
+    turns = turns.where((turn) => turn.id == replyTurnId).toList();
+  }
   HermesChatTurn? latest;
   for (final turn in turns) {
     if (turn.author == HermesTurnAuthor.assistant) latest = turn;
@@ -45,7 +51,33 @@ HermesSpokenReplyChunk? hermesContinuousVoiceReplyChunkToSpeak({
   }
   if (latest == null || latest.text.trim().isEmpty) return null;
 
-  final start = latest.id == spokenTurnId
+  // History replaces optimistic IDs. Only carry the cursor across that
+  // replacement when the exact submitted prefix still identifies the text.
+  // A retained previous turn means this really is a new reply instead.
+  final replacedSpokenTurn =
+      spokenTurnId != null &&
+      !conversationTurns.any((turn) => turn.id == spokenTurnId);
+  if (replacedSpokenTurn) {
+    final latestIndex = conversationTurns.indexOf(latest);
+    HermesChatTurn? userTurn;
+    for (final turn in conversationTurns.take(latestIndex)) {
+      if (turn.author == HermesTurnAuthor.user) userTurn = turn;
+    }
+    final sameRequest =
+        spokenUserTurn != null &&
+        userTurn != null &&
+        (userTurn.id == spokenUserTurn.id ||
+            (userTurn.createdAt == spokenUserTurn.createdAt &&
+                userTurn.text == spokenUserTurn.text));
+    if (!sameRequest ||
+        spokenText == null ||
+        !latest.text.startsWith(spokenText)) {
+      return null;
+    }
+  }
+  final start = replacedSpokenTurn
+      ? spokenText!.length
+      : latest.id == spokenTurnId
       ? _reconciledSpokenEnd(
           currentText: latest.text,
           spokenText: spokenText,

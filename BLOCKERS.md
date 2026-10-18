@@ -104,6 +104,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T12:39:48Z
 - Answer: Fix DOC-NATIVE-FAILURE-BOUNDARY's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-DOC-VOICE-OUTPUT-CANCEL-EVIDENCE — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-VOICE-OUTPUT-CANCEL-EVIDENCE — Goal: VOICE. Section: Next. Prepare one speech-output cancellation scenario.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T12:45:12Z
+- Answer: Fix DOC-VOICE-OUTPUT-CANCEL-EVIDENCE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-SECURITY-RETAINED-RELEASE-AUDIT — USER_DECISION — effort decision — unblocks 1
 
 - Task: SECURITY-RETAINED-RELEASE-AUDIT — Goal: SECURITY.

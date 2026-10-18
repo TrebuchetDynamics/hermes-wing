@@ -158,7 +158,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(latest);
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('hermes-approval-review')));
+      final review = find.byKey(const ValueKey('hermes-approval-review'));
+      // The multiline composer leaves less transcript height. Recover the
+      // approval through the real scroll viewport before opening its review.
+      await tester.ensureVisible(review);
+      await tester.pumpAndSettle();
+      expect(review.hitTestable(), findsOneWidget);
+      await tester.tap(review);
       await tester.pumpAndSettle();
       expect(find.text('Review Hermes approval'), findsOneWidget);
     },

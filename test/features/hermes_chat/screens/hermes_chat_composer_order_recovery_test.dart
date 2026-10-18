@@ -20,11 +20,11 @@ const _field = ValueKey('hermes-composer-field');
 const _attachment = ValueKey('hermes-attachment-button');
 const _draft = ValueKey('hermes-draft-mic-button');
 const _model = ValueKey('hermes-composer-model-chip');
-const _switch = ValueKey('hermes-continuous-voice-switch');
 const _voice = ValueKey('hermes-mic-button');
 const _send = ValueKey('hermes-send-button');
 const _stop = ValueKey('hermes-composer-stop-chip');
-const _order = [_attachment, _draft, _model, _switch, _voice, _send];
+const _options = ValueKey('hermes-composer-voice-options');
+const _order = [_model, _attachment, _draft, _options, _voice, _send];
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -41,15 +41,15 @@ void main() {
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey('hermes-composer-menu-button')),
+      find.byKey(const ValueKey('hermes-composer-voice-options')),
       findsOneWidget,
     );
     await _reach(tester, _field);
-    for (final key in [_attachment, _send]) {
+    for (final key in [_model, _attachment, _draft, _options, _voice, _send]) {
       await _tab(tester);
       _expectFocus(tester, key);
     }
-    for (final key in [_attachment, _field]) {
+    for (final key in [_voice, _options, _draft, _attachment, _model, _field]) {
       await _tab(tester, reverse: true);
       _expectFocus(tester, key);
     }
@@ -163,7 +163,7 @@ void main() {
         await _resize(tester, 1440);
         await _reach(tester, _stop);
         await _tab(tester);
-        _expectFocus(tester, _switch);
+        _expectFocus(tester, _attachment);
         await _tab(tester, reverse: true);
         _expectFocus(tester, _stop);
         await tester.sendKeyEvent(activation);

@@ -1104,9 +1104,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       builder: (context, constraints) {
         final strings = AppLocalizations.of(context);
         final activeSession = state.activeSession;
+        // The AppBar owns session identity. This row only switches other open
+        // conversations; never repeat the selected title, model or owner here.
         final showActiveSessionBar =
-            constraints.maxWidth >= 600 &&
             activeSession != null &&
+            _switchableHermesSessions(
+                  state,
+                  retainedSessionIds: _unreadCompletedSessionIds,
+                ).length >
+                1 &&
             !AppShellSessionNavigation.of(context);
         final switchableSessions = _switchableHermesSessions(
           state,
@@ -1447,7 +1453,22 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             if (state.serveChat?.stopRequested == true &&
                 state.serveChat?.running == true)
               Text(strings.localServeStopRequested),
-            _buildComposer(context, channel, state, canSendTurns, isTurnActive),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: constraints.maxHeight * .6,
+              ),
+              child: SingleChildScrollView(
+                key: const ValueKey('hermes-composer-viewport'),
+                primary: false,
+                child: _buildComposer(
+                  context,
+                  channel,
+                  state,
+                  canSendTurns,
+                  isTurnActive,
+                ),
+              ),
+            ),
           ],
         );
       },
@@ -1796,6 +1817,8 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     bool isTurnActive,
   ) {
     _scheduleInitialDesktopComposerFocus(canSendTurns);
+    // Keep gate changes reactive even while secondary voice options are closed.
+    ref.watch(wingVoiceSettingsProvider);
     final strings = AppLocalizations.of(context);
     final lockedModel = state.activeSessionId == null
         ? null
@@ -1856,17 +1879,13 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                       canSendTurns,
                       strip,
                     )
-                  : _buildMobileComposer(
+                  : _buildDesktopComposerCommandBar(
                       context,
                       channel,
                       state,
                       canSendTurns,
-                      isTurnActive ||
-                              canRetry ||
-                              !canSendTurns ||
-                              strip.onSelectModel != null
-                          ? strip
-                          : null,
+                      strip,
+                      compact: true,
                     ),
             );
           },
@@ -2425,108 +2444,6 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       ),
   ];
 
-  Widget _buildMobileComposer(
-    BuildContext context,
-    HermesChannel channel,
-    HermesChannelState state,
-    bool canSendTurns,
-    Widget? strip,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final strings = AppLocalizations.of(context);
-    if (_voiceInputController.continuousEnabled) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (strip != null) ...[strip, const SizedBox(height: 6)],
-          _buildVoiceModeSurface(context),
-        ],
-      );
-    }
-    final hasPayload =
-        _composerController.text.trim().isNotEmpty || _stagedAttachment != null;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (strip != null) ...[strip, const SizedBox(height: 6)],
-        ?_buildLocalSlashCommandSuggestions(context, channel),
-        if (_stagedAttachment != null) ...[
-          Align(
-            alignment: Alignment.centerLeft,
-            child: _buildPendingAttachment(),
-          ),
-          const SizedBox(height: 6),
-        ],
-        Container(
-          key: const ValueKey('hermes-composer-surface'),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.72),
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _buildComposerMenuButton(context, channel, canSendTurns),
-              _buildEmojiButton(canSendTurns),
-              Expanded(
-                child: TextField(
-                  key: const ValueKey('hermes-composer-field'),
-                  controller: _composerController,
-                  focusNode: _composerFocusNode,
-                  spellCheckConfiguration: _composerSpellCheckConfiguration,
-                  contentInsertionConfiguration:
-                      _composerContentInsertionConfiguration,
-                  enabled: canSendTurns,
-                  minLines: 1,
-                  maxLines: 4,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                    labelText: _composerTextFieldHint(
-                      strings,
-                      state,
-                      canSendTurns,
-                    ),
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    filled: false,
-                    isDense: true,
-                    isCollapsed: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 13),
-                  ),
-                  onSubmitted: (_) => _sendComposerText(channel),
-                ),
-              ),
-              _buildAttachmentButton(canSendTurns),
-              AnimatedSwitcher(
-                duration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : const Duration(milliseconds: 180),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: ScaleTransition(scale: animation, child: child),
-                ),
-                child: hasPayload
-                    ? _buildSendButton(channel, canSendTurns)
-                    : _buildMicButton(canSendTurns),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildVoiceModeSurface(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final strings = AppLocalizations.of(context);
@@ -2651,8 +2568,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     HermesChannel channel,
     HermesChannelState state,
     bool canSendTurns,
-    Widget strip,
-  ) {
+    Widget strip, {
+    bool compact = false,
+  }) {
     if (_voiceInputController.continuousEnabled) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -2668,7 +2586,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final colorScheme = theme.colorScheme;
     final strings = AppLocalizations.of(context);
     return Container(
-      key: const ValueKey('hermes-desktop-command-bar'),
+      key: ValueKey(
+        compact ? 'hermes-composer-surface' : 'hermes-desktop-command-bar',
+      ),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(12),
@@ -2709,19 +2629,43 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             onSubmitted: (_) => _sendComposerText(channel),
           ),
           const SizedBox(height: 6),
+          // Metadata owns a row, not the editor's remaining scraps of width.
+          // Stop is pinned by the strip, independently of voice disclosure.
+          strip,
+          const SizedBox(height: 4),
           Row(
+            key: const ValueKey('hermes-composer-actions'),
             children: [
               _buildAttachmentButton(canSendTurns),
               _buildDraftMicButton(channel, canSendTurns),
-              const SizedBox(width: 4),
-              Expanded(child: strip),
-              const SizedBox(width: 8),
-              _buildContinuousVoiceSwitch(canSendTurns),
-              const SizedBox(width: 4),
+              IconButton(
+                key: const ValueKey('hermes-composer-voice-options'),
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                tooltip: strings.chatLayoutContinuousVoiceLabel,
+                isSelected: _composerVoiceOptionsExpanded,
+                onPressed: () => _setState(() {
+                  _composerVoiceOptionsExpanded =
+                      !_composerVoiceOptionsExpanded;
+                }),
+                icon: const Icon(Icons.tune_rounded),
+              ),
+              const Spacer(),
               _buildMicButton(canSendTurns),
               _buildSendButton(channel, canSendTurns),
             ],
           ),
+          if (_composerVoiceOptionsExpanded)
+            Wrap(
+              key: const ValueKey('hermes-composer-voice-options-panel'),
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              children: [
+                if (compact)
+                  _buildComposerMenuButton(context, channel, canSendTurns),
+                _buildContinuousVoiceSwitch(canSendTurns),
+                _buildEmojiButton(canSendTurns),
+              ],
+            ),
         ],
       ),
     );
@@ -2974,6 +2918,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         canSendTurns && !ref.read(hermesChannelProvider).state.isServeReadOnly;
     return IconButton(
       key: const ValueKey('hermes-attachment-button'),
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
       tooltip: AppLocalizations.of(context).chatLayoutAttachFileTooltip,
       icon: _pickingAttachment
           ? SizedBox.square(
@@ -2998,6 +2943,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     if (_voiceInputController.capturing) {
       return IconButton.filled(
         key: const ValueKey('hermes-mic-button'),
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         tooltip: AppLocalizations.of(context).chatLayoutHandsFreeLabel,
         icon: _VoiceWaveform(
           level: _voiceInputController.soundLevel,
@@ -3009,6 +2955,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     if (_voiceInputController.speaking) {
       return IconButton.filledTonal(
         key: const ValueKey('hermes-tts-stop-button'),
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         tooltip: AppLocalizations.of(context).chatLayoutStopSpeakingTooltip,
         icon: const Icon(Icons.volume_up_rounded),
         onPressed: () => unawaited(_voiceInputController.stopSpeaking()),
@@ -3030,6 +2977,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       triggerMode: TooltipTriggerMode.manual,
       child: IconButton.filledTonal(
         key: const ValueKey('hermes-mic-button'),
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         icon: Icon(Icons.mic_rounded, semanticLabel: micLabel),
         onPressed: !canSendTurns || !voiceEnabled
             ? null
@@ -3084,11 +3032,13 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     final captureGeneration = _voiceInputController.captureGeneration;
     final enabled =
         canSendTurns &&
+        ref.watch(wingVoiceSettingsProvider).continuousVoiceEnabled &&
         !_voiceInputController.capturing &&
         !_voiceInputController.speaking &&
         isCurrent();
     return IconButton(
       key: const ValueKey('hermes-draft-mic-button'),
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
       tooltip: capturing
           ? strings.chatVoiceCancelDraftAction
           : strings.chatVoiceDictateAction,
@@ -3116,6 +3066,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         _composerController.text.trim().isNotEmpty || _stagedAttachment != null;
     return IconButton.filled(
       key: const ValueKey('hermes-send-button'),
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
       tooltip: AppLocalizations.of(context).chatLayoutSendTooltip,
       icon: const Icon(Icons.arrow_upward_rounded),
       onPressed: canSendTurns && hasPayload

@@ -68,7 +68,6 @@ import '../export/hermes_transcript_export.dart';
 import '../providers/hermes_channel_provider.dart';
 import '../providers/managed_ssh_connection_controller.dart';
 import '../session/hermes_session_pin_store.dart';
-import '../widgets/hermes_profile_identity.dart';
 import '../presentation/hermes_rich_text.dart';
 import '../presentation/hermes_turn_presentation_identity.dart';
 import '../presentation/hermes_transcript_viewport.dart';
@@ -357,6 +356,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final Set<VoidCallback> _queuedDialogDisposals = {};
   bool _transcriptActionPending = false;
   bool _composerModelPickerPending = false;
+  bool _composerVoiceOptionsExpanded = false;
   Object? _attachmentOwner;
 
   void _invalidateAttachmentPick() {
@@ -1547,10 +1547,6 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final selectedProfile = state.profiles
         .where((profile) => profile.id == state.selectedProfileId)
         .firstOrNull;
-    final identityColor = hermesProfileColor(
-      activeContact?.id.profileId ?? state.selectedProfileId ?? 'default',
-      advertisedColor: selectedProfile?.color,
-    );
     _requestShellNavigation(activeContact == null);
     final switchableSessions = _switchableHermesSessions(
       state,
@@ -1602,101 +1598,61 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                 onPressed: () => unawaited(_showGatewayContacts()),
                 icon: const Icon(Icons.arrow_back),
               ),
-        title: activeContact == null
-            ? Text(
+        titleSpacing: 12,
+        toolbarHeight: MediaQuery.textScalerOf(context).scale(14) > 20
+            ? 104
+            : 64,
+        title: !_editingConnection && !showingDirectory && activeSession != null
+            ? TextButton(
+                key: const ValueKey('hermes-contact-header'),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  alignment: AlignmentDirectional.centerStart,
+                ),
+                onPressed: activeContact == null
+                    ? null
+                    : () => _showSessionsPanel(context, channel),
+                child: Semantics(
+                  key: const ValueKey('hermes-chat-session-heading'),
+                  header: true,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _safeHermesUiPreview(
+                          activeSession.title ?? activeSession.id,
+                          maxLength: 96,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        _safeHermesUiPreview(
+                          activeContact == null
+                              ? selectedProfile?.displayName ??
+                                    state.selectedProfileId ??
+                                    strings.chatShellHermesTitle
+                              : '${_contactProfileTitle(activeContact)} · '
+                                    '${strings.chatHostLabel(activeContact.gatewayLabel)}',
+                          maxLength: 120,
+                        ),
+                        key: const ValueKey('hermes-chat-owner'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : Text(
                 _editingConnection
                     ? strings.chatLayoutConnectTitle
                     : showingDirectory
                     ? strings.agentsTitle
-                    : _safeHermesUiPreview(
-                        activeSession?.title ?? strings.chatShellHermesTitle,
-                        maxLength: 96,
-                      ),
-              )
-            : TextButton(
-                key: const ValueKey('hermes-contact-header'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: () => _showSessionsPanel(context, channel),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircleAvatar(
-                      key: const ValueKey('hermes-contact-avatar'),
-                      radius: 17,
-                      backgroundColor: identityColor,
-                      foregroundColor: hermesProfileForeground(identityColor),
-                      child: Text(
-                        activeContact.profileName.trim().isEmpty
-                            ? '?'
-                            : activeContact.profileName
-                                  .trim()
-                                  .characters
-                                  .first
-                                  .toUpperCase(),
-                      ),
-                    ),
-                    const SizedBox(width: 9),
-                    Flexible(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: compactAppBar ? 140 : 240,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _contactProfileTitle(activeContact),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.circle,
-                                  size: 8,
-                                  color:
-                                      activeContact.availability ==
-                                          GatewayAvailability.online
-                                      ? Colors.green
-                                      : Colors.red,
-                                ),
-                                const SizedBox(width: 5),
-                                Flexible(
-                                  child: Text(
-                                    strings.chatHostLabel(
-                                      activeContact.gatewayLabel,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                    : strings.chatShellHermesTitle,
               ),
         actions: [
           if (showingDirectory)

@@ -592,6 +592,9 @@ void main() {
     final composer = find.byKey(const ValueKey('hermes-composer-field'));
     await tester.enterText(composer, 'first prompt');
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
     await tester.enterText(composer, 'unfinished draft');
@@ -734,6 +737,9 @@ void main() {
     expect(find.text('/new'), findsOneWidget);
     expect(find.text('/sessions'), findsOneWidget);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-local-command-new')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-local-command-new')));
     await tester.pumpAndSettle();
 
@@ -823,6 +829,9 @@ void main() {
       '/clear',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -850,6 +859,9 @@ void main() {
       '/help',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-local-command-help')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-local-command-help')));
     await tester.pumpAndSettle();
 
@@ -899,6 +911,9 @@ void main() {
       '/tools',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -922,6 +937,9 @@ void main() {
       '/skills',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -945,6 +963,9 @@ void main() {
       '/profiles',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -1079,6 +1100,9 @@ void main() {
       find.byKey(const ValueKey('hermes-local-command-persona')),
       findsNothing,
     );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -1153,6 +1177,9 @@ void main() {
       '/model',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -1176,6 +1203,9 @@ void main() {
         '/providers',
       );
       await tester.pump();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-send-button')),
+      );
       await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
       await tester.pumpAndSettle();
 
@@ -1200,6 +1230,9 @@ void main() {
         '/schedules',
       );
       await tester.pump();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('hermes-send-button')),
+      );
       await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
       await tester.pumpAndSettle();
 
@@ -1224,6 +1257,9 @@ void main() {
       '/settings',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -1247,6 +1283,9 @@ void main() {
       '/gateway',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();
 
@@ -1279,6 +1318,9 @@ void main() {
       '/usage',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pump();
 
@@ -1310,6 +1352,9 @@ void main() {
       '/usage',
     );
     await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pump(const Duration(milliseconds: 200));
 
@@ -1335,6 +1380,9 @@ void main() {
     expect(
       find.byKey(const ValueKey('hermes-local-command-suggestions')),
       findsNothing,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
     );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pump();
@@ -1396,6 +1444,9 @@ void main() {
       find.byKey(const ValueKey('hermes-send-button')),
     );
     expect(sendButton.onPressed, isNotNull);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
+    );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pump();
 
@@ -1602,6 +1653,9 @@ void main() {
     expect(
       find.byKey(const ValueKey('hermes-local-command-suggestions')),
       findsNothing,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hermes-send-button')),
     );
     await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
     await tester.pumpAndSettle();

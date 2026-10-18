@@ -16,6 +16,18 @@ import 'package:wing/shared/voice/voice_capture_service.dart';
 
 import '../support/fake_hermes_channel.dart';
 
+Future<void> _revealVoiceOptions(WidgetTester tester) async {
+  if (find
+      .byKey(const ValueKey('hermes-continuous-voice-switch'))
+      .evaluate()
+      .isEmpty) {
+    await tester.tap(
+      find.byKey(const ValueKey('hermes-composer-voice-options')),
+    );
+    await tester.pumpAndSettle();
+  }
+}
+
 void main() {
   testWidgets(
     'mobile voice mute stays reachable during playback at 200% text',
@@ -135,7 +147,7 @@ void main() {
             find.byKey(const ValueKey('hermes-composer-field')),
           );
           expect(composer.enabled, isTrue);
-          expect(composer.decoration?.labelText, 'Message Hermes…');
+          expect(composer.decoration?.hintText, 'Message Hermes…');
           await tester.tap(
             find.byKey(const ValueKey('hermes-tts-stop-button')),
           );
@@ -227,6 +239,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _revealVoiceOptions(tester);
     await tester.tap(
       find.byKey(const ValueKey('hermes-continuous-voice-switch')),
     );
@@ -243,7 +256,7 @@ void main() {
   });
 
   testWidgets(
-    'mobile composer uses Telegram-style contextual actions',
+    'mobile composer preserves Desktop editor and secondary disclosure',
     (tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1;
@@ -264,19 +277,29 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const ValueKey('hermes-composer-strip')), findsNothing);
       expect(
-        find.byKey(const ValueKey('hermes-composer-menu-button')),
+        find.byKey(const ValueKey('hermes-composer-strip')),
         findsOneWidget,
       );
-      expect(find.byKey(const ValueKey('hermes-emoji-button')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('hermes-composer-voice-options')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('hermes-emoji-button')), findsNothing);
       expect(find.bySemanticsLabel(RegExp(r'^Message Hermes')), findsOneWidget);
       expect(
         find.byKey(const ValueKey('hermes-attachment-button')),
         findsOneWidget,
       );
       expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
-      expect(find.byKey(const ValueKey('hermes-send-button')), findsNothing);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byKey(const ValueKey('hermes-send-button')),
+            )
+            .onPressed,
+        isNull,
+      );
       expect(
         find.byKey(const ValueKey('hermes-continuous-voice-switch')),
         findsNothing,
@@ -288,7 +311,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('hermes-send-button')), findsOneWidget);
-      expect(find.byKey(const ValueKey('hermes-mic-button')), findsNothing);
+      expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
       expect(
         find.byKey(const ValueKey('hermes-attachment-button')),
         findsOneWidget,
@@ -299,6 +322,7 @@ void main() {
         '',
       );
       await tester.pumpAndSettle();
+      await _revealVoiceOptions(tester);
       await tester.tap(find.byKey(const ValueKey('hermes-emoji-button')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('hermes-emoji-0')));
@@ -308,6 +332,7 @@ void main() {
       );
       expect(composer.controller!.text, '😀');
 
+      await _revealVoiceOptions(tester);
       await tester.tap(
         find.byKey(const ValueKey('hermes-composer-menu-button')),
       );
@@ -1038,6 +1063,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await _revealVoiceOptions(tester);
       await tester.tap(
         find.byKey(const ValueKey('hermes-composer-menu-button')),
       );
@@ -1144,6 +1170,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _revealVoiceOptions(tester);
     await tester.tap(
       find.byKey(const ValueKey('hermes-continuous-voice-switch')),
     );
@@ -1177,6 +1204,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _revealVoiceOptions(tester);
     await tester.tap(
       find.byKey(const ValueKey('hermes-continuous-voice-switch')),
     );
@@ -1233,6 +1261,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _revealVoiceOptions(tester);
     await tester.tap(
       find.byKey(const ValueKey('hermes-continuous-voice-switch')),
     );
@@ -1274,6 +1303,28 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final draftMic = find.byKey(const ValueKey('hermes-draft-mic-button'));
+    expect(tester.widget<IconButton>(draftMic).onPressed, isNull);
+    expect(
+      find.byKey(const ValueKey('hermes-composer-voice-options-panel')),
+      findsNothing,
+    );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HermesChatScreen)),
+    );
+    container
+        .read(wingVoiceSettingsProvider.notifier)
+        .setContinuousVoiceEnabled(true);
+    await tester.pumpAndSettle();
+    expect(tester.widget<IconButton>(draftMic).onPressed, isNotNull);
+    container
+        .read(wingVoiceSettingsProvider.notifier)
+        .setContinuousVoiceEnabled(false);
+    await tester.pumpAndSettle();
+    expect(tester.widget<IconButton>(draftMic).onPressed, isNull);
+    expect(channel.sentVoiceTranscripts, isEmpty);
+
+    await _revealVoiceOptions(tester);
     expect(
       tester
           .widget<Switch>(
@@ -1315,6 +1366,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _revealVoiceOptions(tester);
     await tester.tap(
       find.byKey(const ValueKey('hermes-continuous-voice-switch')),
     );
@@ -1352,6 +1404,7 @@ void main() {
       await tester.pumpAndSettle();
 
       if (useMenu) {
+        await _revealVoiceOptions(tester);
         await tester.tap(
           find.byKey(const ValueKey('hermes-composer-menu-button')),
         );
@@ -1471,6 +1524,7 @@ void main() {
       reason: 'idle voice state must be reachable without sight',
     );
 
+    await _revealVoiceOptions(tester);
     await tester.tap(
       find.byKey(const ValueKey('hermes-continuous-voice-switch')),
     );

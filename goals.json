@@ -5533,6 +5533,7 @@
       "status": "partial",
       "tasks": [
         "DOC-M4-SCHEDULE-CONTRACT",
+        "DOC-M4-SCHEDULE-CONTRACT-LIVE",
         "DOC-M4-SCHEDULE-DELIVERY-CONTRACT"
       ],
       "title": "Create/edit/pause/resume/run/delete scheduled jobs and delivery targets"
@@ -6878,7 +6879,6 @@
       "DOC-M3-PROVIDER-REMOVAL-CONTRACT",
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
       "DOC-M4-MCP-CONFIG-CONTRACT",
-      "DOC-M4-SCHEDULE-CONTRACT",
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
       "DOC-M5-ANDROID-FIXTURE",
       "DOC-M5-LARGE-TEXT-EVIDENCE",
@@ -6927,7 +6927,8 @@
       "DOC-M3-PROJECT-CONTRACT-LIVE",
       "DOC-M3-PROVIDER-CONTRACT-LIVE",
       "DOC-ARTIFACT-CONTRACT-LIVE",
-      "DOC-M4-MCP-CONTRACT-LIVE"
+      "DOC-M4-MCP-CONTRACT-LIVE",
+      "DOC-M4-SCHEDULE-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7110,14 +7111,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace one messaging-platform status/admin contract"
-    },
-    {
-      "depends_on": [],
-      "goal": "M4-SCHEDULES",
-      "id": "DOC-M4-SCHEDULE-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace one schedule pause/resume operation"
     },
     {
       "depends_on": [
@@ -7452,6 +7445,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-MCP-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M4-SCHEDULE-CONTRACT"
+      ],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M4-SCHEDULE-CONTRACT"
     },
     {
       "depends_on": [
@@ -8157,6 +8160,14 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one toolset enable/disable contract"
+    },
+    {
+      "depends_on": [],
+      "goal": "M4-SCHEDULES",
+      "id": "DOC-M4-SCHEDULE-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace one schedule pause/resume operation"
     },
     {
       "depends_on": [

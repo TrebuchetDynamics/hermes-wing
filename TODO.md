@@ -653,20 +653,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M4-MCP-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M4-SCHEDULE-CONTRACT** —  Trace one schedule pause/resume operation.
-  Goal: M4-SCHEDULES
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Existing Schedules/channel and authoritative contracts; exclude job execution, delivery credentials and generic CLI.
-  Acceptance: Record exact operation/grant/revision/idempotency semantics or the gap; preserve the existing read-only inventory.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M4-SCHEDULE-DELIVERY-CONTRACT** — Goal: M4-SCHEDULES. Section: Next. Trace one schedule-delivery configuration operation.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M4-SCHEDULES](docs/product/hermes-desktop-parity.md#statuses).
@@ -1457,4 +1443,12 @@ does not mark any check passed or authorize live actions.
   - Native/live authenticated enable/disable and exact authoritative readback remain unqualified. A separately authorized isolated target can exercise them only after an unmodified Agent exposes the required exact operation, profile/platform identity, grants, concurrency and persistence/activation/retry guarantees; this documentation slice adds no write support.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-MCP-CONTRACT.
+  Status: open
+
+- [ ] DOC-M4-SCHEDULE-CONTRACT-LIVE — Live checks for DOC-M4-SCHEDULE-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-SCHEDULE-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No browser, native UI, device, live authentication, actual schedule pause/resume, execution or delivery qualification was performed. Any later operation journey requires a separately authorized disposable target exposing a suitable unmodified authoritative contract, with exact authority and consent gates. Current contract gaps do not block this evidence-only task.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-SCHEDULE-CONTRACT.
   Status: open

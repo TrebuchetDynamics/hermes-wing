@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-17T16:14:45Z
 - Answer: Decide it: record the decision in the dependent tasks' `Dependencies:` lines, or move the task that owns it into Now or Next.
 
+### Q-FILES-TERMINAL-BROWSE — USER_INPUT — effort input — unblocks 1
+
+- Task: FILES-TERMINAL-BROWSE — Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android.
+- Needs: worker reported a blocker: Provide a reviewed existing unmodified Agent contract/reference and a source-bound eligibility rule that can establish exact selected connection/profile/session effective terminal root, execution backend, file authorization and matching server-enforced canonical confinement without incidental writes. This is an offline contract/design prerequisite, not a request for device access or a live passing…
+- Since: 2026-10-18T16:31:16Z
+- Answer: Answer in FILES-TERMINAL-BROWSE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
 
 - Task: MT-RERUN-TRAIN — Rerun canonical integration gates

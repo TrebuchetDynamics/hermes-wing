@@ -7179,3 +7179,28 @@ Section: Next.
   contract/security review, and run `git diff --check`. No credential access or writes.
   Touches: docs/quality/
   Readiness: source-only documentation; native/live qualification stays separate.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE** — Map hostile-content rejection for one permitted artifact type.
+  Goal: ARTIFACTS
+Section: Next.
+  Payoff: preserve a distinct remaining proof slice after the current task.
+  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses);
+  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
+  [retrieval and preview trace](docs/quality/artifact-retrieval-contract.md#nearest-tests-and-inert-preview-oracle).
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this
+  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Acceptance: Identify inert preview and denial/cancel oracles or an absent allowed retrieval contract. Folder grants confer no artifact rights; no content requests.
+  Dependencies: DOC-ARTIFACT-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: Pin each inspected checkout with `git rev-parse HEAD`; inspect the
+  authoritative retrieval handler/store, nearest tests and Wing media/export
+  callers for one permitted type against Acceptance. Map inert-preview and
+  denial/cancel oracles or the absent allowed contract without fetching content.
+  Verify changed Markdown targets, obtain independent contract/security review,
+  and run `git diff --check`. No artifact request or preview activation.
+  Touches: docs/quality/

@@ -605,26 +605,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P3** — Integrated delivery, diagnostics and contracts
 
-- [ ] **DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE** — Map hostile-content rejection for one permitted artifact type.
-  Goal: ARTIFACTS
-Section: Next.
-  Payoff: preserve a distinct remaining proof slice after the current task.
-  Sources: [ARTIFACTS](docs/product/hermes-desktop-parity.md#statuses);
-  [accepted port plan](ROADMAP.md#flutter-port-execution-roadmap);
-  [retrieval and preview trace](docs/quality/artifact-retrieval-contract.md#nearest-tests-and-inert-preview-oracle).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
-  Acceptance: Identify inert preview and denial/cancel oracles or an absent allowed retrieval contract. Folder grants confer no artifact rights; no content requests.
-  Dependencies: DOC-ARTIFACT-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: Pin each inspected checkout with `git rev-parse HEAD`; inspect the
-  authoritative retrieval handler/store, nearest tests and Wing media/export
-  callers for one permitted type against Acceptance. Map inert-preview and
-  denial/cancel oracles or the absent allowed contract without fetching content.
-  Verify changed Markdown targets, obtain independent contract/security review,
-  and run `git diff --check`. No artifact request or preview activation.
-  Touches: docs/quality/
-
 - [ ] **DOC-M4-MCP-CONFIG-CONTRACT** — Trace one MCP configuration read separately from toolset toggling.
   Goal: M4-MCP
 Section: Next.
@@ -1448,4 +1428,12 @@ does not mark any check passed or authorize live actions.
   - Native UI, Android/physical devices and live provider behavior were not exercised. Historical synthetic native removal receipts do not establish authoritative removal or remote provider-key revocation.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M3-PROVIDER-REMOVAL-CONTRACT.
+  Status: open
+
+- [ ] DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE — Live checks for DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE
+  Scope: Run the live checks the offline work for DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE left pending.
+  Acceptance: Each check passes on the real target:
+  - Future retrieved-text implementation requires an eligible unmodified Agent contract, then separately authorized named-platform/live authentication, hostile-content/network isolation, denial/cancellation/owner-loss and persistence qualification. No application/browser/native/device or live Agent artifact retrieval, preview or save was exercised; ARTIFACTS remains open and artifact operations remain unavailable in Wing.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE.
   Status: open

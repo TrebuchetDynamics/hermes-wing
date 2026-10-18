@@ -5421,7 +5421,8 @@
       "tasks": [
         "DOC-ARTIFACT-CONTRACT",
         "DOC-ARTIFACT-CONTRACT-LIVE",
-        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE"
       ],
       "title": "Retrieve/preview/save supported artifacts without arbitrary paths"
     },
@@ -6887,7 +6888,6 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
-      "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
       "DOC-M4-MCP-CONFIG-CONTRACT",
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
       "DOC-M5-LARGE-TEXT-EVIDENCE",
@@ -6941,7 +6941,8 @@
       "BACKEND-SSH-KEY-NATIVE-LIVE",
       "DOC-M3-ROLLBACK-EVIDENCE-LIVE",
       "DOC-M3-PROJECT-ASSIGNMENT-CONTRACT-LIVE",
-      "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE"
+      "DOC-M3-PROVIDER-REMOVAL-CONTRACT-LIVE",
+      "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE"
     ]
   },
   "tasks": [
@@ -6984,16 +6985,6 @@
       "section": "Next",
       "status": "open",
       "title": "Map account expiry and logout separately from acquisition"
-    },
-    {
-      "depends_on": [
-        "DOC-ARTIFACT-CONTRACT"
-      ],
-      "goal": "ARTIFACTS",
-      "id": "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
-      "section": "Next",
-      "status": "open",
-      "title": "Map hostile-content rejection for one permitted artifact type"
     },
     {
       "depends_on": [
@@ -7306,6 +7297,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-ARTIFACT-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
+      ],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE"
     },
     {
       "depends_on": [
@@ -7808,6 +7809,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace one bounded Agent artifact retrieval operation"
+    },
+    {
+      "depends_on": [
+        "DOC-ARTIFACT-CONTRACT"
+      ],
+      "goal": "ARTIFACTS",
+      "id": "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
+      "section": "Done",
+      "status": "done",
+      "title": "Map hostile-content rejection for one permitted artifact type"
     },
     {
       "depends_on": [],

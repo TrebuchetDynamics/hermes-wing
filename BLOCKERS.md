@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T10:43:06Z
 - Answer: Fix DOC-M3-PROJECT-ASSIGNMENT-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-DOC-M3-PROVIDER-REMOVAL-CONTRACT — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-M3-PROVIDER-REMOVAL-CONTRACT — Goal: M3-PROVIDER. Section: Next. Trace credential removal separately from replacement.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T10:55:51Z
+- Answer: Fix DOC-M3-PROVIDER-REMOVAL-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-DOC-M3-ROLLBACK-EVIDENCE — USER_DECISION — effort decision — unblocks 1
 
 - Task: DOC-M3-ROLLBACK-EVIDENCE — Goal: M3. Section: Next. Attribute one failed new-profile setup rollback.

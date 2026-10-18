@@ -33,6 +33,17 @@ Wing keeps existing Riverpod providers, channel contracts and adaptive UI.
   configuration was edited. Temporary stdio access is verified; native reusable
   connector availability is not. Both temporary processes were closed afterward.
 
+## Bounded review result
+
+[DEV-001-c7 assessment](../quality/flutter-mcp-architecture-review.md) records
+restricted official MCP inventory, exact SDK/source identity, scoped read-only
+diagnostics and caller/test evidence at `2ddbb51b69044c71411e32168750a9a92db4c731`.
+It supports the existing [SSH feedback correction](2026-10-18-ssh-failure-feedback.md),
+not a new architecture layer or duplicate implementation task. LSP returned
+ancestor-checkout duplicates despite the sole task root; only verified
+workspace-local matches were used. No tests or runtime qualification were run,
+and no persistent native connector was installed.
+
 ## Planner decisions
 
 1. Use the SDK's existing official server directly for bounded, read-only code

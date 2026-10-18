@@ -9,6 +9,11 @@ remaining dependencies pass. See the [current design](../spec.md#security-compat
 and [security successor](../../TODO.md#now--next). Do not recreate these deleted inputs
 to repeat the old audit.
 
+The [Node.js 22 offline verification](omniroute-node22-verification.md) records
+fresh root audit, retirement guard and catalog results on a later source-bound
+candidate, including its Dart lock repair. Deleted Go/audit checks remain explicitly
+unavailable; this does not close SECURITY or release acceptance.
+
 The optional local Wing Link installer pins OmniRoute 3.8.51 and its npm
 dependency closure. It does not expose a remote install operation, start a
 server, provision a provider credential, or change Hermes profiles.

@@ -41,6 +41,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-18T10:31:18Z
 - Answer: Fix DOC-M3-ROLLBACK-EVIDENCE's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
 
+### Q-DOC-M4-MCP-CONFIG-CONTRACT — USER_DECISION — effort decision — unblocks 1
+
+- Task: DOC-M4-MCP-CONFIG-CONTRACT — Goal: M4-MCP. Section: Next. Trace one MCP configuration read separately from toolset toggling.
+- Needs: not runnable: needs unique Scope, Acceptance and Checks fields
+- Since: 2026-10-18T11:18:03Z
+- Answer: Fix DOC-M4-MCP-CONFIG-CONTRACT's TODO.md entry as the reason says (for example add the missing Scope, Acceptance or Checks field), or move it out of Now/Next.
+
 ### Q-SECURITY-RETAINED-RELEASE-AUDIT — USER_DECISION — effort decision — unblocks 1
 
 - Task: SECURITY-RETAINED-RELEASE-AUDIT — Goal: SECURITY.

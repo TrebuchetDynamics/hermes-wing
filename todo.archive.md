@@ -6982,3 +6982,25 @@ Section: Next.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-NATIVE-DESIGN-REVIEW** — Review bounded host-local integration before privileged implementation
+  Goal: NATIVE-INTEGRATION
+Section: Next.
+  Sources: [2026-10-03-desktop-local-integration-design](docs/plans/2026-10-03-desktop-local-integration-design.md) (proposal planning context);
+   [existing design](docs/plans/2026-10-03-desktop-local-integration-design.md).
+  Review the existing design
+  against living ADRs and exact installed-Agent contracts. Payoff: narrow the first
+  local operation without copying privileged Desktop IPC.
+  Scope: design/evidence
+  only; no operation activation, upstream edits, arbitrary paths or shell access.
+  Acceptance: list proposed versus already-authorized operations, fixed argument
+  shapes, identity, secret acquisition, failure/recovery and removal criteria.
+  Dependencies: none for source review; privileged implementation needs a separate
+  security/design decision. Ownership: existing design lane; verify current lease.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/plans/2026-10-03-desktop-local-integration-design.md, docs/quality/

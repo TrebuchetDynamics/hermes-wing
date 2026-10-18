@@ -5680,6 +5680,7 @@
       "status": "unverified",
       "tasks": [
         "DOC-NATIVE-DESIGN-REVIEW",
+        "DOC-NATIVE-DESIGN-REVIEW-LIVE",
         "DOC-NATIVE-FAILURE-BOUNDARY"
       ],
       "title": "Review bounded host-local integration before privileged implementation"
@@ -6892,7 +6893,6 @@
       "DOC-M4-KANBAN-PAGINATION-EVIDENCE",
       "DOC-M4-MEMORY-CAPACITY-CONTRACT",
       "DOC-ACCOUNT-REVOCATION-EVIDENCE",
-      "DOC-NATIVE-DESIGN-REVIEW",
       "DOC-NATIVE-FAILURE-BOUNDARY",
       "DOC-VOICE-OUTPUT-CANCEL-EVIDENCE",
       "DOC-VOICE-QUALIFICATION",
@@ -6934,7 +6934,8 @@
       "DOC-M4-KANBAN-CONTRACT-LIVE",
       "DOC-M4-MEMORY-CONTRACT-LIVE",
       "DOC-M4-PLATFORM-CONTRACT-LIVE",
-      "DOC-ACCOUNT-CONTRACT-LIVE"
+      "DOC-ACCOUNT-CONTRACT-LIVE",
+      "DOC-NATIVE-DESIGN-REVIEW-LIVE"
     ]
   },
   "tasks": [
@@ -7097,14 +7098,6 @@
       "section": "Next",
       "status": "open",
       "title": "Attribute one 200-percent-text message-action journey"
-    },
-    {
-      "depends_on": [],
-      "goal": "NATIVE-INTEGRATION",
-      "id": "DOC-NATIVE-DESIGN-REVIEW",
-      "section": "Next",
-      "status": "open",
-      "title": "Review bounded host-local integration before privileged implementation"
     },
     {
       "depends_on": [
@@ -7473,6 +7466,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M5-ANDROID-FIXTURE"
+    },
+    {
+      "depends_on": [
+        "DOC-NATIVE-DESIGN-REVIEW"
+      ],
+      "goal": "NATIVE-INTEGRATION",
+      "id": "DOC-NATIVE-DESIGN-REVIEW-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-NATIVE-DESIGN-REVIEW"
     },
     {
       "depends_on": [
@@ -8292,6 +8295,14 @@
       "section": "Done",
       "status": "done",
       "title": "Prepare a read-only exact-candidate comparison entrypoint"
+    },
+    {
+      "depends_on": [],
+      "goal": "NATIVE-INTEGRATION",
+      "id": "DOC-NATIVE-DESIGN-REVIEW",
+      "section": "Done",
+      "status": "done",
+      "title": "Review bounded host-local integration before privileged implementation"
     },
     {
       "depends_on": [

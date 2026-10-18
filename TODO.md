@@ -724,24 +724,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **DOC-NATIVE-DESIGN-REVIEW** — Review bounded host-local integration before privileged implementation
-  Goal: NATIVE-INTEGRATION
-Section: Next.
-  Sources: [2026-10-03-desktop-local-integration-design](docs/plans/2026-10-03-desktop-local-integration-design.md) (proposal planning context);
-   [existing design](docs/plans/2026-10-03-desktop-local-integration-design.md).
-  Review the existing design
-  against living ADRs and exact installed-Agent contracts. Payoff: narrow the first
-  local operation without copying privileged Desktop IPC.
-  Scope: design/evidence
-  only; no operation activation, upstream edits, arbitrary paths or shell access.
-  Acceptance: list proposed versus already-authorized operations, fixed argument
-  shapes, identity, secret acquisition, failure/recovery and removal criteria.
-  Dependencies: none for source review; privileged implementation needs a separate
-  security/design decision. Ownership: existing design lane; verify current lease.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/plans/2026-10-03-desktop-local-integration-design.md, docs/quality/
-
-
 - [ ] **DOC-NATIVE-FAILURE-BOUNDARY** — Goal: NATIVE-INTEGRATION. Section: Next. Review failure containment for the first bounded native operation.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [NATIVE-INTEGRATION](docs/adr/client.md#decision).
@@ -1411,4 +1393,13 @@ does not mark any check passed or authorize live actions.
   - Actual provider approval/expiry/refresh/revocation, cross-process commit/cancellation, native secure storage and platform end-to-end behavior were not exercised. No Flutter or upstream tests were run for this documentation-only task. DOC-ACCOUNT-REVOCATION-EVIDENCE retains the separate lifecycle evidence work.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-ACCOUNT-CONTRACT.
+  Status: open
+
+- [ ] DOC-NATIVE-DESIGN-REVIEW-LIVE — Live checks for DOC-NATIVE-DESIGN-REVIEW
+  Scope: Run the live checks the offline work for DOC-NATIVE-DESIGN-REVIEW left pending.
+  Acceptance: Each check passes on the real target:
+  - No platform was exercised at runtime: this was Linux-hosted source inspection only. Native chooser latency/cancellation and actual OS keyring behavior require separately scoped named-target qualification.
+  - Installed-host authentication/capability advertisement, native Agent continuation and any future process ownership/cleanup require separately authorized isolated live evidence. No credentials were acquired and no Agent operation was activated; source inspection does not qualify Linux/macOS/Windows/Android or the daily-use milestone.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-NATIVE-DESIGN-REVIEW.
   Status: open

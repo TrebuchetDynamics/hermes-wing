@@ -502,22 +502,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **PARITYUPDATE-002-5c** — Resolve canonical submission, pending queue and clarification contracts
-  Goal: CHAT-FIDELITY
-  Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
-  Sources: [accepted refresh scope](docs/quality/official-desktop-parity-refresh-2026-10-18.md#scope-and-priority), [bounded outcome](docs/quality/official-desktop-parity-refresh-2026-10-18.md#pending-input), [current matrix](docs/product/hermes-desktop-feature-matrix.md#current-product-matrix).
-  Scope: Trace one coherent pending-input boundary: submission_id/payload binding and durable user-row receipts; authoritative pending FIFO and cancel/resolve_unknown/steer_queued/replace_queued; request/question-bound staged clarification and sequential Confirm/Skip locks. Inspect exact Agent handlers/tests plus Wing callers; source analysis/documentation only, no submit, queue mutation, answer or product change.
-  Acceptance: Provide separate operation/status matrices for queued/started/terminal/unknown, explicit exact retry versus a changed send, race-to-start and atomic queue replacement, and stale/request-mismatched/partially locked clarification batches. Preserve no automatic replay, authoritative Stop uncertainty and per-session/profile ownership. State which unmodified advertised contracts are usable versus absent; source presence or Desktop private IPC alone is insufficient.
-  Checks: `git diff --check`; `python3 -m json.tool docs/product/hermes-desktop-feature-matrix.json > /dev/null`; source-check every recorded operation against the pinned handler and nearest tests and every citation against exact path/range/SHA-256. These are required future documentation checks, not executed protocol/runtime tests.
-  Dependencies: None. No live target or optional feature is a prerequisite for existing Android work.
-  Ownership: Coordinator; one isolated task writer. Preserve active owners and shared documentation coordination.
-  Touches: docs/quality/canonical-pending-input-contract.md, docs/product/hermes-desktop-feature-matrix.json, docs/product/hermes-desktop-feature-matrix.md
-  Resources: None.
-  Readiness: Accepted read-only contract research/documentation only. Implementation remains gated on exact supported contracts and a separately bounded task; live qualification remains separate.
-  Next action: Trace the pinned HD-CHAT, HD-DRAFT, HD-QUEUE, HD-CLARIFY callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/canonical-pending-input-contract.md`.
-  Status: open
-Section: Next.
-
 - [ ] **PARITYUPDATE-003-b1** — Resolve connection-specific remote dashboard OAuth contracts
   Goal: ACCOUNT
   Payoff: Resolve the blocking authoritative contract, not another broad source inventory or a parity pass.
@@ -1610,4 +1594,12 @@ does not mark any check passed or authorize live actions.
   - No product platform was exercised. Named-target canonical attachment/reconnect/disconnect qualification remains separate from this source-only task; retain existing Linux/Android/SSH/remote qualification owners and require a separately admitted implementation before positive canonical-native acceptance.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITYUPDATE-001-aa.
+  Status: open
+
+- [ ] PARITYUPDATE-002-5c-LIVE — Live checks for PARITYUPDATE-002-5c
+  Scope: Run the live checks the offline work for PARITYUPDATE-002-5c left pending.
+  Acceptance: Each check passes on the real target:
+  - Future separately authorized Linux/Android qualification of canonical authentication, exact advertised operation/grants, admission/queue races, Stop settlement and clarification recovery remains unrun. This source-only task exercised no application platform, live Agent, device, inference, submission, queue mutation or answer; no runtime cell advances. Canonical send-time user-row receipts and authoritative batch/partial-lock reconnect projection remain absent at the inspected pin and cannot be established by live testing alone.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITYUPDATE-002-5c.
   Status: open

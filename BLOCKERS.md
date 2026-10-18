@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
-
-- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
-- Needs: worker reported a blocker: Existing coordinator must combine DOC-PARITY-TAB-CONTRACT's mandatory Chat repairs into the execution input before another final full run. Current baseline 6fe161de has no runtime/test/dependency delta from failed input fe0cc6b4, and a fresh format gate still fails on layout syntax. That owner retains the 44 listener failures, disclosure/position failures, named layout syntax and narrow-phone 200%… (+2 more in report.json)
-- Since: 2026-10-18T22:25:15Z
-- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_INPUT — effort input — unblocks 1
 
 - Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered

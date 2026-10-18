@@ -6864,3 +6864,28 @@ Section: Next.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M5-ANDROID-FIXTURE** —  Repair only the two reproduced fixture
+  selectors/navigation failures.
+  Goal: M5
+Section: Next.
+  Sources: [Android discovery receipt](docs/quality/2026-10-03-android-qualification-discovery.md).
+  Payoff: reach existing transcript-copy and setup accessibility exits.
+  Scope: existing Maestro fixture flows, deterministic QA harness and scoped
+  regressions; exclude product redesign, personal apps, provider calls and installs.
+  Acceptance: both flows reach their intended exits on a named owned Android QA
+  target, with clipboard/readback and share-sheet dismissal receipts; report
+  TalkBack as unverified unless actually exercised.
+  External gates: owned target and
+  exclusive build access for execution; static fixture repair can proceed first.
+  Ownership: unclaimed in this index; verify tracker first.
+  Dependencies: None.
+  Planner repair: the external gate above is not a task identifier and remains unsatisfied. Existing owner deferrals/access limits apply; preparation stays separate from any capture, device execution or live qualification.
+  Checks: First compare current fixtures with the discovery receipt; use `maestro check-syntax scripts/maestro/fixture/transcript_export.yaml` and `maestro check-syntax scripts/maestro/fixture/local_setup_accessibility.yaml` after selector/navigation repairs, plus affected deterministic fixture regressions and `git diff --check`. Execute the two flows only with owned-target and exclusive-build access, against the matching isolated QA artifact. Require actual clipboard/readback and share-sheet dismissal receipts for completion; syntax/widget checks do not qualify Android or TalkBack. No install or device operation is authorized by this metadata repair.
+  Touches: scripts/maestro/fixture/transcript_export.yaml, scripts/maestro/fixture/local_setup_accessibility.yaml, integration_test/hermes_features_maestro_main.dart, test/tooling/, docs/quality/
+  Readiness: preparation is distinct from gated execution; original acceptance and owner deferrals remain unchanged.

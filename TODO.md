@@ -662,26 +662,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M4-SCHEDULE-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M5-ANDROID-FIXTURE** —  Repair only the two reproduced fixture
-  selectors/navigation failures.
-  Goal: M5
-Section: Next.
-  Sources: [Android discovery receipt](docs/quality/2026-10-03-android-qualification-discovery.md).
-  Payoff: reach existing transcript-copy and setup accessibility exits.
-  Scope: existing Maestro fixture flows, deterministic QA harness and scoped
-  regressions; exclude product redesign, personal apps, provider calls and installs.
-  Acceptance: both flows reach their intended exits on a named owned Android QA
-  target, with clipboard/readback and share-sheet dismissal receipts; report
-  TalkBack as unverified unless actually exercised.
-  External gates: owned target and
-  exclusive build access for execution; static fixture repair can proceed first.
-  Ownership: unclaimed in this index; verify tracker first.
-  Dependencies: None.
-  Planner repair: the external gate above is not a task identifier and remains unsatisfied. Existing owner deferrals/access limits apply; preparation stays separate from any capture, device execution or live qualification.
-  Checks: First compare current fixtures with the discovery receipt; use `maestro check-syntax scripts/maestro/fixture/transcript_export.yaml` and `maestro check-syntax scripts/maestro/fixture/local_setup_accessibility.yaml` after selector/navigation repairs, plus affected deterministic fixture regressions and `git diff --check`. Execute the two flows only with owned-target and exclusive-build access, against the matching isolated QA artifact. Require actual clipboard/readback and share-sheet dismissal receipts for completion; syntax/widget checks do not qualify Android or TalkBack. No install or device operation is authorized by this metadata repair.
-  Touches: scripts/maestro/fixture/transcript_export.yaml, scripts/maestro/fixture/local_setup_accessibility.yaml, integration_test/hermes_features_maestro_main.dart, test/tooling/, docs/quality/
-  Readiness: preparation is distinct from gated execution; original acceptance and owner deferrals remain unchanged.
-
 - [ ] **DOC-M5-LARGE-TEXT-EVIDENCE** — Goal: M5. Section: Next. Attribute one 200-percent-text message-action journey.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [M5](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction).
@@ -1451,4 +1431,15 @@ does not mark any check passed or authorize live actions.
   - No browser, native UI, device, live authentication, actual schedule pause/resume, execution or delivery qualification was performed. Any later operation journey requires a separately authorized disposable target exposing a suitable unmodified authoritative contract, with exact authority and consent gates. Current contract gaps do not block this evidence-only task.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-SCHEDULE-CONTRACT.
+  Status: open
+
+- [ ] DOC-M5-ANDROID-FIXTURE-LIVE — Live checks for DOC-M5-ANDROID-FIXTURE
+  Scope: Run the live checks the offline work for DOC-M5-ANDROID-FIXTURE left pending.
+  Acceptance: Each check passes on the real target:
+  - Original acceptance is not complete. Obtain a named owned disposable Android target, exclusive build/device access and the matching isolated com.trebuchetdynamics.hermes.wing.qa artifact before executing exactly these two Maestro flows. This offline worker performed no build, install, device operation or live service access.
+  - Capture actual Android text and Markdown clipboard readback receipts and setup return-to-hub/zero-overflow receipts. Syntax and Linux-hosted widget tests do not establish those exits on Android.
+  - Coordinator/human acceptance reconciliation is required: the current production Termux route no longer exposes Copy setup command or a native share sheet. The fixture now follows its existing manual guide; original share-sheet dismissal acceptance remains unmet, not waived or satisfied. Do not restore retired product behavior merely to produce that receipt.
+  - TalkBack, native keyboard/IME and physical-device qualification remain unverified. Independent review and canonical integration are separate from this local task commit.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M5-ANDROID-FIXTURE.
   Status: open

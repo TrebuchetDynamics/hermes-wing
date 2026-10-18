@@ -5553,6 +5553,7 @@
       "status": "partial",
       "tasks": [
         "DOC-M5-ANDROID-FIXTURE",
+        "DOC-M5-ANDROID-FIXTURE-LIVE",
         "DOC-M5-LARGE-TEXT-EVIDENCE"
       ],
       "title": "Qualify native output and accessible interaction"
@@ -6880,7 +6881,6 @@
       "DOC-ARTIFACT-INERT-PREVIEW-EVIDENCE",
       "DOC-M4-MCP-CONFIG-CONTRACT",
       "DOC-M4-SCHEDULE-DELIVERY-CONTRACT",
-      "DOC-M5-ANDROID-FIXTURE",
       "DOC-M5-LARGE-TEXT-EVIDENCE",
       "DOC-M4-CONTRACT-CHECKPOINT",
       "DOC-M4-DISCOVERY-SELECTION-CONTRACT",
@@ -6928,7 +6928,8 @@
       "DOC-M3-PROVIDER-CONTRACT-LIVE",
       "DOC-ARTIFACT-CONTRACT-LIVE",
       "DOC-M4-MCP-CONTRACT-LIVE",
-      "DOC-M4-SCHEDULE-CONTRACT-LIVE"
+      "DOC-M4-SCHEDULE-CONTRACT-LIVE",
+      "DOC-M5-ANDROID-FIXTURE-LIVE"
     ]
   },
   "tasks": [
@@ -7121,14 +7122,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace one schedule-delivery configuration operation"
-    },
-    {
-      "depends_on": [],
-      "goal": "M5",
-      "id": "DOC-M5-ANDROID-FIXTURE",
-      "section": "Next",
-      "status": "open",
-      "title": "Qualify native output and accessible interaction"
     },
     {
       "depends_on": [
@@ -7455,6 +7448,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-M4-SCHEDULE-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-M5-ANDROID-FIXTURE"
+      ],
+      "goal": "M5",
+      "id": "DOC-M5-ANDROID-FIXTURE-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-M5-ANDROID-FIXTURE"
     },
     {
       "depends_on": [
@@ -8178,6 +8181,14 @@
       "section": "Done",
       "status": "done",
       "title": "Attribute one scheduled-job inventory failure journey"
+    },
+    {
+      "depends_on": [],
+      "goal": "M5",
+      "id": "DOC-M5-ANDROID-FIXTURE",
+      "section": "Done",
+      "status": "done",
+      "title": "Qualify native output and accessible interaction"
     },
     {
       "depends_on": [],

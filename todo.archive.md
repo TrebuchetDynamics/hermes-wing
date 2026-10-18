@@ -6928,3 +6928,21 @@ Section: Next.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
   Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
   Touches: docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+- [x] **DOC-M4-MEMORY-CONTRACT** —  Trace one bounded profile-memory read.
+  Goal: M4-MEMORY
+Section: Next.
+  Payoff: advance the named accepted outcome without duplicating existing repairs.
+  Sources: [M4-MEMORY](docs/product/hermes-desktop-parity.md#statuses).
+  Scope: Read-only contracts/test/caller trace; exclude memory persistence and shadow state.
+  Acceptance: Record the supported schema, grant, profile identity and bounds or precise absent operation; identify one next read slice.
+  Dependencies: none for this bounded evidence/contract slice. Any later runtime
+  or privileged operation retains its own target, authority and consent gates.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
+  Touches: docs/quality/

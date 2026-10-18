@@ -713,20 +713,6 @@ patches, personal credential discovery, service restarts or provider spending.
   Dependencies: DOC-M4-MEMORY-CONTRACT; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
 
-- [ ] **DOC-M4-MEMORY-CONTRACT** —  Trace one bounded profile-memory read.
-  Goal: M4-MEMORY
-Section: Next.
-  Payoff: advance the named accepted outcome without duplicating existing repairs.
-  Sources: [M4-MEMORY](docs/product/hermes-desktop-parity.md#statuses).
-  Scope: Read-only contracts/test/caller trace; exclude memory persistence and shadow state.
-  Acceptance: Record the supported schema, grant, profile identity and bounds or precise absent operation; identify one next read slice.
-  Dependencies: none for this bounded evidence/contract slice. Any later runtime
-  or privileged operation retains its own target, authority and consent gates.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: Pin each inspected reference with `git rev-parse HEAD`; trace the exact authoritative handler/model, nearest upstream tests and Wing caller against the Acceptance above. Record supported versus unavailable guarantees with source identities, verify changed Markdown targets, obtain the required independent contract/security review, and run `git diff --check`. Source review is not native/live qualification; do not acquire credentials or activate operations.
-  Touches: docs/quality/
-
-
 - [ ] **DOC-M4-PLATFORM-CONTRACT** —  Trace one messaging-platform status/admin contract.
   Goal: M4-PLATFORMS
 Section: Next.
@@ -1427,4 +1413,12 @@ does not mark any check passed or authorize live actions.
   - No platform was exercised. Authenticated bounded board reads/denials, exact board/Project ownership and accessible target-native inspection require a separately admitted disposable target after an eligible unmodified authoritative contract exists; no credentials or operations activated here.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-M4-KANBAN-CONTRACT.
+  Status: open
+
+- [ ] DOC-M4-MEMORY-CONTRACT-LIVE — Live checks for DOC-M4-MEMORY-CONTRACT
+  Scope: Run the live checks the offline work for DOC-M4-MEMORY-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - No platform was exercised. Authenticated bounded memory reads/denials, profile isolation/recreation, owner-change recovery and accessible target-native inspection require a suitable unmodified authoritative operation and a separately admitted disposable target; not authorized or qualified by this source-only task.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-M4-MEMORY-CONTRACT.
   Status: open

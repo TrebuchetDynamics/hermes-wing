@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-WING-001-b3 — USER_INPUT — effort input — unblocks 0
-
-- Task: WING-001-b3 — Make SSH connection failures visible and actionable.
-- Needs: worker reported a blocker: Existing coordinator must supply the combined repaired source required by docs/tasks/held-offline-recovery.md#recovery-sequence. Assigned baseline 3dfdba5fad362229249f8f3503a4b5e7ec134bf3 has no runtime/test delta from 36f4155f and does not contain reviewed Chat repair 3b7871db5a9005c4fc43f01bf245f596f735b454. Import of that other task delta is not authorized for this worker; parser assembly remai… (+1 more in report.json)
-- Since: 2026-10-19T05:19:50Z
-- Answer: Answer in WING-001-b3's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

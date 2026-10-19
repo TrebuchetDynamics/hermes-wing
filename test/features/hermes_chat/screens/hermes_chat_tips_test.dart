@@ -112,7 +112,9 @@ void main() {
     );
   });
 
-  testWidgets('the voice tip stays usable at 200% text scale', (tester) async {
+  testWidgets('phone keeps the composer clear at 200% text scale', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -138,12 +140,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('wing-tip-voice')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('wing-tip-voice-dismiss')));
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
     expect(find.byKey(const ValueKey('wing-tip-voice')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('hermes-draft-mic-button')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('hermes-live-voice-start')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the voice tip stays hidden while disconnected', (tester) async {

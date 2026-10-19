@@ -1552,7 +1552,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final canUseConnectedAgent =
         state.isConnected && !unsupportedCapabilitySchema;
     final activeSession = state.activeSession;
-    final compactAppBar = MediaQuery.sizeOf(context).width < 480;
+    final compactAppBar = MediaQuery.sizeOf(context).width < 600;
     final hasGateways =
         directory.contacts.isNotEmpty || directory.hasSavedGateways;
     final legacyConnected = state.isConnected && !hasGateways;

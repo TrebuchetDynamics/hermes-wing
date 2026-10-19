@@ -3738,6 +3738,7 @@
         "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY",
         "VERIFY-CHAT-TRANSCRIPT-NATIVE",
         "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
+        "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
         "VERIFY-CHAT-TRANSCRIPT-ORDER",
         "VERIFY-CHAT-TRANSCRIPT-RECONNECT"
       ],
@@ -6910,7 +6911,6 @@
       "WING-001-b3",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "PARITY-NATIVE-LINUX",
-      "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -6978,7 +6978,8 @@
       "PARITYUPDATE-004-48-LIVE",
       "README-001-62-LIVE",
       "MT-VERIFY-BROWSER-GATES-LIVE",
-      "PARITYUPDATE-005-11-LIVE"
+      "PARITYUPDATE-005-11-LIVE",
+      "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE"
     ]
   },
   "tasks": [
@@ -7037,16 +7038,6 @@
       "section": "Next",
       "status": "open",
       "title": "Repair profile-footer painted-focus oracle on the retained combined source"
-    },
-    {
-      "depends_on": [
-        "VERIFY-CHAT-TRANSCRIPT-NATIVE"
-      ],
-      "goal": "CHAT-FIDELITY",
-      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "section": "Next",
-      "status": "open",
-      "title": "Restore canonical tool ordering and retire approval actions after isolated native process restart without replay"
     },
     {
       "depends_on": [
@@ -7651,6 +7642,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for SECURITY-RETAINED-RELEASE-AUDIT"
+    },
+    {
+      "depends_on": [
+        "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART"
     },
     {
       "depends_on": [
@@ -9338,6 +9339,16 @@
       "section": "Done",
       "status": "done",
       "title": "Keep recovered tool categories and exact-owner approval actions keyboard-operable in native Linux without mutation replay"
+    },
+    {
+      "depends_on": [
+        "VERIFY-CHAT-TRANSCRIPT-NATIVE"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
+      "section": "Done",
+      "status": "done",
+      "title": "Restore canonical tool ordering and retire approval actions after isolated native process restart without replay"
     },
     {
       "depends_on": [

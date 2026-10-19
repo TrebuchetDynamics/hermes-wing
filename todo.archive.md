@@ -7902,3 +7902,34 @@ Section: Next.
   Resources: exclusive — serialize retained-source reconciliation with the existing coordinator.
   Evidence: Git-common `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json` records a normal full-suite exit 1 on assembled tree `a2213ffd78bf6a485e09de0d218cc617f273a78e`: 4,041 passed, 9 skipped, 2 failed. `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json` freshly reproduces `shell keyboard semantics survive /profiles at 390.0 / 200%`, missing EditableText / Bad state: No element. These are candidate receipts, not red-main or flaky evidence. FINISH-DESKTOP-SHELL stays done for its historical qualified source.
   Next action: consume the coordinator's exact combined-source handoff through the supported path, reproduce at the public seam and deliver only this attributable repair; do not rerun unchanged full suites or wait for whole-tab/Android acceptance.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="verify-chat-transcript-native-restart"></a>
+
+- [x] **VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART** — Restore canonical tool ordering and retire approval actions after isolated native process restart without replay
+  Goal: CHAT-FIDELITY
+Section: Next.
+  Summary: Restore canonical tool ordering and retire approval actions after native restart.
+  Payoff: prove process recovery separately from mounted native interaction.
+  Sources: [accessibility limits](docs/quality/chat-transcript-accessibility.md#evidence-boundary)
+  and [native restart pattern](docs/quality/native-relaunch-workflow.md).
+  Scope: extend the isolated Linux fixture, integration target and owned launcher;
+  repair reproduced Wing defects and add nearest regressions. Exclude upstream
+  changes, live inference, credentials, system installs and shadow disclosure state.
+  Acceptance: two distinct native processes restore exact-owner canonical history.
+  Tool categories remain ordered and keyboard-reachable; retired approvals stay absent.
+  Include the [mobile reference scenarios](docs/test-plan.md#mobile-reference-scenarios):
+  grouped errors and live tools retain canonical ordering after recovery. Expired
+  activity must not become a successful terminal outcome. Reuse the existing fixture.
+  Restart adds zero sends, creates, model writes, approval decisions or Stop requests.
+  Record source fingerprints, exact requests, process IDs and owned-process teardown.
+  Dependencies: VERIFY-CHAT-TRANSCRIPT-NATIVE; ordered successor in Next.
+  Ownership: unclaimed in this index; verify current tracker leases before execution.
+
+  Checks: Planned: `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart test/core/hermes/channel/hermes_approval_settlement_owner_test.dart`; `flutter analyze --no-pub`; `python3 -B -m unittest discover -s test/tooling -p transcript_recovery_native_test.py`; `bash -n scripts/run_linux_transcript_recovery.sh`; after extending the owned fixture/launcher for two distinct processes, `env -u DISPLAY bash scripts/run_linux_transcript_recovery.sh`; `git diff --check`. Require matching source/build, both process identities, complete native terminal receipt, zero replay mutations and owned display/process cleanup. An unchanged mounted-process launcher pass is not restart acceptance.
+  Touches: lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/channel/, test/features/hermes_chat/, integration_test/linux_transcript_recovery_test.dart, integration_test/support/transcript_recovery_native_fixture.dart, scripts/run_linux_transcript_recovery.sh, scripts/support/transcript_recovery_native.py, test/tooling/transcript_recovery_native_test.py, docs/quality/
+  Status: done

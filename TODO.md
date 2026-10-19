@@ -477,30 +477,6 @@ Section: Next.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
   Ownership: Unassigned; verify actual native worker/tracker ownership before execution. Owned isolated fixture scope only; no personal runtime or live-provider authority.
 
-- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART** — Restore canonical tool ordering and retire approval actions after isolated native process restart without replay
-  Goal: CHAT-FIDELITY
-Section: Next.
-  Summary: Restore canonical tool ordering and retire approval actions after native restart.
-  Payoff: prove process recovery separately from mounted native interaction.
-  Sources: [accessibility limits](docs/quality/chat-transcript-accessibility.md#evidence-boundary)
-  and [native restart pattern](docs/quality/native-relaunch-workflow.md).
-  Scope: extend the isolated Linux fixture, integration target and owned launcher;
-  repair reproduced Wing defects and add nearest regressions. Exclude upstream
-  changes, live inference, credentials, system installs and shadow disclosure state.
-  Acceptance: two distinct native processes restore exact-owner canonical history.
-  Tool categories remain ordered and keyboard-reachable; retired approvals stay absent.
-  Include the [mobile reference scenarios](docs/test-plan.md#mobile-reference-scenarios):
-  grouped errors and live tools retain canonical ordering after recovery. Expired
-  activity must not become a successful terminal outcome. Reuse the existing fixture.
-  Restart adds zero sends, creates, model writes, approval decisions or Stop requests.
-  Record source fingerprints, exact requests, process IDs and owned-process teardown.
-  Dependencies: VERIFY-CHAT-TRANSCRIPT-NATIVE; ordered successor in Next.
-  Ownership: unclaimed in this index; verify current tracker leases before execution.
-
-  Checks: Planned: `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart test/core/hermes/channel/hermes_approval_settlement_owner_test.dart`; `flutter analyze --no-pub`; `python3 -B -m unittest discover -s test/tooling -p transcript_recovery_native_test.py`; `bash -n scripts/run_linux_transcript_recovery.sh`; after extending the owned fixture/launcher for two distinct processes, `env -u DISPLAY bash scripts/run_linux_transcript_recovery.sh`; `git diff --check`. Require matching source/build, both process identities, complete native terminal receipt, zero replay mutations and owned display/process cleanup. An unchanged mounted-process launcher pass is not restart acceptance.
-  Touches: lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/channel/, test/features/hermes_chat/, integration_test/linux_transcript_recovery_test.dart, integration_test/support/transcript_recovery_native_fixture.dart, scripts/run_linux_transcript_recovery.sh, scripts/support/transcript_recovery_native.py, test/tooling/transcript_recovery_native_test.py, docs/quality/
-  Status: open
-
 ### Terminal working-directory files (planned)
 
 ### **P1** — Daily use, recovery and core Desktop composition
@@ -1610,4 +1586,14 @@ does not mark any check passed or authorize live actions.
   - Only Linux-hosted deterministic Flutter widget tests were exercised. Native desktop, physical Android, live Agent/provider and screen-reader qualification remain unverified; no live support is inferred.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITYUPDATE-005-11.
+  Status: open
+
+- [ ] VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE — Live checks for VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART
+  Scope: Run the live checks the offline work for VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART left pending.
+  Acceptance: Each check passes on the real target:
+  - Live unmodified Hermes Agent authentication, provider/tool execution and real approvals/Stop remain unqualified; no credentials, inference, upstream edits or live operations were used.
+  - Physical mobile/Android, physical keyboard and screen-reader qualification remain separate. Native coverage here is Linux x86_64 GTK/Xvfb with injected key events and programmatic viewport preparation, not an entirely keyboard-only scrolling journey.
+  - Full application saved-endpoint startup and OS secure-storage recovery are not qualified by this isolated Chat target; Linux selection preferences are real, while the run-lease store and HTTP/SSE transports are synthetic test seams.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART.
   Status: open

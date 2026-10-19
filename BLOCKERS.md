@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T05:25:00Z
 - Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_INPUT — effort input — unblocks 1
+
+- Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered
+- Needs: worker reported a blocker: Coordinator must supply the matching reviewed offline Chat repair in this task's assigned source before native adoption/qualification. The source-bound 1996-pass Chat/router receipt now exists and was hash/terminal-verified, but baseline 9f70e019 does not contain the retained repaired input (29 runtime/test/browser-path differences from committed repair d7952ec9, plus the latest report's correctio…
+- Since: 2026-10-19T05:26:31Z
+- Answer: Answer in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-PARITY-NATIVE-LINUX — USER_INPUT — effort input — unblocks 0
 
 - Task: PARITY-NATIVE-LINUX — Execute and extend native Linux

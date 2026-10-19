@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T14:25:23Z
 - Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PARITYUPDATE-005-11 — USER_INPUT — effort input — unblocks 1
+
+- Task: PARITYUPDATE-005-11 — Repair compact Profiles keyboard fixture on the retained combined source.
+- Needs: changed files the coordinator owns: TODO.md, goals.json
+- Since: 2026-10-19T16:14:03Z
+- Answer: Answer in PARITYUPDATE-005-11's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort investigate — unblocks 0
 
 - Task: PARITY-NATIVE-LINUX — Execute and extend native Linux

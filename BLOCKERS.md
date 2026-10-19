@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T05:25:00Z
 - Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PARITY-NATIVE-LINUX — USER_INPUT — effort input — unblocks 0
+
+- Task: PARITY-NATIVE-LINUX — Execute and extend native Linux
+- Needs: worker reported a blocker: The existing coordinator must supply this worker with the reconciled offline Chat repair and its matching source-bound terminal green Chat gate. The task's required repaired-source handoff has not reached assigned baseline 9f70e019: reviewed committed candidate d7952ec9 is not an ancestor and runtime/test inputs differ. Once that handoff is supplied, reconcile only this task's inactive retained na…
+- Since: 2026-10-19T05:26:16Z
+- Answer: Answer in PARITY-NATIVE-LINUX's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-PLANGAP-001-2f — USER_INPUT — effort input — unblocks 0
 
 - Task: PLANGAP-001-2f — Accept hash-suffixed task IDs in plan traceability without weakening guards.

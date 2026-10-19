@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/client/hermes_web_read_client.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 
+import '../support/fixture_server.dart';
+
 // Deterministic wire behavior only, not native generation or live approvals.
 class LifecycleFixture {
   late HttpServer server;
@@ -22,7 +24,7 @@ class LifecycleFixture {
   bool advanceOnHistory = false;
   bool eventBeforeBarrierReply = false;
   Future<void> start() async {
-    server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    server = await bindHermesFixtureServer();
     server.listen((request) async {
       if (request.uri.path == '/api/auth/ws-ticket') {
         tickets++;

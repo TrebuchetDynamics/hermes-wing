@@ -6,9 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/client/platform/hermes_api_transport_io.dart';
 import 'package:wing/core/hermes/shared/hermes_api_http.dart';
 
+import '../../support/fixture_server.dart';
+
 void main() {
   test('rejects oversized response bodies before buffering', () async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final server = await bindHermesFixtureServer();
     server.listen((request) async {
       try {
         final chunk = List<int>.filled(1 << 20, 65);
@@ -32,7 +34,7 @@ void main() {
   });
 
   test('HTTP rejection preserves typed status identity', () async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final server = await bindHermesFixtureServer();
     server.listen((request) async {
       request.response.statusCode = HttpStatus.unauthorized;
       await request.response.close();
@@ -59,7 +61,7 @@ void main() {
   });
 
   test('wraps socket failures without exposing endpoint details', () async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final server = await bindHermesFixtureServer();
     final port = server.port;
     await server.close(force: true);
 
@@ -76,7 +78,7 @@ void main() {
   });
 
   test('POST sends Unicode JSON as UTF-8', () async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final server = await bindHermesFixtureServer();
     final received = Completer<String>();
     server.listen((request) async {
       received.complete(await utf8.decoder.bind(request).join());

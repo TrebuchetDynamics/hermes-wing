@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/client/hermes_web_read_client.dart';
 
+import '../support/fixture_server.dart';
+
 const _auth = 'synthetic-owned-auth';
 Matcher fails(HermesWebFailureKind kind) => throwsA(
   isA<HermesWebReadException>()
@@ -56,7 +58,7 @@ Future<void> ticket(HttpRequest request) async {
 
 void main() {
   test('missing native storage envelope fails closed', () async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final server = await bindHermesFixtureServer();
     server.listen((request) async {
       request.response.write(
         jsonEncode({'sessions': [], 'total': 0, 'limit': 50, 'offset': 0}),
@@ -74,7 +76,7 @@ void main() {
   test(
     'ticket upgrade redirects are rejected without following the location',
     () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       var requests = 0;
       server.listen((request) async {
         requests++;
@@ -103,7 +105,7 @@ void main() {
     },
   );
   test('pending REST reads have a fixed bound', () async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final server = await bindHermesFixtureServer();
     final allStarted = Completer<void>();
     var count = 0;
     server.listen((request) {
@@ -127,7 +129,7 @@ void main() {
   test(
     'corrupt profile storage cannot be mistaken for an empty inventory',
     () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       server.listen((request) async {
         request.response.write(
           jsonEncode({
@@ -162,7 +164,7 @@ void main() {
     test(
       'REST status ${status.key} fails closed and redacts body/location',
       () async {
-        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        final server = await bindHermesFixtureServer();
         var count = 0;
         server.listen((request) async {
           count++;
@@ -197,7 +199,7 @@ void main() {
     'chunked',
   ]) {
     test('REST rejects $mode without a partial page', () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       server.listen((request) async {
         final envelope = historyEnvelope();
         if (mode == 'profile') envelope['profile'] = 'other';
@@ -255,7 +257,7 @@ void main() {
   test(
     'history completion from disconnected profile cannot attach to replacement',
     () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       final pending = Completer<HttpRequest>();
       server.listen(pending.complete);
       final old = client(server);
@@ -290,7 +292,7 @@ void main() {
     'malformed',
   ]) {
     test('RPC $mode is bounded, correlated and redacted', () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       server.listen((request) async {
         if (request.uri.path.endsWith('ws-ticket')) {
           await ticket(request);
@@ -354,7 +356,7 @@ void main() {
   }
   for (final mode in ['not-ready', 'bad-epoch', 'protocol', 'ready-timeout']) {
     test('upgrade $mode cannot become read-ready', () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       server.listen((request) async {
         if (request.uri.path.endsWith('ws-ticket')) {
           await ticket(request);
@@ -408,7 +410,7 @@ void main() {
     test(
       'delayed $stage cannot attach to a newer connection generation',
       () async {
-        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        final server = await bindHermesFixtureServer();
         final started = Completer<void>();
         final release = Completer<void>();
         var tickets = 0;
@@ -459,7 +461,7 @@ void main() {
   test(
     'pending RPC requests have a fixed bound and disconnect clears them',
     () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       server.listen((request) async {
         if (request.uri.path.endsWith('ws-ticket')) {
           await ticket(request);

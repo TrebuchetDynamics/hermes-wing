@@ -13,13 +13,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T07:00:20Z
 - Answer: Decide the missing input or disposition in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
 
-### Q-PLANGAP-001-2f — USER_DECISION — effort decision — unblocks 0
-
-- Task: PLANGAP-001-2f — Accept hash-suffixed task IDs in plan traceability without weakening guards.
-- Needs: worker reported a blocker: Coordinator must supply the actually corrected layout/gateway input from the retained-source assembly. Assigned baseline 597d8762b1e8f4109a0e5ebb8b449b576814a3c2 still has exactly the same blocker blobs as both 36f4155f and 6c167919: test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart = 7ff1c14e8ff16dfbe18763a7b420960f6c27db92; test/features/hermes_chat/screens/hermes_chat_gateway…; DOCS-MAINTAINER already changed Next action, Readiness, Recovery evidence, but the task is still waiting for the same reason.
-- Since: 2026-10-19T06:38:07Z
-- Answer: Decide the missing input or disposition in PLANGAP-001-2f's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
-
 ### Q-WING-001-b3 — USER_DECISION — effort decision — unblocks 0
 
 - Task: WING-001-b3 — Make SSH connection failures visible and actionable.

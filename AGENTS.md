@@ -215,6 +215,14 @@ setup is `flutter pub get` and `npm ci`.
 
 ## Validation
 
+The runner's whole offline Flutter test-suite entry point is:
+
+Full check: flutter test --no-pub --concurrency=1
+
+This does not replace the applicable formatting, analysis, browser, security or
+native qualification gates below. Dependencies must already be prepared; the
+full-suite entry point does not fetch packages or authorize live tests.
+
 Run the smallest relevant check while iterating, then the checks proportional to
 the affected boundary.
 

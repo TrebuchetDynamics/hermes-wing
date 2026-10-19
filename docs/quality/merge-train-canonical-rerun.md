@@ -141,6 +141,10 @@ The SSH owner's subsequent 89-pass browser receipt resolved its old Tools
 finding on its matched candidate; it is not a fresh browser receipt for this
 new Profiles/footer input.
 
+Subsequent phase: the [compiled browser receipt](merge-train-browser-gates.md)
+records the fresh matching-source build, all canonical browser results and exact
+mutation assertions, with its separate full-Flutter timeout explicitly retained.
+
 No web build/browser journey was run by this non-browser task. The indexed
 `MT-VERIFY-BROWSER-GATES` phase retains its fresh-build-before-E2E checks on matching
 source. No browser or canonical integration is waived or claimed here.

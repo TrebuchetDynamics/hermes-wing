@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T05:54:51Z
 - Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
+
+- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
+- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable repair for the reproduced compact Profiles public-seam failure at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 on this exact combined source (missing first EditableText / Bad state: No element). Do not weaken its keyboard/large-text assertions. The source-delivery blocker is resolved: consume assembled tree a2213ffd… (+1 more in report.json)
+- Since: 2026-10-19T06:36:50Z
+- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

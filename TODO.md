@@ -96,7 +96,7 @@ Generated from `goals.json` by `goals.py render`. `met` requires an executed, pa
 | NATIVE-INTEGRATION: Review bounded host-local integration before privileged implementation | unverified | inspection <code>docs/adr/client.md#decision</code> → pass | DOC-NATIVE-DESIGN-REVIEW-LIVE, DOC-NATIVE-FAILURE-BOUNDARY-LIVE |
 | REMOTE-BACKENDS: Provide typed SSH/Docker/WSL backend lifecycle outcomes | unmet | executed <code>.task-evidence/parallel-key-native/venv/bin/python -m unittest test/tooling/managed_ssh_key_native_test.py -v; 7 pass; preparation only, native execution NOT_CHECKED</code> → pass; executed <code>flutter analyze --no-pub; no issues, key implementation plus native harness</code> → pass; executed <code>npm run test -- --no-pub test/features/hermes_chat/screens/hermes_ssh_no_cli_test.dart test/features/hermes_chat/screens/hermes_chat_remote_connection_retry_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/ssh_keys test/features/hermes_chat/providers/managed_ssh_provider_test.dart test/features/hermes_chat/widgets/managed_ssh_host_key_dialog_test.dart test/core/hermes/ssh/managed_ssh_test.dart; parent-tests.log: 72 pass; fixture/widget only, native qualification open</code> → pass; executed <code>python .task-evidence/local-key-help-integration/verify.py; frozen-source analyzer clean and focused union 132 pass; native storage/auth NOT_CHECKED</code> → pass; inspection <code>docs/product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations; Desktop 2ed89070bc6c9e8231a37bb55df8a7722a3776b8; path selection, OpenSSH arguments, saved config, Wing ephemeral key callbacks; no runtime qualification</code> → pass; inspection <code>docs/product/desktop-connection-paths.md#ssh-is-managed-host-access-in-desktop</code> → pass; inspection <code>docs/product/hermes-desktop-parity.md#statuses</code> → pass; inspection <code>docs/quality/graphify-wing-recomparison.md [pinned Graphify 0.9.80 snapshot; partial key UI; native qualification open]</code> → pass | BACKEND-SSH-CONNECT-LIVE, BACKEND-SSH-KEY-NATIVE-LIVE, DOC-BACKEND-DISCONNECT-CONTRACT-LIVE, WING-001-b3 |
 | VOICE: Qualify actual physical capture, speech and acoustic behavior | unverified | inspection <code>docs/product/prd.md#core-journeys</code> → pass | DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE, DOC-VOICE-QUALIFICATION-LIVE |
-| LANDING-ONBOARDING: Help existing Hermes users reach first reply through a credible accessible product landing page | unmet | inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#landing-led-product-identity-across-readme-and-docs [ec91584e plus current README/docs; input-matched local renders inspected; owner keeps landing headline/mascot; planning only]</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#located-source-and-delivery</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence [README and getting-started at c9608c19; ordering/evidence narration gaps confirmed]</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [6125337d current README/guide and both images inspected; Conduit README e2e8209a61b7809f146a401b6854f8ee6e780f87 editorial prior art only; remaining copy/current-proof gaps]</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [actual showcase image and producer at e0aebfc0; no live qualification]</code> → pass | LANDING-PAGES-QUALITY-LIVE, LANDING-PRODUCT-PROOF-LIVE, README-001-62 |
+| LANDING-ONBOARDING: Help existing Hermes users reach first reply through a credible accessible product landing page | unmet | inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#landing-led-product-identity-across-readme-and-docs [ec91584e plus current README/docs; input-matched local renders inspected; owner keeps landing headline/mascot; planning only]</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#located-source-and-delivery</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#readme-re-review-acquisition-before-use-tutorial-before-evidence [README and getting-started at c9608c19; ordering/evidence narration gaps confirmed]</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [6125337d current README/guide and both images inspected; Conduit README e2e8209a61b7809f146a401b6854f8ee6e780f87 editorial prior art only; remaining copy/current-proof gaps]</code> → pass; inspection <code>docs/plans/2026-10-12-wing-landing-onboarding.md#remaining-readme-review-proof-readiness-and-useful-workflow [actual showcase image and producer at e0aebfc0; no live qualification]</code> → pass | LANDING-PAGES-QUALITY-LIVE, LANDING-PRODUCT-PROOF-LIVE, README-001-62-LIVE |
 | M2: Recover Android owner/history after background and process death | unverified | executed <code>.task-evidence/t_2d1d55ab/commands.json (channel; exact argv, exit 0 and 23 passes)</code> → pass; executed <code>.task-evidence/t_2d1d55ab/owner-command.json (owner; exact argv, exit 0 and 5 passes)</code> → pass; executed <code>dart format --output=none --set-exit-if-changed integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart integration_test/support/m2_metadata.dart test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart test/tooling/support/m2_fake_harness.dart test/tooling/support/m2_diagnostic_writer.dart test/tooling/support/m2_observer_cases.dart test/tooling/support/m2_receipt_admission_cases.dart test/tooling/support/m2_bootstrap_probe.dart.template</code> → pass; executed <code>dart format --output=none --set-exit-if-changed integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)</code> → pass; executed <code>dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt: .task-evidence/t_e0af7ad4/format.json</code> → pass; executed <code>dart format --output=none --set-exit-if-changed test/shared/widgets/app_shell_global_session_access_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (format; compiled deterministic only, M2 remains unverified)</code> → pass; executed <code>dart format --output=none --set-exit-if-changed test/tooling/m2_receipt_admission_test.dart</code> → pass; executed <code>dart format test/tooling/m2_receipt_admission_test.dart</code> → pass; executed <code>flutter analyze</code> → pass; executed <code>flutter analyze --no-pub</code> → pass; executed <code>flutter analyze --no-pub integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)</code> → pass; executed <code>flutter analyze --no-pub test/tooling/m2_receipt_admission_test.dart</code> → pass; executed <code>flutter analyze --no-pub; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (analyze; compiled deterministic only, M2 remains unverified)</code> → pass; executed <code>flutter analyze; receipt: .task-evidence/t_e0af7ad4/analyze-verified.json</code> → pass; executed <code>flutter build web --release -t lib/main_e2e.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (build; compiled deterministic only, M2 remains unverified)</code> → pass; executed <code>flutter test --concurrency=1 test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/hermes_api_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (nearest)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (focused)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_3a5135a8/isolated-project; receipt: .task-evidence/t_3a5135a8/commands.json (green.log; 18 passes; three changed source/test hashes and all retained command-log hashes match; independent same-card approval, Android and live counts unverified)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_3a5135a8/review-398-project; receipt: .task-evidence/t_3a5135a8/review-398-validation.json (18 passes; five authored fingerprints and seven command logs match; final native approval, Android and live counts unverified)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/channel/hermes_session_caller_admission_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_load_owner_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-callers.log)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-focused.log)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/core/hermes/hermes_api_test.dart test/core/hermes/channel/hermes_api_channel_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-nearest.log)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=expanded test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; cwd: .task-evidence/t_4e4a4f7d/isolated-project; receipt: .task-evidence/t_4e4a4f7d/validation.json (callers)</code> → pass; executed <code>flutter test --no-pub --concurrency=1 --reporter=json test/shared/widgets/app_shell_global_session_access_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (focused; compiled deterministic only, M2 remains unverified)</code> → pass; executed <code>flutter test --no-pub test/core/hermes/setup/secure_hermes_detached_run_store_test.dart test/core/hermes/channel/hermes_detached_run_store_test.dart --concurrency=1 --reporter expanded</code> → pass; executed <code>flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt: .task-evidence/t_e0af7ad4/oracle-verified.json</code> → pass; executed <code>flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt: .task-evidence/t_e0af7ad4/nearest-regressions.json</code> → pass; executed <code>flutter test --no-pub test/tooling/m2_observer_test.dart; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)</code> → pass; executed <code>flutter test --no-pub test/tooling/m2_receipt_admission_test.dart</code> → pass; executed <code>flutter test test/tooling/m2_bootstrap_test.dart</code> → fail; executed <code>git diff --check</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-coordinator-admission-trace.md .task-evidence/t_06c58314</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-custody-proof-review.md .task-evidence/t_321431fe (native review505; source-only integrity, not product acceptance)</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-custody-proof-review.md .task-evidence/t_321431fe (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-issuer-evidence-contract.md .task-evidence/t_620a6d33</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-receipt-handoff-contract.md .task-evidence/t_d6c8aa4f (offline proposed-contract checks only; M2 unverified)</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-refusal-continuation-preflight.md .task-evidence/t_c799c475</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-refusal-continuation-preflight.md .task-evidence/t_c799c475 TODO.md goals.json</code> → pass; executed <code>git diff --check -- docs/quality/2026-10-06-m2-runtime-caller-closure.md .task-evidence/t_481b1474</code> → pass; executed <code>git diff --check -- docs/spec.md docs/test-plan.md docs/README.md docs/quality/repo-docs-goal-bootstrap.md TODO.md goals.json</code> → pass; executed <code>git diff --check -- integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart integration_test/support/m2_metadata.dart test/tooling/m2_bootstrap_test.dart test/tooling/m2_observer_test.dart test/tooling/m2_receipt_admission_test.dart test/tooling/support/m2_fake_harness.dart test/tooling/support/m2_diagnostic_writer.dart test/tooling/support/m2_observer_cases.dart test/tooling/support/m2_receipt_admission_cases.dart test/tooling/support/m2_bootstrap_probe.dart.template scripts/check_m2_default_refusal.py docs/quality/2026-10-06-m2-default-refusal.md</code> → pass; executed <code>git diff --check -- integration_test/hermes_m2_observer_main.dart integration_test/support/m2_observer.dart test/tooling/m2_observer_test.dart .task-evidence/t_53f0d91e; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)</code> → pass; executed <code>git diff --check -- test/tooling/m2_receipt_admission_test.dart .task-evidence/t_40dcd771</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/check_integrity.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/citations-initial.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/citations.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command-failed-1.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command-initial.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/fetch_sources.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_02e4e461/update_ledger.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/check_contract.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/checkout-before.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger-before.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/ledger.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/selection-comparison.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/snapshot-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/source-snapshot.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/todo-render-delta.patch</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/todo-task-delta.patch</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/update_ledger.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/validation.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/verify-before-ledger.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_620a6d33/verify-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/check_integrity.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/ledger.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/snapshot-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/source-snapshot-initial.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/source-snapshot.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/update_ledger.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/validation.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_8ce3dc30/verify-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_c799c475/check_preflight.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_c799c475/git-before.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_c799c475/ledger-before.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_c799c475/selection-comparison.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_c799c475/snapshot-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_c799c475/source-snapshot.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_c799c475/validation.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/check_integrity.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/citations.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/fetch-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/fetch_citations.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/ledger.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/snapshot-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/source-snapshot.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/update_ledger.py</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/validation.json</code> → pass; executed <code>git diff --no-index --check /dev/null .task-evidence/t_d2b9b4db/verify-command.json</code> → pass; executed <code>git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-cpu-enforcement-feasibility.md</code> → pass; executed <code>git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-cpu-envelope-proof.md</code> → pass; executed <code>git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-issuer-evidence-contract.md</code> → pass; executed <code>git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-refusal-continuation-preflight.md</code> → pass; executed <code>git diff --no-index --check /dev/null docs/quality/2026-10-06-m2-synthetic-isolation-contract.md</code> → pass; executed <code>git show --check --format=oneline 685b39e4cc161b1827ba7f52bc4d99d12ec82d9a</code> → pass; executed <code>git show --check --format=oneline ff45432a3ef1436cb87b799a2c69a696bc6a65e1</code> → pass; executed <code>git show --format= --check 3cd0896a1af03e0f33bb39ed4cf626de93610274 (native review505; source-only integrity, not product acceptance)</code> → pass; executed <code>git show --format= --check ca76e700f60a184336f765e2b40350f4e25671d5</code> → pass; executed <code>npm run test -- --no-pub --reporter=expanded test/core/hermes/client/hermes_history_identity_test.dart test/core/hermes/channel/hermes_recovery_read_admission_test.dart test/core/hermes/hermes_api_test.dart test/core/hermes/channel/hermes_api_channel_test.dart test/core/hermes/channel/hermes_session_caller_admission_test.dart test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/gateways/hermes_gateway_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart test/features/hermes_chat/gateways/hermes_directory_lifetime_test.dart test/features/hermes_chat/screens/hermes_chat_session_picker_load_owner_test.dart (cwd: review-404-project; receipt: .task-evidence/t_cd72a5d5/review-404-validation.json; log: review-404-npm.log)</code> → pass; executed <code>npx --no-install playwright test --config=playwright.config.mjs playwright/tests/regression/global-session-access.spec.mjs --workers=1 --retries=0 --output=browser-output; cwd: .task-evidence/t_103d63ec/mirror; receipt: .task-evidence/t_103d63ec/commands.json (browser; compiled deterministic only, M2 remains unverified)</code> → pass; executed <code>python -c 'import runpy; r=runpy.run_path(".task-evidence/t_ccec142b/check_admission.py", run_name="repo_docs_readonly")["verify"](); print({k:r[k] for k in ("result", "source_files", "citations", "links", "m2")})'</code> → pass; executed <code>python .task-evidence/t_53f0d91e/closure.py; receipt: .task-evidence/t_53f0d91e/validation.json (bounded deterministic tooling only; M2 unverified)</code> → pass; executed <code>python .task-evidence/t_bd91fa65/check.py; receipt: .task-evidence/t_bd91fa65/validation.json (exit 0; offline-document-integrity-only; M2 unverified)</code> → pass; executed <code>python &lt;home&gt;/.hermes/shared-skills/repo-docs/scripts/goals.py validate &lt;repo&gt;</code> → fail; executed <code>python scripts/check_m2_default_refusal.py</code> → pass; executed <code>python3 -c "import ast; from pathlib import Path; [ast.parse(Path('.task-evidence/t_909a35ba', name).read_text()) for name in ('check_preflight.py', 'update_ledger.py')]; print('Python syntax PASS')"</code> → pass; executed <code>python3 -c 'import runpy; n=runpy.run_path('"'"'.task-evidence/t_8ce3dc30/check_integrity.py'"'"',run_name='"'"'review'"'"'); n['"'"'verify'"'"'].__globals__['"'"'save'"'"']=lambda *a: None; n['"'"'verify'"'"']()'</code> → pass; executed <code>python3 .task-evidence/t_02e4e461/check_integrity.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_02e4e461/check_integrity.py verify</code> → pass; executed <code>python3 .task-evidence/t_02e4e461/fetch_sources.py</code> → pass; executed <code>python3 .task-evidence/t_06c58314/check_trace.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_06c58314/check_trace.py verify</code> → pass; executed <code>python3 .task-evidence/t_321431fe/check_review.py snapshot (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)</code> → pass; executed <code>python3 .task-evidence/t_321431fe/check_review.py verify (source-only integrity; .task-evidence/t_321431fe/validation.json; not M2 acceptance)</code> → pass; executed <code>python3 .task-evidence/t_40dcd771/check.py verify</code> → pass; executed <code>python3 .task-evidence/t_40dcd771/preserve_ceiling.py</code> → pass; executed <code>python3 .task-evidence/t_481b1474/check_integrity.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_481b1474/check_integrity.py verify</code> → pass; executed <code>python3 .task-evidence/t_481b1474/run_checks.py</code> → pass; executed <code>python3 .task-evidence/t_620a6d33/check_contract.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_620a6d33/check_contract.py verify</code> → pass; executed <code>python3 .task-evidence/t_7e4e424a/check_provenance.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_7e4e424a/check_provenance.py verify</code> → pass; executed <code>python3 .task-evidence/t_8ce3dc30/check_integrity.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_8ce3dc30/check_integrity.py verify</code> → pass; executed <code>python3 .task-evidence/t_8ce3dc30/check_integrity.py verify (initial attempt; verify-command.json runs[0])</code> → fail; executed <code>python3 .task-evidence/t_909a35ba/check_preflight.py closure</code> → pass; executed <code>python3 .task-evidence/t_909a35ba/check_preflight.py probe</code> → pass; executed <code>python3 .task-evidence/t_909a35ba/check_preflight.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_909a35ba/check_preflight.py verify</code> → pass; executed <code>python3 .task-evidence/t_bcab1f7e/check_contract.py negative</code> → pass; executed <code>python3 .task-evidence/t_bcab1f7e/check_contract.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_bcab1f7e/check_contract.py verify</code> → pass; executed <code>python3 .task-evidence/t_c799c475/check_preflight.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_c799c475/check_preflight.py verify</code> → pass; executed <code>python3 .task-evidence/t_d2b9b4db/check_integrity.py snapshot</code> → pass; executed <code>python3 .task-evidence/t_d2b9b4db/check_integrity.py verify</code> → pass; executed <code>python3 .task-evidence/t_d2b9b4db/fetch_citations.py</code> → pass; executed <code>python3 .task-evidence/t_d6c8aa4f/check_contract.py snapshot (offline proposed-contract checks only; M2 unverified)</code> → pass; executed <code>python3 .task-evidence/t_d6c8aa4f/check_contract.py verify (offline proposed-contract checks only; M2 unverified)</code> → pass; executed <code>t_15da6893 analyze: cwd=&lt;repo&gt;/.task-evidence/t_15da6893/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_15da6893/analyze.json/log</code> → pass; executed <code>t_15da6893 format-apply: cwd=&lt;repo&gt;; dart format test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/format-apply.json/log</code> → pass; executed <code>t_15da6893 format-verified: cwd=&lt;repo&gt;; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/format-verified.json/log</code> → pass; executed <code>t_15da6893 native review 444: cwd=&lt;repo&gt;/.task-evidence/t_15da6893/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_15da6893/review-444-analyze.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable</code> → pass; executed <code>t_15da6893 native review 444: cwd=&lt;repo&gt;/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/review-444-tests.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable</code> → pass; executed <code>t_15da6893 native review 444: cwd=&lt;repo&gt;; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_15da6893/review-444-format.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable</code> → pass; executed <code>t_15da6893 native review 444: cwd=&lt;repo&gt;; python -c 'from pathlib import Path; p=Path('"'"'.task-evidence/t_15da6893/verify_scope.py'"'"'); exec(compile(p.read_text().replace('"'"'import-closure.json'"'"','"'"'review-444-import-closure.json'"'"'), str(p), '"'"'exec'"'"'))'; receipt=.task-evidence/t_15da6893/review-444-scope.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable</code> → pass; executed <code>t_15da6893 native review 444: cwd=&lt;repo&gt;; python .task-evidence/t_15da6893/review_444_verify.py; receipt=.task-evidence/t_15da6893/review-444-integrity-check.json/log; synthetic Linux widget evidence only; M2 unverified, authoritative_counts_unavailable</code> → pass; executed <code>t_15da6893 nearest: cwd=&lt;repo&gt;/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/nearest.json/log</code> → pass; executed <code>t_15da6893 oracle-fixed: cwd=&lt;repo&gt;/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/oracle-fixed.json/log</code> → pass; executed <code>t_15da6893 oracle: cwd=&lt;repo&gt;/.task-evidence/t_15da6893/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_15da6893/oracle.json/log</code> → fail; executed <code>t_15da6893 scope: cwd=&lt;repo&gt;; python .task-evidence/t_15da6893/verify_scope.py; receipt=.task-evidence/t_15da6893/scope.json/log</code> → pass; executed <code>t_59ea67ba analyze: cwd=&lt;repo&gt;/.task-evidence/t_59ea67ba/mirror; flutter analyze --no-pub</code> → pass; executed <code>t_59ea67ba channel-hydration: cwd=&lt;repo&gt;/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'terminal hydration failure preserves durable retry across recreation' --concurrency=1 --reporter expanded</code> → pass; executed <code>t_59ea67ba channel-lease: cwd=&lt;repo&gt;/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'active run lease is durable before its event stream finishes' --concurrency=1 --reporter expanded</code> → pass; executed <code>t_59ea67ba channel-process: cwd=&lt;repo&gt;/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/core/hermes/channel/hermes_api_channel_test.dart --plain-name 'process recreation' --concurrency=1 --reporter expanded</code> → pass; executed <code>t_59ea67ba format-verified: cwd=&lt;repo&gt;; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart</code> → pass; executed <code>t_59ea67ba nearest: cwd=&lt;repo&gt;/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded</code> → pass; executed <code>t_59ea67ba oracle-final: cwd=&lt;repo&gt;/.task-evidence/t_59ea67ba/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded</code> → pass; executed <code>t_59ea67ba scope: cwd=&lt;repo&gt;; python3 .task-evidence/t_59ea67ba/verify_scope.py</code> → pass; executed <code>t_b00feca2 analyze: cwd=&lt;repo&gt;/.task-evidence/t_b00feca2/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_b00feca2/analyze.json/log</code> → pass; executed <code>t_b00feca2 format-apply: cwd=&lt;repo&gt;; dart format test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_b00feca2/format-apply.json/log</code> → pass; executed <code>t_b00feca2 format-verified: cwd=&lt;repo&gt;; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_b00feca2/format-verified.json/log</code> → pass; executed <code>t_b00feca2 native review 440: cwd=&lt;repo&gt;/.task-evidence/t_b00feca2/mirror; argv=["flutter", "analyze", "--no-pub"]; receipt=.task-evidence/t_b00feca2/review-440-analyze.json/log; deterministic only, Android/live qualification NOT_CHECKED</code> → pass; executed <code>t_b00feca2 native review 440: cwd=&lt;repo&gt;/.task-evidence/t_b00feca2/mirror; argv=["flutter", "test", "--no-pub", "test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart", "test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart", "test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart", "test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart", "--concurrency=1", "--reporter", "expanded"]; receipt=.task-evidence/t_b00feca2/review-440-tests.json/log; deterministic only, Android/live qualification NOT_CHECKED</code> → pass; executed <code>t_b00feca2 native review 440: cwd=&lt;repo&gt;; argv=["dart", "format", "--output=none", "--set-exit-if-changed", "test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart"]; receipt=.task-evidence/t_b00feca2/review-440-format.json/log; deterministic only, Android/live qualification NOT_CHECKED</code> → pass; executed <code>t_b00feca2 native review 440: cwd=&lt;repo&gt;; argv=["python", "-c", "from pathlib import Path; p=Path('.task-evidence/t_b00feca2/verify_scope.py'); exec(compile(p.read_text().replace('import-closure.json','review-440-import-closure.json'), str(p), 'exec'))"]; receipt=.task-evidence/t_b00feca2/review-440-scope.json/log; deterministic only, Android/live qualification NOT_CHECKED</code> → pass; executed <code>t_b00feca2 nearest: cwd=&lt;repo&gt;/.task-evidence/t_b00feca2/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_b00feca2/nearest.json/log</code> → pass; executed <code>t_b00feca2 oracle: cwd=&lt;repo&gt;/.task-evidence/t_b00feca2/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_b00feca2/oracle.json/log</code> → pass; executed <code>t_b00feca2 scope: cwd=&lt;repo&gt;; python .task-evidence/t_b00feca2/verify_scope.py; receipt=.task-evidence/t_b00feca2/scope.json/log</code> → pass; executed <code>t_df29f3c6 analyze: cwd=&lt;repo&gt;/.task-evidence/t_df29f3c6/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_df29f3c6/analyze.json/log</code> → pass; executed <code>t_df29f3c6 format-final: cwd=&lt;repo&gt;; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/format-final.json/log</code> → pass; executed <code>t_df29f3c6 format-verified: cwd=&lt;repo&gt;; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/format-verified.json/log</code> → pass; executed <code>t_df29f3c6 integrity: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/final_integrity.py; receipt=.task-evidence/t_df29f3c6/integrity.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 ledger-ceiling-check: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/restore_ceiling.py; receipt=.task-evidence/t_df29f3c6/ledger-ceiling-check.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 ledger: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/update_ledger.py; receipt=.task-evidence/t_df29f3c6/ledger.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable</code> → fail; executed <code>t_df29f3c6 review-451-analyze: cwd=&lt;repo&gt;/.task-evidence/t_df29f3c6/mirror; flutter analyze --no-pub; receipt=.task-evidence/t_df29f3c6/review-451-analyze.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 review-451-format: cwd=&lt;repo&gt;; dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart; receipt=.task-evidence/t_df29f3c6/review-451-format.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 review-451-integrity-final: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/review_451_verify.py; receipt=.task-evidence/t_df29f3c6/review-451-integrity-final.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 review-451-integrity: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/review_451_verify.py; receipt=.task-evidence/t_df29f3c6/review-451-integrity.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable</code> → fail; executed <code>t_df29f3c6 review-451-scope: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/review-451-scope.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 review-451-tests: cwd=&lt;repo&gt;/.task-evidence/t_df29f3c6/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_df29f3c6/review-451-tests.json/log; bounded review only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 scope-final: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/scope-final.json/log; synthetic evidence only; M2 unverified; authoritative_counts_unavailable</code> → pass; executed <code>t_df29f3c6 scope: cwd=&lt;repo&gt;; python .task-evidence/t_df29f3c6/verify_scope.py; receipt=.task-evidence/t_df29f3c6/scope.json/log</code> → pass; executed <code>t_df29f3c6 tests: cwd=&lt;repo&gt;/.task-evidence/t_df29f3c6/mirror; flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_death_completion_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_chat_session_restoration_test.dart test/features/hermes_chat/gateways/hermes_gateway_restoration_adversarial_test.dart --concurrency=1 --reporter expanded; receipt=.task-evidence/t_df29f3c6/tests.json/log</code> → pass; inspection <code>.task-evidence/t_41606eec/validation.json (13 authored fingerprints match; retained 44 tooling passes, 60 negative and four positive consumers; source refusal only, independent approval and installed/Android/live M2 unverified)</code> → pass; inspection <code>.task-evidence/t_4e4a4f7d/review-414.json (approved bounded history-admission repair; matching combined log records 539 passes; read-only review_integrity.py verifies six selected files, 441 mirror Dart files and retained logs; Android, live counts and integrated M2 remain unverified)</code> → pass; inspection <code>.task-evidence/t_53f0d91e/report.md#native-review-correction (c141d8d7; three authored branch blobs, 186 closure files and five packaging inputs match refreshed receipt; retained suite records 24 passes after six RED controls; independent final approval and Android/live qualification unverified)</code> → pass; inspection <code>.task-evidence/t_ccec142b/reviewer-round-1.md (approved source-only delivery brief; 13 fingerprints, 30 citations, four links and eleven synthetic refusal controls rechecked; APK/storage/continuity and integrated M2 unverified)</code> → pass; inspection <code>ROADMAP.md#m2--leave-and-return-without-losing-ownership</code> → pass; inspection <code>docs/quality/2026-10-06-m2-android-preflight.md</code> → pass; inspection <code>docs/quality/2026-10-06-m2-android-preflight.md#bounded-write-and-delivery-contract</code> → pass; inspection <code>docs/quality/2026-10-06-m2-continuity-baseline.md</code> → pass; inspection <code>docs/quality/2026-10-06-m2-coordinator-admission-trace.md; 25 refreshed source/report fingerprints match; source-only preparation; independent final approval unverified</code> → pass; inspection <code>docs/quality/2026-10-06-m2-counting-contract.md</code> → pass; inspection <code>docs/quality/2026-10-06-m2-forbidden-recovery-oracle.md (428 lib/test fingerprints match; retained oracle and nearest receipts record 3 and 60 passes; bootstrap-wide denial, independent final approval and Android/live counts unverified)</code> → pass; inspection <code>docs/quality/2026-10-06-m2-history-identity.md (15 production/test/runbook fingerprints and 25 command logs match; report fingerprint differs; 48 focused, 432 nearest and 63 caller passes retained; final approval and Android/live counts unverified)</code> → pass; inspection <code>docs/quality/2026-10-06-m2-issuer-evidence-contract.md (18 retained source fingerprints, document digest and local closure match; proposed F01-F10 unavailable, NOT_ADMITTED; source-only delivery, installed/Android/counting M2 unverified)</code> → pass; inspection <code>docs/quality/2026-10-06-m2-manifest-assessment-contract.md (17 retained fingerprints match; document integrity only; F01/F02 and M2 unverified)</code> → pass; inspection <code>docs/quality/2026-10-06-m2-recovery-read-admission.md (30 selected fingerprints and five log hashes match; 16 characterization and one recreation passes; three defects remain; same-card review and Android/live qualification unverified)</code> → pass | DOC-M2-INODE-POLICY-EVIDENCE-LIVE, M2-DEVICE-QUALIFICATION |
 
 <!-- goals:coverage:end -->
@@ -171,40 +171,43 @@ Section: Next.
   The later integration receipt `autowork-execution/f12ff11360124dc78c39313d92c0af0c.json`
   records timeout on candidate `cc17733cd3df5405a8627d6acc924620228f21ff`, based on
   `b5c4a4bff404c72b08e816f3f429db13252049e3`; it supplies no passing acceptance.
-  Current recovery evidence: `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-2/report.json`
-  now records committed candidate `3b7871db5a9005c4fc43f01bf245f596f735b454`
-  (tree `e3deb307f61e59193e498c0df077f5ec3e23ced4`, parent `cd54859949e74504c7ab5cd70c4e76c222e097eb`),
-  superseding the uncommitted `2ddbb51b`/ENOSPC recovery instruction, not acceptance.
-  It reports 198 listener, 74 repair-focused, 11 workspace and 1,995 full Chat/router
-  passes, clean analysis/formatting, a fresh web build, default browser 89 passes
-  with one intentional live-provider skip, and two dedicated workspace journeys.
-  The retained `build/autowork-tmp/recovery.sLpZBg/final-chat-router.log` ends in
-  `+1995: All tests passed!`; its `.exit` is 0. The same task scratch contains
-  `closeout-cd-identity.log` binding the committed lib/test to that capture, and
-  `final-review-followup.md` tracing the cached-Stop owner-epoch correction.
-  Review found no new important/critical source blocker; direct held-successful-Stop
-  workspace-roundtrip coverage remains a stated limit. Worker receipts are not
-  independent gate execution or Android/live acceptance.
-  The later `autowork-execution/ded0878221ac48cf8535b2539106686e.json` records
-  `CHILDREN_TERMINATED`, exit 1 and `reusable_acceptance: false` on integration
-  candidate `67d3527f9d683c33e4c71935774fca3f7b946316`; its log has no verdict.
-  That candidate's tree matches the worker commit, but neither is integrated into
-  this checkout. This interrupted integration supplies no new failing-test inventory
-  and no merged-candidate pass; do not describe the historical 44 failures as a fresh
-  result or assign another listener repair without reproducing a failure.
+  Current recovery evidence: `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-1/report.json`
+  records committed `d7952ec9d9d83494c6b31b1bf78cf5f40bb4193d`, recovering
+  `3b7871db5a9005c4fc43f01bf245f596f735b454` with fresh 1,995 Chat/router passes
+  and build/browser receipts. Attempt-2 at the same slot-data owner is now an
+  uncommitted correction, not that earlier commit: its 737-file source manifest
+  is `107c46b2a16bb8b94aaeef631ec298b58e32302ff6def3f2dfb8389cd7e2ba32`.
+  It adds mounted guards before retained Open/Close callbacks read providers and
+  one RED-to-GREEN unmount regression in the workspace implementation/test pair.
+  Its source-bound Chat/router log ends `+1996: All tests passed!`, exit 0;
+  SHA-256 `5838eae4b2614865b33b4d5b2e2dcef4595e09f54492e0058bfb069e5e9b0827`.
+  The terminal full suite is separately red: 4,016 passed, 9 skipped, 3 failed,
+  exit 1; parser ID recognition, compact Profiles keyboard traversal and footer
+  outline-pixel oracle. These are not the historical 44 listener failures or a
+  timeout. No fresh browser gate followed that failure. Review's stale-callback
+  finding was corrected but still needs independent correction re-review; direct
+  held-successful-Stop workspace-roundtrip coverage remains a stated limit.
+  The earlier tree-identical `67d3527f` integration ended CHILDREN_TERMINATED
+  without acceptance. Neither worker passes nor that interruption qualifies the
+  current combined source, Android or live behavior.
   Resources: exclusive — serialize retained candidate recovery, fixture ports and
   final source-bound checks; use disk-backed task scratch, not shared RAM cleanup.
   Execution: [retained-candidate sequence and scratch setup](docs/tasks/held-offline-recovery.md#disk-backed-scratch-without-shared-cleanup).
-  Next action: recheck actual worker inactivity and preserve committed candidate
-  `3b7871db` plus its source-bound terminal logs and review. Have the existing
-  coordinator reconcile it with current parser/SSH deltas, then complete the
-  interrupted merged-candidate verification with terminal results on that frozen
-  combined source. Reuse worker receipts only after verifying their input bindings;
-  they do not replace required integration checks. Use the documented ignored,
+  Next action: preserve `d7952ec9` and the current attempt-2 correction, then consume
+  the offline source handoff assembled by the existing MT-RERUN-TRAIN coordinator
+  as described in the recovery sequence. This is not a dependency on the whole
+  train or Android/live tab completion. Recheck inactivity, source drift and receipt
+  bindings; do not overwrite the corrected dirty candidate with the older commit.
+  Independently re-review retained Open/Close after unmount and the mounted-guard
+  correction, then complete all required merged-source and fresh browser gates.
+  The parser repair remains PLANGAP-001-2f's delta; do not rename IDs or change
+  the MCP disposition. Worker receipts do not replace required integration checks. Use the documented ignored,
   disk-backed task TMPDIR with at least 2 GiB free, separate bounded commands and
   supported tracked execution for long gates. Keep the runner report destination
   and prior evidence; never delete another task's scratch or bypass runner limits.
-  No worker is assigned another task's repairs. Publish the reviewed offline repair's
+  Feature workers do not take over another task's repairs; the existing integration
+  coordinator reconciles retained deltas within its corrected assembly footprint.
+  Publish the reviewed offline repair's
   source identity and terminal Chat/router receipt for downstream qualification
   without marking this task done or waiting for Android/live completion.
   Native-serve tabs remain explicitly unavailable; that exclusion does not satisfy
@@ -312,6 +315,101 @@ Section: Next.
 
 ### **P4** — Extended experiences and physical qualification
 
+- [ ] **MT-RERUN-TRAIN** —  Rerun canonical integration gates
+  on a newly captured combined tree, not the repaired historical candidate.
+  Goal: INTEGRATION
+Section: Next.
+  Status: open
+  Payoff: detect interactions among delivered predecessor slices.
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [2026-08-17-audit-remediation](docs/superpowers/plans/2026-08-17-audit-remediation.md) (historical planning context);
+   [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
+  and [required checks](CONTRIBUTING.md#required-checks).
+  Scope: existing integration owner's retained-source reconciliation followed by
+  source-bound format, analyzer, full Flutter and audit gates. Retired service Go checks are no longer applicable after
+  963b9b5b; current required checks remain authoritative. Record exact source
+  identity, commands and terminal outcomes.
+  The browser phase is indexed separately below; no canonical gate is waived.
+  Acceptance: passing applicable non-browser gates on one captured input, with
+  failures repaired by their existing owners and checks rerun. No merges,
+  publication, installs or platform claims are authorized by this index.
+  Dependencies: MT-APP-SHELL-STATUS-BAR (done).
+  Checks: First verify the retained patch/report fingerprints and reconcile the exact source inputs via the linked recovery sequence; individual `git apply --check` success is not combined acceptance. On the captured combined tree, `dart format --output=none --set-exit-if-changed lib test integration_test`; `flutter analyze`; `flutter test --concurrency=1`; `npm audit`; `git diff --check`. Browser gates stay with MT-VERIFY-BROWSER-GATES. Retired service Go checks do not authorize recreating the removed service. Only the existing integration owner runs this task; retain every applicable canonical gate and terminal failure.
+  Touches: docs/quality/, lib/core/hermes/channel/hermes_api_channel.dart, lib/core/hermes/ssh/ssh_types.dart, lib/features/hermes_chat/composer/hermes_composer_draft_store.dart, lib/features/hermes_chat/presentation/hermes_chat_timeline.dart, lib/features/hermes_chat/presentation/hermes_transcript_viewport.dart, lib/features/hermes_chat/screens/hermes_chat_screen.dart, lib/features/hermes_chat/screens/state/hermes_chat_connection.dart, lib/features/hermes_chat/screens/state/hermes_chat_layout.dart, lib/features/hermes_chat/screens/state/hermes_chat_lifecycle.dart, lib/features/hermes_chat/session/hermes_chat_session_actions.dart, lib/features/hermes_chat/session/hermes_chat_session_workspace.dart, lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart, lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart, lib/features/hermes_chat/widgets/managed_ssh_connection_panel.dart, lib/router/widgets/chat_workspace_overlay.dart, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart, test/features/hermes_chat/composer/hermes_composer_draft_store_test.dart, test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart, test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart, test/features/hermes_chat/screens/hermes_chat_queued_dialog_intent_test.dart, test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart, test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart, test/features/hermes_chat/screens/hermes_chat_voice_lifecycle_test.dart, test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart, test/features/hermes_chat/screens/hermes_reasoning_disclosure_adaptive_test.dart, test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart, test/features/hermes_chat/providers/managed_ssh_serve_test.dart, test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart, test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart, test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart, test/router/app_router_transitions_test.dart, test/tooling/plan_backlog_contract_test.dart, test/tooling/plan_backlog_traceability_test.dart, test/tooling/support/plan_backlog_contract.dart, playwright/tests/regression/browser-surfaces.spec.mjs, playwright/tests/regression/chat-session-workspace.spec.mjs, playwright/tests/regression/chat-workspace-overlay.spec.mjs, playwright/tests/regression/hermes-lifecycle.spec.mjs, playwright/tests/regression/hermes-smoke.spec.mjs, playwright/tests/screenshots/e2e-screenshots.spec.mjs, docs/runbooks/managed-ssh-disconnect-recovery.md, docs/security/managed-ssh-forward-contract.md, pubspec.lock
+  Assembly boundary: this corrects the missing write footprint for the already
+  assigned coordinator's retained-source reconciliation, not ownership of new
+  feature repairs. Apply only attributable deltas to its own supported isolated
+  candidate; never write producer worktrees, import their queue snapshots, bypass
+  admission/source refresh or infer new merge, dependency or live authority.
+  Unknown regressions remain with existing owners, as Acceptance requires.
+  Resources: exclusive — run the full offline gates against one stable combined input; Touches remains the write boundary.
+  Touches widened by the runner from worker evidence: pubspec.lock
+  Input preflight: in the execution workspace, record `git rev-parse HEAD HEAD^{tree}`,
+  `git status --short --branch`, `git merge-base --is-ancestor 80e41ed8 HEAD`
+  and `git rev-parse HEAD:pubspec.lock` before any Flutter command. The ancestor
+  check must exit 0 and the committed lock must match the delivered compatible
+  blob below; record any preserved worker overlay separately. A handoff edit
+  does not refresh that workspace. Do not resolve dependencies to repair a stale
+  source input or copy the lock from another checkout.
+  Evidence: resolve private paths from `git rev-parse --git-common-dir`.
+  The historical report at
+  `autowork-execution/slot-history/MT-RERUN-TRAIN/2/slot-data/attempt-1/report.json`
+  exercised
+  `fe0cc6b4029400683f4e96ae104ff46c7ccb1fb2`, tree
+  `72dd034c963254351cee20b97f1e63f771a084e0`, plus only the retained gateway-test
+  formatter repair. Preflight and offline enforced-lockfile resolution passed;
+  committed and working lock blob `8a84003a7a7b1fbc26f25e2e09892baec2e6e66d`
+  matched and `80e41ed8` was an ancestor. The old stale-workspace/lock blocker is
+  resolved for this attempt, not for every future input. The report retains the
+  earlier `8d8141b761c5bd92157fdbe84567ef2e8ba6c95e` failure history separately;
+  do not use its 51 failures or 614-file format pass as this run's results.
+  Historical outcomes on fe0cc6b4: 75 gateway tests passed; global format exited 65 and analysis
+  exited 1 on `hermes_chat_layout_width_test.dart:59-82`. The full Flutter command
+  timed out after 1700 seconds (wrapper 124), with interim progress +1877/-56 and
+  56 failure headers across 12 files, not a terminal suite total. Audit and diff
+  checks passed. The report binds 1515 unchanged gate-input hashes; it records no
+  commit and no full-suite pass. Preserve its uncommitted formatter repair/receipt.
+  Readiness: the latest attempt-1 report is read-only assembly evidence at
+  `6c521fbfe212440e181e173911f7dd7ae4604284`, not a new train gate. It verified
+  three held inactive dirty candidates and individually applicable patches; no
+  patch was applied. Its `assembly/compatibility.json` records identical layout
+  repairs, SSH's formatting-only gateway delta versus the tab's retained gateway,
+  and disjoint ARB keys. Parser paths are disjoint. Keep the tab gateway, one
+  layout repair, combine English ARB keys and regenerate localization.
+  The source-bound tab gate now exists: 1,996 Chat/router passes/exit 0 on manifest
+  `107c46b2a16bb8b94aaeef631ec298b58e32302ff6def3f2dfb8389cd7e2ba32`.
+  Its separate terminal full suite has 4,016 passes, 9 skips, 3 failures/exit 1:
+  guarded parser recognition (existing PLANGAP-001-2f delta), Profiles traversal
+  at `test/shared/widgets/inventory_keyboard_navigation_test.dart:259`, and the
+  footer oracle at `integration_test/support/profile_footer_native_fixture.dart:102`
+  via `test/integration/linux_profile_footer_native_runner_test.dart` (0 outline
+  pixels, expected at least 24). The last two still require their existing fixture
+  owners; no three-revision isolated passes or flaky classification is established.
+  WING-001-b3 additionally records the Tools disclosure browser failure at
+  `playwright/tests/regression/browser-surfaces.spec.mjs:146`. Resolve on combined
+  source with the existing inventory owner, not by weakening the assertion.
+  These are owner-source observations, not train results or new product decisions.
+  The exact patch hashes and current report locations are in the linked recovery
+  sequence. Earlier readiness/timeout counts above remain historical.
+  Execution: [source assembly and terminal gate procedure](docs/tasks/held-offline-recovery.md#recovery-sequence).
+  Next action: perform the already assigned retained-source assembly through the
+  existing integration path within the corrected Touches footprint; this task is
+  the producer of that handoff, not a consumer waiting for an unnamed coordinator
+  to produce it. Recheck slot inactivity and report/patch hashes, preserve dirty
+  producers, reconcile shared hunks once and publish the resulting HEAD/tree plus
+  overlay manifest. Supply matching offline Chat source/receipt to native, parser
+  and SSH owners without waiting for the whole tab task or Android/live completion.
+  Reconcile the two remaining fixture failures and Tools finding with their existing
+  owners, then recapture preflight and all five listed gates on the stable input. Run gates separately with disk scratch
+  and supported tracked execution retaining a full terminal result, rather than
+  one 1700/1800-second wrapper around the entire chain. A focused pass, shard count
+  or timeout is not the required full command. The prerequisite is the reviewed
+  offline source repair, not completion of Android/live tab acceptance. Preserve
+  the footer investigation; no flaky classification is established. No lock
+  copying, worker merge/rebase/branch switch, source-refresh bypass or new
+  lockfile authority is granted. This handoff runs no integration or product gate.
+  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
+
 - [ ] **PLANGAP-001-2f** — Accept hash-suffixed task IDs in plan traceability without weakening guards.
   Goal: INTEGRATION
 Section: Next.
@@ -331,14 +429,20 @@ Section: Next.
   actionable findings. Analysis/full-gate format failed only on unchanged layout
   registration and gateway formatting, not these tooling files; later gate stages
   did not execute. Tab attempt-2 already retains those two baseline-test repairs.
-  Readiness: the coordinator reconciles those exact test repairs into the input,
-  not an expansion of this parser-only scope. This is a source-readiness gate,
+  Readiness: the current attempt-1 report is a later recovery on `6c167919`, not
+  the original `36f4155f` attempt. It reproduced 13/13 focused passes, but the
+  layout/gateway inputs are byte-identical to the old failing baseline. Consume
+  those exact two repaired files from MT-RERUN-TRAIN's retained-source assembly;
+  no new parser implementation or whole-tab completion is needed. This is a source-readiness gate,
   not a new product/device task-completion dependency. No app or dependency edits,
   assertion weakening, plan-disposition change or new acceptance is authorized.
   Resources: exclusive — reconcile the retained tooling candidate and exact current plan inventory.
   Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: recheck worker inactivity and resume the reviewed three-file parser
-  candidate on the corrected input. Reproduce current inventory/guard checks and
+  Next action: recheck worker inactivity and preserve the exact three-file parser
+  patch `3d92402b64126b7f92cc4fcf99415662ee06c125e375e80aa0efaa1c62251c27`.
+  Supply that delta for the coordinator's assembly without importing Chat code into
+  this parser-only task. Resume on its corrected layout/gateway input, then
+  reproduce current inventory/guard checks and
   rerun analysis and full offline validation with separate supported terminal gates.
   Preserve every guard above; do not wait for Android/live tab completion, reopen
   MCP planning or ask an owner to rename IDs. The earlier 13 passes qualify only
@@ -376,108 +480,24 @@ Section: Next.
   them. No green full gate or completed browser build is supplied.
   Resources: exclusive — serialize shared Chat/SSH fixture reconciliation and final gates.
   Execution: [retained-source recovery and terminal gate procedure](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: recheck inactivity and resume the retained feedback candidate,
-  rather than recreate its composed regressions. Existing coordinator combines
-  the reviewed parser and Chat repairs before final full validation; preserve all
-  task deltas and retain remaining inventory-keyboard/footer failures for their
-  existing owners. Run the listed focused checks and every full offline gate on
+  Current handoff: the latest attempt-1 report recovered onto `3dfdba5f`, whose
+  runtime/test inputs still lack the Chat repair. It records 169 focused passes,
+  9 opt-in skips, 593 channel passes and a completed web build. Default browser
+  execution stopped at Tools disclosure (`browser-surfaces.spec.mjs:146`, waiting
+  for `/Default Tools/`): 11 passed, 1 failed; later specs did not run. The earlier
+  1800-second full-test counts above remain historical, not this run's result.
+  Next action: preserve this recovered feedback/fixture delta and consume the
+  existing MT-RERUN-TRAIN coordinator's assembled Chat/parser/SSH input, rather
+  than recreate composed regressions or require Android/live tab completion.
+  The train report's captured SSH patch is `a0a6f8d461243279101aae92695dd92da959f8600ed7d673a9e4e7698419cea6`;
+  its hash differs from the SSH report's earlier manifest patch and must not be
+  silently substituted. Compare both against current source. Retain the Tools,
+  inventory-keyboard and footer failures for their existing owners. Run the listed focused checks and every full offline gate on
   matching repaired source using disk scratch and supported terminal execution,
   not one 1800-second wrapper around the whole chain. Do not waive failed tests
   or edit coordinator-owned queue files from this worker. Keep phone/IME/TalkBack,
   live SSH/authentication and target connectivity explicitly unverified.
 
-
-- [ ] **MT-RERUN-TRAIN** —  Rerun canonical integration gates
-  on a newly captured combined tree, not the repaired historical candidate.
-  Goal: INTEGRATION
-Section: Next.
-  Status: open
-  Payoff: detect interactions among delivered predecessor slices.
-  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
-  [2026-08-17-audit-remediation](docs/superpowers/plans/2026-08-17-audit-remediation.md) (historical planning context);
-   [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
-  and [required checks](CONTRIBUTING.md#required-checks).
-  Scope: existing integration owner's source-bound format, analyzer, full Flutter
-  and audit gates. Retired service Go checks are no longer applicable after
-  963b9b5b; current required checks remain authoritative. Record exact source
-  identity, commands and terminal outcomes.
-  The browser phase is indexed separately below; no canonical gate is waived.
-  Acceptance: passing applicable non-browser gates on one captured input, with
-  failures repaired by their existing owners and checks rerun. No merges,
-  publication, installs or platform claims are authorized by this index.
-  Dependencies: MT-APP-SHELL-STATUS-BAR (done).
-  Checks: On the captured combined tree, `dart format --output=none --set-exit-if-changed lib test integration_test`; `flutter analyze`; `flutter test --concurrency=1`; `npm audit`; `git diff --check`. Browser gates stay with MT-VERIFY-BROWSER-GATES. Retired service Go checks do not authorize recreating the removed service. Only the existing integration owner runs this task; retain every applicable canonical gate and terminal failure.
-  Touches: docs/quality/, test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart, pubspec.lock
-  Resources: exclusive — run the full offline gates against one stable combined input; Touches remains the write boundary.
-  Touches widened by the runner from worker evidence: pubspec.lock
-  Input preflight: in the execution workspace, record `git rev-parse HEAD HEAD^{tree}`,
-  `git status --short --branch`, `git merge-base --is-ancestor 80e41ed8 HEAD`
-  and `git rev-parse HEAD:pubspec.lock` before any Flutter command. The ancestor
-  check must exit 0 and the committed lock must match the delivered compatible
-  blob below; record any preserved worker overlay separately. A handoff edit
-  does not refresh that workspace. Do not resolve dependencies to repair a stale
-  source input or copy the lock from another checkout.
-  Evidence: resolve private paths from `git rev-parse --git-common-dir`.
-  The historical report at
-  `autowork-execution/slot-history/MT-RERUN-TRAIN/2/slot-data/attempt-1/report.json`
-  exercised
-  `fe0cc6b4029400683f4e96ae104ff46c7ccb1fb2`, tree
-  `72dd034c963254351cee20b97f1e63f771a084e0`, plus only the retained gateway-test
-  formatter repair. Preflight and offline enforced-lockfile resolution passed;
-  committed and working lock blob `8a84003a7a7b1fbc26f25e2e09892baec2e6e66d`
-  matched and `80e41ed8` was an ancestor. The old stale-workspace/lock blocker is
-  resolved for this attempt, not for every future input. The report retains the
-  earlier `8d8141b761c5bd92157fdbe84567ef2e8ba6c95e` failure history separately;
-  do not use its 51 failures or 614-file format pass as this run's results.
-  Historical outcomes on fe0cc6b4: 75 gateway tests passed; global format exited 65 and analysis
-  exited 1 on `hermes_chat_layout_width_test.dart:59-82`. The full Flutter command
-  timed out after 1700 seconds (wrapper 124), with interim progress +1877/-56 and
-  56 failure headers across 12 files, not a terminal suite total. Audit and diff
-  checks passed. The report binds 1515 unchanged gate-input hashes; it records no
-  commit and no full-suite pass. Preserve its uncommitted formatter repair/receipt.
-  Readiness: DOC-PARITY-TAB-CONTRACT retains the mandatory Chat-suite repair:
-  44 listener failures, disclosure/position failures, and the named layout syntax
-  and narrow-phone 200% queue-manager overflow regressions. Its Checks now name
-  those files explicitly; reuse that owner rather than duplicate feature work.
-  PLANGAP-001-2f already owns the traceability parser failure reported at
-  `test/tooling/plan_backlog_traceability_test.dart:52` for
-  `docs/plans/2026-10-18-flutter-mcp-architecture.md`; reuse its existing guarded
-  parser repair, not a new product-plan disposition or invented acceptance.
-  Existing SSH fixture owners must reconcile allocated-port 20110 bind failures
-  and disposed-channel teardown in
-  `test/features/hermes_chat/providers/managed_ssh_serve_test.dart`,
-  `test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart` and
-  `test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart`.
-  The native fixture owner still retains the earlier
-  `test/integration/linux_profile_footer_native_runner_test.dart` focus-pixel
-  investigation; the refreshed run did not reach it. No evidence establishes
-  three isolated passing revisions or a flaky-test classification. These are
-  source/fixture reconciliation holds, not requests for credentials or product
-  decisions, and do not expand this task's write boundary or transfer ownership.
-  Current recovery evidence: the latest attempt-1 report is readiness-only at
-  `6fe161de1699b564a8e5a873f74c8a032bdb9759`, tree
-  `99ad9f1a8570260157bab4375b37046767659ca2`; its runtime/test/dependency inputs
-  equal failed input fe0cc6b4. Fresh format still exits 65 on layout syntax; it did
-  not repeat analysis/full tests/audit. The earlier counts above are historical,
-  not this attempt's totals. Tab attempt-2 now retains focused-green layout and
-  gateway repairs but no full green Chat/router gate. Parser attempt-1 retains
-  its reviewed three-file, 13-test-green delta; SSH attempt-1 retains its reported
-  169-pass/9-skip focused fixture delta. None is integrated acceptance.
-  Execution: [source assembly and terminal gate procedure](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: the existing integration owner combines those attributable source
-  deltas through the existing integration path before another final run; inspect
-  current slots and preserve dirty candidates, not another docs-only baseline.
-  Reconcile the duplicate layout/gateway formatting hunks once. Require the
-  repaired source-bound green Chat/router gate, then recapture preflight and all
-  five listed gates on that stable input. Run gates separately with disk scratch
-  and supported tracked execution retaining a full terminal result, rather than
-  one 1700/1800-second wrapper around the entire chain. A focused pass, shard count
-  or timeout is not the required full command. The prerequisite is the reviewed
-  offline source repair, not completion of Android/live tab acceptance. Preserve
-  the footer investigation; no flaky classification is established. No lock
-  copying, worker merge/rebase/branch switch, source-refresh bypass or new
-  lockfile authority is granted. This handoff runs no integration or product gate.
-  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
 
 - [ ] **MT-VERIFY-BROWSER-GATES** — Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts
   Goal: INTEGRATION
@@ -560,18 +580,21 @@ Section: Next.
   Status: open
   Readiness: the latest report at
   `autowork-execution/slot-data/PARITY-NATIVE-LINUX/attempt-1/report.json`
-  under the Git common directory is readiness-only on
-  `2ddbb51b69044c71411e32168750a9a92db4c731`; no Flutter/native qualification ran.
-  Its then-active tab-worker observation is historical: tab attempt-2 now has a
-  held, uncommitted focused-green repair, but no mandatory full green Chat/router
-  result. Consume that reviewed offline source repair and terminal green gate,
+  under the Git common directory is readiness-only; no Flutter/native qualification
+  ran. The older `2ddbb51b` baseline and active-tab-worker observation are historical. The latest readiness-only
+  attempt is now on `9f70e019`, with 20 relevant source/test paths different from
+  committed `d7952ec9`; no Flutter/native checks ran. Tab attempt-2 has a held
+  corrected candidate with 1,996 terminal Chat/router passes, not merely focused
+  checks. Consume MT-RERUN-TRAIN's matching offline source/receipt handoff,
   not completion of Android/live tab acceptance. The older beeac288 native
   candidate and 50-failure timeout remain historical; preserve and recheck its
   ownership/source drift before adoption. Subordinate GTK passes preceding final
   source do not qualify the combined candidate.
   Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: after the existing coordinator supplies the matching repaired input
-  and green Chat gate, reconcile only this task's inactive retained native delta.
+  Next action: consume the existing MT-RERUN-TRAIN coordinator's offline source
+  handoff (not completion of its whole train gate). Verify the assigned source
+  against the delivered manifest and its terminal Chat receipt before reconciling
+  only this task's inactive retained native delta.
   Rerun the complete required offline command, native launcher, individually named
   mapped scenarios and owned-display cleanup. Do not duplicate the Chat repair,
   repeat an unchanged failed baseline or treat focused tab passes as its full gate.
@@ -606,19 +629,23 @@ Section: Next.
   Status: open
   Readiness: the latest report at
   `autowork-execution/slot-data/VERIFY-CHAT-TRANSCRIPT-NATIVE/attempt-1/report.json`
-  under the Git common directory is readiness-only on
-  `2ddbb51b69044c71411e32168750a9a92db4c731`, not a new 50-failure reproduction.
+  under the Git common directory is readiness-only, not a new 50-failure
+  reproduction; the older `2ddbb51b` baseline is historical.
   The older beeac288 census remains historical: session mutation owner (40), queued
   dialog intent (4), reasoning disclosure accessibility (2), adaptive disclosure (2),
   transcript accessibility (1) and transcript window (1); two allocated-port retries
   are separate. Its then-running tab-worker observation is no longer current.
-  Tab attempt-2 is held with focused-green repairs but no full green Chat/router
-  receipt; the existing owner still supplies that reviewed offline repair and
-  mandatory source-bound green gate. This does not require the whole Android/live
-  tab outcome to be done and does not waive the gate or create a competing repair.
+  The latest readiness-only attempt is on `9f70e019`, not that earlier baseline.
+  It independently hash/terminal-verified attempt-2's 1,996-pass Chat/router log,
+  exit 0, but found 29 runtime/test/browser-path differences from `d7952ec9`,
+  plus the retained lifetime correction. A green receipt exists; the assigned
+  matching source is missing. Consume MT-RERUN-TRAIN's offline source/receipt
+  handoff, not completion of the whole train or Android/live tab outcome. Do not
+  repin the green receipt to unmatched inputs or create a competing Chat repair.
   Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: once the coordinator supplies the matching repaired input and green
-  Chat gate, recheck inactivity and reconcile the eight preserved dirty files in
+  Next action: verify MT-RERUN-TRAIN's delivered offline source manifest against
+  this assigned workspace and the matched Chat receipt, then recheck inactivity
+  and reconcile the eight preserved dirty files in
   `.worktrees/autowork-VERIFY-CHAT-TRANSCRIPT-NATIVE-set-aside-1`. Prior receipts and
   archived report/log remain in `autowork-execution/slot-history/VERIFY-CHAT-TRANSCRIPT-NATIVE/1/slot-data/attempt-1/`.
   Adopt only this task's keyboard delta, refresh exact request/source/teardown
@@ -1740,6 +1767,8 @@ does not mark any check passed or authorize live actions.
   Status: open
 
 - [ ] README-001-62-LIVE — Live checks for README-001-62
+  Goal: LANDING-ONBOARDING
+  Sources: [existing goal authority](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for README-001-62 left pending.
   Acceptance: Each check passes on the real target:
   - Hosted GitHub rendering/sanitizer was not exercised; only source-bound local GitHub-like previews were inspected.

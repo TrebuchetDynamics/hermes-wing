@@ -194,8 +194,10 @@ Section: Next.
   explicitly unavailable; that exclusion does not satisfy Android SSH acceptance.
   Historical lock overlays stay preserved separately; no lockfile edit is added.
 
-- [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Goal: PARITY-TABS. Section: Next. Implement and
-  qualify reconnect for two distinct session-owned conversation tabs.
+- [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Trace reconnect for two distinct session-owned tab runs
+  Goal: PARITY-TABS
+Section: Next.
+  Summary: Implement and qualify reconnect for two distinct session-owned conversation tabs.
   Payoff: one disconnected tab cannot lose or mutate the other conversation.
   Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [PARITY-TABS](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary).
   Scope: the tab presentation from DOC-PARITY-TAB-CONTRACT, shared Agent channel
@@ -212,8 +214,12 @@ Section: Next.
   loss/replacement and profile switching; keep other Agent-owned runs independent.
   Ignore late events from old generations and restore only authoritative current
   state. Do not turn foreground switching into an Android background-service claim.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/router/, lib/app/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/router/, integration_test/, playwright/tests/, docs/quality/
+  Status: open
 
-- [ ] **ANDROID-CANONICAL-BOT-CHAT** — Goal: PARITY-TABS. Section: Next.
+- [ ] **ANDROID-CANONICAL-BOT-CHAT** — Android canonical bot chat
+  Goal: PARITY-TABS
+Section: Next.
   Status: open
   Payoff: each bot opens its ongoing Bot Chat without stealing or forking an ordinary conversation.
   Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
@@ -245,7 +251,9 @@ Section: Next.
   qualified session seam and add its failure-first regressions, never an Office substitute.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
 
-- [ ] **ANDROID-CHAT-TOUCH-POLISH** — Goal: PARITY. Section: Next.
+- [ ] **ANDROID-CHAT-TOUCH-POLISH** — Android chat touch polish
+  Goal: PARITY
+Section: Next.
   Status: open
   Payoff: Android SSH chat feels like official Desktop designed for a phone.
   Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
@@ -380,8 +388,7 @@ Section: Next.
   Acceptance: passing applicable non-browser gates on one captured input, with
   failures repaired by their existing owners and checks rerun. No merges,
   publication, installs or platform claims are authorized by this index.
-  Dependencies: MT-APP-SHELL-STATUS-BAR (done). Ownership: existing integration
-  owner only; this entry creates no board lane and must not be independently claimed.
+  Dependencies: MT-APP-SHELL-STATUS-BAR (done).
   Checks: On the captured combined tree, `dart format --output=none --set-exit-if-changed lib test integration_test`; `flutter analyze`; `flutter test --concurrency=1`; `npm audit`; `git diff --check`. Browser gates stay with MT-VERIFY-BROWSER-GATES. Retired service Go checks do not authorize recreating the removed service. Only the existing integration owner runs this task; retain every applicable canonical gate and terminal failure.
   Touches: docs/quality/, test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart, pubspec.lock
   Resources: exclusive — run the full offline gates against one stable combined input; Touches remains the write boundary.
@@ -453,9 +460,12 @@ Section: Next.
   the footer investigation; no flaky classification is established. No lock
   copying, worker merge/rebase/branch switch, source-refresh bypass or new
   lockfile authority is granted. This handoff runs no integration or product gate.
+  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
 
-- [ ] **MT-VERIFY-BROWSER-GATES** — Goal: INTEGRATION. Section: Next. Prove the same combined
-  source's compiled browser journeys and exact request counts.
+- [ ] **MT-VERIFY-BROWSER-GATES** — Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts
+  Goal: INTEGRATION
+Section: Next.
+  Summary: Prove the same combined source's compiled browser journeys and exact request counts.
   Payoff: close the historical browser gap without treating unit passes as UI evidence.
   Sources: [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
   and [browser command](CONTRIBUTING.md#required-checks).
@@ -466,8 +476,11 @@ Section: Next.
   Acceptance: source-bound completed build and browser logs, passing journeys,
   exact mutation/no-incidental-mutation assertions and no hidden waived failures.
   If source changes after the first phase, repeat affected gates on that source.
-  Dependencies: MT-RERUN-TRAIN; Next. Ownership: existing integration owner only.
-
+  Dependencies: MT-RERUN-TRAIN; Next.
+  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
+  Checks: Planned on the same captured combined source after MT-RERUN-TRAIN: `flutter build web --release -t lib/main_e2e.dart` then `npm run web:e2e`; `git diff --check`. Retain exact terminal logs, source/build identity and mutation counts; source changes invalidate affected prior gates. These commands do not authorize live backends, publishing, or repair of another owner's implementation.
+  Touches: docs/quality/
+  Status: open
 
 - [ ] **VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY** — Goal: DIAGNOSTICS-RECOVERY. Section: Needs decision.
   Qualify exact advertised atomic restore authority before native recovery.
@@ -546,10 +559,10 @@ Section: Next.
   mapped scenarios and owned-display cleanup. Do not duplicate the Chat repair,
   repeat an unchanged failed baseline or treat focused tab passes as its full gate.
   No gate is waived, no acceptance is reduced and no live authority is added.
-  Dependencies: none. Ownership: unassigned, check live tracker.
+  Dependencies: none.
   Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Follow the owned native procedure: `env -u DISPLAY bash scripts/run_linux_e2e.sh` and mapped linux_maestro_flows_test.dart scenarios from the runbook. Require per-scenario source/build/exit receipts and owned display cleanup; no system installation or live-provider authority.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
+  Ownership: Unassigned; verify actual native worker/tracker ownership before execution. Owned isolated fixture scope only; no personal runtime or live-provider authority.
 
 - [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE** —  Keep recovered
   tool categories and current approval actions keyboard-operable in native Linux.
@@ -598,8 +611,10 @@ Section: Next.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
 
 
-- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART** — Goal: CHAT-FIDELITY. Section: Next.
-  Restore canonical tool ordering and retire approval actions after native restart.
+- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART** — Restore canonical tool ordering and retire approval actions after isolated native process restart without replay
+  Goal: CHAT-FIDELITY
+Section: Next.
+  Summary: Restore canonical tool ordering and retire approval actions after native restart.
   Payoff: prove process recovery separately from mounted native interaction.
   Sources: [accessibility limits](docs/quality/chat-transcript-accessibility.md#evidence-boundary)
   and [native restart pattern](docs/quality/native-relaunch-workflow.md).
@@ -615,6 +630,10 @@ Section: Next.
   Record source fingerprints, exact requests, process IDs and owned-process teardown.
   Dependencies: VERIFY-CHAT-TRANSCRIPT-NATIVE; ordered successor in Next.
   Ownership: unclaimed in this index; verify current tracker leases before execution.
+
+  Checks: Planned: `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart test/core/hermes/channel/hermes_approval_settlement_owner_test.dart`; `flutter analyze --no-pub`; `python3 -B -m unittest discover -s test/tooling -p transcript_recovery_native_test.py`; `bash -n scripts/run_linux_transcript_recovery.sh`; after extending the owned fixture/launcher for two distinct processes, `env -u DISPLAY bash scripts/run_linux_transcript_recovery.sh`; `git diff --check`. Require matching source/build, both process identities, complete native terminal receipt, zero replay mutations and owned display/process cleanup. An unchanged mounted-process launcher pass is not restart acceptance.
+  Touches: lib/core/hermes/channel/, lib/features/hermes_chat/, test/core/hermes/channel/, test/features/hermes_chat/, integration_test/linux_transcript_recovery_test.dart, integration_test/support/transcript_recovery_native_fixture.dart, scripts/run_linux_transcript_recovery.sh, scripts/support/transcript_recovery_native.py, test/tooling/transcript_recovery_native_test.py, docs/quality/
+  Status: open
 
 ### Terminal working-directory files (planned)
 
@@ -1616,7 +1635,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: SECURITY-RETAINED-RELEASE-AUDIT.
   Status: open
 
-- [ ] DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE — Live checks for DOC-ACCOUNT-REVOCATION-EVIDENCE
+- [ ] **DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE** — Live checks for DOC-ACCOUNT-REVOCATION-EVIDENCE
+  Goal: ACCOUNT
+  Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for DOC-ACCOUNT-REVOCATION-EVIDENCE left pending.
   Acceptance: Each check passes on the real target:
   - Separately authorized isolated-provider qualification of actual access-token expiry, rejected refresh and provider-side invalidation scope/acknowledgement; none executed here.
@@ -1626,7 +1647,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: DOC-ACCOUNT-REVOCATION-EVIDENCE.
   Status: open
 
-- [ ] DOC-NATIVE-FAILURE-BOUNDARY-LIVE — Live checks for DOC-NATIVE-FAILURE-BOUNDARY
+- [ ] **DOC-NATIVE-FAILURE-BOUNDARY-LIVE** — Live checks for DOC-NATIVE-FAILURE-BOUNDARY
+  Goal: NATIVE-INTEGRATION
+  Sources: [existing goal authority](docs/adr/client.md#decision), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for DOC-NATIVE-FAILURE-BOUNDARY left pending.
   Acceptance: Each check passes on the real target:
   - No platform was exercised at runtime. Separately scoped isolated Linux native evidence must check actual chooser cancellation/exit/modality, delayed or failed metadata IO responsiveness and outstanding-work behavior across mode changes, disposal and re-entry. Existing provider-overridden/completer tests and historical GTK receipts do not establish these guarantees.
@@ -1635,7 +1658,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: DOC-NATIVE-FAILURE-BOUNDARY.
   Status: open
 
-- [ ] DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE — Live checks for DOC-VOICE-OUTPUT-CANCEL-EVIDENCE
+- [ ] **DOC-VOICE-OUTPUT-CANCEL-EVIDENCE-LIVE** — Live checks for DOC-VOICE-OUTPUT-CANCEL-EVIDENCE
+  Goal: VOICE
+  Sources: [existing goal authority](docs/product/prd.md#core-journeys), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for DOC-VOICE-OUTPUT-CANCEL-EVIDENCE left pending.
   Acceptance: Each check passes on the real target:
   - Separately authorize and identify a physical Android QA target, exact installed APK/source/build, built-in speaker route, effective system TTS package/version and voice/locale, including playback/bystander/content and network-processing consent. No target or actual engine was selected here.
@@ -1644,7 +1669,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: DOC-VOICE-OUTPUT-CANCEL-EVIDENCE.
   Status: open
 
-- [ ] DEV-001-c7-LIVE — Live checks for DEV-001-c7
+- [ ] **DEV-001-c7-LIVE** — Live checks for DEV-001-c7
+  Goal: INTEGRATION
+  Sources: [existing goal authority](docs/quality/merge-train-shell-status-bar.md), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for DEV-001-c7 left pending.
   Acceptance: Each check passes on the real target:
   - No platforms were exercised beyond Linux-hosted SDK static tooling. Native SSH/device/secure-storage/live Agent reachability and actual IME/screen-reader behavior remain unqualified here and retain existing live qualification tasks; this review grants no live access.
@@ -1652,7 +1679,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: DEV-001-c7.
   Status: open
 
-- [ ] PARITYUPDATE-001-aa-LIVE — Live checks for PARITYUPDATE-001-aa
+- [ ] **PARITYUPDATE-001-aa-LIVE** — Live checks for PARITYUPDATE-001-aa
+  Goal: CONNECTION-PATHS
+  Sources: [existing goal authority](docs/product/prd.md#connection-path-requirements), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for PARITYUPDATE-001-aa left pending.
   Acceptance: Each check passes on the real target:
   - No product platform was exercised. Named-target canonical attachment/reconnect/disconnect qualification remains separate from this source-only task; retain existing Linux/Android/SSH/remote qualification owners and require a separately admitted implementation before positive canonical-native acceptance.
@@ -1660,7 +1689,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: PARITYUPDATE-001-aa.
   Status: open
 
-- [ ] PARITYUPDATE-002-5c-LIVE — Live checks for PARITYUPDATE-002-5c
+- [ ] **PARITYUPDATE-002-5c-LIVE** — Live checks for PARITYUPDATE-002-5c
+  Goal: CHAT-FIDELITY
+  Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for PARITYUPDATE-002-5c left pending.
   Acceptance: Each check passes on the real target:
   - Future separately authorized Linux/Android qualification of canonical authentication, exact advertised operation/grants, admission/queue races, Stop settlement and clarification recovery remains unrun. This source-only task exercised no application platform, live Agent, device, inference, submission, queue mutation or answer; no runtime cell advances. Canonical send-time user-row receipts and authoritative batch/partial-lock reconnect projection remain absent at the inspected pin and cannot be established by live testing alone.
@@ -1668,7 +1699,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: PARITYUPDATE-002-5c.
   Status: open
 
-- [ ] PARITYUPDATE-003-b1-LIVE — Live checks for PARITYUPDATE-003-b1
+- [ ] **PARITYUPDATE-003-b1-LIVE** — Live checks for PARITYUPDATE-003-b1
+  Goal: ACCOUNT
+  Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for PARITYUPDATE-003-b1 left pending.
   Acceptance: Each check passes on the real target:
   - Only Linux-host source/document validation was exercised. No browser authorization, login, credential/cookie acquisition, ticket mint, refresh, logout, revocation, Agent runtime or platform test was performed.
@@ -1677,7 +1710,9 @@ does not mark any check passed or authorize live actions.
   Dependencies: PARITYUPDATE-003-b1.
   Status: open
 
-- [ ] PARITYUPDATE-004-48-LIVE — Live checks for PARITYUPDATE-004-48
+- [ ] **PARITYUPDATE-004-48-LIVE** — Live checks for PARITYUPDATE-004-48
+  Goal: PARITY
+  Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary), [retained parent and qualifications](todo.archive.md).
   Scope: Run the live checks the offline work for PARITYUPDATE-004-48 left pending.
   Acceptance: Each check passes on the real target:
   - Only Linux-host source/document validation was exercised. No Agent protocol/runtime tests, application/browser/device runs, network playback, export/import, secret acquisition, package execution, computer control or image generation was performed; no Linux/Android runtime cell advanced.

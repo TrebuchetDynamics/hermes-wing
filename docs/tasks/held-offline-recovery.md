@@ -129,16 +129,30 @@ source input, lease, admission pin or runtime setting.
 
 These split only the failed-owner remediation already required by MT-RERUN-TRAIN;
 that task keeps its original aggregate acceptance, dependencies and ownership.
-Both slices are Next, after the owner's first Android-priority block and before
-train rerun. They are not new product features or duplicate historic completion.
-Their source is the same accepted [port roadmap](../../ROADMAP.md#flutter-port-execution-roadmap).
+These slices were placed after the owner's first Android-priority block and before
+train rerun; current status is in `goals.json`, not this original recovery sequence.
+They are not new product features or duplicate historic completion. Their source
+is the same accepted [port roadmap](../../ROADMAP.md#flutter-port-execution-roadmap).
 The selector's formal dependencies are unchanged for existing tasks; the train's
 next action explicitly collects these patches before repeating its failed gate.
 
 | Slice | Existing lineage and bounded evidence | Return to coordinator |
 | --- | --- | --- |
-| PARITYUPDATE-005-11 | FINISH-DESKTOP-SHELL / inventory keyboard. `inventory_keyboard_navigation_test.dart:259` lacks first EditableText at compact Profiles/200%; SSH freshly reproduces it. The live test uses the production router and channel, retains modal Close semantics, Tab/Shift+Tab reachability, identity and zero incidental effects. | An attributable public-seam correction and all eight inventory cases green; no focus bypass, skip, assertion weakening or assumed product cause. |
+| PARITYUPDATE-005-11 | Done and [archived](../../todo.archive.md#parityupdate-005-11) by `ab7bad6024cfd015495049f97e227cedfa8e869b`. The attempt-1 report records all eight inventory cases passing after the mounted-search/traversal correction, retaining the keyboard, modal, identity and zero-incidental-effect assertions. | Repair already integrated; do not request another patch or historical source handoff. `PARITYUPDATE-005-11-LIVE` remains separately open under Needs decision; native/device/live acceptance is not inferred. |
 | PARITYUPDATE-006-f4 | Native-footer fixture lineage. `profile_footer_native_fixture.dart:102` gets 0 outline pixels vs >=24 through `linux_profile_footer_native_runner_test.dart`; SSH freshly reproduces it. Historical native receipts qualify other sources, not this combined tree. | Correct painted-focus oracle with strict negative control and unchanged accessibility/owner/effect checks; applicable existing isolated GTK journey and source/process/teardown receipts. |
+
+For PARITYUPDATE-005-11, the retained `answers.md` explicitly removed the historical
+source-refresh prerequisite and permitted the separate layout-test syntax repair.
+The final attempt-1 `report.json` names `7f5c64c9793be0e8783302521a5e1f06f27131f6`;
+that commit is an ancestor of this reconciliation's HEAD, and its three repair files
+match the current source bytes. Reported focused checks are historical evidence,
+not tests rerun by this docs pass. The saved `attempt-1/ledger-edit.patch` proposes
+only generated coverage refreshes and removal of the already-done
+`VERIFY-CHAT-TRANSCRIPT-NATIVE` from priority order. Those changes are already
+represented in the current ledger/order; drop the proposal rather than replay it,
+reopen either task or undo later closures. Render coverage from the current ledger.
+Paths to these retained inputs are relative to the task's Git-common
+`autowork-execution/slot-data/PARITYUPDATE-005-11/` directory.
 
 The eight preserved transcript-native files are `lib/features/hermes_chat/screens/widgets/hermes_chat_status.dart`,
 `integration_test/support/transcript_recovery_native_fixture.dart`,

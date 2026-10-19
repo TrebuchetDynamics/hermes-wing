@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
+import 'package:wing/core/hermes/channel/hermes_detached_run_store.dart';
 import 'package:wing/core/hermes/hermes_api.dart';
 
 import '../../test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart'
@@ -10,6 +12,11 @@ import '../../test/features/hermes_chat/screens/hermes_chat_transcript_reconnect
 
 /// Deterministic transport seam only: no Agent, sockets, credentials or tools.
 class TranscriptRecoveryNativeFixture {
+  TranscriptRecoveryNativeFixture({this.leaseFile}) {
+    canonical = leaseFile != null;
+  }
+
+  final File? leaseFile;
   final history = reference.ReconnectFixture();
   final decisions = <Map<String, Object?>>[];
   final mutations = <String>[];
@@ -21,118 +28,139 @@ class TranscriptRecoveryNativeFixture {
   bool failNext = false;
   Completer<void>? gate;
   late final channel = HermesApiChannel(
-    clientBuilder: (config) => HermesApiClient(
-      config: config,
-      get: (uri, headers) async {
-        reads.add(uri.path);
-        requests.add({
-          'method': 'GET',
-          'path': uri.path,
-          'query': uri.queryParameters,
-        });
-        history.canonical = canonical;
+    detachedRunStore: leaseFile == null ? null : _FixtureRunStore(leaseFile!),
+    streamIdleTimeout: const Duration(seconds: 30),
+    clientBuilder: buildClient,
+  );
 
-        return switch (uri.path) {
-          '/health' => '{"status":"ok"}',
-          '/v1/capabilities' => jsonEncode({
-            'object': 'hermes.api_server.capabilities',
-            'schema_version': 1,
-            'features': {
-              'run_submission': true,
-              'run_events_sse': true,
-              'run_approval_response': true,
-              'run_status': true,
-              'run_stop': true,
+  void record(String method, Uri uri, [String? body]) {
+    requests.add({
+      'method': method,
+      'origin': uri.origin,
+      'path': uri.path,
+      'query': uri.queryParameters,
+      if (body != null) 'body': jsonDecode(body),
+    });
+    if (uri.origin != 'http://127.0.0.1:8642' ||
+        uri.userInfo.isNotEmpty ||
+        uri.hasFragment ||
+        uri.queryParameters.containsKey('profile')) {
+      throw StateError('Wrong synthetic request owner');
+    }
+  }
+
+  Never forbid(String method, Uri uri, [String? body]) {
+    mutations.add(uri.path);
+    record(method, uri, body);
+    throw StateError('Forbidden synthetic transport');
+  }
+
+  HermesApiClient buildClient(HermesApiConfig config) => HermesApiClient(
+    config: config,
+    patch: (uri, headers, body) async => forbid('PATCH', uri, body),
+    put: (uri, headers, body) async => forbid('PUT', uri, body),
+    delete: (uri, headers) async => forbid('DELETE', uri),
+    postStream: (uri, headers, body) => forbid('POST-SSE', uri, body),
+    get: (uri, headers) async {
+      reads.add(uri.path);
+      record('GET', uri);
+      history.canonical = canonical;
+
+      return switch (uri.path) {
+        '/health' => '{"status":"ok"}',
+        '/v1/capabilities' => jsonEncode({
+          'object': 'hermes.api_server.capabilities',
+          'schema_version': 1,
+          'features': {
+            'run_submission': true,
+            'run_events_sse': true,
+            'run_approval_response': true,
+            'run_status': true,
+            'run_stop': true,
+          },
+          'endpoints': {
+            'sessions': {'method': 'GET', 'path': '/api/sessions'},
+            'session_messages': {
+              'method': 'GET',
+              'path': '/api/sessions/{session_id}/messages',
             },
-            'endpoints': {
-              'sessions': {'method': 'GET', 'path': '/api/sessions'},
-              'session_messages': {
-                'method': 'GET',
-                'path': '/api/sessions/{session_id}/messages',
-              },
-              'runs': {'method': 'POST', 'path': '/v1/runs'},
-              'run_events': {
-                'method': 'GET',
-                'path': '/v1/runs/{run_id}/events',
-              },
-              'run_status': {'method': 'GET', 'path': '/v1/runs/{run_id}'},
-              'run_approval': {
-                'method': 'POST',
-                'path': '/v1/runs/{run_id}/approval',
-              },
-              'run_stop': {'method': 'POST', 'path': '/v1/runs/{run_id}/stop'},
+            'runs': {'method': 'POST', 'path': '/v1/runs'},
+            'run_events': {'method': 'GET', 'path': '/v1/runs/{run_id}/events'},
+            'run_status': {'method': 'GET', 'path': '/v1/runs/{run_id}'},
+            'run_approval': {
+              'method': 'POST',
+              'path': '/v1/runs/{run_id}/approval',
             },
-          }),
-          '/api/sessions' => jsonEncode({
-            'data': [
-              {
-                'id': reference.session,
-                'source': 'synthetic',
-                'title': 'Synthetic recovery',
-              },
-            ],
-          }),
-          '/api/sessions/${reference.session}/messages' => jsonEncode({
-            'object': 'list',
+            'run_stop': {'method': 'POST', 'path': '/v1/runs/{run_id}/stop'},
+          },
+        }),
+        '/api/sessions' => jsonEncode({
+          'data': [
+            {
+              'id': reference.session,
+              'source': 'synthetic',
+              'title': 'Synthetic recovery',
+            },
+          ],
+        }),
+        '/api/sessions/${reference.session}/messages' => jsonEncode({
+          'object': 'list',
+          'session_id': reference.session,
+          'data': canonical ? history.history : [],
+        }),
+        '/v1/runs/run_1' => jsonEncode({
+          'run_id': 'run_1',
+          'session_id': reference.session,
+          'status': leaseFile != null
+              ? 'running'
+              : canonical
+              ? 'completed'
+              : 'running',
+        }),
+        final path when RegExp(r'^/v1/runs/run_[2-5]$').hasMatch(path) =>
+          jsonEncode({
+            'run_id': path.split('/').last,
             'session_id': reference.session,
-            'data': canonical ? history.history : [],
+            'status': completedRuns.contains(path.split('/').last)
+                ? 'completed'
+                : 'running',
           }),
-          '/v1/runs/run_1' => jsonEncode({
-            'run_id': 'run_1',
-            'session_id': reference.session,
-            'status': canonical ? 'completed' : 'running',
-          }),
-          final path when RegExp(r'^/v1/runs/run_[2-5]$').hasMatch(path) =>
-            jsonEncode({
-              'run_id': path.split('/').last,
-              'session_id': reference.session,
-              'status': completedRuns.contains(path.split('/').last)
-                  ? 'completed'
-                  : 'running',
-            }),
-          _ => throw StateError('Unexpected synthetic read'),
-        };
-      },
-      post: (uri, headers, body) async {
-        mutations.add(uri.path);
-        requests.add({
-          'method': 'POST',
-          'path': uri.path,
-          'query': uri.queryParameters,
-          'body': jsonDecode(body),
+        _ => throw StateError('Unexpected synthetic read'),
+      };
+    },
+    post: (uri, headers, body) async {
+      mutations.add(uri.path);
+      record('POST', uri, body);
+      if (uri.path == '/v1/runs') {
+        return jsonEncode({
+          'run_id': 'run_${streams.length + 1}',
+          'session_id': reference.session,
         });
-        if (uri.path == '/v1/runs') {
-          return jsonEncode({
-            'run_id': 'run_${streams.length + 1}',
-            'session_id': reference.session,
-          });
-        }
-        if (!uri.path.endsWith('/approval')) {
-          throw StateError('Forbidden synthetic mutation');
-        }
-        decisions.add({
-          'path': uri.path,
-          ...jsonDecode(body) as Map<String, dynamic>,
-        });
-        final pending = gate;
-        gate = null;
-        final fail = failNext;
-        failNext = false;
-        await pending?.future;
-        if (fail) throw StateError('Synthetic approval failure');
-        return '{}';
-      },
-      getStream: (uri, headers) {
-        requests.add({
-          'method': 'SSE',
-          'path': uri.path,
-          'query': uri.queryParameters,
-        });
-        final stream = StreamController<String>();
-        streams.add(stream);
-        return stream.stream;
-      },
-    ),
+      }
+      if (!uri.path.endsWith('/approval')) {
+        throw StateError('Forbidden synthetic mutation');
+      }
+      decisions.add({
+        'path': uri.path,
+        ...jsonDecode(body) as Map<String, dynamic>,
+      });
+      final pending = gate;
+      gate = null;
+      final fail = failNext;
+      failNext = false;
+      await pending?.future;
+      if (fail) throw StateError('Synthetic approval failure');
+      return '{}';
+    },
+    getStream: (uri, headers) {
+      record('SSE', uri);
+      if (uri.path != '/v1/runs/run_1/events') {
+        throw StateError('Unexpected synthetic event owner');
+      }
+      final stream = StreamController<String>();
+      streams.add(stream);
+      return stream.stream;
+    },
   );
 
   void event(String name, Map<String, Object?> data) =>
@@ -159,6 +187,31 @@ class TranscriptRecoveryNativeFixture {
     await pumpEventQueue();
   }
 
+  /// Replayable Agent events, not persisted client disclosure or tool state.
+  Future<void> activeTools({required bool approval}) async {
+    await pumpEventQueue();
+    event('tool.started', {
+      'tool': 'terminal',
+      'tool_call_id': 'error-terminal',
+    });
+    event('tool.completed', {
+      'tool': 'terminal',
+      'tool_call_id': 'error-terminal',
+      'error': true,
+    });
+    event('tool.started', {'tool': 'browser', 'tool_call_id': 'live-browser'});
+    if (approval) {
+      event('approval.request', {
+        'run_id': 'run_1',
+        'request_id': 'retired-request',
+        'session_id': reference.session,
+        'description': 'Synthetic obsolete approval',
+        'choices': ['once', 'deny'],
+      });
+    }
+    await pumpEventQueue();
+  }
+
   Future<void> complete() async {
     completedRuns.add('run_${streams.length}');
     event('run.completed', {
@@ -175,5 +228,32 @@ class TranscriptRecoveryNativeFixture {
     for (final stream in streams) {
       await stream.close();
     }
+  }
+}
+
+/// Test-only replacement for secure storage; contains synthetic run owners only.
+/// The channel performs all lease admission and recovery, including persistence.
+class _FixtureRunStore implements HermesDetachedRunStore {
+  _FixtureRunStore(this.file);
+  final File file;
+
+  @override
+  Object get coordinationKey => file.path;
+
+  @override
+  Future<List<HermesDetachedRunLease>> load() async => !file.existsSync()
+      ? []
+      : [
+          for (final row in jsonDecode(file.readAsStringSync()) as List)
+            HermesDetachedRunLease.fromJson(
+              (row as Map).cast<String, Object?>(),
+            ),
+        ];
+
+  @override
+  Future<void> save(List<HermesDetachedRunLease> leases) async {
+    file.writeAsStringSync(
+      jsonEncode([for (final lease in leases) lease.toJson()]),
+    );
   }
 }

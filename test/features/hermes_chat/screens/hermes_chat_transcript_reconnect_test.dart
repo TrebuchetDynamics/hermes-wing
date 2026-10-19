@@ -207,6 +207,36 @@ void main() {
       'wing.tips.dismissed.v1': ['moreDestinations', 'voice', 'approvals'],
     }),
   );
+  testWidgets('run tool completion errors remain failed beside live activity', (
+    tester,
+  ) async {
+    final fixture = ReconnectFixture();
+    addTearDown(fixture.dispose);
+    await fixture.channel.connect(baseUrl: 'http://127.0.0.1:8642');
+    final send = fixture.channel.sendText(prompt);
+    await tester.runAsync(() async {
+      await pumpEventQueue();
+      fixture.event('tool.completed', {
+        'tool': 'read_file',
+        'tool_call_id': 'failed-read',
+        'error': true,
+      });
+      fixture.event('tool.started', {
+        'tool': 'web_search',
+        'tool_call_id': 'live-web',
+      });
+      await pumpEventQueue();
+    });
+    await settle(tester);
+    expect(
+      fixture.channel.state.activeMessages
+          .where((t) => t.kind == HermesTurnKind.toolCall)
+          .map((t) => (t.toolCall!.name, t.toolCall!.status)),
+      [('read_file', 'failed'), ('web_search', 'running')],
+    );
+    await fixture.channel.disconnect();
+    await send;
+  });
   testWidgets(
     'canonical reconnect replaces transient activity and retired approval; remount never replays',
     (tester) async {

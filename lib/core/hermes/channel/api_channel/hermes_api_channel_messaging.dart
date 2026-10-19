@@ -1436,7 +1436,8 @@ extension _MessagingExtension on HermesApiChannel {
         wingOptionalStringFromJson(event.payload['tool_name']) ??
         'tool';
     final status = switch (event.name) {
-      'tool.completed' => 'completed',
+      'tool.completed' =>
+        event.payload['error'] == true ? 'failed' : 'completed',
       'tool.failed' => 'failed',
       _ => 'running',
     };

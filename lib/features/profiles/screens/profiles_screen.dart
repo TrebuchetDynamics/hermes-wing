@@ -296,105 +296,120 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: [
-        _ProfilesHeader(
-          subtitle: strings.agentsSubtitle,
-          readOnly: !(capabilities?.auth.allows('profiles:write') ?? false),
-          readOnlyLabel: strings.readOnlyAccess,
-          action: canCreate
-              ? FilledButton.icon(
-                  onPressed: openCreate,
-                  icon: const Icon(Icons.add),
-                  label: Text(strings.newAgent),
+        // The inventory Wrap is already eager. Keep its search mounted and
+        // group traversal so auto-scroll neither disposes the editor nor
+        // interleaves the fixed overlay Close button on Shift+Tab.
+        FocusTraversalGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _ProfilesHeader(
+                subtitle: strings.agentsSubtitle,
+                readOnly:
+                    !(capabilities?.auth.allows('profiles:write') ?? false),
+                readOnlyLabel: strings.readOnlyAccess,
+                action: canCreate
+                    ? FilledButton.icon(
+                        onPressed: openCreate,
+                        icon: const Icon(Icons.add),
+                        label: Text(strings.newAgent),
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              search,
+              const SizedBox(height: 8),
+              Text(strings.profilesSearchHelp),
+              const SizedBox(height: 16),
+              if (profiles.isEmpty)
+                WingEmptyState(
+                  icon: Icons.support_agent_outlined,
+                  title: strings.agentsEmptyTitle,
+                  body: strings.agentsEmptyBody,
                 )
-              : null,
-        ),
-        const SizedBox(height: 16),
-        search,
-        const SizedBox(height: 8),
-        Text(strings.profilesSearchHelp),
-        const SizedBox(height: 16),
-        if (profiles.isEmpty)
-          WingEmptyState(
-            icon: Icons.support_agent_outlined,
-            title: strings.agentsEmptyTitle,
-            body: strings.agentsEmptyBody,
-          )
-        else if (visibleProfiles.isEmpty)
-          WingEmptyState(
-            icon: Icons.search_off,
-            liveRegion: true,
-            title: strings.profilesSearchNoMatchesTitle,
-            body: strings.profilesSearchNoMatchesBody,
-          )
-        else
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final columns = constraints.maxWidth >= 900 ? 2 : 1;
-              final gap = 12.0;
-              final cardWidth = columns == 1
-                  ? constraints.maxWidth
-                  : (constraints.maxWidth - gap) / columns;
-              return Wrap(
-                spacing: gap,
-                runSpacing: gap,
-                children: [
-                  for (var index = 0; index < profiles.length; index++)
-                    if (visibleProfiles.contains(profiles[index]))
-                      SizedBox(
-                        width: cardWidth,
-                        child: _ProfileCard(
-                          profile: profiles[index],
-                          selected: profiles[index].id == selectedId,
-                          canEdit: _canUseEndpoint(
-                            capabilities,
-                            scope: 'profiles:write',
-                            name: 'profile_update',
-                            method: 'PATCH',
-                            path: '/api/profiles/{name}',
-                          ),
-                          canDelete:
-                              profiles[index].id != 'default' &&
-                              _canUseEndpoint(
-                                capabilities,
-                                scope: 'profiles:write',
-                                name: 'profile_delete',
-                                method: 'DELETE',
-                                path: '/api/profiles/{name}',
-                              ),
-                          strings: strings,
-                          switching: _switchingProfileId == profiles[index].id,
-                          onChat: _switchingProfileId == null
-                              ? () => _selectProfile(channel, profiles[index])
-                              : null,
-                          onEdit: () => _openEditor(
-                            isMutationOwnerCurrent: currentMutationOwner,
-                            channel: channel,
-                            profiles: profiles,
-                            profile: profiles[index],
-                            canEditSoul: state.canEditProfileSoul,
-                            canDelete:
-                                profiles[index].id != 'default' &&
-                                _canUseEndpoint(
+              else if (visibleProfiles.isEmpty)
+                WingEmptyState(
+                  icon: Icons.search_off,
+                  liveRegion: true,
+                  title: strings.profilesSearchNoMatchesTitle,
+                  body: strings.profilesSearchNoMatchesBody,
+                )
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final columns = constraints.maxWidth >= 900 ? 2 : 1;
+                    final gap = 12.0;
+                    final cardWidth = columns == 1
+                        ? constraints.maxWidth
+                        : (constraints.maxWidth - gap) / columns;
+                    return Wrap(
+                      spacing: gap,
+                      runSpacing: gap,
+                      children: [
+                        for (var index = 0; index < profiles.length; index++)
+                          if (visibleProfiles.contains(profiles[index]))
+                            SizedBox(
+                              width: cardWidth,
+                              child: _ProfileCard(
+                                profile: profiles[index],
+                                selected: profiles[index].id == selectedId,
+                                canEdit: _canUseEndpoint(
                                   capabilities,
                                   scope: 'profiles:write',
-                                  name: 'profile_delete',
-                                  method: 'DELETE',
+                                  name: 'profile_update',
+                                  method: 'PATCH',
                                   path: '/api/profiles/{name}',
                                 ),
-                          ),
-                          onDelete: () => _openEditor(
-                            isMutationOwnerCurrent: currentMutationOwner,
-                            channel: channel,
-                            profiles: profiles,
-                            profile: profiles[index],
-                            canDelete: true,
-                          ),
-                        ),
-                      ),
-                ],
-              );
-            },
+                                canDelete:
+                                    profiles[index].id != 'default' &&
+                                    _canUseEndpoint(
+                                      capabilities,
+                                      scope: 'profiles:write',
+                                      name: 'profile_delete',
+                                      method: 'DELETE',
+                                      path: '/api/profiles/{name}',
+                                    ),
+                                strings: strings,
+                                switching:
+                                    _switchingProfileId == profiles[index].id,
+                                onChat: _switchingProfileId == null
+                                    ? () => _selectProfile(
+                                        channel,
+                                        profiles[index],
+                                      )
+                                    : null,
+                                onEdit: () => _openEditor(
+                                  isMutationOwnerCurrent: currentMutationOwner,
+                                  channel: channel,
+                                  profiles: profiles,
+                                  profile: profiles[index],
+                                  canEditSoul: state.canEditProfileSoul,
+                                  canDelete:
+                                      profiles[index].id != 'default' &&
+                                      _canUseEndpoint(
+                                        capabilities,
+                                        scope: 'profiles:write',
+                                        name: 'profile_delete',
+                                        method: 'DELETE',
+                                        path: '/api/profiles/{name}',
+                                      ),
+                                ),
+                                onDelete: () => _openEditor(
+                                  isMutationOwnerCurrent: currentMutationOwner,
+                                  channel: channel,
+                                  profiles: profiles,
+                                  profile: profiles[index],
+                                  canDelete: true,
+                                ),
+                              ),
+                            ),
+                      ],
+                    );
+                  },
+                ),
+            ],
           ),
+        ),
       ],
     );
   }

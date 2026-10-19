@@ -252,6 +252,9 @@ void main() {
           }
         }
         expect(reachedEditor, isTrue);
+        final editorFocus = tester
+            .widget<EditableText>(find.byType(EditableText).first)
+            .focusNode;
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pumpAndSettle();
         expect(
@@ -271,6 +274,13 @@ void main() {
               .focusNode
               .hasFocus,
           isTrue,
+        );
+        expect(
+          tester
+              .widget<EditableText>(find.byType(EditableText).first)
+              .focusNode,
+          same(editorFocus),
+          reason: 'Auto-scroll must not discard the editor during traversal',
         );
         expect(reads.skip(beforeKeys), isEmpty);
         if (route == '/profiles') {

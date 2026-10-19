@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-MT-RERUN-TRAIN — USER_DECISION — effort decision — unblocks 1
-
-- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
-- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable repair for the reproduced compact Profiles public-seam failure at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 on this exact combined source (missing first EditableText / Bad state: No element). Do not weaken its keyboard/large-text assertions. The source-delivery blocker is resolved: consume assembled tree a2213ffd… (+1 more in report.json); DOCS-MAINTAINER already changed All five non-browser gates completed, Chat/router, Next action, Readiness, The source-bound tab gate now exists, and all nine default browser specs, but the task is still waiting for the same reason.
-- Since: 2026-10-19T06:36:50Z
-- Answer: Decide the missing input or disposition in MT-RERUN-TRAIN's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
-
 ### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_DECISION — effort decision — unblocks 1
 
 - Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered

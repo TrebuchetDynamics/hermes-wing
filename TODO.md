@@ -276,11 +276,12 @@ Section: Next.
 Section: Next.
   Status: open
   Payoff: Android SSH chat feels like official Desktop designed for a phone.
-  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
+  Sources: [UI Taste refinement direction](docs/plans/2026-10-03-desktop-port-goal.md#ui-taste-chat-refinement), [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
   [official design contract](https://github.com/NousResearch/hermes-agent/blob/158fd638da1629c8e62caf9ade1515d162def8ab/apps/desktop/DESIGN.md),
   [current route support](docs/product/routes.md#routes).
-  Scope: existing Chat/connection/profile/session presentation and shared theme
-  controls only. Prioritize transcript/composer, visible owner/connection identity,
+  Scope: existing Chat/connection/profile/session presentation; reuse shared theme
+  tokens and controls unchanged. Layout/copy refinements stay in Chat-local consumers
+  and the explicitly listed localization files; no lib/theme/ or lib/shared/ edits. Prioritize transcript/composer, visible owner/connection identity,
   quick profile/bot/session selection and readable tool/running/approval states.
   Reuse tokens and adaptive controls; no redesign of unrelated settings, new route
   dashboard, heavy effect dependency, fake Bot support, Office, or Agent mutation.
@@ -308,10 +309,9 @@ Section: Next.
   records 103 passing focused tests, clean analysis, widget renders, a detected
   SafeArea negative control, source-review approval and a verified test APK.
   No physical Android, real IME, TalkBack or live SSH outcome is qualified.
-  Next action: apply the remaining Desktop-derived touch composition to Chat and
-  its profile/session switchers after the existing prerequisite. Preserve the
-  compact onboarding; unavailable operations and broader acceptance remain open.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
+  Next action: after the retained tab prerequisite and its required gates, capture source-bound baseline Chat/switcher states, then apply the settled UI Taste hierarchy/spacing/state direction only to observed issues. Preserve compact onboarding, existing action/owner semantics and unavailable-operation boundaries; compare final compact/wide light/dark renders and retain broader checks.
+  UI Taste proof: follow the linked state/size matrix (320x480, 390x844, 844x390 and 1280px; light/dark, normal/200% text, reduced motion and keyboard/system insets). Capture idle/draft, streaming/tools, current approval, disconnected/error and switcher states. Retain >=48px hit targets, viewport bounds, reading-space and keyboard/Back guards; disclose capture-font/inset simulation. No new palette/framework/route/API, fabricated Bot support or duplicate SSH feedback fix.
 
 ### **P4** — Extended experiences and physical qualification
 

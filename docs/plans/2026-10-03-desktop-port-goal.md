@@ -1155,3 +1155,128 @@ passing receipts. Bind source, artifact, target, commands and results; keep brow
 Waydroid, physical device and authenticated live outcomes separate. These checks
 are planned, not executed by this planning pass. No implementation, dispatch,
 scheduler change, commit, publication or live operation follows from saving this plan.
+
+## UI Taste Chat refinement
+
+Status: Accepted
+
+The owner asked for **UI-taste improvements** after the README work. Planner's
+call: refine Wing's already-prioritized Android Chat and profile/session switchers
+under `ANDROID-CHAT-TOUCH-POLISH`, not reopen the completed README, invent another
+UI task, redesign onboarding, or change the approved logo. This pass saves a
+plan only. Existing scope, tab predecessor, order and live gates remain unchanged.
+
+### Evidence and limits
+
+Read current Chat composition, `ChatProfilePicker`, `HermesDesktopTokens`,
+`wing_theme.dart`, route support and composer/transcript accessibility assertions
+at Wing `c64aac8c9b6a831f51601d0de61124e52c4b7b58`. They establish existing behavior
+and layout constraints, not a current visual verdict. No app, fresh screenshot,
+Waydroid, physical IME, TalkBack or live Agent was exercised by this planning pass.
+Do not describe proposed polish as a reproduced defect or a visually approved mockup.
+
+Official visual reference: [Desktop DESIGN.md](https://github.com/NousResearch/hermes-agent/blob/a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70/apps/desktop/DESIGN.md):
+Chat is home, flat rather than boxed, tokens over literals, one primitive per
+concern, immediate honest feedback, and no background focus/navigation hijack.
+The UI Taste **polish** playbook guides craft; it does not override this reference,
+Wing accessibility, capability gates or exact resource ownership.
+
+### Settled visual direction
+
+Write boundary: reuse existing `lib/theme/` and `lib/shared/` definitions without
+editing them. This task refines Chat-local composition and declared localization
+inputs/generated outputs only; generated Dart is regeneration-only. A demonstrated
+shared-component defect needs a separately scoped owner change, not a silent theme
+or control rewrite inside this task.
+
+- Keep current native system-font stack and the existing selectable palettes.
+  Default light/dark accent stays in `HermesDesktopTokens` (#0053fd/#4a84fe);
+  reuse surface/text/outline/error roles. No new font, dependency, glass layer,
+  gradient system, icon family, mascot or global theme migration.
+- Transcript and composer are primary. Use one clear conversation heading plus
+  readable captured profile/session identity; subordinate connection/status and
+  secondary actions. Avoid repeated headings and card-in-card decoration.
+- Idle has one obvious Send action; running exposes the existing exact-owner Stop
+  action and honest status. Do not hide or reinterpret Stop uncertainty to make
+  the UI look settled. Approvals remain visible and request-bound, not color-only.
+- Group adjacent tool activity through existing disclosures and spacing; retain
+  canonical reasoning/commentary/tool/answer order. Do not fabricate successful
+  terminal activity, collapse mandatory decisions, or auto-scroll away from reading.
+- Compact profile/session choices use the existing adaptive picker/sheet pattern,
+  selected identity, search and clear action. Preserve supported filtered choices,
+  loaded-inventory semantics, keyboard/IME handling and Manage escape. No new Agent
+  reads on opening, enum-values expansion or fake canonical Bot support. A missing
+  operation remains an explicit unavailable outcome.
+- Keep failure/reconnect explanation and deliberate recovery adjacent to the
+  affected control. SSH category preservation remains `WING-001-b3`; do not
+  duplicate its transport repair or create a diagnostics dashboard here.
+
+### Smallest implementation sequence
+
+1. After the retained tab predecessor is integrated and its required gates pass,
+   capture matching baseline production widgets and localized public-control
+   fixture states. Record source/theme/text scale, fixture provenance and any
+   capture-only font substitution. Do not use a historical README image as a
+   current baseline or override production geometry just to make a capture pass.
+2. In one coherent presentation batch, apply the direction above only where the
+   baseline demonstrates a hierarchy, wrapping, spacing, visibility or state
+   affordance problem. Leave already-working controls and delivered compact
+   Welcome/Add Hermes/SSH/Termux presentation alone. No speculative architecture
+   extraction, new state, backend feature, route or scope expansion.
+3. Extend the planned Android touch-layout regression and reuse existing composer,
+   transcript, reasoning and picker guards. Use real controls and owner-scoped
+   deterministic fakes; prove draft/scroll/focus retention and no incidental
+   send/approval/Stop/configuration writes through switcher/overlay returns.
+4. Compare source-bound baseline/candidate renders and public-control journeys.
+   Iterate only observed material problems; no numerical beauty score, perfect
+   rating or general Desktop-parity claim. Record explicit mobile adaptations.
+
+### State and size acceptance
+
+Use at least these states: idle/empty, retained multiline draft, streaming/tools,
+current approval, disconnected/error, and switcher search/no-match/selection.
+Cover light/dark, portrait and landscape, normal and 200% text, reduced motion,
+keyboard and system-navigation insets. Include 320x480 constrained phone,
+390x844 phone, 844x390 landscape and a 1280px wide regression surface. These are
+planned fixture sizes, not claims of device qualification.
+
+- Critical actions remain reachable with >=48 logical-pixel hit targets and
+  visible focus/labels; no hover/gesture/color-only path or clipped required copy.
+- Assert scroll viewport bounds above system/keyboard reserved space, not only
+  favorable button placement. If changing an inset/visibility protection, use an
+  isolated negative control proving that removing it fails the intended assertion;
+  restore and rerun. Do not suppress hit-test warnings or relax reading-space bounds.
+- Profile/session changes retain the intended draft/history and leave other runs
+  alone. Background completion never navigates, steals focus or retargets approval
+  or Stop. Cancel/Back restores the caller without a write.
+- Capture settled states with resolved assets. Widget font substitutions and
+  simulated keyboard insets are disclosed. Browser width is not Android runtime;
+  physical IME/TalkBack, secure storage, live SSH and Agent behavior stay unqualified
+  unless the existing separately authorized named-target proof actually runs.
+
+### Verification and handoff
+
+Planned tests (the Android-specific target is to be created, not a passing file):
+
+```sh
+flutter test --no-pub test/features/hermes_chat/screens/android_chat_touch_layout_test.dart
+flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_composer_accessibility_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart
+flutter analyze --no-pub
+git diff --check
+```
+
+Retain the existing broader owner/replay, freshly built browser and isolated
+Waydroid public-control checks in the task. A browser run requires its fresh
+`flutter build web --release -t lib/main_e2e.dart` first. Use existing fixtures;
+no provider calls, credential discovery, new remote service or port exposure.
+Baseline layout-test/source failures and predecessor repairs remain with their
+current owners; no assertion deletion or waiver to obtain a prettier screenshot.
+If English UI copy changes, edit `lib/l10n/app_en.arb`, run `flutter gen-l10n`,
+format changed Dart files and re-run affected checks. Shared controls require
+both compact and wide caller regressions. Review and implementation remain
+separate; this planning pass runs no UI mutation, worker or schedule.
+
+`ANDROID-CHAT-TOUCH-POLISH` in [TODO.md](../../TODO.md) and `goals.json` remains the
+sole implementation owner, dependent on `DOC-PARITY-TAB-CONTRACT`. The existing
+[plan index](README.md#plan-to-task-coverage) already maps this accepted port plan
+and task. No task is reopened, duplicated, marked done or reprioritized here.

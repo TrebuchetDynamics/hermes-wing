@@ -7613,3 +7613,24 @@ Source section: Now / Next
   Next action: Trace the pinned HD-EXPORT, HD-IMPORT, HD-RADIO, HD-VAULT, HD-PLUGIN-PACKAGES, HD-SCREEN, HD-PETS callers to authoritative handlers/tests and write the operation-by-operation disposition in `docs/quality/unowned-desktop-outcomes-contract.md`.
   Status: done
 Section: Next.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="readme-001-62"></a>
+
+- [x] **README-001-62** — Refresh the whole README with approved branding and truthful product proof.
+  Goal: LANDING-ONBOARDING
+Section: Next.
+  Status: done
+  Payoff: newcomers understand Wing, inspect truthful product proof and choose their first-chat path without losing security or alpha limits.
+  Sources: [owner-selected README refresh](docs/plans/2026-10-12-wing-landing-onboarding.md#readme-visual-refresh), [full onboarding plan](docs/plans/2026-10-12-wing-landing-onboarding.md), [current setup](docs/getting-started.md), [approved branding](assets/branding/README.md).
+  Scope: whole README layout/copy hierarchy/embeds, existing visuals and nearest README contracts. Default preserve all logo/icon/shared showcase bytes and site/app behavior. A justified deterministic README-only derivative may minimally extend the existing producer without modifying shared assets. No rebrand, new framework/dependency, generated UI/art, GIF, app/site redesign or Agent work.
+  Acceptance: the plan's reading order and immutable disclosures hold; retain incoming heading/ID anchors, command semantics, simulation labels, direct-Agent authority/trust/cost/privacy and qualification limits. Compose and inspect 900px/360px light/dark GitHub-like local previews: images load, no page overflow, readable proof/captions/code, image-off meaning and final links. Label approximation versus hosted GitHub; no score or live/parity claims. Preserve capture, branding and security assertions; adjust only justified presentation-coupled tests, never pad or drop warnings for a line-count target. Shared consumers remain unchanged.
+  Checks: planned `flutter test --no-pub test/tooling/readme_assets_contract_test.dart test/tooling/wing_branding_assets_test.dart test/tooling/pages_workflow_contract_test.dart`; installed beautify skill `scripts/audit_readme.py README.md`; `git diff --check`; source-bound composed preview/image/overflow assertions. If Dart tests change, format those files and `flutter analyze --no-pub`. If producer changes, `node --check scripts/generate_readme_assets.mjs`; actual recapture needs `flutter build web --release -t lib/main_e2e.dart` before `npm run readme:assets`. Run docs-role check only if its manifest exists.
+  Dependencies: None. Existing product and live gates retain their own ordering and grants.
+  Ownership: Coordinator; one isolated writer; no claim or execution from this planning pass.
+  Touches: README.md, assets/readme/, scripts/generate_readme_assets.mjs, test/tooling/readme_assets_contract_test.dart, docs/quality/
+  Next action: preserve an anchor/command/disclosure baseline, prepare the smallest native-Markdown refresh using existing approved imagery, then compare composed wide/narrow light/dark previews and review its factual claims before integration. Do not repeat completed landing/onboarding implementation.

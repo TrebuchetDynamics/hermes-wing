@@ -669,20 +669,6 @@ patches, personal credential discovery, service restarts or provider spending.
 
 ### **P1** — Daily use, recovery and core Desktop composition
 
-- [ ] **README-001-62** — Refresh the whole README with approved branding and truthful product proof.
-  Goal: LANDING-ONBOARDING
-Section: Next.
-  Status: open
-  Payoff: newcomers understand Wing, inspect truthful product proof and choose their first-chat path without losing security or alpha limits.
-  Sources: [owner-selected README refresh](docs/plans/2026-10-12-wing-landing-onboarding.md#readme-visual-refresh), [full onboarding plan](docs/plans/2026-10-12-wing-landing-onboarding.md), [current setup](docs/getting-started.md), [approved branding](assets/branding/README.md).
-  Scope: whole README layout/copy hierarchy/embeds, existing visuals and nearest README contracts. Default preserve all logo/icon/shared showcase bytes and site/app behavior. A justified deterministic README-only derivative may minimally extend the existing producer without modifying shared assets. No rebrand, new framework/dependency, generated UI/art, GIF, app/site redesign or Agent work.
-  Acceptance: the plan's reading order and immutable disclosures hold; retain incoming heading/ID anchors, command semantics, simulation labels, direct-Agent authority/trust/cost/privacy and qualification limits. Compose and inspect 900px/360px light/dark GitHub-like local previews: images load, no page overflow, readable proof/captions/code, image-off meaning and final links. Label approximation versus hosted GitHub; no score or live/parity claims. Preserve capture, branding and security assertions; adjust only justified presentation-coupled tests, never pad or drop warnings for a line-count target. Shared consumers remain unchanged.
-  Checks: planned `flutter test --no-pub test/tooling/readme_assets_contract_test.dart test/tooling/wing_branding_assets_test.dart test/tooling/pages_workflow_contract_test.dart`; installed beautify skill `scripts/audit_readme.py README.md`; `git diff --check`; source-bound composed preview/image/overflow assertions. If Dart tests change, format those files and `flutter analyze --no-pub`. If producer changes, `node --check scripts/generate_readme_assets.mjs`; actual recapture needs `flutter build web --release -t lib/main_e2e.dart` before `npm run readme:assets`. Run docs-role check only if its manifest exists.
-  Dependencies: None. Existing product and live gates retain their own ordering and grants.
-  Ownership: Coordinator; one isolated writer; no claim or execution from this planning pass.
-  Touches: README.md, assets/readme/, scripts/generate_readme_assets.mjs, test/tooling/readme_assets_contract_test.dart, docs/quality/
-  Next action: preserve an anchor/command/disclosure baseline, prepare the smallest native-Markdown refresh using existing approved imagery, then compare composed wide/narrow light/dark previews and review its factual claims before integration. Do not repeat completed landing/onboarding implementation.
-
 ## Needs decision
 
 - [ ] **CONNECTION-LINK-RETIREMENT** — Goal: CONNECTION-PATHS. Retire legacy
@@ -1751,4 +1737,13 @@ does not mark any check passed or authorize live actions.
   - Coordinator review and integration remain separate from this local worker commit. The document specifies only a conditional read-only foreign list/preview successor with explicit transport/admission dependency; no new task was scheduled or active owner expanded.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITYUPDATE-004-48.
+  Status: open
+
+- [ ] README-001-62-LIVE — Live checks for README-001-62
+  Scope: Run the live checks the offline work for README-001-62 left pending.
+  Acceptance: Each check passes on the real target:
+  - Hosted GitHub rendering/sanitizer was not exercised; only source-bound local GitHub-like previews were inspected.
+  - Existing native-device, authenticated Agent/provider, SSH, voice, notifications and recovery qualification remain with their existing live owners; this documentation change claims none of them.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: README-001-62.
   Status: open

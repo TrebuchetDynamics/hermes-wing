@@ -5831,7 +5831,8 @@
         "LANDING-PAGES-QUALITY-LIVE",
         "LANDING-PRODUCT-PROOF",
         "LANDING-PRODUCT-PROOF-LIVE",
-        "README-001-62"
+        "README-001-62",
+        "README-001-62-LIVE"
       ],
       "title": "Help existing Hermes users reach first reply through a credible accessible product landing page"
     },
@@ -6909,7 +6910,6 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "README-001-62",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -6974,7 +6974,8 @@
       "PARITYUPDATE-001-aa-LIVE",
       "PARITYUPDATE-002-5c-LIVE",
       "PARITYUPDATE-003-b1-LIVE",
-      "PARITYUPDATE-004-48-LIVE"
+      "PARITYUPDATE-004-48-LIVE",
+      "README-001-62-LIVE"
     ]
   },
   "tasks": [
@@ -7051,14 +7052,6 @@
       "section": "Next",
       "status": "open",
       "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
-    },
-    {
-      "depends_on": [],
-      "goal": "LANDING-ONBOARDING",
-      "id": "README-001-62",
-      "section": "Next",
-      "status": "open",
-      "title": "Refresh the whole README with approved branding and truthful product proof"
     },
     {
       "depends_on": [
@@ -7643,6 +7636,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITYUPDATE-004-48"
+    },
+    {
+      "depends_on": [
+        "README-001-62"
+      ],
+      "goal": "LANDING-ONBOARDING",
+      "id": "README-001-62-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for README-001-62"
     },
     {
       "depends_on": [
@@ -9214,6 +9217,14 @@
       "section": "Done",
       "status": "done",
       "title": "Implement the bounded QA store/state observer through production injection seams"
+    },
+    {
+      "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "README-001-62",
+      "section": "Done",
+      "status": "done",
+      "title": "Refresh the whole README with approved branding and truthful product proof"
     },
     {
       "depends_on": [

@@ -7023,16 +7023,6 @@
     },
     {
       "depends_on": [
-        "MT-APP-SHELL-STATUS-BAR"
-      ],
-      "goal": "INTEGRATION",
-      "id": "MT-RERUN-TRAIN",
-      "section": "Next",
-      "status": "open",
-      "title": "Existing integration owner: rerun canonical merge-train gates on a newly captured combined tree; this receipt does not waive remaining gates"
-    },
-    {
-      "depends_on": [
         "MT-RERUN-TRAIN"
       ],
       "goal": "INTEGRATION",
@@ -8961,6 +8951,16 @@
       "section": "Done",
       "status": "done",
       "title": "Repair historical candidate shell status-bar test surface collision"
+    },
+    {
+      "depends_on": [
+        "MT-APP-SHELL-STATUS-BAR"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-RERUN-TRAIN",
+      "section": "Done",
+      "status": "done",
+      "title": "Existing integration owner: rerun canonical merge-train gates on a newly captured combined tree; this receipt does not waive remaining gates"
     },
     {
       "depends_on": [],

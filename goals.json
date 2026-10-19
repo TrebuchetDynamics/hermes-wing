@@ -7059,14 +7059,6 @@
       "title": "Repair profile-footer painted-focus oracle on the retained combined source"
     },
     {
-      "depends_on": [],
-      "goal": "INTEGRATION",
-      "id": "PLANGAP-001-2f",
-      "section": "Next",
-      "status": "open",
-      "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
-    },
-    {
       "depends_on": [
         "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
       ],
@@ -9123,6 +9115,14 @@
       "section": "Done",
       "status": "done",
       "title": "Resolve uncovered Desktop outcome contracts without expanding active tasks"
+    },
+    {
+      "depends_on": [],
+      "goal": "INTEGRATION",
+      "id": "PLANGAP-001-2f",
+      "section": "Done",
+      "status": "done",
+      "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
     },
     {
       "depends_on": [

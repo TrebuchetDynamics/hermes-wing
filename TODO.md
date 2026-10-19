@@ -371,48 +371,6 @@ Section: Next.
   Evidence: Git-common `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json` records the second terminal full-suite failure on tree `a2213ffd78bf6a485e09de0d218cc617f273a78e`; `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json` freshly reproduces `Native footer journey oracle runs in widget harness`. No three isolated green revisions or flaky classification exists. Earlier native footer receipts qualify only their stated sources.
   Next action: obtain matched coordinator source through the supported path, diagnose the existing painted-focus oracle, and return its bounded correction with negative-control and applicable native receipts. Do not edit production UI to satisfy an unproven fixture hypothesis.
 
-- [ ] **PLANGAP-001-2f** — Accept hash-suffixed task IDs in plan traceability without weakening guards.
-  Goal: INTEGRATION
-Section: Next.
-  Status: open
-  Sources: [accepted parser-fix scope](docs/plans/2026-10-18-plan-traceability-ids.md#scope), [full tooling plan](docs/plans/2026-10-18-plan-traceability-ids.md), [plan policy](docs/plans/README.md#plan-to-task-coverage).
-  Scope: only existing mapping/body ID extraction and nearest tooling regressions; no app code, dependencies, ID changes, new parser abstraction or weakened map/body checks. Metadata repairs from this planning pass are not future work.
-  Acceptance: uppercase and valid existing hash-suffixed IDs resolve the exact sole body; real inventory covers all current retained plans. Preserve duplicate/missing-body, checkbox/status, archive/live, prefix-neighbor, adjacent-body-link and disposition/backlink guards. Keep task IDs/status/order/dependencies/ownership/acceptance and live grants unchanged.
-  Checks: planned RED is the already observed real traceability failure, reproduce on implementation candidate; then `flutter test --no-pub test/tooling/plan_backlog_contract_test.dart test/tooling/plan_backlog_traceability_test.dart`; `dart format --output=none --set-exit-if-changed test/tooling/plan_backlog_traceability_test.dart test/tooling/support/plan_backlog_contract.dart test/tooling/plan_backlog_contract_test.dart`; `flutter analyze --no-pub`; `git diff --check`.
-  Dependencies: None.
-  Ownership: Coordinator; one isolated writer; planning only, not claimed or dispatched.
-  Touches: test/tooling/plan_backlog_traceability_test.dart, test/tooling/support/plan_backlog_contract.dart, test/tooling/plan_backlog_contract_test.dart, docs/quality/
-  Payoff: unblock real retained-plan validation without renaming existing task IDs.
-  Recovery evidence: current Git-common
-  `autowork-execution/slot-data/PLANGAP-001-2f/attempt-1/report.json` is on
-  `597d8762b1e8f4109a0e5ebb8b449b576814a3c2`, not `36f4155f` or `6c167919`.
-  It recovers only the three parser files, exact patch SHA-256
-  `3d92402b64126b7f92cc4fcf99415662ee06c125e375e80aa0efaa1c62251c27`, with
-  focused formatting green. The layout/gateway preflight is still red on identical
-  blocker blobs `7ff1c14e8ff16dfbe18763a7b420960f6c27db92` and
-  `a812ad40d7be2ec54e44a5b1e243d48ee256fcec`; no focused tests or analysis reran.
-  Earlier 13/13 and review remain historical. MT-RERUN-TRAIN subsequently consumed
-  this exact parser delta, corrected those prerequisites and recorded 13 focused
-  passes plus clean global format/analysis on assembled `a2213ffd`.
-  Readiness: the producer handoff now exists; this parser workspace still needs
-  its corrected layout/gateway input via the supported coordinator source refresh.
-  Compare the exact member manifest, not merely different blob hashes. This is a
-  source-readiness gate, not dependency on whole-train/tab/Android completion.
-  No app or dependency edits, assertion weakening, plan-disposition change or new
-  acceptance is authorized.
-  Resources: exclusive — reconcile the retained tooling candidate and exact current plan inventory.
-  Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: recheck worker inactivity and preserve the exact three-file parser
-  patch `3d92402b64126b7f92cc4fcf99415662ee06c125e375e80aa0efaa1c62251c27`.
-  That delta is already consumed in the coordinator's assembled handoff. Request
-  its corrected layout/gateway assignment through the supported source-refresh
-  path; do not import Chat repairs or reimplement the parser in this task. Verify
-  the matching source first, then reproduce current inventory/guard checks and
-  rerun analysis and full offline validation with separate supported terminal gates.
-  Preserve every guard above; do not wait for Android/live tab completion, reopen
-  MCP planning or ask an owner to rename IDs. The earlier 13 passes qualify only
-  the reported candidate, not the combined source.
-
 - [ ] **WING-001-b3** — Make SSH connection failures visible and actionable.
   Goal: REMOTE-BACKENDS
 Section: Next.

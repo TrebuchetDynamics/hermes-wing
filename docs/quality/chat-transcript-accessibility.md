@@ -110,4 +110,8 @@ merge-train compatibility. Recovery history in this fixture intentionally lacks
 reasoning; the test verifies its removal, not persisted reasoning restoration.
 No broader CHAT-FIDELITY completion or new platform support is asserted.
 
+Subsequent bounded [two-process Linux transcript restart](native-transcript-restart.md)
+qualifies deterministic native recovery separately; it does not upgrade this
+historical browser/widget receipt or establish physical mobile/live-Agent support.
+
 Questions: none; existing architectural defaults applied.

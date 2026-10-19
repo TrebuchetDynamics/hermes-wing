@@ -3,6 +3,11 @@
 Card: `t_912b8858`; task: `M1-NATIVE-APPROVAL-RESTORATION`; goal: `M1`.
 This qualifies a deterministic Linux GTK slice, not the live daily-use milestone.
 
+Historical receipt: the current target/launcher now implements the separately
+qualified [two-process transcript restart](native-transcript-restart.md).
+The archive-dependent commands and mounted-process claims below describe only
+this earlier run; use the successor's reproduction for current sources.
+
 ## Implemented
 
 Added the [native target](../../integration_test/linux_transcript_recovery_test.dart),

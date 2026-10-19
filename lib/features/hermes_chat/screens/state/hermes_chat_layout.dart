@@ -1432,6 +1432,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
             // Active queue controls take precedence over introductory guidance
             // when narrow or enlarged-text layouts have a limited height budget.
             if (canSendTurns &&
+                constraints.maxWidth >= 600 &&
                 !(useCompactFollowUpActions && _followUps.isNotEmpty))
               WingTipCard(
                 tip: WingTip.voice,
@@ -2678,25 +2679,44 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 icon: const Icon(Icons.tune_rounded),
               ),
               const Spacer(),
-              _buildMicButton(canSendTurns),
+              if (compact)
+                IconButton(
+                  key: const ValueKey('hermes-live-voice-start'),
+                  tooltip: strings.chatLiveVoiceStartAction,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  icon: const Icon(Icons.record_voice_over_outlined),
+                  onPressed:
+                      canSendTurns &&
+                          ref
+                              .watch(wingVoiceSettingsProvider)
+                              .continuousVoiceEnabled
+                      ? () => _setContinuousVoice(true)
+                      : null,
+                )
+              else
+                _buildMicButton(canSendTurns),
               _buildSendButton(channel, canSendTurns),
             ],
           ),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton.icon(
-              key: const ValueKey('hermes-live-voice-start'),
-              icon: const Icon(Icons.record_voice_over_outlined),
-              label: Text(strings.chatLiveVoiceStartAction),
-              onPressed:
-                  canSendTurns &&
-                      ref
-                          .watch(wingVoiceSettingsProvider)
-                          .continuousVoiceEnabled
-                  ? () => _setContinuousVoice(true)
-                  : null,
+          if (!compact)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: const ValueKey('hermes-live-voice-start'),
+                icon: const Icon(Icons.record_voice_over_outlined),
+                label: Text(strings.chatLiveVoiceStartAction),
+                onPressed:
+                    canSendTurns &&
+                        ref
+                            .watch(wingVoiceSettingsProvider)
+                            .continuousVoiceEnabled
+                    ? () => _setContinuousVoice(true)
+                    : null,
+              ),
             ),
-          ),
           if (_composerVoiceOptionsExpanded)
             Wrap(
               key: const ValueKey('hermes-composer-voice-options-panel'),

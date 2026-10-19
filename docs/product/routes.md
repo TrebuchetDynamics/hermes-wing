@@ -32,6 +32,14 @@ Hermes Wing uses one adaptive route tree. Compact Chat prioritizes the transcrip
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
 
+Compact Chat uses the same below-600px header threshold as the compact shell.
+Its composer exposes draft dictation and Live voice as distinct named controls,
+without a duplicate hands-free microphone or a separate Live entry row. Phone
+introductory voice tips no longer occupy transcript space; secondary settings and
+all original actions remain reachable. Wide presentation and Agent ownership are
+unchanged. See [compact usability evidence](../quality/mobile-chat-simplification.md)
+for checks and physical-device qualification limits.
+
 Standalone Office and its local slash action are retired, not replaced with Bots.
 Obsolete `/office` URLs use the existing Page not found screen and explicit Return
 to chat recovery; opening that URL does not activate a contact or mutate Agent state.

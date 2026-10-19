@@ -13,6 +13,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T09:19:37Z
 - Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PARITYUPDATE-005-11 — USER_INPUT — effort input — unblocks 0
+
+- Task: PARITYUPDATE-005-11 — Repair compact Profiles keyboard fixture on the retained combined source.
+- Needs: worker reported a blocker: Coordinator must supply the matched corrected retained combined source through the supported source-refresh path. Assigned baseline 07c047743a29bbf453984cdb4211e1d85c7ad7ea still contains the invalid historical Chat layout test (blob 7ff1c14e8ff16dfbe18763a7b420960f6c27db92), preventing the mandatory analyzer gate. The referenced MT-RERUN-TRAIN attempt-1 report and $TMPDIR/train-assembly handoff a…
+- Since: 2026-10-19T09:27:49Z
+- Answer: Answer in PARITYUPDATE-005-11's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort investigate — unblocks 0
 
 - Task: PARITY-NATIVE-LINUX — Execute and extend native Linux

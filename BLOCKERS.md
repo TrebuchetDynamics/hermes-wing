@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
+
+- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
+- Needs: worker reported a blocker: The existing MT-RERUN-TRAIN coordinator must deliver its bounded frozen combined-source baseline/handoff (source identity and member/patch manifest) through the supported native integration path. Preserve the recovered corrected Tab patch SHA256 3dec5799d1324246fa5887205d69cf6590b191473a9c9c1110990bfeffb19acf, consume PLANGAP-001-2f's parser delta without ID/disposition changes and WING-001-b3's r…
+- Since: 2026-10-19T05:54:51Z
+- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

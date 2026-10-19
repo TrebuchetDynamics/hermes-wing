@@ -427,56 +427,6 @@ before their goals can become `met`.
 
 ### **P0** — Desktop welcome and direct connection
 
-- [ ] **PARITY-NATIVE-LINUX** —  Execute and extend native Linux
-  counterparts for the mapped Android outcomes. Payoff: qualify the actual Flutter
-  desktop target without pretending Maestro provides a GTK driver.
-  Map native scenarios to the same HD-* rows and separate delivered subsets from
-  unsupported operations. Do not close a row through a containing screen-tour file.
-  Goal: PARITY
-Section: Next.
-  Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
-  [matrix](docs/product/hermes-desktop-feature-matrix.md),
-  [native suite](integration_test/linux_maestro_flows_test.dart),
-  [runbook](docs/runbooks/desktop-feature-qualification.md).
-  Scope: owned Xvfb display/state, native fixtures and bounded missing counterpart
-  scenarios. Add regression-driven in-scope fixes, no personal runtime changes.
-  Acceptance: actual native launches, per-scenario exits and matching source/build
-  receipts. Exercise wide/compact behavior, cancellation, ownership and no replay.
-  Keep browser, unit/widget and live-provider results separate. Unsupported features
-  remain gaps even when their unavailable-state assertion passes.
-  Prerequisite resolution: [BLK-20261005-003](BLOCKERS.md#blk-20261005-003--install-linux-desktop-build-packages-sudo)
-  records a demonstrated user-space build path, not installed system dependencies.
-  Recheck compatibility and use an owned prefix as described in the
-  [native runbook](docs/quality/native-relaunch-workflow.md#safe-user-space-prerequisites-and-reproduction).
-  Keep system packages unchanged. This resolves the sudo prerequisite only;
-  the mapped feature checks still need their own execution evidence.
-  Status: open
-  Readiness: the latest report at
-  `autowork-execution/slot-data/PARITY-NATIVE-LINUX/attempt-1/report.json`
-  under the Git common directory is readiness-only; no Flutter/native qualification
-  ran. The older `2ddbb51b` baseline and active-tab-worker observation are historical. The latest readiness-only
-  attempt is now on `9f70e019`, with 20 relevant source/test paths different from
-  committed `d7952ec9`; no Flutter/native checks ran. Tab attempt-2 has a held
-  corrected candidate with 1,996 terminal Chat/router passes, not merely focused
-  checks. Consume MT-RERUN-TRAIN's matching offline source/receipt handoff,
-  not completion of Android/live tab acceptance. The older beeac288 native
-  candidate and 50-failure timeout remain historical; preserve and recheck its
-  ownership/source drift before adoption. Subordinate GTK passes preceding final
-  source do not qualify the combined candidate.
-  Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: consume the existing MT-RERUN-TRAIN coordinator's offline source
-  handoff (not completion of its whole train gate). Verify the assigned source
-  against the delivered manifest and its terminal Chat receipt before reconciling
-  only this task's inactive retained native delta.
-  Rerun the complete required offline command, native launcher, individually named
-  mapped scenarios and owned-display cleanup. Do not duplicate the Chat repair,
-  repeat an unchanged failed baseline or treat focused tab passes as its full gate.
-  No gate is waived, no acceptance is reduced and no live authority is added.
-  Dependencies: none.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Follow the owned native procedure: `env -u DISPLAY bash scripts/run_linux_e2e.sh` and mapped linux_maestro_flows_test.dart scenarios from the runbook. Require per-scenario source/build/exit receipts and owned display cleanup; no system installation or live-provider authority.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-  Ownership: Unassigned; verify actual native worker/tracker ownership before execution. Owned isolated fixture scope only; no personal runtime or live-provider authority.
-
 ### Terminal working-directory files (planned)
 
 ### **P1** — Daily use, recovery and core Desktop composition
@@ -1596,4 +1546,15 @@ does not mark any check passed or authorize live actions.
   - Full application saved-endpoint startup and OS secure-storage recovery are not qualified by this isolated Chat target; Linux selection preferences are real, while the run-lease store and HTTP/SSE transports are synthetic test seams.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART.
+  Status: open
+
+- [ ] PARITY-NATIVE-LINUX-LIVE — Live checks for PARITY-NATIVE-LINUX
+  Scope: Run the live checks the offline work for PARITY-NATIVE-LINUX left pending.
+  Acceptance: Each check passes on the real target:
+  - Real Agent/provider/SSH/OAuth operation/grant authority, inference and authoritative approval/terminal cancellation remain separately unqualified.
+  - Android/device and Wayland/other-IME/screen-reader qualification were not exercised; native X11 fixture results are not substitutes.
+  - Physical microphone/acoustic routing, actual speech and audio hardware remain unqualified; unavailable capture assertions do not qualify positive voice support.
+  - OS keyring, saved-credential upgrade/readback and signed installer/service/update/rollback acceptance need separately authorized platform checks.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITY-NATIVE-LINUX.
   Status: open

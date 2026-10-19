@@ -3938,6 +3938,7 @@
         "PARITY-MAESTRO-ANDROID-DEVICE",
         "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
         "PARITY-NATIVE-LINUX",
+        "PARITY-NATIVE-LINUX-LIVE",
         "PARITY-OFFICIAL-MATRIX",
         "PARITY-OFFICIAL-MATRIX-LIVE",
         "PARITYUPDATE-004-48",
@@ -6910,7 +6911,6 @@
       "PARITYUPDATE-006-f4",
       "WING-001-b3",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
-      "PARITY-NATIVE-LINUX",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -6979,7 +6979,8 @@
       "README-001-62-LIVE",
       "MT-VERIFY-BROWSER-GATES-LIVE",
       "PARITYUPDATE-005-11-LIVE",
-      "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE"
+      "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
+      "PARITY-NATIVE-LINUX-LIVE"
     ]
   },
   "tasks": [
@@ -7020,14 +7021,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace reconnect for two distinct session-owned tab runs"
-    },
-    {
-      "depends_on": [],
-      "goal": "PARITY",
-      "id": "PARITY-NATIVE-LINUX",
-      "section": "Next",
-      "status": "open",
-      "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
     },
     {
       "depends_on": [
@@ -7562,6 +7555,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-MAESTRO-ANDROID-DEVICE"
+    },
+    {
+      "depends_on": [
+        "PARITY-NATIVE-LINUX"
+      ],
+      "goal": "PARITY",
+      "id": "PARITY-NATIVE-LINUX-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITY-NATIVE-LINUX"
     },
     {
       "depends_on": [
@@ -9047,6 +9050,14 @@
       "section": "Done",
       "status": "done",
       "title": "Qualify native bootstrap-denied restart and deliberate exact-owner keyboard recovery"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITY-NATIVE-LINUX",
+      "section": "Done",
+      "status": "done",
+      "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
     },
     {
       "depends_on": [

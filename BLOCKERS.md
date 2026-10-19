@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
-
-- Task: MT-RERUN-TRAIN — Rerun canonical integration gates
-- Needs: worker reported a blocker: The existing integration coordinator must supply one assembled native task baseline through its supported integration path. The exact current attributable sources are captured read-only in /var/tmp/aw-1000-8d90af7b-4/mt-rerun-train/assembly/: Tab patch SHA256 3dec5799d1324246fa5887205d69cf6590b191473a9c9c1110990bfeffb19acf, parser 3d92402b64126b7f92cc4fcf99415662ee06c125e375e80aa0efaa1c62251c27, S… (+1 more in report.json)
-- Since: 2026-10-19T05:25:00Z
-- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_INPUT — effort input — unblocks 1
 
 - Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered

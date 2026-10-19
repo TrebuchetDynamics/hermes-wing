@@ -1,0 +1,309 @@
+{
+  "status": "PASS",
+  "baseline": "d121bffb24fcd0c6bc621007910332eb5c1624a9",
+  "source_manifest_sha256": "ce2e0f6a6451fdcbb31ceb020e818cf9f88de786408cf1e5a4565ad1a30f85bd",
+  "runtime_helper_revision": "894439b76c889fed45f3c4d57b73086f1e18d479",
+  "runtime_helper_sha256": "295299f3d23505ff115ceb03fbfac3d552889c2c3dd3eb775c4de8108d39dec6",
+  "live_agent": "NOT_CHECKED",
+  "physical_keyboard": "NOT_CHECKED",
+  "screen_reader": "NOT_CHECKED",
+  "environment": {
+    "sdk": "Flutter 3.44.2 \u2022 channel [user-branch] \u2022 unknown source\nFramework \u2022 revision c9a6c48423 (4 months ago) \u2022 2026-06-10 15:52:41 -0700\nEngine \u2022 hash 04efd7c093d4e9281d5526ebcad6ecc60ba8badf (revision 77e2e94772) (4 months ago) \u2022 2026-06-10 19:59:06.000Z\nTools \u2022 Dart 3.12.2 \u2022 DevTools 2.57.0\n",
+    "engine_stamp_sha256": "a53739c518cbd27c2e510d9d9f5176faf340359a16a59cbf002bc12b421d6702",
+    "pkg_config_versions": "3.24.41\n1.24.2\n0.21.4\n",
+    "isolated_home_xdg": true,
+    "inherited_display_dbus": false,
+    "port_base": 20400,
+    "platform": "Linux x86_64, GTK 3.24.41, GStreamer 1.24.2, libsecret 0.21.4"
+  },
+  "display": {
+    "pid": 824507,
+    "authenticated": true,
+    "wrong_missing_authority_rejected": true,
+    "owned_group_gone": true
+  },
+  "command": [
+    "$AUTOWORK_CACHE/flutter-3.44.2/bin/flutter",
+    "drive",
+    "--no-pub",
+    "-d",
+    "linux",
+    "--no-dds",
+    "--host-vmservice-port=20400",
+    "--device-vmservice-port=20400",
+    "--driver=integration_test/support/transcript_keyboard_driver.dart",
+    "--target=integration_test/linux_transcript_keyboard_test.dart"
+  ],
+  "exit_code": 0,
+  "receipt": {
+    "native_pid": 832761,
+    "text_scale": 2.0,
+    "retired_review_removed": true,
+    "inverse_disclosure_traversal": true,
+    "recovery_mutations": 0,
+    "observations": [
+      {
+        "width": 390.0,
+        "mutations": 1,
+        "decisions": 0
+      },
+      {
+        "width": 1280.0,
+        "mutations": 1,
+        "decisions": 0
+      },
+      {
+        "width": 390.0,
+        "mutations": 2,
+        "decisions": 0
+      },
+      {
+        "width": 1280.0,
+        "mutations": 2,
+        "decisions": 0
+      },
+      {
+        "width": 390.0,
+        "mutations": 2,
+        "decisions": 0
+      }
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/v1/capabilities",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions",
+        "query": {
+          "limit": "50",
+          "offset": "0"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions/synthetic-reconnect/messages",
+        "query": {
+          "limit": "500",
+          "offset": "0",
+          "order": "latest"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/v1/runs",
+        "query": {},
+        "body": {
+          "session_id": "synthetic-reconnect",
+          "input": "Synthetic reconnect request",
+          "message": "Synthetic reconnect request"
+        }
+      },
+      {
+        "method": "SSE",
+        "path": "/v1/runs/run_1/events",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/v1/runs/run_1",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/v1/capabilities",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions",
+        "query": {
+          "limit": "50",
+          "offset": "0"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions/synthetic-reconnect/messages",
+        "query": {
+          "limit": "500",
+          "offset": "0",
+          "order": "latest"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions/synthetic-reconnect/messages",
+        "query": {
+          "limit": "500",
+          "offset": "0",
+          "order": "latest"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/v1/capabilities",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions",
+        "query": {
+          "limit": "50",
+          "offset": "0"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions/synthetic-reconnect/messages",
+        "query": {
+          "limit": "500",
+          "offset": "0",
+          "order": "latest"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/v1/runs",
+        "query": {},
+        "body": {
+          "session_id": "synthetic-reconnect",
+          "input": "Synthetic current keyboard request",
+          "message": "Synthetic current keyboard request"
+        }
+      },
+      {
+        "method": "SSE",
+        "path": "/v1/runs/run_2/events",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/v1/runs/run_2",
+        "query": {}
+      },
+      {
+        "method": "GET",
+        "path": "/v1/runs/run_2",
+        "query": {}
+      },
+      {
+        "method": "POST",
+        "path": "/v1/runs/run_2/approval",
+        "query": {},
+        "body": {
+          "choice": "deny",
+          "request_id": "request_2"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/sessions/synthetic-reconnect/messages",
+        "query": {
+          "limit": "500",
+          "offset": "0",
+          "order": "latest"
+        }
+      }
+    ],
+    "mutations": [
+      "/v1/runs",
+      "/v1/runs",
+      "/v1/runs/run_2/approval"
+    ],
+    "decisions": [
+      {
+        "path": "/v1/runs/run_2/approval",
+        "choice": "deny",
+        "request_id": "request_2"
+      }
+    ],
+    "captures": [
+      "tool-unfocused",
+      "tool-focused",
+      "tool-expanded",
+      "review-unfocused",
+      "review-focused",
+      "deny-focused"
+    ]
+  },
+  "process": {
+    "native_pid": 832761,
+    "driver_pid": 824797,
+    "start_ticks": "319565272",
+    "executable": "wing",
+    "receipt_sha256": "2307d5178cefbf1c52167192e3057f8397c0cabbfad265ff333e503a6fbe1e2e"
+  },
+  "renders": {
+    "tool-expanded.png": "05a6f3f544b729f85d960114edbcf4f40ff64e18c8719208b33d21b993f8738b",
+    "review-focused.png": "bd44aa1c1aa23b2d3d3ff6daf141ac2367634f04f77c52ebba4e00e709eae4d5",
+    "tool-unfocused.png": "e8eaea6a94b3a4d47a7170c31a07c01746122a35ccf6788c1526596820f89480",
+    "tool-focused.png": "2a8511b26078d149ed622bd9d3d8fa4b26665e8754a24ddf87410bb94b612d95",
+    "deny-focused.png": "91179ecad23a2623b17254cb4e3707fdcd522d1eccba0c9366d2ad4bad1a068b",
+    "review-unfocused.png": "89cdf792cdbfd97ebca674207e676afde0af941d5f0c3f4b86aef34ffd3fc845"
+  },
+  "native_group_gone": true,
+  "native_binary_sha256": "0dd2c0d546f45f42414f8244d4b1d31c8335fb4a587a7b14f5aa004ad9f6498a",
+  "isolated_state_removed": true,
+  "duration_seconds": 42.047,
+  "task": "VERIFY-CHAT-TRANSCRIPT-NATIVE",
+  "scope": "Complementary GTK keyboard slice; local commit and coordinator integration are separate. Not full-suite, process-restart, physical-keyboard or screen-reader qualification.",
+  "execution_evidence": "$TMPDIR/transcript-keyboard-vlssiz96/",
+  "selected_source_sha256": {
+    "integration_test/linux_transcript_keyboard_test.dart": "8562f0f2838cf0079829764ca9ee70be1b670e58b865ad366b404b200969b752",
+    "integration_test/run_linux_transcript_keyboard.py": "b63abccf413bd16401a8ef07f92c8c917d9ef493564907159425b50f51eb3757",
+    "integration_test/support/transcript_keyboard_driver.dart": "e653b943b23a868a87c9f6198f4a0e0687ae5022c14f1c11c8c6c6a16117a8cd",
+    "integration_test/support/transcript_recovery_native_fixture.dart": "b0ea1f21feb6cb780bb3c01191f3002accf54dc14c6d33b9a0f625fc430bf10f",
+    "lib/features/hermes_chat/screens/widgets/hermes_chat_status.dart": "ee363e1690ea4e816a2ebed765694dfa3c7aa4bc9341d35572ed64fb7a9c5572",
+    "lib/features/hermes_chat/presentation/hermes_chat_timeline.dart": "c6ae344081aae2bf9ab79d9556c8157bf0ec84dacc63f85a9ee1057341c9ce35",
+    "lib/core/hermes/channel/api_channel/hermes_api_channel_connection.dart": "264571c580066ce5d7f5f221fde8f67bbefb5ada0810cde301d58000d5ab46c9",
+    "test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart": "7d918db55d9a5a2e8390aa44b7f835d7f2676da368a3a841128e1951f51db9d0",
+    "scripts/support/desktop_no_inference_smoke.py": "cf603e078e68390d69fae8534b3423ace8f7d3dbba629c248644f8d4fd2b6951",
+    "scripts/support/local_setup_enrollment_native.py": "4b80c9a49cc9c3910d8b75a62f58a955dbe837115b8934965148387f7c557407",
+    "pubspec.lock": "f089602c321af4a65d6f1dc70b6adef724079bedc8e4f1d0496f7b8e22641c89"
+  },
+  "validation": {
+    "focused_tests": 21,
+    "analysis": "No issues found",
+    "format": "621 files, zero changes",
+    "chat_core": {
+      "passed": 2889,
+      "skipped": 9,
+      "unrelated_isolated_pass": "test/features/hermes_chat/voice/hermes_voice_input_controller_test.dart: continuous voice re-arms after its capture window expires"
+    },
+    "full_flutter": "Time limit after 3072 passes; no final aggregate, not a pass.",
+    "web_build": "Fresh main_e2e JavaScript release build passed. Existing Wasm/font warnings; no Wasm claim.",
+    "default_browser": "Time limit: 79 terminal passes across first six specs, live-provider opt-in skipped; smoke partial and screenshot spec not completed. No full-browser pass.",
+    "npm_audit": "0 vulnerabilities"
+  },
+  "unrelated_failures": [
+    "test/features/hermes_chat/voice/hermes_voice_input_controller_test.dart: continuous voice re-arms after its capture window expires (passed its one isolated rerun)"
+  ],
+  "environment_failures": [
+    {
+      "command": "timeout 1770 flutter test --concurrency=1",
+      "summary": "Exit124 at command limit, no terminal aggregate; 3072 partial passes, no reported failures."
+    },
+    {
+      "command": "timeout 900 npm run web:e2e",
+      "summary": "Exit124 at command limit; no failing test markers, no final aggregate. Owned server stopped; ports20420/20421 released."
+    }
+  ]
+}

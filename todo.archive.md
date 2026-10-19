@@ -7634,3 +7634,236 @@ Section: Next.
   Ownership: Coordinator; one isolated writer; no claim or execution from this planning pass.
   Touches: README.md, assets/readme/, scripts/generate_readme_assets.mjs, test/tooling/readme_assets_contract_test.dart, docs/quality/
   Next action: preserve an anchor/command/disclosure baseline, prepare the smallest native-Markdown refresh using existing approved imagery, then compare composed wide/narrow light/dark previews and review its factual claims before integration. Do not repeat completed landing/onboarding implementation.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="mt-rerun-train"></a>
+
+- [x] **MT-RERUN-TRAIN** —  Rerun canonical integration gates
+  on a newly captured combined tree, not the repaired historical candidate.
+  Goal: INTEGRATION
+Section: Next.
+  Status: done
+  Payoff: detect interactions among delivered predecessor slices.
+  Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
+  [2026-08-17-audit-remediation](docs/superpowers/plans/2026-08-17-audit-remediation.md) (historical planning context);
+   [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
+  and [required checks](CONTRIBUTING.md#required-checks).
+  Scope: existing integration owner's retained-source reconciliation followed by
+  source-bound format, analyzer, full Flutter and audit gates. Retired service Go checks are no longer applicable after
+  963b9b5b; current required checks remain authoritative. Record exact source
+  identity, commands and terminal outcomes.
+  The browser phase is indexed separately below; no canonical gate is waived.
+  Acceptance: passing applicable non-browser gates on one captured input, with
+  failures repaired by their existing owners and checks rerun. No merges,
+  publication, installs or platform claims are authorized by this index.
+  Dependencies: MT-APP-SHELL-STATUS-BAR (done).
+  Checks: First verify the retained patch/report fingerprints and reconcile the exact source inputs via the linked recovery sequence; individual `git apply --check` success is not combined acceptance. On the captured combined tree, `dart format --output=none --set-exit-if-changed lib test integration_test`; `flutter analyze`; `flutter test --concurrency=1`; `npm audit`; `git diff --check`. Browser gates stay with MT-VERIFY-BROWSER-GATES. Retired service Go checks do not authorize recreating the removed service. Only the existing integration owner runs this task; retain every applicable canonical gate and terminal failure.
+  Touches: docs/quality/, lib/core/hermes/channel/hermes_api_channel.dart, lib/core/hermes/ssh/ssh_types.dart, lib/features/hermes_chat/composer/hermes_composer_draft_store.dart, lib/features/hermes_chat/presentation/hermes_chat_timeline.dart, lib/features/hermes_chat/presentation/hermes_transcript_viewport.dart, lib/features/hermes_chat/screens/hermes_chat_screen.dart, lib/features/hermes_chat/screens/state/hermes_chat_connection.dart, lib/features/hermes_chat/screens/state/hermes_chat_layout.dart, lib/features/hermes_chat/screens/state/hermes_chat_lifecycle.dart, lib/features/hermes_chat/session/hermes_chat_session_actions.dart, lib/features/hermes_chat/session/hermes_chat_session_workspace.dart, lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart, lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart, lib/features/hermes_chat/widgets/managed_ssh_connection_panel.dart, lib/router/widgets/chat_workspace_overlay.dart, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart, test/features/hermes_chat/composer/hermes_composer_draft_store_test.dart, test/features/hermes_chat/screens/hermes_chat_gateway_switch_test.dart, test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart, test/features/hermes_chat/screens/hermes_chat_queued_dialog_intent_test.dart, test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart, test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart, test/features/hermes_chat/screens/hermes_chat_voice_lifecycle_test.dart, test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart, test/features/hermes_chat/screens/hermes_reasoning_disclosure_adaptive_test.dart, test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart, test/features/hermes_chat/providers/managed_ssh_serve_test.dart, test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart, test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart, test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart, test/router/app_router_transitions_test.dart, test/tooling/plan_backlog_contract_test.dart, test/tooling/plan_backlog_traceability_test.dart, test/tooling/support/plan_backlog_contract.dart, playwright/tests/regression/browser-surfaces.spec.mjs, playwright/tests/regression/chat-session-workspace.spec.mjs, playwright/tests/regression/chat-workspace-overlay.spec.mjs, playwright/tests/regression/hermes-lifecycle.spec.mjs, playwright/tests/regression/hermes-smoke.spec.mjs, playwright/tests/screenshots/e2e-screenshots.spec.mjs, docs/runbooks/managed-ssh-disconnect-recovery.md, docs/security/managed-ssh-forward-contract.md, pubspec.lock
+  Assembly boundary: this corrects the missing write footprint for the already
+  assigned coordinator's retained-source reconciliation, not ownership of new
+  feature repairs. Apply only attributable deltas to its own supported isolated
+  candidate; never write producer worktrees, import their queue snapshots, bypass
+  admission/source refresh or infer new merge, dependency or live authority.
+  Unknown regressions remain with existing owners, as Acceptance requires.
+  Resources: exclusive — run the full offline gates against one stable combined input; Touches remains the write boundary.
+  Touches widened by the runner from worker evidence: pubspec.lock
+  Input preflight: in the execution workspace, record `git rev-parse HEAD HEAD^{tree}`,
+  `git status --short --branch`, `git merge-base --is-ancestor 80e41ed8 HEAD`
+  and `git rev-parse HEAD:pubspec.lock` before any Flutter command. The ancestor
+  check must exit 0 and the committed lock must match the delivered compatible
+  blob below; record any preserved worker overlay separately. A handoff edit
+  does not refresh that workspace. Do not resolve dependencies to repair a stale
+  source input or copy the lock from another checkout.
+  Evidence: resolve private paths from `git rev-parse --git-common-dir`.
+  The historical report at
+  `autowork-execution/slot-history/MT-RERUN-TRAIN/2/slot-data/attempt-1/report.json`
+  exercised
+  `fe0cc6b4029400683f4e96ae104ff46c7ccb1fb2`, tree
+  `72dd034c963254351cee20b97f1e63f771a084e0`, plus only the retained gateway-test
+  formatter repair. Preflight and offline enforced-lockfile resolution passed;
+  committed and working lock blob `8a84003a7a7b1fbc26f25e2e09892baec2e6e66d`
+  matched and `80e41ed8` was an ancestor. The old stale-workspace/lock blocker is
+  resolved for this attempt, not for every future input. The report retains the
+  earlier `8d8141b761c5bd92157fdbe84567ef2e8ba6c95e` failure history separately;
+  do not use its 51 failures or 614-file format pass as this run's results.
+  Historical outcomes on fe0cc6b4: 75 gateway tests passed; global format exited 65 and analysis
+  exited 1 on `hermes_chat_layout_width_test.dart:59-82`. The full Flutter command
+  timed out after 1700 seconds (wrapper 124), with interim progress +1877/-56 and
+  56 failure headers across 12 files, not a terminal suite total. Audit and diff
+  checks passed. The report binds 1515 unchanged gate-input hashes; it records no
+  commit and no full-suite pass. Preserve its uncommitted formatter repair/receipt.
+  Readiness: current `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json`
+  supersedes the earlier read-only assembly at `6c521fbf`. On HEAD `35d7976a`,
+  it reconstructed the exact Tab/parser/SSH patches, retained the Tab gateway and
+  one layout repair, merged disjoint ARB entries and regenerated localization.
+  The 47-file overlay yields tree `a2213ffd78bf6a485e09de0d218cc617f273a78e`,
+  patch SHA-256 `1c169ec1c114a01213ace13f55d17d3de9516ddf60f4281656abd40ce2c3d886`.
+  All five non-browser gates completed: format/analyzer/audit/diff passed; full
+  Flutter exited 1 normally with 4,041 passed, 9 skipped and 2 failed. Fresh
+  Chat/router: 2,014 passed, exit 0; guarded parser: 13 passed. Assembly review
+  reported no important/critical issue. No commit or native/live acceptance.
+  Remaining repairs are explicitly split as PARITYUPDATE-005-11 (compact Profiles
+  public keyboard seam, line 259) and PARITYUPDATE-006-f4 (footer painted-focus
+  oracle, fixture line 102). Preserve every assertion; no flaky classification
+  exists. WING-001-b3 subsequently consumed this input and recorded a fresh build
+  and all nine default browser specs: 89 passed, one opt-in live skip, no unexpected
+  or flaky results. Its old Tools disclosure failure is no longer a current hold.
+  These candidate receipts do not qualify main or waive the indexed browser phase.
+  Exact artifact identities and current source-refresh gaps are in the recovery
+  sequence; earlier timeout/1,996/4,016 totals above remain historical.
+  Execution: [source assembly and terminal gate procedure](docs/tasks/held-offline-recovery.md#recovery-sequence).
+  Next action: preserve and verify the already delivered `a2213ffd` handoff, not
+  rebuild the assembly or ask an unnamed coordinator for it. Deliver matching
+  source through the supported native source-refresh/integration path to the Tab,
+  parser and native consumers whose assigned baselines still lack it. Supply the
+  same input to the two bounded fixture repair slices above; collect their
+  attributable patches under the existing inventory/native-fixture lineages.
+  This task retains aggregate acceptance and source delivery, not those feature
+  repairs. Do not repeat the unchanged red full command while awaiting patches.
+  After both corrections, recapture preflight and all five listed gates on the
+  stable combined input. No whole-tab/Android/live completion prerequisite is added.
+  Run gates separately with disk scratch
+  and supported tracked execution retaining a full terminal result, rather than
+  one 1700/1800-second wrapper around the entire chain. A focused pass, shard count
+  or timeout is not the required full command. The prerequisite is the reviewed
+  offline source repair, not completion of Android/live tab acceptance. Preserve
+  the footer investigation; no flaky classification is established. No lock
+  copying, worker merge/rebase/branch switch, source-refresh bypass or new
+  lockfile authority is granted. This handoff runs no integration or product gate.
+  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="plangap-001-2f"></a>
+
+- [x] **PLANGAP-001-2f** — Accept hash-suffixed task IDs in plan traceability without weakening guards.
+  Goal: INTEGRATION
+Section: Next.
+  Status: done
+  Sources: [accepted parser-fix scope](docs/plans/2026-10-18-plan-traceability-ids.md#scope), [full tooling plan](docs/plans/2026-10-18-plan-traceability-ids.md), [plan policy](docs/plans/README.md#plan-to-task-coverage).
+  Scope: only existing mapping/body ID extraction and nearest tooling regressions; no app code, dependencies, ID changes, new parser abstraction or weakened map/body checks. Metadata repairs from this planning pass are not future work.
+  Acceptance: uppercase and valid existing hash-suffixed IDs resolve the exact sole body; real inventory covers all current retained plans. Preserve duplicate/missing-body, checkbox/status, archive/live, prefix-neighbor, adjacent-body-link and disposition/backlink guards. Keep task IDs/status/order/dependencies/ownership/acceptance and live grants unchanged.
+  Checks: planned RED is the already observed real traceability failure, reproduce on implementation candidate; then `flutter test --no-pub test/tooling/plan_backlog_contract_test.dart test/tooling/plan_backlog_traceability_test.dart`; `dart format --output=none --set-exit-if-changed test/tooling/plan_backlog_traceability_test.dart test/tooling/support/plan_backlog_contract.dart test/tooling/plan_backlog_contract_test.dart`; `flutter analyze --no-pub`; `git diff --check`.
+  Dependencies: None.
+  Ownership: Coordinator; one isolated writer; planning only, not claimed or dispatched.
+  Touches: test/tooling/plan_backlog_traceability_test.dart, test/tooling/support/plan_backlog_contract.dart, test/tooling/plan_backlog_contract_test.dart, docs/quality/
+  Payoff: unblock real retained-plan validation without renaming existing task IDs.
+  Recovery evidence: current Git-common
+  `autowork-execution/slot-data/PLANGAP-001-2f/attempt-1/report.json` is on
+  `597d8762b1e8f4109a0e5ebb8b449b576814a3c2`, not `36f4155f` or `6c167919`.
+  It recovers only the three parser files, exact patch SHA-256
+  `3d92402b64126b7f92cc4fcf99415662ee06c125e375e80aa0efaa1c62251c27`, with
+  focused formatting green. The layout/gateway preflight is still red on identical
+  blocker blobs `7ff1c14e8ff16dfbe18763a7b420960f6c27db92` and
+  `a812ad40d7be2ec54e44a5b1e243d48ee256fcec`; no focused tests or analysis reran.
+  Earlier 13/13 and review remain historical. MT-RERUN-TRAIN subsequently consumed
+  this exact parser delta, corrected those prerequisites and recorded 13 focused
+  passes plus clean global format/analysis on assembled `a2213ffd`.
+  Readiness: the producer handoff now exists; this parser workspace still needs
+  its corrected layout/gateway input via the supported coordinator source refresh.
+  Compare the exact member manifest, not merely different blob hashes. This is a
+  source-readiness gate, not dependency on whole-train/tab/Android completion.
+  No app or dependency edits, assertion weakening, plan-disposition change or new
+  acceptance is authorized.
+  Resources: exclusive — reconcile the retained tooling candidate and exact current plan inventory.
+  Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
+  Next action: recheck worker inactivity and preserve the exact three-file parser
+  patch `3d92402b64126b7f92cc4fcf99415662ee06c125e375e80aa0efaa1c62251c27`.
+  That delta is already consumed in the coordinator's assembled handoff. Request
+  its corrected layout/gateway assignment through the supported source-refresh
+  path; do not import Chat repairs or reimplement the parser in this task. Verify
+  the matching source first, then reproduce current inventory/guard checks and
+  rerun analysis and full offline validation with separate supported terminal gates.
+  Preserve every guard above; do not wait for Android/live tab completion, reopen
+  MCP planning or ask an owner to rename IDs. The earlier 13 passes qualify only
+  the reported candidate, not the combined source.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="mt-verify-browser-gates"></a>
+
+- [x] **MT-VERIFY-BROWSER-GATES** — Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts
+  Goal: INTEGRATION
+Section: Next.
+  Summary: Prove the same combined source's compiled browser journeys and exact request counts.
+  Payoff: close the historical browser gap without treating unit passes as UI evidence.
+  Sources: [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
+  and [browser command](CONTRIBUTING.md#required-checks).
+  Scope: the existing integration owner's browser phase after MT-RERUN-TRAIN;
+  build the deterministic target and run the canonical browser suite. Repair
+  exposed Wing regressions through existing ownership; exclude live backends,
+  device changes, native claims, publication and upstream edits.
+  Acceptance: source-bound completed build and browser logs, passing journeys,
+  exact mutation/no-incidental-mutation assertions and no hidden waived failures.
+  If source changes after the first phase, repeat affected gates on that source.
+  Dependencies: MT-RERUN-TRAIN; Next.
+  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
+  Checks: Planned on the same captured combined source after MT-RERUN-TRAIN: `flutter build web --release -t lib/main_e2e.dart` then `npm run web:e2e`; `git diff --check`. Retain exact terminal logs, source/build identity and mutation counts; source changes invalidate affected prior gates. These commands do not authorize live backends, publishing, or repair of another owner's implementation.
+  Touches: docs/quality/
+  Status: done
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="verify-chat-transcript-native"></a>
+
+- [x] **VERIFY-CHAT-TRANSCRIPT-NATIVE** —  Keep recovered
+  tool categories and current approval actions keyboard-operable in native Linux.
+  Goal: CHAT-FIDELITY
+Section: Next.
+  Payoff: prove the supported transcript outside browser/widget-only qualification.
+  Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
+  [reconnect limits](docs/quality/chat-transcript-reconnect.md#limits-and-handoff)
+  and [accessibility decision](docs/adr/client.md#decision).
+  Scope: existing native integration harness, timeline/channel and deterministic
+  fixture; add focused native scenarios and regressions for reproduced Wing defects.
+  Exclude live inference/tools, Agent edits, system installs, new APIs, audio,
+  personal state and screen-reader support claims without matching evidence.
+  Acceptance: native GTK keyboard disclosure and current-owner approval work after
+  canonical reconnect and compact/wide return. Retired actions disappear; tool
+  content stays redacted; recovery adds no sends, decisions, creates or Stop.
+  Run owned native scenarios and nearest widgets with exact request/source receipts.
+  Dependencies: VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY; ordered successor in Next.
+  Current evidence: [native approval recovery](docs/quality/native-transcript-recovery.md)
+  already qualifies four reconnect/remount/approval cases at 100/200% text.
+  Coordinate the remaining acceptance with that completed slice; do not duplicate
+  its scenarios or infer process-restart qualification.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Status: done
+  Readiness: current Git-common
+  `autowork-execution/slot-data/VERIFY-CHAT-TRANSCRIPT-NATIVE/attempt-1/report.json`
+  is readiness-only on `4534a6ee08ad6d01d3e77b2105c1d2c6aff0be28`.
+  It verifies the new coordinator `a2213ffd` handoff, patch `1c169ec1` and terminal
+  2,014-pass Chat/router log, but all 47 overlay entries mismatch this assignment:
+  42 differing, five absent. No new Flutter/native qualification ran. The older
+  `2ddbb51b`, beeac288 failure census and `9f70e019`/1,996-pass comparison remain
+  historical; do not reproduce unchanged old failures or repin green receipts.
+  The eight retained keyboard files remain in set-aside-1; its prior PID is absent.
+  Matching source must arrive through the supported coordinator refresh path,
+  not a competing Chat repair or whole-train/tab/Android/live prerequisite.
+  Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
+  Next action: have the existing coordinator refresh this assignment to the
+  delivered `a2213ffd` source/member manifest through the supported native path;
+  the read-only report already proves the current assignment is unmatched. This
+  documentation edit does not supply source or permit bypassing admission pins.
+  Verify the refreshed workspace against the manifest/Chat receipt, then recheck
+  inactivity and reconcile the eight preserved dirty files in
+  `.worktrees/autowork-VERIFY-CHAT-TRANSCRIPT-NATIVE-set-aside-1`. Prior receipts and
+  archived report/log remain in `autowork-execution/slot-history/VERIFY-CHAT-TRANSCRIPT-NATIVE/1/slot-data/attempt-1/`.
+  Adopt only this task's keyboard delta, refresh exact request/source/teardown
+  receipts and rerun the mandatory suite. Do not replace it with the clean
+  readiness-only workspace or relabel historical native observations as current.
+  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Execute only the remaining owned GTK keyboard/approval scenarios through the linked native receipt/harness; retain exact request/source and teardown receipts. Reuse the four already-qualified cases without relabeling them as restart or screen-reader proof.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/

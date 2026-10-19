@@ -13,6 +13,17 @@ async function ready(page) {
   await enableFlutterAccessibility(page, { delay: 0 });
 }
 
+async function fillComposerDraft(page, composer, text) {
+  await composer.click();
+  // Match the settled keyboard handoff used by the profile-switch journey.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  const editor = page.locator('input:focus, textarea:focus');
+  await expect(editor).toBeFocused();
+  await page.keyboard.type(text);
+  await expect(editor).toHaveValue(text);
+  await expect(page.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
+}
+
 async function shellOpen(page, width, destination, actor) {
   const activate = async control => {
     const role = await control.getAttribute('role');
@@ -104,6 +115,13 @@ for (const width of [390, 1280]) {
       }
       const location = page.url();
       await shellOpen(page, width, 'Profiles');
+      const profileSearch = page.getByRole('textbox', { name: 'Search profiles', exact: true });
+      await profileSearch.click();
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await expect(profileSearch).toBeFocused();
+      await page.keyboard.type('coder');
+      await expect(profileSearch).toHaveValue('coder');
+      await expect(page.getByRole('group', { name: 'Home profile, ID: default, Active chat, Default', exact: true })).toHaveCount(0);
       await page.getByRole('button', { name: 'Chat with Coding profile', exact: true }).click();
       await expect.poll(async () => (await state(page)).selected_profile_id).toBe('coder');
       await expect(page.getByRole('group', { name: /Synthetic coding profile history\.$/ })).toBeVisible();
@@ -484,9 +502,8 @@ for (const width of [390, 1280]) {
       await page.evaluate(() => globalThis.wingE2EHermesConnect());
       const composer = page.getByRole('textbox', { name: 'Message Hermes…', exact: true });
       await expect(composer).toBeVisible();
-      await composer.click();
       const prompt = 'Synthetic overlay streaming request';
-      await page.locator('input:focus, textarea:focus').fill(prompt);
+      await fillComposerDraft(page, composer, prompt);
       await page.getByRole('button', { name: 'Send', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).toBeVisible();
       const running = await state(page);
@@ -538,9 +555,8 @@ for (const width of [390, 1280]) {
         let stream;
         const prompt = 'Synthetic replaced overlay run';
         if (lateCompletion) {
+          await fillComposerDraft(page, composer, prompt);
           const response = page.waitForResponse(response => new URL(response.url()).pathname === '/v1/runs/run_1/events');
-          await composer.click();
-          await page.locator('input:focus, textarea:focus').fill(prompt);
           await page.getByRole('button', { name: 'Send', exact: true }).click();
           await expect(page.getByRole('button', { name: 'Thinking…', exact: true })).toBeVisible();
           expect(await state(page)).toMatchObject({ active_session_id: before.active_session_id, last_turn_status: 'streaming', has_error: false });

@@ -8,6 +8,7 @@ import '../ssh_keys/managed_ssh_generated_key_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/hermes/ssh/managed_ssh.dart';
+import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/ssh/secure_managed_ssh_host_trust_store.dart';
 import '../providers/managed_ssh_connection_controller.dart';
 import 'localized_managed_ssh_connection_form.dart';
@@ -57,8 +58,24 @@ class _ManagedSshConnectionPanelState
         strings.managedSshHostTrustUnavailable,
       ManagedSshFailure.authentication =>
         strings.managedSshAuthenticationFailed,
+      ManagedSshFailure.timeout => strings.managedSshTimeout,
+      ManagedSshFailure.recoveryUnavailable =>
+        strings.managedSshStorageUnavailable,
       _ => strings.managedSshFailed,
     };
+    String agentFailureMessage(HermesConnectionFailureKind kind) =>
+        switch (kind) {
+          HermesConnectionFailureKind.authentication =>
+            strings.managedSshAgentAuthenticationFailed,
+          HermesConnectionFailureKind.incompatibleResponse ||
+          HermesConnectionFailureKind.invalidEndpoint =>
+            strings.managedSshAgentIncompatible,
+          HermesConnectionFailureKind.network ||
+          HermesConnectionFailureKind.timeout =>
+            strings.managedSshAgentUnavailable,
+          HermesConnectionFailureKind.tls => strings.connectionCheckTls,
+          HermesConnectionFailureKind.unknown => strings.managedSshAgentFailed,
+        };
     bool isCurrent() =>
         mounted &&
         generation == _generation &&
@@ -103,16 +120,17 @@ class _ManagedSshConnectionPanelState
       if (connected) {
         _adopted = true;
         widget.onConnected?.call();
-      } else {
-        setState(() => _error = failureMessage(trustFailure));
       }
     } catch (error) {
       if (mounted && generation == _generation) {
         setState(
-          () => _error = failureMessage(
-            trustFailure ??
-                (error is ManagedSshException ? error.failure : null),
-          ),
+          () => _error = trustFailure != null
+              ? failureMessage(trustFailure)
+              : error is ManagedSshAgentException
+              ? agentFailureMessage(error.kind)
+              : failureMessage(
+                  error is ManagedSshException ? error.failure : null,
+                ),
         );
       }
     } finally {
@@ -144,15 +162,30 @@ class _ManagedSshConnectionPanelState
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
+    final controller = ref.watch(managedSshConnectionControllerProvider);
+    ref.listen(managedSshConnectionControllerProvider, (previous, next) {
+      if (identical(previous, next)) return;
+      ++_generation;
+      final attempt = _attemptId;
+      if (!_adopted && attempt != null) {
+        unawaited(
+          _controller?.cancel(attemptId: attempt) ?? Future<void>.value(),
+        );
+      }
+      _controller = null;
+      _attemptId = null;
+      _busy = false;
+      _error = null;
+      _adopted = false;
+    });
     if (kIsWeb) return Text(strings.managedSshUnsupported);
     if (defaultTargetPlatform != TargetPlatform.android &&
         defaultTargetPlatform != TargetPlatform.linux) {
       return Text(strings.chatLayoutConnectionModeSshUrlHelper);
     }
     return LocalizedManagedSshConnectionForm(
-      initialTarget: ref
-          .read(managedSshConnectionControllerProvider)
-          .recoveryTarget,
+      key: ObjectKey(controller),
+      initialTarget: controller.recoveryTarget,
       onSubmit: _submit,
       allowServe: defaultTargetPlatform == TargetPlatform.android,
       pickKey: widget.pickKey,

@@ -93,19 +93,25 @@ an unreadable store as an empty installation. Fresh welcome-recovery and gate
 checks passed within the focused run below. This does not qualify native setup,
 live authentication, physical secure storage or delivered APK fidelity.
 
-### Shell persistence is implemented, while tabs remain separate work
+### Shell persistence and the bounded conversation workspace
 
 The exact EXTRACTED path remains
 `AppShell → wingSidebarExpandedProvider`. The live shell watches that provider.
 Native two-process persistence remains unverified; a fresh provider scope is not
 a process restart. Retain both existing SHELL-PERSISTENCE harness tasks.
 
-Desktop `Layout.tsx` owns a run list, active run, close handling and keyboard tab
-navigation. Wing's inspected shell composes global session access and the local
-sidebar preference, not that multi-conversation tab model. Existing PARITY-TABS
+Official Desktop's `src/app/contrib/controller.tsx` composes contributed panes;
+`src/components/pane-shell/tree/store.ts` and `src/app/chat/close-tab.ts` route
+grouped tab selection and close. Wing's inspected shell composes global session
+access and the local sidebar preference, not that pane-tree model. Existing PARITY-TABS
 entries now specify an implementation slice and a dependent reconnect slice.
 Agent-owned session/run identity and authoritative Stop must not become
-renderer-owned shadow domain state.
+renderer-owned shadow domain state. The later [bounded conversation workspace](chat-session-workspace.md)
+adds visited owner-keyed tabs, independent drafts/selection and explicit close/Stop
+recovery for advertised Agent API connections. It retains the single-channel
+transport boundary and excludes native-serve tabs pending exact lifecycle
+restoration; simultaneous cross-profile streams, Desktop pane-tree fidelity and
+native/live qualification are not established by that slice.
 
 ## Executed checks and limits
 

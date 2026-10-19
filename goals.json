@@ -584,6 +584,7 @@
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
         "MT-VERIFY-BROWSER-GATES",
+        "MT-VERIFY-BROWSER-GATES-LIVE",
         "PARITYUPDATE-005-11",
         "PARITYUPDATE-006-f4",
         "PLANGAP-001-2f",
@@ -6906,13 +6907,9 @@
       "ANDROID-CHAT-TOUCH-POLISH",
       "PARITYUPDATE-005-11",
       "PARITYUPDATE-006-f4",
-      "MT-RERUN-TRAIN",
-      "PLANGAP-001-2f",
       "WING-001-b3",
-      "MT-VERIFY-BROWSER-GATES",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "PARITY-NATIVE-LINUX",
-      "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
@@ -6979,7 +6976,8 @@
       "PARITYUPDATE-002-5c-LIVE",
       "PARITYUPDATE-003-b1-LIVE",
       "PARITYUPDATE-004-48-LIVE",
-      "README-001-62-LIVE"
+      "README-001-62-LIVE",
+      "MT-VERIFY-BROWSER-GATES-LIVE"
     ]
   },
   "tasks": [
@@ -7022,26 +7020,6 @@
       "title": "Trace reconnect for two distinct session-owned tab runs"
     },
     {
-      "depends_on": [
-        "MT-APP-SHELL-STATUS-BAR"
-      ],
-      "goal": "INTEGRATION",
-      "id": "MT-RERUN-TRAIN",
-      "section": "Next",
-      "status": "open",
-      "title": "Existing integration owner: rerun canonical merge-train gates on a newly captured combined tree; this receipt does not waive remaining gates"
-    },
-    {
-      "depends_on": [
-        "MT-RERUN-TRAIN"
-      ],
-      "goal": "INTEGRATION",
-      "id": "MT-VERIFY-BROWSER-GATES",
-      "section": "Next",
-      "status": "open",
-      "title": "Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts"
-    },
-    {
       "depends_on": [],
       "goal": "PARITY",
       "id": "PARITY-NATIVE-LINUX",
@@ -7068,24 +7046,6 @@
       "section": "Next",
       "status": "open",
       "title": "Repair profile-footer painted-focus oracle on the retained combined source"
-    },
-    {
-      "depends_on": [],
-      "goal": "INTEGRATION",
-      "id": "PLANGAP-001-2f",
-      "section": "Next",
-      "status": "open",
-      "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
-    },
-    {
-      "depends_on": [
-        "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
-      ],
-      "goal": "CHAT-FIDELITY",
-      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE",
-      "section": "Next",
-      "status": "open",
-      "title": "Keep recovered tool categories and exact-owner approval actions keyboard-operable in native Linux without mutation replay"
     },
     {
       "depends_on": [
@@ -7590,6 +7550,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Owner: run the named-device Android death-to-completion qualification (physical device); agents prepare nothing further until then"
+    },
+    {
+      "depends_on": [
+        "MT-VERIFY-BROWSER-GATES"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-VERIFY-BROWSER-GATES-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for MT-VERIFY-BROWSER-GATES"
     },
     {
       "depends_on": [
@@ -8963,6 +8933,26 @@
       "title": "Repair historical candidate shell status-bar test surface collision"
     },
     {
+      "depends_on": [
+        "MT-APP-SHELL-STATUS-BAR"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-RERUN-TRAIN",
+      "section": "Done",
+      "status": "done",
+      "title": "Existing integration owner: rerun canonical merge-train gates on a newly captured combined tree; this receipt does not waive remaining gates"
+    },
+    {
+      "depends_on": [
+        "MT-RERUN-TRAIN"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-VERIFY-BROWSER-GATES",
+      "section": "Done",
+      "status": "done",
+      "title": "Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts"
+    },
+    {
       "depends_on": [],
       "goal": "M1",
       "id": "PARITY-APPROVAL-DISMISSAL",
@@ -9124,6 +9114,14 @@
       "section": "Done",
       "status": "done",
       "title": "Resolve uncovered Desktop outcome contracts without expanding active tasks"
+    },
+    {
+      "depends_on": [],
+      "goal": "INTEGRATION",
+      "id": "PLANGAP-001-2f",
+      "section": "Done",
+      "status": "done",
+      "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
     },
     {
       "depends_on": [
@@ -9319,6 +9317,16 @@
       "section": "Done",
       "status": "done",
       "title": "Keep streamed and recovered tool/approval rows readable and keyboard-operable at enlarged text without stale-owner actions"
+    },
+    {
+      "depends_on": [
+        "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE",
+      "section": "Done",
+      "status": "done",
+      "title": "Keep recovered tool categories and exact-owner approval actions keyboard-operable in native Linux without mutation replay"
     },
     {
       "depends_on": [

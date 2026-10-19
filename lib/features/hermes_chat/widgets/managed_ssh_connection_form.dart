@@ -134,6 +134,19 @@ class ManagedSshConnectionForm extends StatefulWidget {
 
 class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   final _form = GlobalKey<FormState>();
+  final _feedbackActions = GlobalKey();
+
+  void _revealFailure() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || (widget.sanitizedError == null && !_failed)) return;
+      final target = _feedbackActions.currentContext;
+      if (target != null) {
+        // Reveal through every enclosing scroll view, including Chat's entry.
+        Scrollable.ensureVisible(target);
+      }
+    });
+  }
+
   bool _keyAuthentication = false;
   bool _serveReads = false;
   SelectedManagedSshKey? _selectedKey;
@@ -361,7 +374,10 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
       await widget.onSubmit(input);
     } catch (_) {
       // Raw transport errors may contain credentials. Never render or log them.
-      if (mounted && generation == _generation) _failed = true;
+      if (mounted && generation == _generation) {
+        _failed = true;
+        _revealFailure();
+      }
     } finally {
       if (mounted) {
         _clearSecrets();
@@ -555,6 +571,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
     if (widget.sanitizedError != null &&
         widget.sanitizedError != oldWidget.sanitizedError) {
       _clearSecrets();
+      _revealFailure();
     }
   }
 
@@ -823,19 +840,25 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
                 _agentToken,
                 secret: true,
               ),
-              if (widget.sanitizedError != null || _failed)
-                Semantics(
-                  liveRegion: true,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(widget.sanitizedError ?? l.failure),
+              Column(
+                key: _feedbackActions,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (widget.sanitizedError != null || _failed)
+                    Semantics(
+                      liveRegion: true,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Text(widget.sanitizedError ?? l.failure),
+                      ),
+                    ),
+                  FilledButton(
+                    onPressed: _busy || _picking || _keyOperationBusy
+                        ? null
+                        : _submit,
+                    child: Text(_busy ? l.connecting : l.connect),
                   ),
-                ),
-              FilledButton(
-                onPressed: _busy || _picking || _keyOperationBusy
-                    ? null
-                    : _submit,
-                child: Text(_busy ? l.connecting : l.connect),
+                ],
               ),
               TextButton(onPressed: _cancel, child: Text(l.cancel)),
             ],

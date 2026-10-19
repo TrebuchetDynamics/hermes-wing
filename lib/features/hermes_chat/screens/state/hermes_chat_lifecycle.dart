@@ -172,6 +172,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
         final change = _observation.observe(channel.state);
         _syncUnreadCompletedSessions(channel.state, change);
         _syncComposerDraft(channel.state);
+        _rememberWorkspaceTab(channel);
         if (change.completedReplyArrived) {
           _refreshActiveGatewayContact();
           if (_completionSoundEnabled) {

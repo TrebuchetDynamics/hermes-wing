@@ -19,6 +19,7 @@ import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/hermes_api.dart';
 import 'package:wing/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
+import 'package:wing/core/hermes/setup/secure_managed_ssh_recovery_store.dart';
 import 'package:wing/core/hermes/ssh/managed_ssh.dart';
 import 'package:wing/core/hermes/ssh/secure_managed_ssh_host_trust_store.dart';
 import 'package:wing/core/hermes/ssh/secure_managed_ssh_target_store.dart';
@@ -35,9 +36,9 @@ const input = SshConnectionRequest(
 );
 
 class _Denied implements HermesApiStatusException {
-  const _Denied();
+  const _Denied([this.statusCode = 401]);
   @override
-  int get statusCode => 401;
+  final int statusCode;
 }
 
 class FakeChannel extends ChangeNotifier implements HermesChannel {
@@ -112,6 +113,34 @@ class _HeldClearStore implements HermesServeRecoveryStore {
   Future<HermesServeRecoverySelection?> load() async => null;
   @override
   Future<void> save(HermesServeRecoverySelection selection) async {}
+}
+
+class _DeniedClearStore implements HermesServeRecoveryStore {
+  @override
+  Future<void> clear() async =>
+      throw StateError('synthetic private storage failure');
+  @override
+  Future<HermesServeRecoverySelection?> load() async => null;
+  @override
+  Future<void> save(HermesServeRecoverySelection selection) async {}
+}
+
+class _DeniedSshStore implements ManagedSshRecoveryStore {
+  _DeniedSshStore({required this.denyLoad});
+  final bool denyLoad;
+  @override
+  Future<ManagedSshRecovery?> load(
+    ManagedSshConfig config,
+    SshAgentTransport transport,
+  ) async {
+    if (denyLoad) throw StateError('synthetic sensitive storage failure');
+    return null;
+  }
+
+  @override
+  Future<void> save(ManagedSshRecovery selection) async {
+    throw StateError('synthetic sensitive storage failure');
+  }
 }
 
 class FakeForward extends ManagedSshForward {
@@ -293,7 +322,16 @@ void main() {
           },
         ),
       );
-      expect(await connecting, isFalse);
+      await expectLater(
+        connecting,
+        throwsA(
+          isA<ManagedSshAgentException>().having(
+            (e) => e.kind,
+            'kind',
+            HermesConnectionFailureKind.authentication,
+          ),
+        ),
+      );
       expect(paths, ['/p/demo/health']);
       expect(forward.closes, 1);
       expect(await forward.credentials!.password!(), isNull);
@@ -700,28 +738,233 @@ void main() {
     ManagedSshConnectionController controller, {
     VoidCallback? onConnected,
     Future<XFile?> Function()? pickKey,
+    bool chatEntry = false,
   }) async {
+    final channel = controller.channel;
+    final store = FakeHermesEndpointStore();
+    final directory = HermesGatewayDirectory(
+      store: store,
+      cache: FakeGatewayContactCache(),
+      loader: FakeGatewaySummaryLoader({}),
+      activeChannel: channel,
+    );
+    SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           managedSshConnectionControllerProvider.overrideWithValue(controller),
+          if (chatEntry) ...[
+            hermesChannelProvider.overrideWithValue(channel),
+            hermesEndpointStoreProvider.overrideWithValue(store),
+            hermesGatewayDirectoryProvider.overrideWith((_) => directory),
+            hermesVoiceCaptureServiceProvider.overrideWithValue(null),
+            hermesTextToSpeechServiceProvider.overrideWithValue(null),
+          ],
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: ManagedSshConnectionPanel(
-                onCancel: () {},
-                onConnected: onConnected,
-                pickKey: pickKey ?? () async => null,
-              ),
-            ),
-          ),
+          builder: chatEntry
+              ? (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: const TextScaler.linear(2),
+                    viewInsets: const EdgeInsets.only(bottom: 80),
+                  ),
+                  child: child!,
+                )
+              : null,
+          home: chatEntry
+              ? HermesChatScreen(
+                  initiallyEditingConnection: true,
+                  initialConnectionMode: HermesConnectionMode.ssh,
+                  onConnectionSaved: onConnected,
+                )
+              : Scaffold(
+                  body: SingleChildScrollView(
+                    child: ManagedSshConnectionPanel(
+                      onCancel: () {},
+                      onConnected: onConnected,
+                      pickKey: pickKey ?? () async => null,
+                    ),
+                  ),
+                ),
         ),
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  for (final status in [401, 403, 0]) {
+    testWidgets(
+      'production Agent failure survives cleanup and is visible in narrow SSH Chat entry: $status',
+      (tester) async {
+        tester.view.physicalSize = const Size(320, 480);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final semantics = tester.ensureSemantics();
+        var rejecting = true;
+        var reads = 0;
+        final channel = HermesApiChannel(
+          clientBuilder: (config) => HermesApiClient(
+            config: config,
+            get: (uri, _) async {
+              reads++;
+              if (rejecting) {
+                if (status == 0) throw const FormatException('redacted');
+                throw _Denied(status);
+              }
+              return switch (uri.path) {
+                '/health' => '{"status":"ok"}',
+                '/v1/capabilities' =>
+                  '{"schema_version":1,"profile_context":{"type":"query","name":"profile","required":true,"default_profile_id":"default"},"auth":{"type":"bearer","required":true,"granted_scopes":[]},"features":{},"endpoints":{"session_messages":{"method":"GET","path":"/api/sessions/{session_id}/messages","profile_scoped":true}}}',
+                '/api/sessions' =>
+                  '{"data":[{"id":"synthetic-session","source":"api_server"}],"has_more":false}',
+                '/api/sessions/synthetic-session/messages' =>
+                  '{"object":"list","session_id":"synthetic-session","data":[]}',
+                _ => throw StateError('Unexpected fixture read'),
+              };
+            },
+            post: (_, _, _) async =>
+                throw StateError('No mutations authorized'),
+          ),
+        );
+        final forward = FakeForward()
+          ..autoVerify = true
+          ..closeGate = Completer<void>();
+        final controller = ManagedSshConnectionController(forward, channel);
+        var successes = 0;
+        await const SecureManagedSshHostTrustStore().verify(
+          ManagedSshConfig(
+            host: input.host,
+            username: input.username,
+            agentPort: 8642,
+          ),
+          ManagedSshHostKey('ssh-ed25519', List.filled(32, 3)),
+          isCurrent: () => true,
+          review: () async => true,
+        );
+        await mount(
+          tester,
+          controller,
+          onConnected: () => successes++,
+          chatEntry: true,
+        );
+        for (final entry in {
+          'host': input.host,
+          'username': input.username,
+          'password': input.password,
+          'agent-token': input.agentBearerToken!,
+        }.entries) {
+          final field = find.byKey(ValueKey('managed-ssh-${entry.key}'));
+          await tester.ensureVisible(field);
+          await tester.enterText(field, entry.value);
+        }
+        FocusManager.instance.primaryFocus?.unfocus();
+        await tester.pumpAndSettle();
+        final connect = find.widgetWithText(FilledButton, 'Connect via SSH');
+        await tester.ensureVisible(connect);
+        await tester.pumpAndSettle();
+        await tester.tap(connect);
+        await tester.pump();
+        // The user scrolls away while Connect is pending.
+        await tester.drag(
+          find.byType(SingleChildScrollView).first,
+          const Offset(0, 4000),
+        );
+        await tester.pumpAndSettle();
+        forward.ready();
+        await tester.pumpAndSettle();
+        expect(forward.closes, 1);
+        expect(channel.state.status, HermesConnectionStatus.disconnected);
+        expect(find.text('Connecting via SSH…'), findsOneWidget);
+        expect(successes, 0);
+        forward.closeGate!.complete();
+        await tester.pumpAndSettle();
+        final summary = find.text(
+          status == 0
+              ? 'Incompatible Agent. Check port.'
+              : 'Agent access denied. Check token.',
+        );
+        expect(summary, findsOneWidget);
+        final retry = find.widgetWithText(FilledButton, 'Connect via SSH');
+        final viewport = tester.getRect(find.byType(Scaffold).last);
+
+        for (final control in [summary, retry]) {
+          final bounds = tester.getRect(control);
+          final scrollViewport = tester.getRect(
+            find.byType(SingleChildScrollView).first,
+          );
+          expect(bounds.top, greaterThanOrEqualTo(scrollViewport.top));
+          expect(bounds.bottom, lessThanOrEqualTo(viewport.bottom - 80));
+        }
+        expect(retry.hitTestable(), findsOneWidget);
+        expect(
+          tester
+              .getSemantics(summary)
+              .getSemanticsData()
+              .flagsCollection
+              .isLiveRegion,
+          isTrue,
+        );
+        expect(tester.widget<FilledButton>(retry).onPressed, isNotNull);
+        expect(channel.state.isConnected, isFalse);
+        expect(successes, 0);
+        expect(reads, 1); // No automatic retry or alternate-surface probe.
+        for (final id in ['password', 'agent-token']) {
+          expect(
+            tester
+                .widget<TextFormField>(find.byKey(ValueKey('managed-ssh-$id')))
+                .controller!
+                .text,
+            isEmpty,
+          );
+        }
+        expect(
+          tester
+              .widget<TextFormField>(
+                find.byKey(const ValueKey('managed-ssh-host')),
+              )
+              .controller!
+              .text,
+          input.host,
+        );
+        rejecting = false;
+        forward.waiting = Completer<ManagedSshTunnel>();
+        forward.closeGate = null;
+        forward.ready();
+        for (final entry in {
+          'password': input.password,
+          'agent-token': input.agentBearerToken!,
+        }.entries) {
+          final field = find.byKey(ValueKey('managed-ssh-${entry.key}'));
+          await tester.ensureVisible(field);
+          await tester.enterText(field, entry.value);
+        }
+        // A deliberate keyboard retry must reacquire credentials and run once.
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        // Retry input above is still at 320x480/200%. Render the resulting
+        // full Chat separately; its short-height layout is outside this repair.
+        tester.view.physicalSize = const Size(800, 1200);
+        await tester.pumpAndSettle();
+        expect(
+          successes,
+          1,
+          reason:
+              'reads=$reads status=${channel.state.status} kind=${channel.state.connectionFailureKind} error=${channel.state.errorMessage}',
+        );
+        expect(reads, 5);
+        expect(channel.state.isConnected, isTrue);
+        expect(channel.state.selectedProfileId, 'default');
+        expect(channel.state.activeSessionId, 'synthetic-session');
+        expect(channel.state.messages, contains('synthetic-session'));
+        expect(find.byKey(const ValueKey('managed-ssh-host')), findsNothing);
+        semantics.dispose();
+        await tester.pumpWidget(const SizedBox());
+        controller.dispose();
+        channel.dispose();
+      },
+    );
   }
 
   testWidgets(
@@ -792,6 +1035,120 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(button);
     await tester.pump();
+  }
+
+  for (final serve in [false, true]) {
+    testWidgets(
+      'preflight storage rejection is visible without Agent acquisition serve=$serve',
+      (tester) async {
+        final channel = HermesApiChannel(
+          serveRecoveryStore: _DeniedClearStore(),
+        );
+        final forward = FakeForward()..autoVerify = true;
+        final controller = ManagedSshConnectionController(forward, channel);
+        await const SecureManagedSshHostTrustStore().verify(
+          ManagedSshConfig(
+            host: input.host,
+            username: input.username,
+            agentPort: 8642,
+          ),
+          ManagedSshHostKey('ssh-ed25519', List.filled(32, 3)),
+          isCurrent: () => true,
+          review: () async => true,
+        );
+        await mount(tester, controller);
+        if (serve) {
+          final choice = find.byKey(const ValueKey('managed-ssh-serve-reads'));
+          await tester.ensureVisible(choice);
+          await tester.tap(choice);
+          await tester.pumpAndSettle();
+        }
+        await submit(tester);
+        forward.ready();
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Secure connection storage is unavailable.'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('synthetic private storage failure'),
+          findsNothing,
+        );
+        expect(
+          tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+          isNotNull,
+        );
+        expect(forward.closes, 1);
+        expect(channel.state.isConnected, isFalse);
+        await tester.pumpWidget(const SizedBox());
+        controller.dispose();
+        channel.dispose();
+      },
+    );
+  }
+
+  for (final loss in [false, true]) {
+    for (final preflight in [false, true]) {
+      test(
+        'retired failure cannot cross a newer channel intent loss=$loss preflight=$preflight',
+        () async {
+          final store = _HeldClearStore()..hold = false;
+          final health = Completer<String>();
+          final entered = Completer<void>();
+          var first = true;
+          final channel = HermesApiChannel(
+            serveRecoveryStore: store,
+            clientBuilder: (config) => HermesApiClient(
+              config: config,
+              get: (_, _) async {
+                if (first && loss) {
+                  first = false;
+                  entered.complete();
+                  return health.future;
+                }
+                throw const _Denied();
+              },
+            ),
+          );
+          final forward = FakeForward()
+            ..autoVerify = true
+            ..closeGate = Completer<void>();
+          final controller = ManagedSshConnectionController(forward, channel);
+          final result = controller
+              .connectSsh(input, verifyHostKey: (_, _) => true)
+              .then<Object>((v) => v, onError: (Object e) => e);
+          forward.ready();
+          if (loss) {
+            await entered.future;
+            forward.ended.complete();
+          }
+          for (var i = 0; i < 100 && forward.closes == 0; i++) {
+            await Future<void>.delayed(Duration.zero);
+          }
+          expect(forward.closes, 1);
+          if (loss) health.complete('{"status":"ok"}');
+          Future<void>? replacement;
+          if (preflight) {
+            store.hold = true;
+            replacement = channel.connect(
+              baseUrl: 'https://replacement.invalid',
+            );
+            await store.entered.future;
+          } else {
+            await channel.connect(baseUrl: 'https://replacement.invalid');
+            await channel.disconnect();
+          }
+          forward.closeGate!.complete();
+          expect(await result, isFalse);
+          if (preflight) {
+            store.release.complete();
+            await replacement;
+          }
+          controller.dispose();
+          channel.dispose();
+        },
+      );
+    }
   }
 
   testWidgets('Android SSH offers deliberate serve selection, Linux does not', (
@@ -1428,28 +1785,128 @@ void main() {
       channel.dispose();
     },
   );
-  testWidgets('panel sanitizes transport failure', (tester) async {
-    final channel = FakeChannel();
-    final forward = FakeForward();
-    final controller = ManagedSshConnectionController(forward, channel);
-    await mount(tester, controller);
-    await submit(tester);
-    forward.waiting.completeError(
-      StateError('synthetic-password sensitive endpoint'),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.textContaining('synthetic-password sensitive endpoint'),
-      findsNothing,
-    );
-    expect(
-      find.textContaining('Could not establish the SSH connection.'),
-      findsOneWidget,
-    );
-    await tester.pumpWidget(const SizedBox());
-    controller.dispose();
-    channel.dispose();
-  });
+  testWidgets(
+    'controller replacement fences a late old failure and permits the new owner',
+    (tester) async {
+      final oldChannel = FakeChannel();
+      final oldForward = FakeForward();
+      final oldController = ManagedSshConnectionController(
+        oldForward,
+        oldChannel,
+      );
+      final newChannel = FakeChannel();
+      final newForward = FakeForward();
+      final newController = ManagedSshConnectionController(
+        newForward,
+        newChannel,
+      );
+      var successes = 0;
+      await mount(tester, oldController);
+      await submit(tester);
+      await mount(tester, newController, onConnected: () => successes++);
+      oldForward.waiting.completeError(
+        const ManagedSshException(ManagedSshFailure.authentication),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('SSH authentication was rejected.'),
+        findsNothing,
+      );
+      await submit(tester);
+      newForward.ready();
+      await tester.pumpAndSettle();
+      expect(successes, 1);
+      expect(newChannel.state.isConnected, isTrue);
+      expect(newChannel.disconnects, 0);
+      await tester.pumpWidget(const SizedBox());
+      oldController.dispose();
+      newController.dispose();
+      oldChannel.dispose();
+      newChannel.dispose();
+    },
+  );
+
+  for (final scenario in [
+    'unknown',
+    'timeout',
+    'storage-load',
+    'storage-save',
+    'tunnel-loss',
+  ]) {
+    testWidgets('panel sanitizes and explains $scenario failure', (
+      tester,
+    ) async {
+      final channel = FakeChannel();
+      if (scenario == 'tunnel-loss') {
+        channel.pending = Completer<void>();
+        channel.fail = true;
+      }
+      final forward = FakeForward()..autoVerify = scenario == 'storage-save';
+      final controller = ManagedSshConnectionController(
+        forward,
+        channel,
+        recoveryStore: scenario.startsWith('storage')
+            ? _DeniedSshStore(denyLoad: scenario == 'storage-load')
+            : null,
+      );
+      if (scenario == 'storage-save') {
+        await const SecureManagedSshHostTrustStore().verify(
+          ManagedSshConfig(
+            host: input.host,
+            username: input.username,
+            agentPort: 8642,
+          ),
+          ManagedSshHostKey('ssh-ed25519', List.filled(32, 3)),
+          isCurrent: () => true,
+          review: () async => true,
+        );
+      }
+      await mount(tester, controller);
+      await submit(tester);
+      if (scenario == 'storage-save' || scenario == 'tunnel-loss') {
+        forward.ready();
+        if (scenario == 'tunnel-loss') {
+          await tester.pumpAndSettle();
+          forward.ended.complete();
+          await tester.pumpAndSettle();
+          channel.pending!.complete();
+        }
+      } else if (scenario != 'storage-load') {
+        forward.waiting.completeError(
+          scenario == 'timeout'
+              ? const ManagedSshException(ManagedSshFailure.timeout)
+              : StateError('synthetic-password sensitive endpoint'),
+        );
+      }
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('synthetic-password sensitive endpoint'),
+        findsNothing,
+      );
+      expect(
+        find.textContaining('synthetic sensitive storage failure'),
+        findsNothing,
+      );
+      expect(
+        find.textContaining(
+          scenario.startsWith('storage')
+              ? 'Secure connection storage is unavailable.'
+              : scenario == 'timeout'
+              ? 'SSH connection timed out.'
+              : 'Could not establish the SSH connection.',
+        ),
+        findsOneWidget,
+      );
+      expect(channel.state.isConnected, isFalse);
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNotNull,
+      );
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      channel.dispose();
+    });
+  }
   test('cancel fences stale trust and old tunnel completion', () async {
     final channel = FakeChannel();
     final forward = FakeForward();
@@ -1689,9 +2146,9 @@ void main() {
         );
         final forward = FakeForward()..autoVerify = true;
         final controller = ManagedSshConnectionController(forward, channel);
-        final result = controller.connectSsh(
-          input,
-          verifyHostKey: (_, _) async => true,
+        final result = expectLater(
+          controller.connectSsh(input, verifyHostKey: (_, _) async => true),
+          throwsA(isA<ManagedSshException>()),
         );
         forward.ready();
         if (duringHealth) await entered.future;
@@ -1699,7 +2156,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         expect(channel.state.status, HermesConnectionStatus.disconnected);
         health.complete('{"status":"ok"}');
-        expect(await result, isFalse);
+        await result;
         expect(channel.state.status, HermesConnectionStatus.disconnected);
         expect(reads, everyElement('/health'));
         expect(mutations, 0);

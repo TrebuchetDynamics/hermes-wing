@@ -1200,7 +1200,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 isTurnActive: isTurnActive,
                 canSendTurns: canSendTurns,
                 hasUnreconciledRun: state.hasUnreconciledRun,
-                switchableSessions: switchableSessions,
+                switchableSessions: const [],
                 streamingSessionIds: streamingSessionIds,
                 unreadCompletedSessionIds: _unreadCompletedSessionIds,
                 onSelectSession: (session) =>
@@ -1429,7 +1429,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   ),
                 ),
               ),
-            if (canSendTurns)
+            // Active queue controls take precedence over introductory guidance
+            // when narrow or enlarged-text layouts have a limited height budget.
+            if (canSendTurns &&
+                !(useCompactFollowUpActions && _followUps.isNotEmpty))
               WingTipCard(
                 tip: WingTip.voice,
                 text: AppLocalizations.of(context).tipVoice,
@@ -1838,13 +1841,21 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         canSendTurns &&
         !isTurnActive &&
         _retryableFailedUserText(state) != null;
+    final interruptionTarget = isTurnActive
+        ? channel.activeTurnInterruptionTarget
+        : null;
+    final stopOwnerGeneration = _composerStopOwnerGeneration;
     final strip = _HermesComposerStrip(
       modelLabel: modelLabel,
       isTurnActive: isTurnActive,
       canSendTurns: canSendTurns,
       hasUnreconciledRun: state.hasUnreconciledRun,
       canRetry: canRetry,
-      onStop: () => _stopActiveTurn(channel),
+      onStop: () => _stopActiveTurn(
+        channel,
+        interruptionTarget,
+        ownerGeneration: stopOwnerGeneration,
+      ),
       onRetry: () => _retryLastFailedTurn(channel),
       onSelectModel:
           !isTurnActive &&
@@ -3102,6 +3113,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
     return () {
       if (!mounted ||
+          !ref.read(wingVoiceSettingsProvider).continuousVoiceEnabled ||
           generation != _composerOwnerGeneration ||
           voiceGeneration != _draftVoiceGateGeneration ||
           !identical(ref.read(hermesChannelProvider), channel)) {

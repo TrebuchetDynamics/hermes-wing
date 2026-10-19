@@ -121,6 +121,10 @@ provider limits, real tool approvals/Stop, process relaunch restoration, physica
 keyboard/screen reader, other platforms and protected-main delivery are
 NOT_CHECKED. `PARITY-LIVE-WORKFLOW` remains partial/in_progress;
 `VERIFY-CHAT-TRANSCRIPT-NATIVE` is not closed. M1 remains open.
+The [complementary keyboard follow-through](chat-transcript-native-keyboard.md)
+records fresh Review/Space/Deny qualification and the retired Review-sheet repair,
+with explicit unrelated/environment check limits. It does not repeat or relabel
+these four historical source-bound cases.
 Next seam: actual-Agent qualification when supported budget/auth prerequisites
 exist; otherwise bounded native failure recovery. No follow-up card was created.
 

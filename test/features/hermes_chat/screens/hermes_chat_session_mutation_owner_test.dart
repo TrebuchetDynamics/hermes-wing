@@ -116,8 +116,9 @@ void main() {
               await tester.pump();
               expect(
                 h.channel.listeners.length,
-                2,
-                reason: 'Only the state and SSH controller providers remain',
+                1,
+                reason:
+                    'Only the state provider remains; SSH is acquired on submit',
               );
           }
           await _confirm(tester, operation);
@@ -158,7 +159,7 @@ void main() {
           if (cancel) expect(h.channel.listeners.length, h.listenerBaseline);
           h.page.value = const SizedBox();
           await tester.pump();
-          expect(h.channel.listeners.length, 2);
+          expect(h.channel.listeners.length, 1);
           expect(tester.takeException(), isNull);
         });
       }
@@ -186,7 +187,7 @@ void main() {
           expect(find.byType(SnackBar), findsNothing);
           h.page.value = const SizedBox();
           await tester.pump();
-          expect(h.channel.listeners.length, 2);
+          expect(h.channel.listeners.length, 1);
           expect(tester.takeException(), isNull);
         });
       }

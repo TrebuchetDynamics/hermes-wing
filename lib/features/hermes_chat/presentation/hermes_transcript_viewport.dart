@@ -17,6 +17,7 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   final ScrollController scroll;
   final listKey = GlobalKey();
   final _rows = <String, GlobalKey>{};
+  final _projectedIndices = <String, int>{};
   final _anchors = <Object, HermesViewportAnchor>{};
   Object? _owner;
   String? _origin;
@@ -67,6 +68,13 @@ class HermesTranscriptViewportController extends ChangeNotifier {
     }
     windowStart = start;
     windowEnd = end;
+    _projectedIndices
+      ..clear()
+      ..addEntries([
+        for (var i = start; i < end; i++)
+          if (unique.contains(eligible[i].id))
+            MapEntry(eligible[i].id, end - 1 - i),
+      ]);
     continuedTools = start > 0 && toolAt(start) && toolAt(start - 1);
     if (mode == HermesViewportMode.followingLatest) {
       _windowEndId = end > 0 && unique.contains(eligible[end - 1].id)
@@ -166,13 +174,29 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   }
 
   void restore(int generation) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    var remainingSteps = _projectedIndices.length + 1;
+    void afterLayout(Duration _) {
       if (_disposed || generation != _generation || !scroll.hasClients) return;
       final anchor = _anchors[_owner];
       final list = listKey.currentContext?.findRenderObject();
       final row = anchor == null
           ? null
           : _rows[anchor.turnId]?.currentContext?.findRenderObject();
+      if (mode == HermesViewportMode.restoring &&
+          anchor != null &&
+          _projectedIndices.containsKey(anchor.turnId) &&
+          !(row is RenderBox && row.attached && row.hasSize)) {
+        // A changed lazy row can evict an otherwise valid reading anchor.
+        // Realize it through measured, lazy scrolling rather than treating
+        // temporary unmounting as an instruction to jump to Latest.
+        if (remainingSteps-- > 0 && _scrollToward(anchor.turnId, list)) {
+          WidgetsBinding.instance.addPostFrameCallback(afterLayout);
+          WidgetsBinding.instance.ensureVisualUpdate();
+        } else {
+          mode = HermesViewportMode.browsing;
+        }
+        return;
+      }
       if (mode == HermesViewportMode.restoring &&
           row is RenderBox &&
           row.hasSize &&
@@ -207,10 +231,48 @@ class HermesTranscriptViewportController extends ChangeNotifier {
         });
         WidgetsBinding.instance.ensureVisualUpdate();
       }
-    });
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback(afterLayout);
     // A canonical refresh may leave the widget tree unchanged. Post-frame work
     // alone does not request a frame, so restoration must arrange one.
     WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  bool _scrollToward(String id, RenderObject? list) {
+    if (list is! RenderBox || !list.hasSize) return false;
+    final targetIndex = _projectedIndices[id]!;
+    RenderBox? nearest;
+    int? nearestIndex;
+    for (final entry in _rows.entries) {
+      final index = _projectedIndices[entry.key];
+      final box = entry.value.currentContext?.findRenderObject();
+      if (index == null || box is! RenderBox || !box.attached || !box.hasSize) {
+        continue;
+      }
+      if (nearestIndex == null ||
+          (index - targetIndex).abs() < (nearestIndex - targetIndex).abs()) {
+        nearest = box;
+        nearestIndex = index;
+      }
+    }
+    if (nearest == null || nearestIndex == null) return false;
+    final direction = targetIndex > nearestIndex ? 1 : -1;
+    final y =
+        nearest.localToGlobal(Offset.zero).dy -
+        list.localToGlobal(Offset.zero).dy;
+    final seekTop =
+        (scroll.position.axisDirection == AxisDirection.up) == (direction > 0);
+    final edge = seekTop ? -y : y + nearest.size.height - list.size.height;
+    // Skip the measured interior of a giant mounted row, never extrapolate
+    // height changes from the lazy list's estimated maxScrollExtent.
+    final step = edge > list.size.height ? edge : list.size.height;
+    final target = (scroll.offset + direction * step)
+        .clamp(scroll.position.minScrollExtent, scroll.position.maxScrollExtent)
+        .toDouble();
+    if ((target - scroll.offset).abs() < 0.5) return false;
+    scroll.jumpTo(target);
+    return true;
   }
 
   @override

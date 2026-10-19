@@ -212,6 +212,12 @@
   "managedSshAgentProfileLabel": "Agent API profile (optional)",
   "managedSshAgentProfileHelp": "Leave blank for the root API. For a shared gateway, enter only the profile ID (for example hermes-wing), not /p/ or a URL. Use that profile’s Agent token. SSH login alone does not authenticate to Agent.",
   "managedSshInvalidAgentProfile": "Use 1–64 lowercase letters, numbers, hyphens or underscores, starting with a letter or number.",
+  "managedSshStorageUnavailable": "Secure connection storage is unavailable. Restore storage access, then retry with fresh credentials.",
+  "managedSshTimeout": "SSH connection timed out. Check the host, SSH port and network, then enter credentials and retry.",
+  "managedSshAgentAuthenticationFailed": "Agent access denied. Check token.",
+  "managedSshAgentIncompatible": "Incompatible Agent. Check port.",
+  "managedSshAgentUnavailable": "The selected Agent surface could not be reached. Check Agent availability and port, then enter credentials and retry.",
+  "managedSshAgentFailed": "Could not connect to the selected Agent surface. Check its settings, then enter credentials and retry.",
   "appTitle": "Hermes Wing",
   "hermesDestination": "Chat",
   "agentsDestination": "Profiles",
@@ -1014,6 +1020,26 @@
   "enrollLegacyHandoffTitle": "Pairing links are no longer supported",
   "enrollLegacyHandoffBody": "This old link or shared text was discarded. Connect directly to Hermes Agent using Local, SSH or Remote. On Android, use SSH, Remote or the on-phone Termux guide. Existing saved connections are unchanged.",
   "closeAction": "Close",
+  "chatWorkspaceTabsLabel": "Open conversations",
+  "chatWorkspaceTabLabel": "Open {title} · {profile} · {host}",
+  "@chatWorkspaceTabLabel": {
+    "placeholders": {
+      "title": { "type": "String" },
+      "profile": { "type": "String" },
+      "host": { "type": "String" }
+    }
+  },
+  "chatWorkspaceCloseTitle": "Close {title}",
+  "@chatWorkspaceCloseTitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "chatWorkspaceKeepOpen": "Keep open",
+  "chatWorkspaceStopClose": "Stop and close",
+  "chatWorkspaceStopCloseBody": "This conversation has active work. Stop only this run and close its tab after Hermes confirms the outcome. The session and other conversations are not deleted.",
+  "chatWorkspaceStopUnavailable": "Stop is unavailable for this conversation on the current Agent transport. The tab stays open; closing a view would not confirm that Agent work stopped.",
+  "chatWorkspaceCloseUncertain": "Stop is not confirmed. This tab stays open. Reconnect to reconcile Agent run status and history before closing; do not resend the prompt.",
+  "chatWorkspaceReopenBody": "Open this exact conversation before closing it so Hermes can confirm its current run state. Switching hosts or profiles closes local streams, not Agent work.",
+  "chatWorkspaceOpenFailed": "This conversation could not be opened. Its owner and draft are unchanged. Reconnect to its saved host and profile, then try again.",
   "routeNotFoundTitle": "Page not found",
   "routeNotFound": "Hermes Wing does not have a screen for {path}.",
   "@routeNotFound": {

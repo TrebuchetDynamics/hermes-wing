@@ -14,12 +14,14 @@ typedef HermesComposerDraftKey = ({
 class HermesComposerDraft {
   const HermesComposerDraft({
     this.text = '',
+    this.selection = const TextSelection.collapsed(offset: -1),
     this.attachment,
     this.generation = 0,
     this.attachmentEvicted = false,
   });
 
   final String text;
+  final TextSelection selection;
   final StagedAttachment? attachment;
   final int generation;
   final bool attachmentEvicted;
@@ -66,16 +68,25 @@ class HermesComposerDraftStore {
     HermesComposerDraftKey key, {
     required String text,
     required StagedAttachment? attachment,
+    TextSelection? selection,
   }) {
     final old = read(key);
     final bounded = text.characters.take(maxCharacters).join();
-    if (old.text == bounded && identical(old.attachment, attachment)) return;
+    final nextSelection = selection ?? old.selection;
+    final samePayload =
+        old.text == bounded && identical(old.attachment, attachment);
+    if (samePayload && old.selection == nextSelection) {
+      return;
+    }
     _put(
       key,
       HermesComposerDraft(
         text: bounded,
+        selection: nextSelection,
         attachment: attachment,
-        generation: ++_generation,
+        // Cursor movement (including controller.clear()) is not a new draft.
+        generation: samePayload ? old.generation : ++_generation,
+        attachmentEvicted: samePayload && old.attachmentEvicted,
       ),
     );
   }
@@ -104,6 +115,7 @@ class HermesComposerDraftStore {
       submission.key,
       HermesComposerDraft(
         text: submission.draft.text,
+        selection: submission.draft.selection,
         attachment: submission.draft.attachment,
         generation: ++_generation,
       ),
@@ -147,6 +159,7 @@ class HermesComposerDraftStore {
       } else {
         _drafts[key] = HermesComposerDraft(
           text: draft.text,
+          selection: draft.selection,
           generation: ++_generation,
           attachmentEvicted: true,
         );

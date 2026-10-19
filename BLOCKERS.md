@@ -6,40 +6,40 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
-
-- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
-- Needs: worker reported a blocker: The existing MT-RERUN-TRAIN coordinator must deliver its bounded frozen combined-source baseline/handoff (source identity and member/patch manifest) through the supported native integration path. Preserve the recovered corrected Tab patch SHA256 3dec5799d1324246fa5887205d69cf6590b191473a9c9c1110990bfeffb19acf, consume PLANGAP-001-2f's parser delta without ID/disposition changes and WING-001-b3's r…
-- Since: 2026-10-19T05:54:51Z
-- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
+### Q-MT-RERUN-TRAIN — USER_DECISION — effort decision — unblocks 1
 
 - Task: MT-RERUN-TRAIN — Rerun canonical integration gates
-- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable repair for the reproduced compact Profiles public-seam failure at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 on this exact combined source (missing first EditableText / Bad state: No element). Do not weaken its keyboard/large-text assertions. The source-delivery blocker is resolved: consume assembled tree a2213ffd… (+1 more in report.json)
+- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable repair for the reproduced compact Profiles public-seam failure at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 on this exact combined source (missing first EditableText / Bad state: No element). Do not weaken its keyboard/large-text assertions. The source-delivery blocker is resolved: consume assembled tree a2213ffd… (+1 more in report.json); DOCS-MAINTAINER already changed All five non-browser gates completed, Chat/router, Next action, Readiness, The source-bound tab gate now exists, and all nine default browser specs, but the task is still waiting for the same reason.
 - Since: 2026-10-19T06:36:50Z
-- Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+- Answer: Decide the missing input or disposition in MT-RERUN-TRAIN's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
 
-### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_INPUT — effort input — unblocks 1
+### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_DECISION — effort decision — unblocks 1
 
 - Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered
-- Needs: worker reported a blocker: Existing coordinator must refresh this assigned task's source to consume the delivered MT-RERUN-TRAIN offline handoff: assembled tree a2213ffd78bf6a485e09de0d218cc617f273a78e (HEAD35d7976a plus the exact47-file overlay; patch1c169ec1c114a01213ace13f55d17d3de9516ddf60f4281656abd40ce2c3d886). The handoff and2014-pass receipt exist and verify, but assigned baseline4534a6ee is missing/mismatched on ev…
+- Needs: worker reported a blocker: Existing coordinator must refresh this assigned task's source to consume the delivered MT-RERUN-TRAIN offline handoff: assembled tree a2213ffd78bf6a485e09de0d218cc617f273a78e (HEAD35d7976a plus the exact47-file overlay; patch1c169ec1c114a01213ace13f55d17d3de9516ddf60f4281656abd40ce2c3d886). The handoff and2014-pass receipt exist and verify, but assigned baseline4534a6ee is missing/mismatched on ev…; DOCS-MAINTAINER already changed Next action, Readiness, but the task is still waiting for the same reason.
 - Since: 2026-10-19T07:00:20Z
-- Answer: Answer in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+- Answer: Decide the missing input or disposition in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
 
-### Q-PLANGAP-001-2f — USER_INPUT — effort input — unblocks 0
+### Q-PLANGAP-001-2f — USER_DECISION — effort decision — unblocks 0
 
 - Task: PLANGAP-001-2f — Accept hash-suffixed task IDs in plan traceability without weakening guards.
-- Needs: worker reported a blocker: Coordinator must supply the actually corrected layout/gateway input from the retained-source assembly. Assigned baseline 597d8762b1e8f4109a0e5ebb8b449b576814a3c2 still has exactly the same blocker blobs as both 36f4155f and 6c167919: test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart = 7ff1c14e8ff16dfbe18763a7b420960f6c27db92; test/features/hermes_chat/screens/hermes_chat_gateway…
+- Needs: worker reported a blocker: Coordinator must supply the actually corrected layout/gateway input from the retained-source assembly. Assigned baseline 597d8762b1e8f4109a0e5ebb8b449b576814a3c2 still has exactly the same blocker blobs as both 36f4155f and 6c167919: test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart = 7ff1c14e8ff16dfbe18763a7b420960f6c27db92; test/features/hermes_chat/screens/hermes_chat_gateway…; DOCS-MAINTAINER already changed Next action, Readiness, Recovery evidence, but the task is still waiting for the same reason.
 - Since: 2026-10-19T06:38:07Z
-- Answer: Answer in PLANGAP-001-2f's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+- Answer: Decide the missing input or disposition in PLANGAP-001-2f's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
 
-### Q-WING-001-b3 — USER_INPUT — effort input — unblocks 0
+### Q-WING-001-b3 — USER_DECISION — effort decision — unblocks 0
 
 - Task: WING-001-b3 — Make SSH connection failures visible and actionable.
-- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable compact Profiles public-seam correction at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 (missing EditableText / Bad state: No element). It is freshly reproduced on the consumed coordinator input. Preserve keyboard/large-text assertions; this SSH worker must not implement another task to bypass the full offline gate. (+1 more in report.json)
+- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable compact Profiles public-seam correction at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 (missing EditableText / Bad state: No element). It is freshly reproduced on the consumed coordinator input. Preserve keyboard/large-text assertions; this SSH worker must not implement another task to bypass the full offline gate. (+1 more in report.json); DOCS-MAINTAINER already changed Current handoff, Next action, Recovery evidence, but the task is still waiting for the same reason.
 - Since: 2026-10-19T06:58:30Z
-- Answer: Answer in WING-001-b3's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+- Answer: Decide the missing input or disposition in WING-001-b3's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
+
+### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort investigate — unblocks 0
+
+- Task: PARITY-NATIVE-LINUX — Execute and extend native Linux
+- Needs: integration validation failed or changed the integration tree
+- Since: 2026-10-19T09:10:39Z
+- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/PARITY-NATIVE-LINUX/), then rescope or split PARITY-NATIVE-LINUX in its TODO.md entry. The runner reruns it when the entry changes.
 
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 

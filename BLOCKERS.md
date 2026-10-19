@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T06:36:50Z
 - Answer: Answer in MT-RERUN-TRAIN's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PLANGAP-001-2f — USER_INPUT — effort input — unblocks 0
+
+- Task: PLANGAP-001-2f — Accept hash-suffixed task IDs in plan traceability without weakening guards.
+- Needs: worker reported a blocker: Coordinator must supply the actually corrected layout/gateway input from the retained-source assembly. Assigned baseline 597d8762b1e8f4109a0e5ebb8b449b576814a3c2 still has exactly the same blocker blobs as both 36f4155f and 6c167919: test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart = 7ff1c14e8ff16dfbe18763a7b420960f6c27db92; test/features/hermes_chat/screens/hermes_chat_gateway…
+- Since: 2026-10-19T06:38:07Z
+- Answer: Answer in PLANGAP-001-2f's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

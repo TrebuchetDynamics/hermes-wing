@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
@@ -48,9 +49,34 @@ class ChatWorkspaceOverlay extends StatelessWidget {
     }
   }
 
+  static Future<void> _restoreNavigatorFocusAfterPop(
+    ModalRoute<dynamic> route,
+    NavigatorState navigator,
+  ) async {
+    await route.completed;
+    final frame = WidgetsBinding.instance.endOfFrame;
+    WidgetsBinding.instance.ensureVisualUpdate();
+    await frame;
+    if (!navigator.mounted) return;
+    final scope = navigator.focusNode.enclosingScope;
+    final focus = FocusManager.instance.primaryFocus;
+    // Teardown can park focus on the root. Resume this Navigator's own history,
+    // never a captured editor or a replacement control that has taken focus.
+    if (scope != null &&
+        GoRouter.maybeOf(navigator.context)?.state.uri.path ==
+            AppRoutes.hermes &&
+        (focus == null ||
+            identical(focus, FocusManager.instance.rootScope) ||
+            identical(focus, scope))) {
+      scope.requestFocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final router = GoRouter.of(context);
+    final route = ModalRoute.of(context);
+    final navigator = Navigator.of(context);
     void dismiss() {
       if (router.canPop()) {
         router.pop();
@@ -67,7 +93,11 @@ class ChatWorkspaceOverlay extends StatelessWidget {
     return PopScope(
       canPop: router.canPop(),
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) dismiss();
+        if (!didPop) {
+          dismiss();
+        } else if (route != null) {
+          unawaited(_restoreNavigatorFocusAfterPop(route, navigator));
+        }
       },
       child: CallbackShortcuts(
         bindings: {const SingleActivator(LogicalKeyboardKey.escape): dismiss},

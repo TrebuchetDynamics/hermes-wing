@@ -143,6 +143,7 @@ test("Tools inventory supports search and resolved-tool disclosure", async ({
   ).toBeVisible();
   await page.getByRole("textbox", { name: /Search installed skills/ }).fill("");
 
+  await page.getByRole("tab", { name: "Toolsets", exact: true }).click();
   await page.getByRole("button", { name: /Default Tools/ }).click();
   await expect(
     page.getByRole("group", { name: /Resolved tools/ }),

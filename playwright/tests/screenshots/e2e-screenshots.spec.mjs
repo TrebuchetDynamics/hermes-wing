@@ -30,6 +30,9 @@ test("settings screen screenshot", async ({ page }, testInfo) => {
     fullPage: true,
   });
   await page.getByRole("button", { name: "Connections", exact: true }).last().click();
+  await expect(page.getByRole("heading", { name: "Connections", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Connections", exact: true }).last().click();
+  await expect(page).toHaveURL(/#\/gateway$/);
   await expect(page.getByRole("button", { name: /^Connect another gateway/ })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("connections.png"), fullPage: true });
 });

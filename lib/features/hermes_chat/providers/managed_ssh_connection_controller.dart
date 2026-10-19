@@ -24,6 +24,13 @@ final managedSshRecoveryStoreProvider = Provider<ManagedSshRecoveryStore>(
   (ref) => SecureManagedSshRecoveryStore(),
 );
 
+/// A captured Agent-stage failure, independent of channel state after teardown.
+class ManagedSshAgentException extends ManagedSshException {
+  const ManagedSshAgentException(this.kind)
+    : super(ManagedSshFailure.connection);
+  final HermesConnectionFailureKind kind;
+}
+
 /// Owns a forwarding lease and a navigation pointer, never Agent domain state.
 class ManagedSshConnectionController {
   ManagedSshConnectionController(
@@ -113,13 +120,29 @@ class ManagedSshConnectionController {
     }
 
     _clearAuthentication = clearAuthentication;
+    Future<void>? lostCleanup;
+    int? lostRetirement;
+    bool Function()? lostIntent;
+    bool Function() captureRetirement() {
+      if (channel is HermesApiChannel) {
+        return (channel as HermesApiChannel).captureConnectionIntent();
+      }
+      final state = channel.state;
+      return () => identical(state, channel.state);
+    }
+
     try {
       if (recoveryStore != null) await _saveTail;
-      final saved = recoveryStore != null
-          ? await recoveryStore!.load(configuration, input.transport)
-          : (_recovery?.matches(configuration, input.transport) == true
-                ? _recovery
-                : null);
+      final ManagedSshRecovery? saved;
+      try {
+        saved = recoveryStore != null
+            ? await recoveryStore!.load(configuration, input.transport)
+            : (_recovery?.matches(configuration, input.transport) == true
+                  ? _recovery
+                  : null);
+      } catch (_) {
+        throw const ManagedSshException(ManagedSshFailure.recoveryUnavailable);
+      }
       if (generation != _generation) return false;
       _recovery = saved;
       final tunnel = await forward.connect(
@@ -155,7 +178,10 @@ class ManagedSshConnectionController {
         tunnel.done.then((_) {
           if (generation != _generation || !identical(_tunnel, tunnel)) return;
           if (_pending) {
-            unawaited(cancel());
+            // This is a failed current attempt, not a user's cancellation.
+            lostCleanup = cancel().catchError((Object _) {});
+            lostRetirement = _generation;
+            lostIntent = captureRetirement();
           } else {
             final owns = _ownsConnection;
             if (channel is HermesApiChannel && owns != null) {
@@ -227,8 +253,15 @@ class ManagedSshConnectionController {
               !(_ownsConnection?.call() ?? false)) ||
           !channel.state.isConnected ||
           channel.state.connectedBaseUrl != tunnel.agentUri.toString()) {
-        await cancel();
-        return false;
+        if (channel is HermesApiChannel &&
+            !(_ownsConnection?.call() ?? false)) {
+          await cancel();
+          return false;
+        }
+        throw ManagedSshAgentException(
+          channel.state.connectionFailureKind ??
+              HermesConnectionFailureKind.unknown,
+        );
       }
       if (!_serveAdoption && saved != null) {
         if (saved.profile != (channel.state.selectedProfileId ?? 'default')) {
@@ -256,15 +289,44 @@ class ManagedSshConnectionController {
       await _rememberCurrent();
       return generation == _generation;
     } catch (error) {
-      if (generation == _generation) await cancel();
-      if (error is ManagedSshException) rethrow;
-      throw const ManagedSshException(ManagedSshFailure.connection);
+      if (generation != _generation) return false;
+      final failure = error is ManagedSshException
+          ? error
+          : ManagedSshException(
+              error is HermesRecoveryStorageException
+                  ? ManagedSshFailure.recoveryUnavailable
+                  : ManagedSshFailure.connection,
+            );
+      final cleanup = cancel();
+      final retirement = _generation;
+      final retirementIsCurrent = captureRetirement();
+      try {
+        await cleanup;
+      } catch (_) {
+        // Teardown failure must not replace the original allowlisted cause.
+      }
+      if (_disposed ||
+          _replacement ||
+          retirement != _generation ||
+          !retirementIsCurrent()) {
+        return false;
+      }
+      throw failure;
     } finally {
       clearAuthentication();
       if (identical(_clearAuthentication, clearAuthentication)) {
         _clearAuthentication = null;
       }
       if (generation == _generation) _pending = false;
+      if (lostCleanup != null) {
+        await lostCleanup;
+        if (!_disposed &&
+            !_replacement &&
+            lostRetirement == _generation &&
+            (lostIntent?.call() ?? false)) {
+          throw const ManagedSshException(ManagedSshFailure.connection);
+        }
+      }
     }
   }
 
@@ -330,7 +392,11 @@ class ManagedSshConnectionController {
     _saveTail = operation.catchError((Object _) {
       if (_lastSaved == encoded) _lastSaved = null;
     });
-    await operation;
+    try {
+      await operation;
+    } catch (_) {
+      throw const ManagedSshException(ManagedSshFailure.recoveryUnavailable);
+    }
   }
 
   void _changed() {

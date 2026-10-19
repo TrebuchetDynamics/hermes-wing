@@ -14,6 +14,7 @@ enum ManagedSshFailure {
   hostKeyRejected,
   hostKeyChanged,
   hostTrustUnavailable,
+  recoveryUnavailable,
   authentication,
   connection,
 }

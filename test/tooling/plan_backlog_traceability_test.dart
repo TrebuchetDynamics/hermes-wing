@@ -46,7 +46,7 @@ void main() {
         'Policy',
       ], contains(disposition));
       final ids = RegExp(
-        r'`([A-Z][A-Z0-9-]+)`',
+        r'`([A-Za-z0-9][A-Za-z0-9_-]*)`',
       ).allMatches(fields[3]).map((match) => match.group(1)!).toList();
       if (disposition == 'Current') {
         expect(ids, isNotEmpty, reason: 'Current plan has no tasks: $path');

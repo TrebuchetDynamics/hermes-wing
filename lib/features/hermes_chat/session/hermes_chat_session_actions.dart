@@ -158,6 +158,7 @@ extension _HermesChatScreenSessionActions on _HermesChatScreenState {
         if (context.mounted &&
             isCurrent() &&
             channel.state.activeSessionId == session.id) {
+          _rememberWorkspaceTab(channel);
           await _scheduleDesktopComposerFocus(
             canFocus: () =>
                 isCurrent() && channel.state.activeSessionId == session.id,

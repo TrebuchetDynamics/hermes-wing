@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,11 +13,23 @@ import 'package:wing/features/hermes_chat/providers/managed_ssh_connection_contr
 import '../../../../integration_test/support/local_serve_chat_fixture.dart';
 import '../../../../integration_test/support/local_serve_read_fixture.dart';
 
+class _ServeFixture extends LocalServeChatFixture {
+  int? rejection;
+  @override
+  Future<bool> handleExtra(HttpRequest request) async {
+    if (rejection == null) return super.handleExtra(request);
+    request.response.statusCode = rejection!;
+    await request.response.close();
+    return true;
+  }
+}
+
 class _Forward extends ManagedSshForward {
   _Forward(this.origin);
   final String origin;
   final lost = Completer<void>();
   int closes = 0;
+  Completer<void>? closeGate;
 
   @override
   Future<ManagedSshTunnel> connect({
@@ -37,6 +50,7 @@ class _Forward extends ManagedSshForward {
       done: lost.future,
       close: () async {
         closes++;
+        await closeGate?.future;
       },
     );
   }
@@ -57,8 +71,15 @@ class _Store implements HermesServeRecoveryStore {
   }
 }
 
+Future<void> until(bool Function() condition) async {
+  for (var i = 0; i < 2000 && !condition(); i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+  }
+  expect(condition(), isTrue);
+}
+
 void main() {
-  late LocalServeChatFixture fixture;
+  late _ServeFixture fixture;
   late HermesApiChannel channel;
   late _Forward forward;
   late ManagedSshConnectionController controller;
@@ -66,7 +87,7 @@ void main() {
 
   setUp(() async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    fixture = LocalServeChatFixture();
+    fixture = _ServeFixture();
     await fixture.start();
     store = _Store();
     channel = HermesApiChannel(serveRecoveryStore: store);
@@ -115,32 +136,59 @@ void main() {
   );
 
   test('API remains default and does not guess serve after failure', () async {
-    expect(await connect(serveReads: false), isFalse);
+    await expectLater(
+      connect(serveReads: false),
+      throwsA(isA<ManagedSshAgentException>()),
+    );
     expect(fixture.requests, isNot(contains('GET /api/profiles')));
     expect(channel.state.isConnected, isFalse);
   });
 
-  test(
-    'serve credential denial closes its lease without protocol fallback',
-    () async {
-      expect(await connect(token: 'synthetic-denied'), isFalse);
-      expect(forward.closes, 1);
-      expect(channel.state.isConnected, isFalse);
-      expect(fixture.requests, ['GET /api/profiles']);
-    },
-  );
+  for (final status in [401, 403, 404]) {
+    test(
+      'serve rejection $status retains its category after settled lease cleanup',
+      () async {
+        fixture.rejection = status;
+        forward.closeGate = Completer<void>();
+        var settled = false;
+        final result = expectLater(
+          connect(),
+          throwsA(
+            isA<ManagedSshAgentException>().having(
+              (e) => e.kind,
+              'kind',
+              status == 404
+                  ? HermesConnectionFailureKind.incompatibleResponse
+                  : HermesConnectionFailureKind.authentication,
+            ),
+          ),
+        ).then((_) => settled = true);
+        await until(() => forward.closes == 1);
+        expect(channel.state.status, HermesConnectionStatus.disconnected);
+        expect(settled, isFalse);
+        forward.closeGate!.complete();
+        await result;
+        expect(channel.state.isConnected, isFalse);
+        expect(fixture.requests, ['GET /api/profiles']);
+        expect(store.saves, 0);
+      },
+    );
+  }
 
   test(
     'tunnel loss fences held profiles and leaves no credential for Retry',
     () async {
       fixture.holdProfiles = Completer<void>();
       fixture.profilesRequested = Completer<void>();
-      final pending = connect();
+      final pending = expectLater(
+        connect(),
+        throwsA(isA<ManagedSshException>()),
+      );
       await fixture.profilesRequested!.future;
       forward.lost.complete();
       await Future<void>.delayed(const Duration(milliseconds: 20));
       fixture.holdProfiles!.complete();
-      expect(await pending, isFalse);
+      await pending;
       await channel.retryLocalServeConversation();
       expect(channel.state.isConnected, isFalse);
       expect(fixture.requests, ['GET /api/profiles']);
@@ -183,13 +231,6 @@ void main() {
     expect(channel.state.serveChat, isNull);
     expect(fixture.minted, 0);
   });
-
-  Future<void> until(bool Function() condition) async {
-    for (var i = 0; i < 2000 && !condition(); i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 1));
-    }
-    expect(condition(), isTrue);
-  }
 
   for (final replace in [false, true]) {
     test(

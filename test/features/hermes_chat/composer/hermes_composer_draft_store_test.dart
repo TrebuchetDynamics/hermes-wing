@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/widgets.dart';
 import 'package:wing/features/hermes_chat/composer/hermes_composer_draft_store.dart';
 import 'package:wing/features/hermes_chat/composer/attachments/staged_attachment.dart';
 
@@ -35,6 +36,13 @@ void main() {
     final store = HermesComposerDraftStore()..activate(a);
     store.update(a, text: 'draft', attachment: null);
     final sent = store.captureForSubmission(a);
+    // The controller's programmatic clear sets the empty cursor to zero.
+    store.update(
+      a,
+      text: '',
+      attachment: null,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
     expect(store.restoreSubmission(sent), isTrue);
     expect(store.read(a).text, 'draft');
     expect(store.restoreSubmission(sent), isFalse);

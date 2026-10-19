@@ -43,7 +43,7 @@ test("a user can stop a slow Hermes run with an authoritative terminal outcome",
       exact: true,
     }),
   ).toBeVisible();
-  const stop = page.getByRole("checkbox", { name: "Stop" });
+  const stop = page.getByRole("button", { name: "Stop", exact: true });
   await expect(stop).toBeVisible();
   await stop.click();
 
@@ -52,7 +52,7 @@ test("a user can stop a slow Hermes run with an authoritative terminal outcome",
       async () => (await (await request.get(stopCountUrl)).json()).stopCount,
     )
     .toBeGreaterThan(before.stopCount);
-  await expect(page.getByRole("checkbox", { name: "Stop" })).not.toBeVisible();
+  await expect(stop).not.toBeVisible();
   const statusResponse = await request.get(`${APP}v1/runs/run_1`);
   expect(statusResponse.ok()).toBeTruthy();
   expect(await statusResponse.json()).toMatchObject({
@@ -64,6 +64,7 @@ test("session search and bulk selection can be explored without deleting data", 
   page,
 }) => {
   await openConnectedHermes(page);
+  await page.getByRole("button", { name: "Sessions", exact: true }).first().click();
 
   const search = page.getByRole("textbox", { name: /Search sessions/ });
   await expect(search).toBeVisible();
@@ -72,7 +73,7 @@ test("session search and bulk selection can be explored without deleting data", 
   await expect(
     page.getByRole("button", { name: "Clear search" }),
   ).toBeVisible();
-  await expect(page.getByText(/No sessions match/)).toBeVisible();
+  await expect(page.getByText(/No Hermes sessions match/)).toBeVisible();
   await page.getByRole("button", { name: "Clear search" }).click();
 
   await page.getByRole("button", { name: "Select" }).click();

@@ -5830,7 +5830,8 @@
         "LANDING-PAGES-QUALITY",
         "LANDING-PAGES-QUALITY-LIVE",
         "LANDING-PRODUCT-PROOF",
-        "LANDING-PRODUCT-PROOF-LIVE"
+        "LANDING-PRODUCT-PROOF-LIVE",
+        "README-001-62"
       ],
       "title": "Help existing Hermes users reach first reply through a credible accessible product landing page"
     },
@@ -6908,6 +6909,7 @@
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
+      "README-001-62",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -7049,6 +7051,14 @@
       "section": "Next",
       "status": "open",
       "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
+    },
+    {
+      "depends_on": [],
+      "goal": "LANDING-ONBOARDING",
+      "id": "README-001-62",
+      "section": "Next",
+      "status": "open",
+      "title": "Refresh the whole README with approved branding and truthful product proof"
     },
     {
       "depends_on": [

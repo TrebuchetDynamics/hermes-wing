@@ -665,3 +665,117 @@ public old site or a mock Agent reply as evidence for a changed candidate.
 This planning pass observed public rendering and read existing successful CI; it
 did not enable an API, connect/authenticate, send a message, change the deployed
 page, modify a pipeline, start a worker or schedule a job.
+
+## README visual refresh
+
+Status: Accepted
+
+The owner's `/plan-for-me beautify readme` request selected **Whole README:
+layout, copy hierarchy and existing visuals**. This section books a bounded
+implementation successor `README-001-62`; the current pass only plans it. Completed
+`LANDING-PRODUCT-PROOF` and `LANDING-FIRST-REPLY` stay done. Existing held live
+qualification, current Android priorities and paused schedules remain unchanged.
+
+### Story and observed baseline
+
+- Audience: existing or prospective Hermes users deciding whether Wing fits their
+  phone/browser/desktop workflow, then reaching their first deliberate reply.
+- Value: **Your agent. Within reach.** Independent Flutter client; Agent runs work.
+- Proof: existing simulated repository-summary/tool activity and phone approval
+  screenshots. They demonstrate a synthetic UI story, not actual synchronized
+  devices, live-provider execution, current full Desktop parity or Bot Chat delivery.
+- First useful action: choose Preview, Connect existing Agent or Build native, then
+  follow the no-tools first-chat prompt. UI preview is not a working assistant.
+- Inspected actual README, wide/mobile PNGs, asset consumers and nearest contracts.
+  The wide board repeats copy in its heading, image and caption; fine phone UI text
+  is subordinate at full-board scale. The dedicated mobile image keeps approval
+  readable but is tall. These are composition trade-offs, not broken-link defects.
+  Baseline audit checks three image references successfully; six focused README,
+  branding and Pages tooling tests pass. No composed GitHub rendering was run here.
+
+### Planner's chosen direction
+
+**README-mode visual refresh, not a rebrand or site redesign.** Keep the approved
+blue/white winged-headphone portrait at its existing compact scale, plain Markdown
+project name, native GitHub light/dark surfaces and restrained blue/cyan emphasis.
+Use ordinary headings, whitespace, short lists and one strong product-proof block;
+no oversized title SVG, invented logo, badge wall, generated art, GIF or remote font.
+
+Reading order: compact identity/value → first-chat/preview/status links and visible
+alpha notice → readable labeled product proof → short capabilities/Agent mechanism
+→ three explicit entry paths → no-tools first chat → limits, build and help.
+Keep commands copyable Markdown. Reduce repetition by relocating existing material,
+not hiding safety information or requiring images to understand the product.
+Preserve incoming heading and explicit-ID anchors; if a heading changes, retain
+its former fragment through an explicit compatibility anchor.
+
+Default: retain existing showcase PNGs and branding bytes. `site/index.html` and
+Pages share those PNGs, so silently replacing them would expand this scope. First
+improve README composition/captions; if an isolated derivative is genuinely needed,
+use a README-only filename and deterministic existing-material producer, trace its
+consumers and preserve shared originals. No fake UI, new screenshots or recapture
+is needed just to change Markdown. Current fixtures/older captures stay labeled;
+new UI captures, if separately necessary, use the existing build/generator guards.
+
+### Scope and immutable disclosures
+
+README text/order/embeds and nearest README contracts only; a minimal existing
+asset-producer change is conditional on the justified README-only derivative.
+No site, app, Agent, icon, provider, dependency, service or release implementation.
+Do not enable a public port, contact a provider or alter authentication for a preview.
+
+Retain all substantive disclosures: early alpha, independent client/Agent authority,
+own compatible authenticated Agent plus session chat/streaming, separate provider
+cost/data processing, Agent credentials versus provider keys, HTTPS/CORS/fingerprint
+trust, VPN not authentication, device-relative loopback, browser SSH/OAuth limits,
+manual Termux and unqualified platform/voice/recovery paths, source-build versus
+signed distribution/update limits, simulation/non-synchronization labels, no-tools
+first prompt before optional repository access, deliberate retry, no independent
+security audit, removal not token revocation, private bug-report redaction, license
+and separate service credits. Keep consequential warnings adjacent to the relevant
+choice; do not bury them in collapsed details or remove them to shorten the page.
+Preserve setup command/flag semantics and official documentation destinations.
+
+### Acceptance and verification
+
+- The opening clearly identifies Wing, Agent ownership, alpha scope, useful proof
+  and next action; the README remains understandable with images unavailable.
+- At 900px and 360px, light and dark local GitHub-like previews have loaded images,
+  no page-level horizontal overflow, legible captions/commands and coherent section
+  transitions. Expanded details/code blocks, if used, cannot widen the page.
+  Inspect opening, proof, first use and final links; label local rendering an
+  approximation, not hosted GitHub verification. Do not assign a design score.
+- Approved logo/source/master/app icons and shared site/showcase bytes remain
+  unchanged unless a specifically isolated README derivative is documented.
+- All anchors, commands and disclosures survive; simulation labels remain next to
+  imagery, and every claim remains bounded by current routes/qualification evidence.
+- Update only presentation-coupled contract assertions when justified by the chosen
+  composition. Prefer preserving the existing 160–180-line guard; do not pad copy to
+  satisfy it. If it prevents a clearer README, replace that arbitrary presentation
+  expectation with explicit retained-disclosure/anchor checks, not weaker safety,
+  provenance or capture assertions. No unrelated guard removal.
+
+Planned implementation checks (not a completed refresh):
+
+```sh
+flutter test --no-pub test/tooling/readme_assets_contract_test.dart test/tooling/wing_branding_assets_test.dart test/tooling/pages_workflow_contract_test.dart
+git diff --check
+```
+
+Run the installed beautify skill's `scripts/audit_readme.py README.md`; use
+`docs.py check` if `docs/roles.json` exists. Inventory installed Markdown/rendering
+and browser tools before adding dependencies; no new renderer install by default.
+Record source-bound wide/narrow light/dark composed previews and image/overflow
+assertions. Format/analyze affected Dart tests if changed. If a producer actually
+changes, run `node --check scripts/generate_readme_assets.mjs`; fresh captures need
+`flutter build web --release -t lib/main_e2e.dart` before `npm run readme:assets`.
+Unchanged shared imagery requires neither recapture nor a new product gate.
+
+### Queue and non-goals
+
+`README-001-62` in [TODO.md](../../TODO.md) and `goals.json` owns this new refresh, appended
+behind existing accepted work. The [plan index](README.md#plan-to-task-coverage)
+retains completed historical parents and current successors. No task is reopened,
+claimed, dispatched or completed by this plan. No commit, push, publication or
+GitHub About edit is authorized. Real authenticated first reply, native install,
+TalkBack and other live qualification stay in their existing held tasks.

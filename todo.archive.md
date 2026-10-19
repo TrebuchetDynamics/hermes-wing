@@ -7867,3 +7867,38 @@ Section: Next.
   readiness-only workspace or relabel historical native observations as current.
   Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Execute only the remaining owned GTK keyboard/approval scenarios through the linked native receipt/harness; retain exact request/source and teardown receipts. Reuse the four already-qualified cases without relabeling them as restart or screen-reader proof.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="parityupdate-005-11"></a>
+
+- [x] **PARITYUPDATE-005-11** — Repair compact Profiles keyboard fixture on the retained combined source.
+  Goal: INTEGRATION
+Section: Next.
+  Status: done
+  Payoff: unblock the combined offline gate without weakening public keyboard access.
+  Sources: [accepted integrated port and keyboard scope](ROADMAP.md#flutter-port-execution-roadmap), [inventory proof](docs/quality/shell-inventory-keyboard-qualification.md#acceptance-map), [repair handoff](docs/tasks/held-offline-recovery.md#fixture-repair-slices).
+  Scope: bounded inventory/keyboard repair split from MT-RERUN-TRAIN's existing
+  failure-remediation requirement, retaining FINISH-DESKTOP-SHELL's implementation
+  lineage. Start on the coordinator's matched retained source, not an unrepaired
+  historical baseline. Trace the public Profiles route, responsive search and
+  focus fixture before choosing a correction; the report does not establish a
+  product-code cause. No Chat/SSH/parser reimplementation, API or dependency change.
+  Acceptance: reproduce the missing first EditableText at line 259, then make all
+  eight inventory cases pass at 390/1280px and 200% text using real Tab/Shift+Tab
+  traversal. Preserve Profiles modal semantics/Close/Escape, editor reachability,
+  exact route/profile identity, zero incidental reads/mutations and no exceptions.
+  Do not skip a case, remove large-text/keyboard assertions, request editor focus
+  to bypass traversal or replace this proof with widget presence. Return the
+  attributable patch and source-bound terminal checks to the existing coordinator;
+  that owner still runs every full gate. No native/live acceptance is inferred.
+  Checks: planned reproduction and final `flutter test --no-pub --concurrency=1 test/shared/widgets/inventory_keyboard_navigation_test.dart`; `flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_focus_traversal_test.dart test/router/chat_workspace_overlay_test.dart`; format changed Dart files; `flutter analyze --no-pub`; `git diff --check`. MT-RERUN-TRAIN retains `flutter test --concurrency=1` and the other canonical gates after the patch is combined.
+  Dependencies: FINISH-DESKTOP-SHELL (done).
+  Ownership: existing inventory/keyboard implementation lineage; one supported isolated writer, not the SSH or tab worker taking over another feature.
+  Touches: test/shared/widgets/inventory_keyboard_navigation_test.dart, test/shared/widgets/app_shell_focus_traversal_test.dart, test/router/, lib/features/profiles/, lib/router/, lib/shared/widgets/app_shell.dart, docs/quality/
+  Resources: exclusive — serialize retained-source reconciliation with the existing coordinator.
+  Evidence: Git-common `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json` records a normal full-suite exit 1 on assembled tree `a2213ffd78bf6a485e09de0d218cc617f273a78e`: 4,041 passed, 9 skipped, 2 failed. `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json` freshly reproduces `shell keyboard semantics survive /profiles at 390.0 / 200%`, missing EditableText / Bad state: No element. These are candidate receipts, not red-main or flaky evidence. FINISH-DESKTOP-SHELL stays done for its historical qualified source.
+  Next action: consume the coordinator's exact combined-source handoff through the supported path, reproduce at the public seam and deliver only this attributable repair; do not rerun unchanged full suites or wait for whole-tab/Android acceptance.

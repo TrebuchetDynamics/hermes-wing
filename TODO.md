@@ -315,34 +315,6 @@ Section: Next.
 
 ### **P4** — Extended experiences and physical qualification
 
-- [ ] **PARITYUPDATE-005-11** — Repair compact Profiles keyboard fixture on the retained combined source.
-  Goal: INTEGRATION
-Section: Next.
-  Status: open
-  Payoff: unblock the combined offline gate without weakening public keyboard access.
-  Sources: [accepted integrated port and keyboard scope](ROADMAP.md#flutter-port-execution-roadmap), [inventory proof](docs/quality/shell-inventory-keyboard-qualification.md#acceptance-map), [repair handoff](docs/tasks/held-offline-recovery.md#fixture-repair-slices).
-  Scope: bounded inventory/keyboard repair split from MT-RERUN-TRAIN's existing
-  failure-remediation requirement, retaining FINISH-DESKTOP-SHELL's implementation
-  lineage. Start on the coordinator's matched retained source, not an unrepaired
-  historical baseline. Trace the public Profiles route, responsive search and
-  focus fixture before choosing a correction; the report does not establish a
-  product-code cause. No Chat/SSH/parser reimplementation, API or dependency change.
-  Acceptance: reproduce the missing first EditableText at line 259, then make all
-  eight inventory cases pass at 390/1280px and 200% text using real Tab/Shift+Tab
-  traversal. Preserve Profiles modal semantics/Close/Escape, editor reachability,
-  exact route/profile identity, zero incidental reads/mutations and no exceptions.
-  Do not skip a case, remove large-text/keyboard assertions, request editor focus
-  to bypass traversal or replace this proof with widget presence. Return the
-  attributable patch and source-bound terminal checks to the existing coordinator;
-  that owner still runs every full gate. No native/live acceptance is inferred.
-  Checks: planned reproduction and final `flutter test --no-pub --concurrency=1 test/shared/widgets/inventory_keyboard_navigation_test.dart`; `flutter test --no-pub --concurrency=1 test/shared/widgets/app_shell_focus_traversal_test.dart test/router/chat_workspace_overlay_test.dart`; format changed Dart files; `flutter analyze --no-pub`; `git diff --check`. MT-RERUN-TRAIN retains `flutter test --concurrency=1` and the other canonical gates after the patch is combined.
-  Dependencies: FINISH-DESKTOP-SHELL (done).
-  Ownership: existing inventory/keyboard implementation lineage; one supported isolated writer, not the SSH or tab worker taking over another feature.
-  Touches: test/shared/widgets/inventory_keyboard_navigation_test.dart, test/shared/widgets/app_shell_focus_traversal_test.dart, test/router/, lib/features/profiles/, lib/router/, lib/shared/widgets/app_shell.dart, docs/quality/
-  Resources: exclusive — serialize retained-source reconciliation with the existing coordinator.
-  Evidence: Git-common `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json` records a normal full-suite exit 1 on assembled tree `a2213ffd78bf6a485e09de0d218cc617f273a78e`: 4,041 passed, 9 skipped, 2 failed. `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json` freshly reproduces `shell keyboard semantics survive /profiles at 390.0 / 200%`, missing EditableText / Bad state: No element. These are candidate receipts, not red-main or flaky evidence. FINISH-DESKTOP-SHELL stays done for its historical qualified source.
-  Next action: consume the coordinator's exact combined-source handoff through the supported path, reproduce at the public seam and deliver only this attributable repair; do not rerun unchanged full suites or wait for whole-tab/Android acceptance.
-
 - [ ] **PARITYUPDATE-006-f4** — Repair profile-footer painted-focus oracle on the retained combined source.
   Goal: INTEGRATION
 Section: Next.
@@ -1630,4 +1602,12 @@ does not mark any check passed or authorize live actions.
   - Physical Android, native desktop UI, microphone/acoustics, installation/signing/update and human platform acceptance remain separate platform/live work; only Linux-host headless Chromium/offline tooling exercised.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: MT-VERIFY-BROWSER-GATES.
+  Status: open
+
+- [ ] PARITYUPDATE-005-11-LIVE — Live checks for PARITYUPDATE-005-11
+  Scope: Run the live checks the offline work for PARITYUPDATE-005-11 left pending.
+  Acceptance: Each check passes on the real target:
+  - Only Linux-hosted deterministic Flutter widget tests were exercised. Native desktop, physical Android, live Agent/provider and screen-reader qualification remain unverified; no live support is inferred.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITYUPDATE-005-11.
   Status: open

@@ -586,6 +586,7 @@
         "MT-VERIFY-BROWSER-GATES",
         "MT-VERIFY-BROWSER-GATES-LIVE",
         "PARITYUPDATE-005-11",
+        "PARITYUPDATE-005-11-LIVE",
         "PARITYUPDATE-006-f4",
         "PLANGAP-001-2f",
         "WING-TASK-409"
@@ -6905,7 +6906,6 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "PARITYUPDATE-005-11",
       "PARITYUPDATE-006-f4",
       "WING-001-b3",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
@@ -6977,7 +6977,8 @@
       "PARITYUPDATE-003-b1-LIVE",
       "PARITYUPDATE-004-48-LIVE",
       "README-001-62-LIVE",
-      "MT-VERIFY-BROWSER-GATES-LIVE"
+      "MT-VERIFY-BROWSER-GATES-LIVE",
+      "PARITYUPDATE-005-11-LIVE"
     ]
   },
   "tasks": [
@@ -7026,16 +7027,6 @@
       "section": "Next",
       "status": "open",
       "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
-    },
-    {
-      "depends_on": [
-        "FINISH-DESKTOP-SHELL"
-      ],
-      "goal": "INTEGRATION",
-      "id": "PARITYUPDATE-005-11",
-      "section": "Next",
-      "status": "open",
-      "title": "Repair compact Profiles keyboard fixture on the retained combined source"
     },
     {
       "depends_on": [
@@ -7630,6 +7621,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITYUPDATE-004-48"
+    },
+    {
+      "depends_on": [
+        "PARITYUPDATE-005-11"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-005-11-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYUPDATE-005-11"
     },
     {
       "depends_on": [
@@ -9114,6 +9115,16 @@
       "section": "Done",
       "status": "done",
       "title": "Resolve uncovered Desktop outcome contracts without expanding active tasks"
+    },
+    {
+      "depends_on": [
+        "FINISH-DESKTOP-SHELL"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-005-11",
+      "section": "Done",
+      "status": "done",
+      "title": "Repair compact Profiles keyboard fixture on the retained combined source"
     },
     {
       "depends_on": [],

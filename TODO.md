@@ -148,7 +148,7 @@ Section: Next.
   [pinned comparison](docs/quality/graphify-wing-recomparison.md).
   Official source leads: [pane composition and identity findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Imports alone do not establish keyboard/close behavior. Preserve per-pane drafts, reject stale owner events, release request leases on failure and keep expired input inoperable through switch/disconnect/resume. Qualify supported transport behavior without claiming JSON-RPC adoption.
   Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Checks: recover and verify the candidate's `test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart` ownership/switching regressions, then `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`; `flutter analyze`; rebuilt deterministic browser and isolated Android public-control journeys. First run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart test/features/hermes_chat/screens/hermes_chat_queued_dialog_intent_test.dart` on the captured merged candidate. The refreshed integration report also names `hermes_chat_layout_width_test.dart:59-82` (test registration outside `main`, formatter/analyzer/compile failure) and `hermes_chat_slash_commands_test.dart:1524` (4-pixel overflow in the narrow-phone 200% queue-manager case). Reconcile these in the existing Chat repair, without dropping the width, large-text or no-exception assertions. Run `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart`, then `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart test/features/hermes_chat/screens/hermes_chat_window_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_adaptive_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart`. Retain the full Chat/router, fresh web build/E2E and independent-review requirements below. Run native fixture and browser suites serially: their assigned port range is shared. A timeout or missing terminal aggregate is incomplete verification, never a pass.
+  Checks: reconcile committed candidate `3b7871db5a9005c4fc43f01bf245f596f735b454` before changing source; its report records the listener/layout repairs and terminal worker gates, not merged-candidate acceptance. Verify its `test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart` ownership/switching regressions, then `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`; `flutter analyze`; rebuilt deterministic browser and isolated Android public-control journeys. First run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart test/features/hermes_chat/screens/hermes_chat_queued_dialog_intent_test.dart` on the captured merged candidate. The refreshed integration report also names `hermes_chat_layout_width_test.dart:59-82` (test registration outside `main`, formatter/analyzer/compile failure) and `hermes_chat_slash_commands_test.dart:1524` (4-pixel overflow in the narrow-phone 200% queue-manager case). Reconcile these in the existing Chat repair, without dropping the width, large-text or no-exception assertions. Run `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart`, then `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart test/features/hermes_chat/screens/hermes_chat_window_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_adaptive_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart`. Retain the full Chat/router, fresh web build/E2E and independent-review requirements below. Run native fixture and browser suites serially: their assigned port range is shared. A timeout or missing terminal aggregate is incomplete verification, never a pass.
   Android focus: ordinary multiple conversations per profile and across profiles
   retain independent drafts/history/run and attention state while switching. Use a
   touch-accessible compact session switcher as the Desktop tab equivalent; do not
@@ -171,27 +171,44 @@ Section: Next.
   The later integration receipt `autowork-execution/f12ff11360124dc78c39313d92c0af0c.json`
   records timeout on candidate `cc17733cd3df5405a8627d6acc924620228f21ff`, based on
   `b5c4a4bff404c72b08e816f3f429db13252049e3`; it supplies no passing acceptance.
-  Current recovery evidence: the latest attempt-2 `report.json` supersedes the old
-  recovery instruction, not its acceptance. It retains an uncommitted combined
-  candidate at `2ddbb51b69044c71411e32168750a9a92db4c731`, with reported terminal
-  passes of 198 listener, 74 repair-focused and 11 workspace tests, clean analysis
-  and formatting. It already includes the layout registration and gateway formatter
-  repairs; do not restart from 153226bf or discard this newer delta. Full Chat/router,
-  fresh build/browser and independent review remain incomplete: shared temporary
-  space exhausted during build and review. No current-source full pass is supplied.
+  Current recovery evidence: `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-2/report.json`
+  now records committed candidate `3b7871db5a9005c4fc43f01bf245f596f735b454`
+  (tree `e3deb307f61e59193e498c0df077f5ec3e23ced4`, parent `cd54859949e74504c7ab5cd70c4e76c222e097eb`),
+  superseding the uncommitted `2ddbb51b`/ENOSPC recovery instruction, not acceptance.
+  It reports 198 listener, 74 repair-focused, 11 workspace and 1,995 full Chat/router
+  passes, clean analysis/formatting, a fresh web build, default browser 89 passes
+  with one intentional live-provider skip, and two dedicated workspace journeys.
+  The retained `build/autowork-tmp/recovery.sLpZBg/final-chat-router.log` ends in
+  `+1995: All tests passed!`; its `.exit` is 0. The same task scratch contains
+  `closeout-cd-identity.log` binding the committed lib/test to that capture, and
+  `final-review-followup.md` tracing the cached-Stop owner-epoch correction.
+  Review found no new important/critical source blocker; direct held-successful-Stop
+  workspace-roundtrip coverage remains a stated limit. Worker receipts are not
+  independent gate execution or Android/live acceptance.
+  The later `autowork-execution/ded0878221ac48cf8535b2539106686e.json` records
+  `CHILDREN_TERMINATED`, exit 1 and `reusable_acceptance: false` on integration
+  candidate `67d3527f9d683c33e4c71935774fca3f7b946316`; its log has no verdict.
+  That candidate's tree matches the worker commit, but neither is integrated into
+  this checkout. This interrupted integration supplies no new failing-test inventory
+  and no merged-candidate pass; do not describe the historical 44 failures as a fresh
+  result or assign another listener repair without reproducing a failure.
   Resources: exclusive — serialize retained candidate recovery, fixture ports and
   final source-bound checks; use disk-backed task scratch, not shared RAM cleanup.
   Execution: [retained-candidate sequence and scratch setup](docs/tasks/held-offline-recovery.md#disk-backed-scratch-without-shared-cleanup).
-  Next action: recheck actual worker inactivity and resume the preserved current
-  candidate using the documented ignored, disk-backed task TMPDIR with at least
-  2 GiB free. Keep the runner report destination and prior evidence; never delete
-  another task's scratch. Complete the existing mandatory gates and independent
-  review on captured combined source. The existing coordinator reconciles the
-  parser/SSH deltas before final whole-repository validation; no worker is assigned
-  another task's repairs. Publish the reviewed offline repair's source identity and
-  terminal Chat/router receipt for downstream qualification without marking this
-  task done or waiting for Android/live completion. Native-serve tabs remain
-  explicitly unavailable; that exclusion does not satisfy Android SSH acceptance.
+  Next action: recheck actual worker inactivity and preserve committed candidate
+  `3b7871db` plus its source-bound terminal logs and review. Have the existing
+  coordinator reconcile it with current parser/SSH deltas, then complete the
+  interrupted merged-candidate verification with terminal results on that frozen
+  combined source. Reuse worker receipts only after verifying their input bindings;
+  they do not replace required integration checks. Use the documented ignored,
+  disk-backed task TMPDIR with at least 2 GiB free, separate bounded commands and
+  supported tracked execution for long gates. Keep the runner report destination
+  and prior evidence; never delete another task's scratch or bypass runner limits.
+  No worker is assigned another task's repairs. Publish the reviewed offline repair's
+  source identity and terminal Chat/router receipt for downstream qualification
+  without marking this task done or waiting for Android/live completion.
+  Native-serve tabs remain explicitly unavailable; that exclusion does not satisfy
+  Android SSH acceptance. Isolated Android public-control journeys remain required.
   Historical lock overlays stay preserved separately; no lockfile edit is added.
 
 - [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Trace reconnect for two distinct session-owned tab runs

@@ -11,24 +11,27 @@ Reports describe their own candidates, not passing checks on today's combined so
 
 | Task | Retained evidence | Next input, not a new product decision |
 | --- | --- | --- |
-| DOC-PARITY-TAB-CONTRACT | `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-2/report.json`: uncommitted candidate on `2ddbb51b69044c71411e32168750a9a92db4c731`; listener 198, repair-focused 74 and workspace 11 reported passing; fresh build and independent review failed with ENOSPC | Resume this candidate with disk-backed scratch; complete full Chat/router, fresh build/browser and independent review. Focused counts are not the missing full gate. |
+| DOC-PARITY-TAB-CONTRACT | `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-2/report.json`: committed `3b7871db5a9005c4fc43f01bf245f596f735b454`; 1,995 terminal Chat/router passes, fresh build/default E2E and dedicated workspace journeys reported passing; independent source-review follow-up found no new important/critical blocker. Later integration receipt `autowork-execution/ded0878221ac48cf8535b2539106686e.json` ended `CHILDREN_TERMINATED`, without reusable acceptance, on tree-identical candidate `67d3527f9d683c33e4c71935774fca3f7b946316` | Preserve the commit and source-bound worker evidence; coordinator reconciles current combined source and completes interrupted merged-candidate verification. Do not restart the old uncommitted/ENOSPC recovery or infer fresh listener failures from the historical 44-failure review. Android/live acceptance remains outstanding. |
 | PLANGAP-001-2f | `autowork-execution/slot-data/PLANGAP-001-2f/attempt-1/report.json`: three uncommitted tooling files on `36f4155f87e4c6ddaa1123a1c9baba0989081663`; 13 focused tests reported passing, independent review without actionable findings | Reconcile retained parser delta and the already-owned layout/gateway test repairs before final analyzer/full gates. Do not change MCP plan disposition or rename IDs. |
 | WING-001-b3 | `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json`: uncommitted feedback/SSH fixture candidate on `36f4155f87e4c6ddaa1123a1c9baba0989081663`; 169 focused passes and 9 opt-in skips reported; full run timed out with failures | Combine existing parser and Chat repairs before final full validation. Its three SSH provider fixtures already contain reported passing port/cleanup repairs; reuse rather than assign a duplicate owner. |
 | MT-RERUN-TRAIN | `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json`: input `6fe161de1699b564a8e5a873f74c8a032bdb9759` has no runtime/test/dependency delta from failed input `fe0cc6b4029400683f4e96ae104ff46c7ccb1fb2`; format still failed on layout syntax | Existing integration owner assembles the retained source repairs and runs all canonical gates on that combined input. Another docs-only baseline does not repair it. |
 | PARITY-NATIVE-LINUX | `autowork-execution/slot-data/PARITY-NATIVE-LINUX/attempt-1/report.json`: readiness-only invocation at `2ddbb51b69044c71411e32168750a9a92db4c731`, no qualification run | Consume source-bound green Chat repair, then reconcile prior native candidate and run every required mapped scenario. |
 | VERIFY-CHAT-TRANSCRIPT-NATIVE | `autowork-execution/slot-data/VERIFY-CHAT-TRANSCRIPT-NATIVE/attempt-1/report.json`: readiness-only invocation at `2ddbb51b69044c71411e32168750a9a92db4c731`; eight dirty files retained in `.worktrees/autowork-VERIFY-CHAT-TRANSCRIPT-NATIVE-set-aside-1` | Consume source-bound green Chat repair, then reconcile that candidate; refresh native request/source/teardown receipts. Historical mounted cases are not restart proof. |
 
-The six slots were held and none of their recorded worker process birth identities
-matched a live process when inspected for this handoff. This is not a permanent
-ownership release: recheck slot, process birth and worktree state before adoption.
+At the earlier six-candidate handoff, the slots were held and none of their recorded
+worker process birth identities matched a live process. The updated tab slot is held
+for integration validation; its recorded worker PID is absent and its committed
+worktree is clean. Neither observation is a permanent ownership release: recheck
+slot, process birth and worktree state before adoption.
 Do not edit another worker's checkout or copy its entire source/ledger snapshot.
 Use the existing coordinator's integration path, preserving each task's delta and
 all unrelated dirty files. This document grants no additional integration authority.
 
 ### Recovery sequence
 
-- [ ] Resume the tab candidate and its existing baseline-test repair, using the
-  scratch procedure below. Preserve all listener/owner, layout, large-text,
+- [ ] Reconcile the committed tab candidate and its source-bound worker gates,
+  using the scratch procedure below for remaining checks. Its listener/layout
+  repairs already exist; preserve all listener/owner, layout, large-text,
   disclosure, reading-position and native-serve exclusion assertions.
 - [ ] Reconcile the parser candidate, then the SSH feedback candidate, through
   their existing owners. Compare duplicate layout/gateway formatter hunks; keep
@@ -36,11 +39,15 @@ all unrelated dirty files. This document grants no additional integration author
 - [ ] Existing integration owner assembles these attributable deltas into one
   source input before final whole-repository validation. Record HEAD/tree plus
   any dirty overlay hashes; an integrated candidate is not task completion.
-  Obtain the mandatory green Chat/router receipt and independent source review.
+  Verify the tab's retained terminal Chat/router receipt and source review against
+  their pinned inputs; complete required merged-candidate gates on the final input.
+  The tree-identical tab integration attempt was interrupted, not a new 44-failure
+  result. Neither a worker pass nor tree equality supplies integration acceptance.
 - [ ] Run final train and downstream native qualification on matching repaired
   inputs. Do not wait for Android/live acceptance or the entire tab task to be
   marked done just to consume its reviewed offline repair. Conversely, the 198/74/11
-  focused passes do not satisfy the mandatory green Chat-suite prerequisite.
+  focused passes alone do not satisfy the mandatory green Chat-suite prerequisite;
+  the reported 1,995-case worker aggregate requires source-binding verification.
 
 This is a source-readiness sequence, not new task-completion dependencies. In
 particular the accepted [parser plan](../plans/2026-10-18-plan-traceability-ids.md#scope)
@@ -50,8 +57,9 @@ source; workers must not invent green receipts, resolve other tasks or waive gat
 
 ## Disk-backed scratch without shared cleanup
 
-The tab report establishes repeated exhaustion of shared `/run/user/1000`, with
-only about 19 MiB remaining task-owned there. Do not delete other tasks' files or
+The earlier tab report established repeated exhaustion of shared `/run/user/1000`,
+with only about 19 MiB remaining task-owned there; the latest committed recovery
+reports successful disk-backed gates. Do not delete other tasks' files or
 try to solve that by cleaning shared RAM. The inspected checkout filesystem was
 ext4 with more than 2 GiB available; `build/` is Git-ignored. Recheck both facts in
 the executing workspace. Planned setup from that workspace's root:

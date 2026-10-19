@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
-
-- Task: the repository's whole offline test suite
-- Needs: no full-suite gate: a commit can land while breaking tests its own task never ran, and main is never checked
-- Since: 2026-10-18T18:36:32Z
-- Answer: Add one line to AGENTS.md, `Full check: <command>` (the command that runs the whole offline suite), or set PI_AUTOWORK_VALIDATE in the runner's settings.
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

@@ -20,6 +20,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T09:27:49Z
 - Answer: Answer in PARITYUPDATE-005-11's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-PARITYUPDATE-006-f4 — USER_INPUT — effort input — unblocks 0
+
+- Task: PARITYUPDATE-006-f4 — Repair profile-footer painted-focus oracle on the retained combined source.
+- Needs: worker reported a blocker: Coordinator must provide a parseable combined source or authorize a separate repair of the pre-existing top-level testWidgets invocation in test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59-82. Required flutter analyze --no-pub cannot pass on the supplied baseline. Footer repair is preserved uncommitted; no commit, integration or push performed.
+- Since: 2026-10-19T09:38:01Z
+- Answer: Answer in PARITYUPDATE-006-f4's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort investigate — unblocks 0
 
 - Task: PARITY-NATIVE-LINUX — Execute and extend native Linux

@@ -13,13 +13,6 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T05:26:31Z
 - Answer: Answer in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
-### Q-PLANGAP-001-2f — USER_INPUT — effort input — unblocks 0
-
-- Task: PLANGAP-001-2f — Accept hash-suffixed task IDs in plan traceability without weakening guards.
-- Needs: worker reported a blocker: Coordinator must actually reconcile the already-owned layout registration and gateway formatting repairs into the assigned input and provide that corrected baseline. Evidence: git diff 36f4155f87e4c6ddaa1123a1c9baba0989081663 6c167919b7cc8882330fad33bbcfc555e295a6f9 -- test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart test/features/hermes_chat/screens/hermes_chat_gateway_switch_…
-- Since: 2026-10-19T05:10:06Z
-- Answer: Answer in PLANGAP-001-2f's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-WING-001-b3 — USER_INPUT — effort input — unblocks 0
 
 - Task: WING-001-b3 — Make SSH connection failures visible and actionable.

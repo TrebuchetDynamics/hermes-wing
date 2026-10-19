@@ -92,9 +92,10 @@ void main() {
       ThemeMode.dark,
     });
     expect(
-      tester.widget<DropdownButton<WingThemePalette>>(palette).value,
+      tester.state<FormFieldState<WingThemePalette>>(palette).value,
       WingThemePalette.forest,
     );
+    await tap(find.byKey(const ValueKey('settings-category-chat')));
     await tap(find.byKey(const ValueKey('settings-voice-link')));
     final spoken = find.byKey(const ValueKey('voice-speak-replies-enabled'));
     if (phase == 'write') await tap(spoken);

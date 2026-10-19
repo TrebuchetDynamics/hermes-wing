@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+import fcntl,hashlib,json,os,re,subprocess,sys,time
+from pathlib import Path
+root=Path(os.environ.get('WING_PARITY_ARTIFACT_ROOT',str(Path(os.environ['TMPDIR'])/'parity-native')))
+real=Path(os.environ['AUTOWORK_CACHE'])/'flutter-3.44.2/bin/flutter'
+args=sys.argv[1:]
+if not args or args[0]!='test': os.execv(str(real),[str(real),*args])
+lock=(root/'flutter-test.lock').open('w'); fcntl.flock(lock,fcntl.LOCK_EX)
+key=str(time.time_ns()); events=root/(key+'.events.jsonl')
+args += ['--no-pub','--file-reporter=json:'+str(events)]
+start=time.time(); lines=[]
+proc=subprocess.Popen([str(real),*args],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+for line in proc.stdout:
+ sys.stdout.write(line); sys.stdout.flush(); lines.append(line)
+result=proc.wait()
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+files={}; native='linux' in sys.argv[1:]
+if native:
+ bundle=Path('build/linux/x64/debug/bundle')
+ files={str(p.relative_to(bundle)):sha(p) for p in sorted(bundle.rglob('*')) if p.is_file()}
+names={}; cases=[]; terminals=[]
+if events.exists():
+ for line in events.read_text().splitlines():
+  event=json.loads(line)
+  if event['type']=='testStart': names[event['test']['id']]=event['test']['name']
+  if event['type']=='testDone': cases.append({'name':names.get(event['testID']),'result':event['result'],'hidden':event['hidden'],'skipped':event['skipped']})
+  if event['type']=='done': terminals.append(event.get('success') is True)
+receipt={'args':sys.argv[1:],'exit':result,'seconds':round(time.time()-start,2),'events_sha256':sha(events) if events.exists() else None,'bundle_sha256':hashlib.sha256(json.dumps(files,sort_keys=True).encode()).hexdigest() if native else None,'bundle_files':files,'cases':cases,'terminal_success':terminals==[True],'persistence_phase':os.environ.get('WING_PERSISTENCE_PHASE'),'native_pids':[int(x) for x in re.findall(r'NATIVE_PARITY_PID=(\d+)',''.join(lines))]}
+with (root/'invocations.jsonl').open('a') as out: out.write(json.dumps(receipt)+'\n')
+sys.exit(result)

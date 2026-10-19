@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec /usr/bin/dbus-daemon --address="unix:path=${XDG_RUNTIME_DIR:?}/dbus" "$@"

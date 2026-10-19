@@ -2002,6 +2002,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     }
     final composing = _composerController.value.composing;
     if (composing.isValid && !composing.isCollapsed) {
+      // GTK must see Escape before Flutter's default dismissal consumes it.
+      if (!kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.linux &&
+          event.logicalKey == LogicalKeyboardKey.escape) {
+        return KeyEventResult.skipRemainingHandlers;
+      }
       return KeyEventResult.ignored;
     }
     final commands = _matchingLocalSlashCommands(

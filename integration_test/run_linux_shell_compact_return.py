@@ -36,7 +36,8 @@ def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.d
     local = module('compact_isolation_helpers', SOURCE / 'scripts/support/local_setup_enrollment_native.py')
     evidence = SOURCE / '.task-evidence' / card
     evidence.mkdir(parents=True, exist_ok=True)
-    attempt = Path(tempfile.mkdtemp(prefix='native-', dir=evidence))
+    # Flutter compares canonical project roots against absolute package URIs.
+    attempt = Path(tempfile.mkdtemp(prefix='native-', dir=evidence)).resolve()
     result = dict(status='FAIL', live_agent='NOT_CHECKED', os_keyring='NOT_CHECKED',
                   android='NOT_CHECKED', physical_os_resize='NOT_CHECKED', physical_keyboard='NOT_CHECKED')
     started = time.monotonic()

@@ -174,7 +174,10 @@ void main() {
   test(
     'Android SSH separates REST authentication from ticket and owner authorization',
     () async {
-      expect(await connect(token: 'synthetic-wrong-token'), false);
+      await expectLater(
+        connect(token: 'synthetic-wrong-token'),
+        throwsA(isA<ManagedSshAgentException>()),
+      );
       expect(channel.state.isConnected, false);
       expect(fixture.minted, 0);
       forward = _Forward(fixture.origin);
@@ -254,11 +257,14 @@ void main() {
     () async {
       fixture.profilesRequested = Completer<void>();
       fixture.holdProfiles = Completer<void>();
-      final pending = connect();
+      final pending = expectLater(
+        connect(),
+        throwsA(isA<ManagedSshException>()),
+      );
       await fixture.profilesRequested!.future;
       await forward.disconnect();
       fixture.holdProfiles!.complete();
-      expect(await pending, false);
+      await pending;
       expect(channel.state.isConnected, false);
       final requests = List.of(fixture.requests);
       await channel.retryLocalServeConversation();
@@ -574,7 +580,13 @@ void main() {
       sshStore.rejectSaves = true;
       await expectLater(
         channel.sendText('synthetic not submitted'),
-        throwsStateError,
+        throwsA(
+          isA<ManagedSshException>().having(
+            (e) => e.failure,
+            'failure',
+            ManagedSshFailure.recoveryUnavailable,
+          ),
+        ),
       );
       expect(fixture.count('prompt.submit'), 0);
       sshStore.rejectSaves = false;

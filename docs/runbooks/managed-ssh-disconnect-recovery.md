@@ -41,6 +41,28 @@ settles an API fence, including a reattached run that completes in place; failed
 streams or history reads cannot certify idle. The feature does
 not implement host-key rotation or guess ownership of historical transient leases.
 
+## When Connect fails
+
+Keep the SSH target fields and inspect the persistent explanation above **Connect
+via SSH**. Agent access rejection refers to the independently supplied Agent
+API/serve credential, not the SSH password or provider key. An incompatible
+response requires checking the Agent listener port and the explicitly selected
+API/serve surface; Wing does not try another protocol. SSH authentication, trust,
+timeout and established secure-storage failures have separate allowlisted copy.
+An unknown cause stays generic rather than inventing a diagnosis.
+
+The form reveals terminal feedback through its enclosing scroll views and exposes
+it as a semantic live region. Long text remains scrollable to Connect. Wait for
+owned cleanup to settle, reenter authentication (or select the key again), and
+retry deliberately. Target settings remain; attempt secrets are cleared. Cancel,
+route/mode/controller replacement and old completions do not transfer the old
+attempt's feedback or authority to a new owner. There is no automatic retry,
+probe, remote service action or replay of prompts, approvals or Stop.
+
+The [feedback receipt](../quality/managed-ssh-failure-feedback.md) distinguishes
+deterministic evidence and the held offline gate from the still-unreproduced
+installed-phone report. Repairing feedback does not prove target connectivity.
+
 ## Offline checks
 
 Run serialized fixture tests within the worker's assigned port range. If a port

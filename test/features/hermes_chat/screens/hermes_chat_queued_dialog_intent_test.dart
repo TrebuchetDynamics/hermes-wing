@@ -122,8 +122,8 @@ void main() {
             case 'unmount':
               h.page.value = const SizedBox();
               await tester.pump();
-              // The state and SSH controller providers outlive this route.
-              expect(h.channel.listeners.length, 2);
+              // SSH is acquired only on submit; only the state provider remains.
+              expect(h.channel.listeners.length, 1);
               expect(h.directory.listeners.length, h.directoryBaseline - 1);
           }
           stale();
@@ -132,7 +132,7 @@ void main() {
           if (operation == 'manage') await _close(tester);
           expect(h.channel.sent, isEmpty);
           if (transition == 'unmount') {
-            expect(h.channel.listeners.length, 2);
+            expect(h.channel.listeners.length, 1);
           } else {
             // Return only after the stale callback; fresh intent must see retained work.
             h.container.read(_source.notifier).state = h.channel;

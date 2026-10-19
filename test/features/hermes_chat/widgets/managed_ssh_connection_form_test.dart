@@ -75,6 +75,99 @@ Future<void> connect(WidgetTester tester) async {
 }
 
 void main() {
+  for (final externalFailure in [
+    null,
+    'SSH authentication was rejected. Check your username and authentication choice, then retry.',
+  ]) {
+    testWidgets(
+      'terminal failure reveals summary and reachable retry at 200 percent: ${externalFailure == null ? 'short' : 'long'}',
+      (tester) async {
+        tester.view.physicalSize = const Size(320, 480);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final pending = Completer<void>();
+        final notice = ValueNotifier<String?>(null);
+        addTearDown(notice.dispose);
+        final semantics = tester.ensureSemantics();
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MediaQuery(
+              data: const MediaQueryData(
+                textScaler: TextScaler.linear(2),
+                viewInsets: EdgeInsets.only(bottom: 80),
+              ),
+              child: Scaffold(
+                body: ValueListenableBuilder<String?>(
+                  valueListenable: notice,
+                  builder: (_, error, _) => ManagedSshConnectionForm(
+                    labels: labels,
+                    sanitizedError: error,
+                    onCancel: () {},
+                    onSubmit: (_) async {
+                      await pending.future;
+                      if (externalFailure != null) {
+                        notice.value = externalFailure;
+                      } else {
+                        throw StateError('secret');
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        for (final entry in {
+          'host': 'example.invalid',
+          'username': 'tester',
+          'password': 'synthetic-password',
+        }.entries) {
+          await tester.ensureVisible(field(entry.key));
+          await tester.enterText(field(entry.key), entry.value);
+        }
+        await connect(tester);
+        await tester.drag(
+          find.byType(SingleChildScrollView),
+          const Offset(0, 3000),
+        );
+        await tester.pumpAndSettle();
+        pending.complete();
+        await tester.pumpAndSettle();
+        final summary = find.text(externalFailure ?? 'Connection failed.');
+        final retry = find.widgetWithText(FilledButton, 'Connect');
+        final viewport = tester.getRect(find.byType(Scaffold));
+        final summaryBounds = tester.getRect(summary);
+        expect(summaryBounds.top, greaterThanOrEqualTo(viewport.top));
+        expect(summaryBounds.top, lessThan(viewport.bottom - 80));
+        // A long explanation may exceed the viewport. Its category is revealed
+        // first; ordinary scrolling must reach the actual enabled retry.
+        if (externalFailure != null) {
+          await tester.drag(
+            find.byType(SingleChildScrollView),
+            const Offset(0, -3000),
+          );
+          await tester.pumpAndSettle();
+        }
+        final retryBounds = tester.getRect(retry);
+        expect(retryBounds.top, greaterThanOrEqualTo(viewport.top));
+        expect(retryBounds.bottom, lessThanOrEqualTo(viewport.bottom - 80));
+        expect(retry.hitTestable(), findsOneWidget);
+        expect(
+          tester
+              .getSemantics(summary)
+              .getSemanticsData()
+              .flagsCollection
+              .isLiveRegion,
+          isTrue,
+        );
+        expect(tester.widget<FilledButton>(retry).onPressed, isNotNull);
+        expect(tester.takeException(), isNull);
+        semantics.dispose();
+      },
+    );
+  }
+
   testWidgets(
     'explicit profile validates, clears previous Agent token and submits literal identity',
     (tester) async {

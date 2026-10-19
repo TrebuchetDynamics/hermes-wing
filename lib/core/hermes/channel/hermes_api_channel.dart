@@ -42,6 +42,13 @@ part 'api_channel/hermes_api_channel_messaging.dart';
 part 'api_channel/hermes_api_channel_voice.dart';
 part 'api_channel/hermes_api_channel_errors.dart';
 
+/// Local recovery storage failed before Agent acquisition; no raw cause retained.
+class HermesRecoveryStorageException implements Exception {
+  const HermesRecoveryStorageException();
+  @override
+  String toString() => 'Hermes recovery storage unavailable';
+}
+
 /// [HermesChannel] backed by [HermesApiClient] against a live Hermes Agent
 /// API server. See docs/adr/client.md.
 class HermesApiChannel extends ChangeNotifier
@@ -354,6 +361,16 @@ class HermesApiChannel extends ChangeNotifier
     persistForwardedRecovery: persistForwardedRecovery,
   );
 
+  /// Captures lifecycle intent, including preflight before channel acquisition.
+  /// This is a staleness fence, not authorization for any Agent operation.
+  bool Function() captureConnectionIntent() {
+    final connection = _connectionGeneration;
+    final recovery = _serveRecoveryGeneration;
+    return () =>
+        connection == _connectionGeneration &&
+        recovery == _serveRecoveryGeneration;
+  }
+
   Future<void> _connectWithRecovery({
     required String baseUrl,
     String? apiKey,
@@ -374,7 +391,16 @@ class HermesApiChannel extends ChangeNotifier
     // intent must supersede this call before it can acquire network ownership.
     final recovery = _serveRecoveryGeneration + 1;
     final connection = _connectionGeneration;
-    await _forgetServeRecovery();
+    try {
+      await _forgetServeRecovery();
+    } catch (_) {
+      if (recovery != _serveRecoveryGeneration ||
+          connection != _connectionGeneration ||
+          !(canAccept?.call() ?? true)) {
+        return;
+      }
+      throw const HermesRecoveryStorageException();
+    }
     // The caller's lease may retire before it owns any channel generation.
     if (recovery != _serveRecoveryGeneration ||
         connection != _connectionGeneration ||
@@ -483,6 +509,7 @@ class HermesApiChannel extends ChangeNotifier
     } catch (_) {
       // Storage detail stays private, and no credential is kept for Retry.
       if (fenced() || !(canAccept?.call() ?? true)) return;
+      if (transient) throw const HermesRecoveryStorageException();
       final disconnected = _disconnect();
       final generation = _connectionGeneration;
       await disconnected;

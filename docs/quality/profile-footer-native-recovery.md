@@ -87,6 +87,59 @@ omit new harnesses, inventory grants, recovery APIs, draft stores and speculativ
 production fixes. Focused widget checks and strict malformed-receipt self-checks
 cover the changed oracle; the native run is the Linux GTK evidence.
 
+## Retained-source oracle repair (PARITYUPDATE-006-f4)
+
+Baseline `536eba29165b77e0ab15fe4548714724983a861c` reproduces the widget-harness
+failure at fixture line 102: zero outline pixels versus the unchanged minimum of
+24. Diagnostic capture at 100% expanded layout found the expected bounds
+`[8, 638, 242, 686]` and 420 border pixels at RGB `(87, 90, 95)`, not the oracle's
+hard-coded opaque `#555555`. The retained theme change `ad6db4ef` supplies a
+translucent secondary color; compositing it over the rail explains those pixels.
+The nearest footer widget test already accounts for this composition. This is
+an attributable stale-color oracle, not evidence of product failure or flakiness.
+
+The shared journey now samples the same top-edge strip against the composited
+shell focus color, with the footer widget oracle's one-channel-level rounding
+tolerance. It still requires at least 24 actual painted pixels, not focus state
+or Material configuration. A focused positive control followed by moving focus
+to Settings proves the same pixel assertion rejects a missing footer indicator.
+The strict receipt self-check also rejects zero-pixel rows as well as 23-pixel
+rows. Capture dimensions, timing, coordinates, all 100/200% and adaptive-return
+phases, inverse traversal, hit-test/48px bounds, redaction, retired-owner and
+zero-effect assertions are unchanged. No production UI or Agent code changed.
+
+The existing isolation harness canonicalizes its attempt path before producing
+absolute package URIs. This permits its ignored evidence directory to point into
+`$TMPDIR` without a Flutter canonical-project-root/package-root mismatch; it adds
+no harness, dependency or native capability. In this worker, the existing
+`.task-evidence/t_66ec0dbc` evidence location points to
+`$TMPDIR/profile-footer-native-evidence`.
+
+Final native evidence: `native-eyrg63lq/verification.json`, status `PASS`,
+140.146 seconds. All 14 focus rows report 48–420 pixels; four activation and four
+recovery rows pass strict validation. The receipt binds the observed native
+child PID/start ticks, binary and source, confirms unchanged copied source and
+dependencies, owned process group gone and isolated state removed.
+
+| Native artifact | SHA-256 |
+| --- | --- |
+| Source manifest | `706c851aa2b3c387021d6a2e5bceb035ffcc6bc6a7b08165e95c92c7f778f98a` |
+| Pre-check source archive | `ef198a0fe50db3cdd4bba077cc5772b18d4cd89fca5ff69ed60d1656c4130043` |
+| Native binary | `b8a25a7ccd447b340f7c93514f82d745ff54edb53df7a8c7cefd2559c217d97a` |
+| Footer receipt | `7b617c8dd75b8f1b68c551eab5fb64bbc74791b41051f6a508da73ef90695b43` |
+
+The required focused command above passes 16 tests including the negative
+control; the native command and strict self-check pass. This source-bound repair
+is an uncommitted worker patch, not a reopening of the original completed footer
+tasks. The required `flutter analyze --no-pub` is blocked by the unchanged
+baseline's top-level `testWidgets` call outside `main` at
+`test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59`
+(four parser errors and two info diagnostics). That unrelated Chat test is not
+modified here; a parseable combined source or separately authorized repair is
+needed before this task can commit. Full `flutter test --concurrency=1` and
+canonical assembly gates remain `MT-RERUN-TRAIN`'s responsibility. The
+platform/live limits below remain unchanged.
+
 ## Boundaries
 
 Input is `WidgetTester.sendKeyEvent` in the native Flutter engine; resizing is the

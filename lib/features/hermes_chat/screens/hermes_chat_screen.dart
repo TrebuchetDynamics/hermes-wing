@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:wing/router/widgets/chat_workspace_overlay.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
@@ -81,6 +82,7 @@ part 'state/hermes_chat_lifecycle.dart';
 part 'state/hermes_chat_layout.dart';
 part 'state/hermes_chat_connection.dart';
 part '../session/hermes_chat_session_actions.dart';
+part '../session/hermes_chat_session_workspace.dart';
 part '../composer/hermes_chat_message_flow.dart';
 
 /// Voice-capture/TTS services for the Hermes chat screen.
@@ -358,6 +360,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   bool _composerModelPickerPending = false;
   bool _composerVoiceOptionsExpanded = false;
   Object? _attachmentOwner;
+  Object? _composerStopOwner;
+  int _composerStopOwnerGeneration = 0;
 
   void _invalidateAttachmentPick() {
     _attachmentPickGeneration++;
@@ -366,13 +370,21 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _syncAttachmentOwner(HermesChannel channel) {
     final state = channel.state;
-    final owner = (
+    final stopOwner = (
       channel,
       state.isConnected,
       state.connectedBaseUrl,
       _gatewayDirectory.activeContactId,
       state.selectedProfileId,
       state.activeSessionId,
+    );
+    // Cached Stop input expires on owner loss, not reconciliation readiness.
+    if (_composerStopOwner != stopOwner) {
+      _composerStopOwner = stopOwner;
+      _composerStopOwnerGeneration++;
+    }
+    final owner = (
+      stopOwner,
       _sessionRestorationUnsettled,
       _canSendTurns(state),
     );
@@ -392,6 +404,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final LinkedHashMap<_ComposerDraftKey, List<String>> _composerHistories =
       LinkedHashMap();
   final _composerDrafts = HermesComposerDraftStore();
+  final _workspaceTabs = <HermesComposerDraftKey, _HermesWorkspaceTab>{};
+  bool _workspaceOpening = false;
+  bool _workspaceClosing = false;
+  final _workspaceCloseDisposals = <VoidCallback>{};
   _ComposerDraftKey? _activeComposerDraftKey;
   _ComposerDraftKey? _activeComposerHistoryKey;
   int? _composerHistoryIndex;
@@ -591,6 +607,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     for (final disposeOwner in _sessionSettlementDisposals.toList()) {
       disposeOwner();
     }
+    for (final disposeClose in _workspaceCloseDisposals.toList()) {
+      disposeClose();
+    }
     _gatewayDirectory.removeListener(_onGatewayDirectoryChanged);
     _composerDrafts.clear();
     _transcriptViewport.dispose();
@@ -692,17 +711,13 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     HermesChannelState state,
     int delta,
   ) {
-    final sessions = _switchableHermesSessions(
-      state,
-      retainedSessionIds: _unreadCompletedSessionIds,
-    );
-    if (sessions.length < 2) return;
-    final current = sessions.indexWhere(
-      (session) => session.id == state.activeSessionId,
+    final tabs = _workspaceTabs.values.toList();
+    if (tabs.length < 2 || _workspaceOpening) return;
+    final current = tabs.indexWhere(
+      (tab) => tab.key == _composerDraftKey(state),
     );
     if (current < 0) return;
-    final next = (current + delta) % sessions.length;
-    unawaited(_selectSession(context, channel, sessions[next]));
+    unawaited(_openWorkspaceTab(tabs[(current + delta) % tabs.length]));
   }
 
   void _selectActiveSessionOrdinal(
@@ -711,19 +726,11 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     HermesChannelState state,
     int ordinal,
   ) {
-    final sessions = _switchableHermesSessions(
-      state,
-      retainedSessionIds: _unreadCompletedSessionIds,
-    );
-    if (sessions.length < 2) return;
-    final index = ordinal == 9 ? sessions.length - 1 : ordinal - 1;
-    if (index < 0 || index >= sessions.length) return;
-    final session = sessions[index];
-    if (session.id == state.activeSessionId &&
-        _gatewayDirectory.restoringSessionId == null) {
-      return;
-    }
-    unawaited(_selectSession(context, channel, session));
+    final tabs = _workspaceTabs.values.toList();
+    if (tabs.length < 2 || _workspaceOpening) return;
+    final index = ordinal == 9 ? tabs.length - 1 : ordinal - 1;
+    if (index < 0 || index >= tabs.length) return;
+    unawaited(_openWorkspaceTab(tabs[index]));
   }
 
   GatewayContactId _sessionPinContact(HermesChannelState state) {
@@ -740,6 +747,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       _composerDrafts.update(
         key,
         text: _composerController.text,
+        selection: _composerController.selection,
         attachment: _stagedAttachment,
       );
     }
@@ -840,6 +848,17 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
       _composerHistoryDraft = '';
     }
     if (nextKey == _activeComposerDraftKey) return;
+    // Retire the old platform input client before publishing another owner's
+    // draft. Queued IME/web editing events must not write into the new tab.
+    if (_composerFocusNode.hasFocus) {
+      _composerFocusNode.unfocus();
+      if (WidgetsBinding.instance.schedulerPhase !=
+          SchedulerPhase.persistentCallbacks) {
+        // Do not leave a deferred blur that can detach the replacement editor
+        // when a disconnect/reconnect completes before the next frame.
+        FocusManager.instance.applyFocusChangesIfNeeded();
+      }
+    }
     _activeComposerDraftKey = nextKey;
 
     _composerDrafts.activate(nextKey);
@@ -854,7 +873,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         : null;
     _composerController.value = TextEditingValue(
       text: draft,
-      selection: TextSelection.collapsed(offset: draft.length),
+      selection: saved.selection.isValid && saved.selection.end <= draft.length
+          ? saved.selection
+          : TextSelection.collapsed(offset: draft.length),
     );
   }
 
@@ -1214,6 +1235,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   void _subscribeToChannel(HermesChannel channel) {
     if (identical(_subscribed, channel)) return;
     _subscribed?.removeListener(_onChannelChanged);
+    _workspaceTabs.clear();
     channel.addListener(_onChannelChanged);
     _subscribed = channel;
     _observation.adopt(channel.state);
@@ -1549,32 +1571,39 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         .where((profile) => profile.id == state.selectedProfileId)
         .firstOrNull;
     _requestShellNavigation(activeContact == null);
-    final switchableSessions = _switchableHermesSessions(
-      state,
-      retainedSessionIds: _unreadCompletedSessionIds,
-    );
+    _rememberWorkspaceTab(channel);
+    final workspaceAvailable = !state.isServeReadOnly;
+    final loneWorkspaceTab = workspaceAvailable && _workspaceTabs.length == 1
+        ? _workspaceTabs.values.single
+        : null;
     final desktopShortcuts = <ShortcutActivator, Intent>{
       if (_usesDesktopKeyboardShortcuts && canUseConnectedAgent) ...{
         const SingleActivator(LogicalKeyboardKey.keyK, control: true):
             const _OpenSessionsIntent(),
         const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
             const _OpenSessionsIntent(),
-        if (switchableSessions.length > 1) ...{
-          const SingleActivator(LogicalKeyboardKey.tab, control: true):
-              const _CycleActiveSessionIntent(1),
-          const SingleActivator(
-            LogicalKeyboardKey.tab,
-            control: true,
-            shift: true,
-          ): const _CycleActiveSessionIntent(
-            -1,
-          ),
-          for (final entry in _activeSessionOrdinalKeys) ...{
-            SingleActivator(entry.$1, control: true):
-                _SelectActiveSessionOrdinalIntent(entry.$2),
-            SingleActivator(entry.$1, meta: true):
-                _SelectActiveSessionOrdinalIntent(entry.$2),
-          },
+      },
+      if (workspaceAvailable &&
+          (_usesDesktopKeyboardShortcuts || kIsWeb) &&
+          _workspaceTabs.length > 1) ...{
+        const SingleActivator(LogicalKeyboardKey.tab, control: true):
+            const _CycleActiveSessionIntent(1),
+        const SingleActivator(
+          LogicalKeyboardKey.tab,
+          control: true,
+          shift: true,
+        ): const _CycleActiveSessionIntent(
+          -1,
+        ),
+        const SingleActivator(LogicalKeyboardKey.pageDown, control: true):
+            const _CycleActiveSessionIntent(1),
+        const SingleActivator(LogicalKeyboardKey.pageUp, control: true):
+            const _CycleActiveSessionIntent(-1),
+        for (final entry in _activeSessionOrdinalKeys) ...{
+          SingleActivator(entry.$1, control: true):
+              _SelectActiveSessionOrdinalIntent(entry.$2),
+          SingleActivator(entry.$1, meta: true):
+              _SelectActiveSessionOrdinalIntent(entry.$2),
         },
       },
       if (_usesDesktopKeyboardShortcuts &&
@@ -1589,6 +1618,15 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
     final scaffold = Scaffold(
       appBar: AppBar(
+        bottom:
+            workspaceAvailable &&
+                !_editingConnection &&
+                _workspaceTabs.length > 1
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(64),
+                child: _buildWorkspaceTabs(channel),
+              )
+            : null,
         leading: _editingConnection && widget.onConnectionCancelled != null
             ? BackButton(onPressed: widget.onConnectionCancelled)
             : activeContact == null
@@ -1656,6 +1694,15 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                     : strings.chatShellHermesTitle,
               ),
         actions: [
+          if (!_editingConnection && loneWorkspaceTab != null)
+            IconButton(
+              key: ValueKey(('hermes-workspace-close', loneWorkspaceTab.key)),
+              tooltip: strings.chatWorkspaceCloseTitle(loneWorkspaceTab.title),
+              onPressed: _workspaceOpening || _workspaceClosing
+                  ? null
+                  : () => unawaited(_closeWorkspaceTab(loneWorkspaceTab)),
+              icon: const Icon(Icons.close),
+            ),
           if (showingDirectory)
             IconButton(
               key: const ValueKey('hermes-connect-another-gateway'),

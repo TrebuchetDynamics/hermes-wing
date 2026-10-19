@@ -121,11 +121,8 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
 
   await expect(semanticLabel(page, "E2E Hermes is ready.")).toBeVisible();
   await expect(
-    page
-      .locator("flt-semantics")
-      .filter({ hasText: "Active Hermes session" })
-      .last(),
-  ).toContainText("hermes-agent");
+    page.getByRole("button", { name: "Model: hermes-agent", exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("Sessions").first()).toBeVisible();
 
   await page.getByRole("button", { name: "Diagnostics" }).first().click();
@@ -139,6 +136,7 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await expect(semanticLabel(page, "Jobs: 1")).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
 
+  await page.getByRole("button", { name: "Sessions", exact: true }).first().click();
   await page.getByRole("button", { name: "Session actions" }).first().click();
   await page.getByRole("menuitem", { name: "Rename" }).click();
   await page
@@ -148,6 +146,7 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
   await expect(
     page.getByRole("heading", { name: "Renamed e2e session" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Sessions", exact: true }).first().click();
   await page.getByRole("button", { name: "Session actions" }).first().click();
   await page.getByRole("menuitem", { name: "Branch" }).click();
   await expect(page.getByRole("alertdialog")).toContainText(
@@ -222,6 +221,7 @@ test("Hermes route renders connected session/capabilities in a real browser e2e 
     semanticText(page, "Hermes echo: voice browser turn"),
   ).toBeVisible();
 
+  await page.getByRole("button", { name: "Sessions", exact: true }).first().click();
   await page.getByRole("button", { name: "Session actions" }).first().click();
   await page.getByRole("menuitem", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Delete" }).click();

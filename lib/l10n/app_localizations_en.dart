@@ -716,6 +716,29 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use 1–64 lowercase letters, numbers, hyphens or underscores, starting with a letter or number.';
 
   @override
+  String get managedSshStorageUnavailable =>
+      'Secure connection storage is unavailable. Restore storage access, then retry with fresh credentials.';
+
+  @override
+  String get managedSshTimeout =>
+      'SSH connection timed out. Check the host, SSH port and network, then enter credentials and retry.';
+
+  @override
+  String get managedSshAgentAuthenticationFailed =>
+      'Agent access denied. Check token.';
+
+  @override
+  String get managedSshAgentIncompatible => 'Incompatible Agent. Check port.';
+
+  @override
+  String get managedSshAgentUnavailable =>
+      'The selected Agent surface could not be reached. Check Agent availability and port, then enter credentials and retry.';
+
+  @override
+  String get managedSshAgentFailed =>
+      'Could not connect to the selected Agent surface. Check its settings, then enter credentials and retry.';
+
+  @override
   String get appTitle => 'Hermes Wing';
 
   @override
@@ -2399,6 +2422,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get closeAction => 'Close';
+
+  @override
+  String get chatWorkspaceTabsLabel => 'Open conversations';
+
+  @override
+  String chatWorkspaceTabLabel(String title, String profile, String host) {
+    return 'Open $title · $profile · $host';
+  }
+
+  @override
+  String chatWorkspaceCloseTitle(String title) {
+    return 'Close $title';
+  }
+
+  @override
+  String get chatWorkspaceKeepOpen => 'Keep open';
+
+  @override
+  String get chatWorkspaceStopClose => 'Stop and close';
+
+  @override
+  String get chatWorkspaceStopCloseBody =>
+      'This conversation has active work. Stop only this run and close its tab after Hermes confirms the outcome. The session and other conversations are not deleted.';
+
+  @override
+  String get chatWorkspaceStopUnavailable =>
+      'Stop is unavailable for this conversation on the current Agent transport. The tab stays open; closing a view would not confirm that Agent work stopped.';
+
+  @override
+  String get chatWorkspaceCloseUncertain =>
+      'Stop is not confirmed. This tab stays open. Reconnect to reconcile Agent run status and history before closing; do not resend the prompt.';
+
+  @override
+  String get chatWorkspaceReopenBody =>
+      'Open this exact conversation before closing it so Hermes can confirm its current run state. Switching hosts or profiles closes local streams, not Agent work.';
+
+  @override
+  String get chatWorkspaceOpenFailed =>
+      'This conversation could not be opened. Its owner and draft are unchanged. Reconnect to its saved host and profile, then try again.';
 
   @override
   String get routeNotFoundTitle => 'Page not found';

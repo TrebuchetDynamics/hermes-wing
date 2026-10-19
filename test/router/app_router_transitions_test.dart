@@ -33,6 +33,73 @@ void main() {
   });
 
   testWidgets(
+    'overlay teardown restores parked focus without replacing the editor',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            FakeHermesEndpointStore(profiles: const []),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final router = container.read(routerProvider);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      const key = ValueKey('hermes-composer-field');
+      final field = tester.widget<TextField>(find.byKey(key));
+      final controller = field.controller!;
+      controller.value = const TextEditingValue(
+        text: 'Synthetic retained draft',
+        selection: TextSelection(baseOffset: 2, extentOffset: 7),
+      );
+      final draft = controller.value;
+      field.focusNode!.requestFocus();
+      await tester.pump();
+      for (final destination in [AppRoutes.settings, AppRoutes.profiles]) {
+        unawaited(router.push<void>(destination));
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<TextField>(find.byKey(key, skipOffstage: false))
+              .controller,
+          same(controller),
+        );
+        router.pop();
+        await tester.pump();
+        FocusManager.instance.rootScope.requestScopeFocus();
+        await tester.pumpAndSettle();
+        final restored = tester.widget<TextField>(find.byKey(key));
+        expect(restored.controller, same(controller));
+        expect(restored.controller!.value, draft);
+        expect(restored.focusNode, same(field.focusNode));
+        expect(restored.focusNode!.hasPrimaryFocus, isTrue);
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
     'manual enrollment returns to the shell without duplicate pages',
     (tester) async {
       SharedPreferences.setMockInitialValues({});

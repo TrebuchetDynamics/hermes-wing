@@ -1306,6 +1306,42 @@ abstract class AppLocalizations {
   /// **'Use 1–64 lowercase letters, numbers, hyphens or underscores, starting with a letter or number.'**
   String get managedSshInvalidAgentProfile;
 
+  /// No description provided for @managedSshStorageUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure connection storage is unavailable. Restore storage access, then retry with fresh credentials.'**
+  String get managedSshStorageUnavailable;
+
+  /// No description provided for @managedSshTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'SSH connection timed out. Check the host, SSH port and network, then enter credentials and retry.'**
+  String get managedSshTimeout;
+
+  /// No description provided for @managedSshAgentAuthenticationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent access denied. Check token.'**
+  String get managedSshAgentAuthenticationFailed;
+
+  /// No description provided for @managedSshAgentIncompatible.
+  ///
+  /// In en, this message translates to:
+  /// **'Incompatible Agent. Check port.'**
+  String get managedSshAgentIncompatible;
+
+  /// No description provided for @managedSshAgentUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected Agent surface could not be reached. Check Agent availability and port, then enter credentials and retry.'**
+  String get managedSshAgentUnavailable;
+
+  /// No description provided for @managedSshAgentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to the selected Agent surface. Check its settings, then enter credentials and retry.'**
+  String get managedSshAgentFailed;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
@@ -4142,6 +4178,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get closeAction;
+
+  /// No description provided for @chatWorkspaceTabsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open conversations'**
+  String get chatWorkspaceTabsLabel;
+
+  /// No description provided for @chatWorkspaceTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {title} · {profile} · {host}'**
+  String chatWorkspaceTabLabel(String title, String profile, String host);
+
+  /// No description provided for @chatWorkspaceCloseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Close {title}'**
+  String chatWorkspaceCloseTitle(String title);
+
+  /// No description provided for @chatWorkspaceKeepOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep open'**
+  String get chatWorkspaceKeepOpen;
+
+  /// No description provided for @chatWorkspaceStopClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop and close'**
+  String get chatWorkspaceStopClose;
+
+  /// No description provided for @chatWorkspaceStopCloseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation has active work. Stop only this run and close its tab after Hermes confirms the outcome. The session and other conversations are not deleted.'**
+  String get chatWorkspaceStopCloseBody;
+
+  /// No description provided for @chatWorkspaceStopUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop is unavailable for this conversation on the current Agent transport. The tab stays open; closing a view would not confirm that Agent work stopped.'**
+  String get chatWorkspaceStopUnavailable;
+
+  /// No description provided for @chatWorkspaceCloseUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop is not confirmed. This tab stays open. Reconnect to reconcile Agent run status and history before closing; do not resend the prompt.'**
+  String get chatWorkspaceCloseUncertain;
+
+  /// No description provided for @chatWorkspaceReopenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open this exact conversation before closing it so Hermes can confirm its current run state. Switching hosts or profiles closes local streams, not Agent work.'**
+  String get chatWorkspaceReopenBody;
+
+  /// No description provided for @chatWorkspaceOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation could not be opened. Its owner and draft are unchanged. Reconnect to its saved host and profile, then try again.'**
+  String get chatWorkspaceOpenFailed;
 
   /// No description provided for @routeNotFoundTitle.
   ///

@@ -1106,7 +1106,7 @@ void main() {
   });
 
   testWidgets(
-    'desktop shortcuts cycle forward and backward through live chats',
+    'desktop shortcuts cycle through visited chats including the idle foreground',
     (tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.linux;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -1132,7 +1132,7 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       await tester.pump(const Duration(milliseconds: 100));
-      expect(harness.channel.state.activeSessionId, 'sess_2');
+      expect(harness.channel.state.activeSessionId, 'sess_3');
       debugDefaultTargetPlatformOverride = null;
     },
   );
@@ -1896,202 +1896,215 @@ void main() {
   });
 
   for (final recovery in ['Retry', 'Choose session']) {
-    testWidgets('resume activation failure recovers with $recovery', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final semantics = tester.ensureSemantics();
-      final defaultReporter = reportFireAndForgetFailure;
-      final reported = <({String operation, Object error})>[];
-      reportFireAndForgetFailure = (operation, error) =>
-          reported.add((operation: operation, error: error));
-      addTearDown(() => reportFireAndForgetFailure = defaultReporter);
+    testWidgets(
+      'resume activation failure recovers with $recovery',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final semantics = tester.ensureSemantics();
+        final defaultReporter = reportFireAndForgetFailure;
+        final reported = <({String operation, Object error})>[];
+        reportFireAndForgetFailure = (operation, error) =>
+            reported.add((operation: operation, error: error));
+        addTearDown(() => reportFireAndForgetFailure = defaultReporter);
 
-      const contact = GatewayContactId(gatewayId: 'a', profileId: 'agent-a');
-      const sessions = [
-        HermesSession(id: 'sess_1', title: 'Remembered A', source: 'fake'),
-        HermesSession(id: 'newer-B', title: 'Other B', source: 'fake'),
-      ];
-      final cache = _ResumeSelectionCache();
-      final resumeEntered = Completer<void>();
-      final resumeRelease = Completer<void>();
-      final retryEntered = Completer<void>();
-      final retryRelease = Completer<void>();
-      var selectionCount = 0;
-      late final FakeHermesChannel channel;
-      channel = FakeHermesChannel(
-        selectProfileGate: (_) async {
-          selectionCount += 1;
-          if (selectionCount == 1) return;
-          channel.replaceSessions(sessions, activeSessionId: null);
-          if (selectionCount == 2) {
-            resumeEntered.complete();
-            await resumeRelease.future;
-            throw StateError('profile selection failed');
-          }
-          retryEntered.complete();
-          await retryRelease.future;
-        },
-      );
-      final harness = await _pumpGatewayChat(
-        tester,
-        channel: channel,
-        cache: cache,
-        textScale: 2,
-        disableAnimations: true,
-        startDirectory: true,
-      );
-      expect(cache.selection?.contactId, contact);
-      expect(cache.selection?.sessionId, 'sess_1');
-      channel.selectSessionCalls.clear();
-      channel.addFailedExchange('resume failure');
-      await tester.pump();
-      cache.writes.clear();
-
-      void expectRetainedTarget({List<String> selections = const []}) {
-        expect(harness.directory.activeContactId, contact);
-        expect(harness.directory.restoringSessionId, 'sess_1');
+        const contact = GatewayContactId(gatewayId: 'a', profileId: 'agent-a');
+        const sessions = [
+          HermesSession(id: 'sess_1', title: 'Remembered A', source: 'fake'),
+          HermesSession(id: 'newer-B', title: 'Other B', source: 'fake'),
+        ];
+        final cache = _ResumeSelectionCache();
+        final resumeEntered = Completer<void>();
+        final resumeRelease = Completer<void>();
+        final retryEntered = Completer<void>();
+        final retryRelease = Completer<void>();
+        var selectionCount = 0;
+        late final FakeHermesChannel channel;
+        channel = FakeHermesChannel(
+          selectProfileGate: (_) async {
+            selectionCount += 1;
+            if (selectionCount == 1) return;
+            channel.replaceSessions(sessions, activeSessionId: null);
+            if (selectionCount == 2) {
+              resumeEntered.complete();
+              await resumeRelease.future;
+              throw StateError('profile selection failed');
+            }
+            retryEntered.complete();
+            await retryRelease.future;
+          },
+        );
+        final harness = await _pumpGatewayChat(
+          tester,
+          channel: channel,
+          cache: cache,
+          textScale: 2,
+          disableAnimations: true,
+          startDirectory: true,
+        );
         expect(cache.selection?.contactId, contact);
         expect(cache.selection?.sessionId, 'sess_1');
-        expect(cache.writes, isEmpty);
-        expect(channel.state.activeSessionId, isNull);
+        channel.selectSessionCalls.clear();
+        channel.addFailedExchange('resume failure');
+        await tester.pump();
+        cache.writes.clear();
+
+        void expectRetainedTarget({List<String> selections = const []}) {
+          expect(harness.directory.activeContactId, contact);
+          expect(harness.directory.restoringSessionId, 'sess_1');
+          expect(cache.selection?.contactId, contact);
+          expect(cache.selection?.sessionId, 'sess_1');
+          expect(cache.writes, isEmpty);
+          expect(channel.state.activeSessionId, isNull);
+          expect(
+            find.byKey(const ValueKey('hermes-composer-field')),
+            findsNothing,
+          );
+          expect(
+            find.byKey(const ValueKey('hermes-send-button')),
+            findsNothing,
+          );
+          expect(channel.selectSessionCalls, selections);
+          expect(channel.createSessionCalls, isEmpty);
+          expect(channel.sentVoiceTranscripts, isEmpty);
+          expect(tester.takeException(), isNull);
+        }
+
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pumpAndSettle();
+        await resumeEntered.future;
+        expectRetainedTarget();
+        expect(find.text('Restoring your conversation'), findsOneWidget);
         expect(
-          find.byKey(const ValueKey('hermes-composer-field')),
+          tester.getSemantics(find.text('Restoring your conversation')),
+          matchesSemantics(
+            isHeader: true,
+            isLiveRegion: true,
+            label: 'Restoring your conversation',
+            textDirection: TextDirection.ltr,
+          ),
+        );
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        resumeRelease.complete();
+        await tester.pumpAndSettle();
+        expectRetainedTarget();
+        expect(harness.directory.isActivating, isFalse);
+        expect(
+          harness.directory.restorationFailure,
+          GatewaySessionRestorationFailure.transient,
+        );
+        expect(find.text('Conversation not restored'), findsOneWidget);
+        expect(
+          tester.getSemantics(find.text('Conversation not restored')),
+          matchesSemantics(
+            isHeader: true,
+            isLiveRegion: true,
+            label: 'Conversation not restored',
+            textDirection: TextDirection.ltr,
+          ),
+        );
+        expect(
+          tester
+              .widget<OutlinedButton>(
+                find.byKey(const ValueKey('hermes-session-restoration-choose')),
+              )
+              .onPressed,
+          isNull,
+        );
+        await _sendControlShortcut(tester, LogicalKeyboardKey.keyK);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('hermes-sessions-panel')),
           findsNothing,
         );
-        expect(find.byKey(const ValueKey('hermes-send-button')), findsNothing);
-        expect(channel.selectSessionCalls, selections);
-        expect(channel.createSessionCalls, isEmpty);
-        expect(channel.sentVoiceTranscripts, isEmpty);
-        expect(tester.takeException(), isNull);
-      }
+        expectRetainedTarget();
 
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pumpAndSettle();
-      await resumeEntered.future;
-      expectRetainedTarget();
-      expect(find.text('Restoring your conversation'), findsOneWidget);
-      expect(
-        tester.getSemantics(find.text('Restoring your conversation')),
-        matchesSemantics(
-          isHeader: true,
-          isLiveRegion: true,
-          label: 'Restoring your conversation',
-          textDirection: TextDirection.ltr,
-        ),
-      );
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-      resumeRelease.complete();
-      await tester.pumpAndSettle();
-      expectRetainedTarget();
-      expect(harness.directory.isActivating, isFalse);
-      expect(
-        harness.directory.restorationFailure,
-        GatewaySessionRestorationFailure.transient,
-      );
-      expect(find.text('Conversation not restored'), findsOneWidget);
-      expect(
-        tester.getSemantics(find.text('Conversation not restored')),
-        matchesSemantics(
-          isHeader: true,
-          isLiveRegion: true,
-          label: 'Conversation not restored',
-          textDirection: TextDirection.ltr,
-        ),
-      );
-      expect(
-        tester
-            .widget<OutlinedButton>(
-              find.byKey(const ValueKey('hermes-session-restoration-choose')),
-            )
-            .onPressed,
-        isNull,
-      );
-      await _sendControlShortcut(tester, LogicalKeyboardKey.keyK);
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('hermes-sessions-panel')), findsNothing);
-      expectRetainedTarget();
-
-      final retryFocus = Focus.of(tester.element(find.text('Retry')));
-      retryFocus.requestFocus();
-      await tester.pump();
-      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.pumpAndSettle();
-      await retryEntered.future;
-      expectRetainedTarget();
-      expect(find.text('Restoring your conversation'), findsOneWidget);
-      expect(channel.selectProfileCalls, ['agent-a', 'agent-a', 'agent-a']);
-      expect(channel.connectCalls.map((call) => call.baseUrl), [
-        'https://a',
-        'https://a',
-        'https://a',
-      ]);
-      channel.selectSessionFails = recovery == 'Choose session';
-      retryRelease.complete();
-      await tester.pumpAndSettle();
-
-      if (recovery == 'Choose session') {
-        expectRetainedTarget(selections: ['sess_1']);
-        expect(channel.state.selectedProfileId, 'agent-a');
-        channel.selectSessionCalls.clear();
-        channel.selectSessionFails = false;
-        final chooseFocus = Focus.of(
-          tester.element(find.text('Choose session')),
-        );
-        chooseFocus.requestFocus();
+        final retryFocus = Focus.of(tester.element(find.text('Retry')));
+        retryFocus.requestFocus();
         await tester.pump();
         await tester.sendKeyEvent(LogicalKeyboardKey.enter);
         await tester.pumpAndSettle();
+        await retryEntered.future;
         expectRetainedTarget();
-        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        expect(find.text('Restoring your conversation'), findsOneWidget);
+        expect(channel.selectProfileCalls, ['agent-a', 'agent-a', 'agent-a']);
+        expect(channel.connectCalls.map((call) => call.baseUrl), [
+          'https://a',
+          'https://a',
+          'https://a',
+        ]);
+        channel.selectSessionFails = recovery == 'Choose session';
+        retryRelease.complete();
         await tester.pumpAndSettle();
-        expectRetainedTarget();
-        expect(chooseFocus.hasFocus, isTrue);
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await tester.pumpAndSettle();
-        expectRetainedTarget();
-        await tester.tap(
-          find.byKey(const ValueKey('hermes-session-title-newer-B')),
-        );
-        await tester.pumpAndSettle();
-      }
 
-      final expectedSession = recovery == 'Retry' ? 'sess_1' : 'newer-B';
-      expect(harness.directory.activeContactId, contact);
-      expect(channel.state.selectedProfileId, 'agent-a');
-      expect(channel.state.activeSessionId, expectedSession);
-      expect(harness.directory.restoringSessionId, isNull);
-      expect(harness.directory.restorationFailure, isNull);
-      expect(cache.selection?.contactId, contact);
-      expect(cache.selection?.sessionId, expectedSession);
-      expect(cache.writes, isNotEmpty);
-      expect(cache.writes.every((write) => write.contactId == contact), isTrue);
-      expect(cache.writes.map((write) => write.sessionId).toSet(), {
-        expectedSession,
-      });
-      expect(channel.selectSessionCalls, [expectedSession]);
-      expect(
-        find.byKey(const ValueKey('hermes-session-restoration')),
-        findsNothing,
-      );
-      final composer = tester.widget<TextField>(
-        find.byKey(const ValueKey('hermes-composer-field')),
-      );
-      expect(composer.enabled, isTrue);
-      expect(composer.controller!.text, isEmpty);
-      if (recovery == 'Choose session') {
-        expect(composer.focusNode!.hasFocus, isTrue);
-      }
-      expect(channel.createSessionCalls, isEmpty);
-      expect(channel.sentVoiceTranscripts, isEmpty);
-      // Recovery handles the failure visibly; no unhandled future is reported.
-      expect(reported, isEmpty);
-      expect(tester.takeException(), isNull);
-      semantics.dispose();
-    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+        if (recovery == 'Choose session') {
+          expectRetainedTarget(selections: ['sess_1']);
+          expect(channel.state.selectedProfileId, 'agent-a');
+          channel.selectSessionCalls.clear();
+          channel.selectSessionFails = false;
+          final chooseFocus = Focus.of(
+            tester.element(find.text('Choose session')),
+          );
+          chooseFocus.requestFocus();
+          await tester.pump();
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.pumpAndSettle();
+          expectRetainedTarget();
+          await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+          await tester.pumpAndSettle();
+          expectRetainedTarget();
+          expect(chooseFocus.hasFocus, isTrue);
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.pumpAndSettle();
+          expectRetainedTarget();
+          await tester.tap(
+            find.byKey(const ValueKey('hermes-session-title-newer-B')),
+          );
+          await tester.pumpAndSettle();
+        }
+
+        final expectedSession = recovery == 'Retry' ? 'sess_1' : 'newer-B';
+        expect(harness.directory.activeContactId, contact);
+        expect(channel.state.selectedProfileId, 'agent-a');
+        expect(channel.state.activeSessionId, expectedSession);
+        expect(harness.directory.restoringSessionId, isNull);
+        expect(harness.directory.restorationFailure, isNull);
+        expect(cache.selection?.contactId, contact);
+        expect(cache.selection?.sessionId, expectedSession);
+        expect(cache.writes, isNotEmpty);
+        expect(
+          cache.writes.every((write) => write.contactId == contact),
+          isTrue,
+        );
+        expect(cache.writes.map((write) => write.sessionId).toSet(), {
+          expectedSession,
+        });
+        expect(channel.selectSessionCalls, [expectedSession]);
+        expect(
+          find.byKey(const ValueKey('hermes-session-restoration')),
+          findsNothing,
+        );
+        final composer = tester.widget<TextField>(
+          find.byKey(const ValueKey('hermes-composer-field')),
+        );
+        expect(composer.enabled, isTrue);
+        expect(composer.controller!.text, isEmpty);
+        if (recovery == 'Choose session') {
+          expect(composer.focusNode!.hasFocus, isTrue);
+        }
+        expect(channel.createSessionCalls, isEmpty);
+        expect(channel.sentVoiceTranscripts, isEmpty);
+        // Recovery handles the failure visibly; no unhandled future is reported.
+        expect(reported, isEmpty);
+        expect(tester.takeException(), isNull);
+        semantics.dispose();
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.linux),
+    );
   }
 
   testWidgets('resume preserves an attached live stream', (tester) async {

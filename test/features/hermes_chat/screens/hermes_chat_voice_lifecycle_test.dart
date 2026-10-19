@@ -372,6 +372,24 @@ void main() {
           find.byKey(const ValueKey('hermes-voice-mode-end-button')),
         );
         await tester.pump(const Duration(seconds: 1));
+        final composer = tester.widget<TextField>(
+          find.byKey(const ValueKey('hermes-composer-field')),
+        );
+        expect(composer.enabled, isTrue);
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('hermes-composer-field')),
+            matching: find.text('Message Hermes…'),
+          ),
+          findsOneWidget,
+        );
+        final semantics = tester.ensureSemantics();
+        try {
+          await tester.pump();
+          expect(find.bySemanticsLabel('Message Hermes…'), findsOneWidget);
+        } finally {
+          semantics.dispose();
+        }
       },
     );
   }

@@ -6,7 +6,7 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 4
+### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
 
 - Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
 - Needs: changed files the coordinator owns: TODO.md

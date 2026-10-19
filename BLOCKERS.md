@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-VERIFY-CHAT-TRANSCRIPT-NATIVE — USER_DECISION — effort decision — unblocks 1
-
-- Task: VERIFY-CHAT-TRANSCRIPT-NATIVE — Keep recovered
-- Needs: worker reported a blocker: Existing coordinator must refresh this assigned task's source to consume the delivered MT-RERUN-TRAIN offline handoff: assembled tree a2213ffd78bf6a485e09de0d218cc617f273a78e (HEAD35d7976a plus the exact47-file overlay; patch1c169ec1c114a01213ace13f55d17d3de9516ddf60f4281656abd40ce2c3d886). The handoff and2014-pass receipt exist and verify, but assigned baseline4534a6ee is missing/mismatched on ev…; DOCS-MAINTAINER already changed Next action, Readiness, but the task is still waiting for the same reason.
-- Since: 2026-10-19T07:00:20Z
-- Answer: Decide the missing input or disposition in VERIFY-CHAT-TRANSCRIPT-NATIVE's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
-
 ### Q-WING-001-b3 — USER_DECISION — effort decision — unblocks 0
 
 - Task: WING-001-b3 — Make SSH connection failures visible and actionable.

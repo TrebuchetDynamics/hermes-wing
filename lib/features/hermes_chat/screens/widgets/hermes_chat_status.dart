@@ -433,7 +433,7 @@ class _HermesCapabilityStrip extends StatelessWidget {
   }
 }
 
-class _ApprovalBanner extends StatelessWidget {
+class _ApprovalBanner extends StatefulWidget {
   const _ApprovalBanner({
     required this.request,
     required this.pendingCount,
@@ -451,7 +451,43 @@ class _ApprovalBanner extends StatelessWidget {
   final VoidCallback onDismissMalformed;
 
   @override
+  State<_ApprovalBanner> createState() => _ApprovalBannerState();
+}
+
+class _ApprovalBannerState extends State<_ApprovalBanner> {
+  ModalRoute<void>? _reviewRoute;
+
+  void _retireReview() {
+    final route = _reviewRoute;
+    _reviewRoute = null;
+    if (route == null) return;
+    // Queue invalidation may remove the banner during build. Remove only its
+    // owned route after that frame, never pop a replacement or unrelated modal.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (route.isActive) route.navigator?.removeRoute(route);
+    });
+  }
+
+  @override
+  void didUpdateWidget(_ApprovalBanner oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.request, widget.request)) _retireReview();
+  }
+
+  @override
+  void dispose() {
+    _retireReview();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final request = widget.request;
+    final pendingCount = widget.pendingCount;
+    final responding = widget.responding;
+    final canRespond = widget.canRespond;
+    final onDecide = widget.onDecide;
+    final onDismissMalformed = widget.onDismissMalformed;
     final strings = AppLocalizations.of(context);
     final risk = request.risk;
     final hasResponseIdentity = request.hasResponseIdentity;
@@ -579,7 +615,11 @@ class _ApprovalBanner extends StatelessWidget {
                                       !canAnswer(HermesApprovalDecision.session)
                                   ? null
                                   : () => unawaited(
-                                      _confirmSessionAllow(context),
+                                      _confirmSessionAllow(
+                                        context,
+                                        request: request,
+                                        onDecide: onDecide,
+                                      ),
                                     ),
                               child: Text(
                                 strings.chatStatusAllowForSessionAction,
@@ -592,8 +632,13 @@ class _ApprovalBanner extends StatelessWidget {
                                   responding ||
                                       !canAnswer(HermesApprovalDecision.always)
                                   ? null
-                                  : () =>
-                                        unawaited(_confirmAlwaysAllow(context)),
+                                  : () => unawaited(
+                                      _confirmAlwaysAllow(
+                                        context,
+                                        request: request,
+                                        onDecide: onDecide,
+                                      ),
+                                    ),
                               child: Text(strings.chatStatusAlwaysAllowAction),
                             ),
                           if (request.allows(HermesApprovalDecision.once))
@@ -621,6 +666,8 @@ class _ApprovalBanner extends StatelessWidget {
 
   Future<void> _confirmSessionAllow(
     BuildContext context, {
+    required HermesApprovalRequest request,
+    required ValueChanged<HermesApprovalDecision> onDecide,
     bool closeSheetOnConfirm = false,
   }) async {
     final risk = request.risk;
@@ -660,6 +707,8 @@ class _ApprovalBanner extends StatelessWidget {
 
   Future<void> _confirmAlwaysAllow(
     BuildContext context, {
+    required HermesApprovalRequest request,
+    required ValueChanged<HermesApprovalDecision> onDecide,
     bool closeSheetOnConfirm = false,
   }) async {
     final risk = request.risk;
@@ -698,11 +747,23 @@ class _ApprovalBanner extends StatelessWidget {
   }
 
   void _showApprovalSheet(BuildContext context) {
+    final request = widget.request;
+    final pendingCount = widget.pendingCount;
+    final canRespond = widget.canRespond;
+    final onDecide = widget.onDecide;
+    final onDismissMalformed = widget.onDismissMalformed;
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
       builder: (sheetContext) {
+        // Malformed reviews have no Agent decision authority and keep their
+        // existing explicit local dismissal path. Actionable sheets may not
+        // retain controls/focus after their exact banner owner is retired.
+        if (request.hasResponseIdentity) {
+          _reviewRoute = ModalRoute.of<void>(sheetContext);
+          if (!mounted) _retireReview();
+        }
         final strings = AppLocalizations.of(sheetContext);
         final risk = request.risk;
         final hasResponseIdentity = request.hasResponseIdentity;
@@ -718,6 +779,7 @@ class _ApprovalBanner extends StatelessWidget {
         final commandTruncated = (safeCommand?.length ?? 0) > 600;
         final safeToolCallId = _safeHermesUiText(request.toolCallId);
         final approvalSummary = _approvalReviewSummary(
+          pendingCount: pendingCount,
           safePrompt: safePrompt,
           safeRisk: safeRisk,
           safeCommand: safeCommand,
@@ -873,6 +935,8 @@ class _ApprovalBanner extends StatelessWidget {
                               ? () => unawaited(
                                   _confirmSessionAllow(
                                     sheetContext,
+                                    request: request,
+                                    onDecide: onDecide,
                                     closeSheetOnConfirm: true,
                                   ),
                                 )
@@ -886,6 +950,8 @@ class _ApprovalBanner extends StatelessWidget {
                               ? () => unawaited(
                                   _confirmAlwaysAllow(
                                     sheetContext,
+                                    request: request,
+                                    onDecide: onDecide,
                                     closeSheetOnConfirm: true,
                                   ),
                                 )
@@ -915,6 +981,7 @@ class _ApprovalBanner extends StatelessWidget {
   }
 
   String _approvalReviewSummary({
+    required int pendingCount,
     required String safePrompt,
     required String? safeRisk,
     required String? safeCommand,

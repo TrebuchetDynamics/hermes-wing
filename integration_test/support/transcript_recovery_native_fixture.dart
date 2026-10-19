@@ -14,6 +14,7 @@ class TranscriptRecoveryNativeFixture {
   final decisions = <Map<String, Object?>>[];
   final mutations = <String>[];
   final reads = <String>[];
+  final requests = <Map<String, Object?>>[];
   final streams = <StreamController<String>>[];
   bool canonical = false;
   final completedRuns = <String>{};
@@ -24,6 +25,11 @@ class TranscriptRecoveryNativeFixture {
       config: config,
       get: (uri, headers) async {
         reads.add(uri.path);
+        requests.add({
+          'method': 'GET',
+          'path': uri.path,
+          'query': uri.queryParameters,
+        });
         history.canonical = canonical;
 
         return switch (uri.path) {
@@ -89,6 +95,12 @@ class TranscriptRecoveryNativeFixture {
       },
       post: (uri, headers, body) async {
         mutations.add(uri.path);
+        requests.add({
+          'method': 'POST',
+          'path': uri.path,
+          'query': uri.queryParameters,
+          'body': jsonDecode(body),
+        });
         if (uri.path == '/v1/runs') {
           return jsonEncode({
             'run_id': 'run_${streams.length + 1}',
@@ -111,6 +123,11 @@ class TranscriptRecoveryNativeFixture {
         return '{}';
       },
       getStream: (uri, headers) {
+        requests.add({
+          'method': 'SSE',
+          'path': uri.path,
+          'query': uri.queryParameters,
+        });
         final stream = StreamController<String>();
         streams.add(stream);
         return stream.stream;

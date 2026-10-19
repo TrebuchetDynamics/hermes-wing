@@ -6,20 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
-
-- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
-- Needs: changed files the coordinator owns: TODO.md
-- Since: 2026-10-19T14:25:23Z
-- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-PARITYUPDATE-005-11 — USER_INPUT — effort input — unblocks 0
-
-- Task: PARITYUPDATE-005-11 — Repair compact Profiles keyboard fixture on the retained combined source.
-- Needs: changed files the coordinator owns: TODO.md, goals.json
-- Since: 2026-10-19T16:14:03Z
-- Answer: Answer in PARITYUPDATE-005-11's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

@@ -420,26 +420,6 @@ Section: Next.
   or edit coordinator-owned queue files from this worker. Keep phone/IME/TalkBack,
   live SSH/authentication and target connectivity explicitly unverified.
 
-- [ ] **MT-VERIFY-BROWSER-GATES** — Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts
-  Goal: INTEGRATION
-Section: Next.
-  Summary: Prove the same combined source's compiled browser journeys and exact request counts.
-  Payoff: close the historical browser gap without treating unit passes as UI evidence.
-  Sources: [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
-  and [browser command](CONTRIBUTING.md#required-checks).
-  Scope: the existing integration owner's browser phase after MT-RERUN-TRAIN;
-  build the deterministic target and run the canonical browser suite. Repair
-  exposed Wing regressions through existing ownership; exclude live backends,
-  device changes, native claims, publication and upstream edits.
-  Acceptance: source-bound completed build and browser logs, passing journeys,
-  exact mutation/no-incidental-mutation assertions and no hidden waived failures.
-  If source changes after the first phase, repeat affected gates on that source.
-  Dependencies: MT-RERUN-TRAIN; Next.
-  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
-  Checks: Planned on the same captured combined source after MT-RERUN-TRAIN: `flutter build web --release -t lib/main_e2e.dart` then `npm run web:e2e`; `git diff --check`. Retain exact terminal logs, source/build identity and mutation counts; source changes invalidate affected prior gates. These commands do not authorize live backends, publishing, or repair of another owner's implementation.
-  Touches: docs/quality/
-  Status: open
-
 - [ ] **VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY** — Goal: DIAGNOSTICS-RECOVERY. Section: Needs decision.
   Qualify exact advertised atomic restore authority before native recovery.
   Sources: [accepted continuation](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview),
@@ -1692,3 +1672,11 @@ does not mark any check passed or authorize live actions.
   Dependencies: README-001-62.
   Status: open
 
+- [ ] MT-VERIFY-BROWSER-GATES-LIVE — Live checks for MT-VERIFY-BROWSER-GATES
+  Scope: Run the live checks the offline work for MT-VERIFY-BROWSER-GATES left pending.
+  Acceptance: Each check passes on the real target:
+  - Canonical live-Agent say-hi opt-in was explicitly skipped; no live Agent/provider authentication or inference qualified.
+  - Physical Android, native desktop UI, microphone/acoustics, installation/signing/update and human platform acceptance remain separate platform/live work; only Linux-host headless Chromium/offline tooling exercised.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: MT-VERIFY-BROWSER-GATES.
+  Status: open

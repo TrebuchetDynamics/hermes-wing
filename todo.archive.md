@@ -7784,3 +7784,30 @@ Section: Next.
   Preserve every guard above; do not wait for Android/live tab completion, reopen
   MCP planning or ask an owner to rename IDs. The earlier 13 passes qualify only
   the reported candidate, not the combined source.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="mt-verify-browser-gates"></a>
+
+- [x] **MT-VERIFY-BROWSER-GATES** — Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts
+  Goal: INTEGRATION
+Section: Next.
+  Summary: Prove the same combined source's compiled browser journeys and exact request counts.
+  Payoff: close the historical browser gap without treating unit passes as UI evidence.
+  Sources: [remaining gates](docs/quality/merge-train-shell-status-bar.md#remaining-gates)
+  and [browser command](CONTRIBUTING.md#required-checks).
+  Scope: the existing integration owner's browser phase after MT-RERUN-TRAIN;
+  build the deterministic target and run the canonical browser suite. Repair
+  exposed Wing regressions through existing ownership; exclude live backends,
+  device changes, native claims, publication and upstream edits.
+  Acceptance: source-bound completed build and browser logs, passing journeys,
+  exact mutation/no-incidental-mutation assertions and no hidden waived failures.
+  If source changes after the first phase, repeat affected gates on that source.
+  Dependencies: MT-RERUN-TRAIN; Next.
+  Ownership: Existing integration coordinator only; retain current assignment, no independent claim or new lane.
+  Checks: Planned on the same captured combined source after MT-RERUN-TRAIN: `flutter build web --release -t lib/main_e2e.dart` then `npm run web:e2e`; `git diff --check`. Retain exact terminal logs, source/build identity and mutation counts; source changes invalidate affected prior gates. These commands do not authorize live backends, publishing, or repair of another owner's implementation.
+  Touches: docs/quality/
+  Status: done

@@ -584,6 +584,7 @@
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
         "MT-VERIFY-BROWSER-GATES",
+        "MT-VERIFY-BROWSER-GATES-LIVE",
         "PARITYUPDATE-005-11",
         "PARITYUPDATE-006-f4",
         "PLANGAP-001-2f",
@@ -6906,9 +6907,7 @@
       "ANDROID-CHAT-TOUCH-POLISH",
       "PARITYUPDATE-005-11",
       "PARITYUPDATE-006-f4",
-      "PLANGAP-001-2f",
       "WING-001-b3",
-      "MT-VERIFY-BROWSER-GATES",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "PARITY-NATIVE-LINUX",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE",
@@ -6978,7 +6977,8 @@
       "PARITYUPDATE-002-5c-LIVE",
       "PARITYUPDATE-003-b1-LIVE",
       "PARITYUPDATE-004-48-LIVE",
-      "README-001-62-LIVE"
+      "README-001-62-LIVE",
+      "MT-VERIFY-BROWSER-GATES-LIVE"
     ]
   },
   "tasks": [
@@ -7019,16 +7019,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace reconnect for two distinct session-owned tab runs"
-    },
-    {
-      "depends_on": [
-        "MT-RERUN-TRAIN"
-      ],
-      "goal": "INTEGRATION",
-      "id": "MT-VERIFY-BROWSER-GATES",
-      "section": "Next",
-      "status": "open",
-      "title": "Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts"
     },
     {
       "depends_on": [],
@@ -7571,6 +7561,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Owner: run the named-device Android death-to-completion qualification (physical device); agents prepare nothing further until then"
+    },
+    {
+      "depends_on": [
+        "MT-VERIFY-BROWSER-GATES"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-VERIFY-BROWSER-GATES-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for MT-VERIFY-BROWSER-GATES"
     },
     {
       "depends_on": [
@@ -8952,6 +8952,16 @@
       "section": "Done",
       "status": "done",
       "title": "Existing integration owner: rerun canonical merge-train gates on a newly captured combined tree; this receipt does not waive remaining gates"
+    },
+    {
+      "depends_on": [
+        "MT-RERUN-TRAIN"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-VERIFY-BROWSER-GATES",
+      "section": "Done",
+      "status": "done",
+      "title": "Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts"
     },
     {
       "depends_on": [],

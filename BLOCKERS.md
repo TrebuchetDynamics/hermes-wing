@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
-
-- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
-- Needs: worker reported a blocker: The existing PLANGAP-001-2f owner/coordinator must supply the retained parser repair in the combined baseline: test/tooling/plan_backlog_traceability_test.dart:48-52 uses [A-Z][A-Z0-9-]+ and therefore misses the already accepted DEV-001-c7 mapping in docs/plans/README.md:115. Do not change the MCP plan disposition or rename IDs; task instructions explicitly reserve other tasks' repairs and coordin… (+1 more in report.json)
-- Since: 2026-10-19T05:07:29Z
-- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
 ### Q-MT-RERUN-TRAIN — USER_INPUT — effort input — unblocks 1
 
 - Task: MT-RERUN-TRAIN — Rerun canonical integration gates

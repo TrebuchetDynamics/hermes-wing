@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
+
+- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
+- Needs: worker reported a blocker: The existing native coordinator must perform supported source-refresh/integration for THIS stale DOC-PARITY-TAB-CONTRACT assignment using the already assembled input: base35d7976af08992305dcc63ecab08da5c06d561b6, tree a2213ffd78bf6a485e09de0d218cc617f273a78e, verified47-member patch SHA2561c169ec1c114a01213ace13f55d17d3de9516ddf60f4281656abd40ce2c3d886. Source is recovered and available; do not as…
+- Since: 2026-10-19T09:19:37Z
+- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort investigate — unblocks 0
 
 - Task: PARITY-NATIVE-LINUX — Execute and extend native Linux

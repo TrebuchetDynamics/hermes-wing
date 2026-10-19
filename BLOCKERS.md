@@ -27,6 +27,13 @@ This file contains only hard blockers that require user action.
 - Since: 2026-10-19T06:38:07Z
 - Answer: Answer in PLANGAP-001-2f's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
 
+### Q-WING-001-b3 — USER_INPUT — effort input — unblocks 0
+
+- Task: WING-001-b3 — Make SSH connection failures visible and actionable.
+- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable compact Profiles public-seam correction at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 (missing EditableText / Bad state: No element). It is freshly reproduced on the consumed coordinator input. Preserve keyboard/large-text assertions; this SSH worker must not implement another task to bypass the full offline gate. (+1 more in report.json)
+- Since: 2026-10-19T06:58:30Z
+- Answer: Answer in WING-001-b3's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
+
 ### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
 
 - Task: the repository's whole offline test suite

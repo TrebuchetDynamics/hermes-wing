@@ -6,13 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-WING-001-b3 — USER_DECISION — effort decision — unblocks 0
-
-- Task: WING-001-b3 — Make SSH connection failures visible and actionable.
-- Needs: worker reported a blocker: Existing inventory/keyboard owner must provide the attributable compact Profiles public-seam correction at test/shared/widgets/inventory_keyboard_navigation_test.dart:259 (missing EditableText / Bad state: No element). It is freshly reproduced on the consumed coordinator input. Preserve keyboard/large-text assertions; this SSH worker must not implement another task to bypass the full offline gate. (+1 more in report.json); DOCS-MAINTAINER already changed Current handoff, Next action, Recovery evidence, but the task is still waiting for the same reason.
-- Since: 2026-10-19T06:58:30Z
-- Answer: Decide the missing input or disposition in WING-001-b3's TODO.md entry, or move it to Needs decision. The maintainer will not repeat this repair unless the entry or waiting reason changes.
-
 ### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort investigate — unblocks 0
 
 - Task: PARITY-NATIVE-LINUX — Execute and extend native Linux

@@ -9,12 +9,44 @@ import 'package:wing/core/hermes/channel/hermes_channel_state.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/profiles/screens/profiles_screen.dart';
 import 'package:wing/shared/widgets/app_shell.dart';
+import 'package:wing/shared/widgets/app_shell_desktop_style.dart';
 
 import '../../test/features/hermes_chat/support/fake_hermes_gateway_directory.dart';
 import '../../test/shared/widgets/app_shell_focus_traversal_test.dart' as focus;
 import '../../test/shared/widgets/app_shell_navigation_groups_test.dart'
     as navigation;
 import '../../test/shared/widgets/app_shell_profile_footer_test.dart' as footer;
+
+Future<int> expectPaintedProfileFooterFocus(WidgetTester tester) async {
+  final rect = tester.getRect(footer.manage);
+  final pixels = (await tester.runAsync(() async {
+    final image =
+        await (tester.binding.renderViews.first.debugLayer! as OffsetLayer)
+            .toImage(const Rect.fromLTWH(0, 0, 1280, 720));
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    image.dispose();
+    return data;
+  }))!;
+  final style = AppShellDesktopStyle.forBrightness(
+    Theme.of(tester.element(footer.manage)).brightness,
+  );
+  // The focus border is translucent over the rail, not an opaque RGB token.
+  // Match rendered pixels (as in the footer widget oracle), not Material state.
+  final color = Color.alphaBlend(style.secondary, style.rail);
+  var outline = 0;
+  for (var y = rect.top.toInt(); y < rect.top.toInt() + 3; y++) {
+    for (var x = rect.left.toInt() + 12; x < rect.right.toInt() - 12; x++) {
+      final offset = (y * 1280 + x) * 4;
+      if ((pixels.getUint8(offset) - (color.r * 255).round()).abs() <= 1 &&
+          (pixels.getUint8(offset + 1) - (color.g * 255).round()).abs() <= 1 &&
+          (pixels.getUint8(offset + 2) - (color.b * 255).round()).abs() <= 1) {
+        outline++;
+      }
+    }
+  }
+  expect(outline, greaterThanOrEqualTo(24));
+  return outline;
+}
 
 Future<Map<String, Object?>> runProfileFooterJourney(
   WidgetTester tester,
@@ -80,26 +112,7 @@ Future<Map<String, Object?>> runProfileFooterJourney(
       expect(rect.bottom, lessThanOrEqualTo(720));
       expect(rect.width, greaterThanOrEqualTo(48));
       expect(rect.height, greaterThanOrEqualTo(48));
-      final pixels = (await tester.runAsync(() async {
-        final image =
-            await (tester.binding.renderViews.first.debugLayer! as OffsetLayer)
-                .toImage(const Rect.fromLTWH(0, 0, 1280, 720));
-        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-        image.dispose();
-        return data;
-      }))!;
-      var outline = 0;
-      for (var y = rect.top.toInt(); y < rect.top.toInt() + 3; y++) {
-        for (var x = rect.left.toInt() + 12; x < rect.right.toInt() - 12; x++) {
-          final offset = (y * 1280 + x) * 4;
-          if (pixels.getUint8(offset) == 0x55 &&
-              pixels.getUint8(offset + 1) == 0x55 &&
-              pixels.getUint8(offset + 2) == 0x55) {
-            outline++;
-          }
-        }
-      }
-      expect(outline, greaterThanOrEqualTo(24));
+      final outline = await expectPaintedProfileFooterFocus(tester);
       final focused = FocusManager.instance.primaryFocus;
       await focus.tab(tester);
       expect(

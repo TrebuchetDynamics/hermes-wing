@@ -95,7 +95,7 @@ def self_check():
                             ('return_focused', False),
                             ('retired_notifications', 2), ('draft', 'replayed')) if collection == 'recovery' else (
                 (('reads', 1), ('navigations', 2), ('profile', 'a')) if collection == 'phases' else (
-                    ('outline_pixels', 23), ('inverse_traversal', False), ('rect', [0.0, 0.0, 47.0, 48.0]),
+                    ('outline_pixels', 0), ('outline_pixels', 23), ('inverse_traversal', False), ('rect', [0.0, 0.0, 47.0, 48.0]),
                     ('rect', [0.0, 0.0, float('nan'), 48.0]), ('label', 'unredacted')))
             for key, wrong in wrong_values:
                 broken = copy.deepcopy(receipt)

@@ -7050,16 +7050,6 @@
     },
     {
       "depends_on": [
-        "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
-      ],
-      "goal": "CHAT-FIDELITY",
-      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE",
-      "section": "Next",
-      "status": "open",
-      "title": "Keep recovered tool categories and exact-owner approval actions keyboard-operable in native Linux without mutation replay"
-    },
-    {
-      "depends_on": [
         "VERIFY-CHAT-TRANSCRIPT-NATIVE"
       ],
       "goal": "CHAT-FIDELITY",
@@ -9328,6 +9318,16 @@
       "section": "Done",
       "status": "done",
       "title": "Keep streamed and recovered tool/approval rows readable and keyboard-operable at enlarged text without stale-owner actions"
+    },
+    {
+      "depends_on": [
+        "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE",
+      "section": "Done",
+      "status": "done",
+      "title": "Keep recovered tool categories and exact-owner approval actions keyboard-operable in native Linux without mutation replay"
     },
     {
       "depends_on": [

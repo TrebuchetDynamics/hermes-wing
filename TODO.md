@@ -505,55 +505,6 @@ Section: Next.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
   Ownership: Unassigned; verify actual native worker/tracker ownership before execution. Owned isolated fixture scope only; no personal runtime or live-provider authority.
 
-- [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE** —  Keep recovered
-  tool categories and current approval actions keyboard-operable in native Linux.
-  Goal: CHAT-FIDELITY
-Section: Next.
-  Payoff: prove the supported transcript outside browser/widget-only qualification.
-  Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap),
-  [reconnect limits](docs/quality/chat-transcript-reconnect.md#limits-and-handoff)
-  and [accessibility decision](docs/adr/client.md#decision).
-  Scope: existing native integration harness, timeline/channel and deterministic
-  fixture; add focused native scenarios and regressions for reproduced Wing defects.
-  Exclude live inference/tools, Agent edits, system installs, new APIs, audio,
-  personal state and screen-reader support claims without matching evidence.
-  Acceptance: native GTK keyboard disclosure and current-owner approval work after
-  canonical reconnect and compact/wide return. Retired actions disappear; tool
-  content stays redacted; recovery adds no sends, decisions, creates or Stop.
-  Run owned native scenarios and nearest widgets with exact request/source receipts.
-  Dependencies: VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY; ordered successor in Next.
-  Current evidence: [native approval recovery](docs/quality/native-transcript-recovery.md)
-  already qualifies four reconnect/remount/approval cases at 100/200% text.
-  Coordinate the remaining acceptance with that completed slice; do not duplicate
-  its scenarios or infer process-restart qualification.
-  Ownership: unclaimed in this index; verify tracker/continuation leases first.
-  Status: open
-  Readiness: current Git-common
-  `autowork-execution/slot-data/VERIFY-CHAT-TRANSCRIPT-NATIVE/attempt-1/report.json`
-  is readiness-only on `4534a6ee08ad6d01d3e77b2105c1d2c6aff0be28`.
-  It verifies the new coordinator `a2213ffd` handoff, patch `1c169ec1` and terminal
-  2,014-pass Chat/router log, but all 47 overlay entries mismatch this assignment:
-  42 differing, five absent. No new Flutter/native qualification ran. The older
-  `2ddbb51b`, beeac288 failure census and `9f70e019`/1,996-pass comparison remain
-  historical; do not reproduce unchanged old failures or repin green receipts.
-  The eight retained keyboard files remain in set-aside-1; its prior PID is absent.
-  Matching source must arrive through the supported coordinator refresh path,
-  not a competing Chat repair or whole-train/tab/Android/live prerequisite.
-  Execution: [retained-source recovery sequence](docs/tasks/held-offline-recovery.md#recovery-sequence).
-  Next action: have the existing coordinator refresh this assignment to the
-  delivered `a2213ffd` source/member manifest through the supported native path;
-  the read-only report already proves the current assignment is unmatched. This
-  documentation edit does not supply source or permit bypassing admission pins.
-  Verify the refreshed workspace against the manifest/Chat receipt, then recheck
-  inactivity and reconcile the eight preserved dirty files in
-  `.worktrees/autowork-VERIFY-CHAT-TRANSCRIPT-NATIVE-set-aside-1`. Prior receipts and
-  archived report/log remain in `autowork-execution/slot-history/VERIFY-CHAT-TRANSCRIPT-NATIVE/1/slot-data/attempt-1/`.
-  Adopt only this task's keyboard delta, refresh exact request/source/teardown
-  receipts and rerun the mandatory suite. Do not replace it with the clean
-  readiness-only workspace or relabel historical native observations as current.
-  Checks: For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Execute only the remaining owned GTK keyboard/approval scenarios through the linked native receipt/harness; retain exact request/source and teardown receipts. Reuse the four already-qualified cases without relabeling them as restart or screen-reader proof.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/features/enrollment/, lib/router/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, test/router/, integration_test/, playwright/tests/, docs/quality/
-
 - [ ] **VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART** — Restore canonical tool ordering and retire approval actions after isolated native process restart without replay
   Goal: CHAT-FIDELITY
 Section: Next.

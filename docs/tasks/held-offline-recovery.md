@@ -8,57 +8,70 @@ Their accepted sources, scopes, ownership and mandatory checks remain authoritat
 
 ### Latest inspected frontier
 
-The current reports describe a source-delivery gap, not missing owner intent.
-`DOC-PARITY-TAB-CONTRACT` attempt-1 committed `d7952ec9d9d83494c6b31b1bf78cf5f40bb4193d`
-from retained `3b7871db5a9005c4fc43f01bf245f596f735b454`. Attempt-2 is now a held,
-uncommitted correction: mounted guards before expired Open/Close callbacks read
-providers, plus one public-seam unmount regression. Its 737-file source manifest
-is `107c46b2a16bb8b94aaeef631ec298b58e32302ff6def3f2dfb8389cd7e2ba32`.
-Do not replace it with the older committed candidate or describe it as untested.
+The latest coordinator report supersedes the earlier missing-assembly hold.
+`MT-RERUN-TRAIN` delivered a reviewed offline handoff: HEAD
+`35d7976af08992305dcc63ecab08da5c06d561b6` plus the exact 47-file overlay yields
+assembled tree `a2213ffd78bf6a485e09de0d218cc617f273a78e` (not a commit).
+Its fresh Chat/router command completed with 2,014 passes, exit 0. All five
+non-browser gates completed: format, analysis, audit and diff passed; full Flutter
+exited 1 normally with 4,041 passed, 9 skipped and two fixture failures. Nothing
+here establishes red main, flakiness, Android or live acceptance.
 
-The corrected candidate has a terminal 1,996-pass Chat/router receipt, exit 0.
-Its separate full suite completed with 4,016 passes, 9 skips and 3 failures, exit 1;
-this is not a timeout, interrupted integration or the historical listener failures.
-The stale Open/Close finding was corrected but independent correction re-review
-remains required. Direct held-successful-Stop workspace-roundtrip coverage remains
-a stated limit. Native-serve exclusion is unavailable behavior, not Android acceptance.
-No fresh build/browser gate followed this attempt's full-suite failure.
+The Tab worker recovered the exact corrected patch `3dec5799` and received fresh
+independent correction re-review with no findings before this assembly. The train's
+separate assembly review reported no important/critical issue. Do not repeat the
+old disposed-WidgetRef finding as unresolved, overwrite the corrected producer with
+`d7952ec9`, or repin the older 1,995/1,996-pass receipts to the assembled source.
+Direct held-successful-Stop workspace-roundtrip coverage remains a stated limit;
+native-serve exclusion is unavailable behavior, not Android SSH acceptance.
+
+The later SSH report consumes the exact combined input and records a fresh build
+and all nine default browser specs: 89 passed, one opt-in live skip, zero unexpected
+or flaky results. The old Tools disclosure failure is no longer a current hold.
+Two separately reproduced fixture failures remain: compact Profiles keyboard
+traversal and the footer outline-pixel oracle. Their bounded repair slices below
+retain the existing implementation lineages; no acceptance is waived.
+
+This documentation pass checked the handoff, patch/review/log hashes and terminal
+exit files; it did not rerun product tests or refresh any worker source. Tab,
+parser and transcript-native assignments still need supported source delivery.
 
 Resolve all `autowork-execution/` report paths relative to
 `git rev-parse --git-common-dir`. The current sources are:
 
 | Task | Current report | Next bounded action |
 | --- | --- | --- |
-| DOC-PARITY-TAB-CONTRACT | `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-2/report.json`; prior committed recovery in attempt-1 | Preserve the corrected dirty delta; consume the coordinator's combined input, re-review the correction and finish required merged-source/browser checks. Android/native/live acceptance stays open. |
-| PLANGAP-001-2f | `autowork-execution/slot-data/PLANGAP-001-2f/attempt-1/report.json`: recovery on `6c167919`, 13 focused passes; analysis/format blocked on unchanged layout/gateway tests | Supply the retained three-file parser delta for assembly; resume parser-only checks on the corrected two-file baseline. No ID renaming, disposition change or product/device predecessor. |
-| WING-001-b3 | `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json`: recovery on `3dfdba5f`, 169 focused passes/9 skips, 593 channel passes; build passed, browser stopped at Tools disclosure (11 passed/1 failed) | Preserve feedback/fixture delta; consume matching Chat/parser input, then complete full/compiled-browser gates. Do not reproduce live SSH or reimplement other tasks. |
-| MT-RERUN-TRAIN | `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json`: read-only assembly inspection at `6c521fbf`; no combined gates run | The existing integration coordinator produces the retained-source handoff within the corrected TODO Touches footprint, then runs all five non-browser gates. It does not wait for an unnamed second coordinator. |
-| PARITY-NATIVE-LINUX | `autowork-execution/slot-data/PARITY-NATIVE-LINUX/attempt-1/report.json`: clean readiness-only `9f70e019`, source differs from `d7952ec9`; no qualification run | Consume matched offline Chat source/receipt, reconcile only the inactive retained native delta, then execute complete offline/native/mapped scenario checks. |
-| VERIFY-CHAT-TRANSCRIPT-NATIVE | `autowork-execution/slot-data/VERIFY-CHAT-TRANSCRIPT-NATIVE/attempt-1/report.json`: readiness-only `9f70e019`; independently verified 1,996-pass receipt but 29 runtime/test/browser-path differences from `d7952ec9` plus its correction | Consume matched offline source, then reconcile the eight dirty keyboard files in `.worktrees/autowork-VERIFY-CHAT-TRANSCRIPT-NATIVE-set-aside-1`. Preserve old receipts; do not qualify unmatched source or process restart. |
+| DOC-PARITY-TAB-CONTRACT | `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-1/report.json`: read-only `35d7976a`, exact 31-path corrected patch recaptured; correction re-review passes, no new tests | Its missing-assembly observation predates the delivered train handoff. Coordinator refreshes matching input; feature worker retains all merged/browser/Android gates and checks review-input drift. |
+| PLANGAP-001-2f | `autowork-execution/slot-data/PLANGAP-001-2f/attempt-1/report.json`: `597d8762`, same invalid layout/gateway blobs as `36f4155f` and `6c167919`; parser patch/format preserved, no tests rerun | Exact parser delta is already consumed in the train, with 13 focused passes and clean analysis there. Coordinator supplies corrected layout/gateway source; parser worker edits only its three tooling files. |
+| WING-001-b3 | `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json`: matched assembly, 163 focused passes/9 skips; build and default browser pass; both remaining full-suite failures freshly reproduce | Source delivery and Tools disclosure holds are resolved for this input. Await the two bounded fixture patches, then consume the matching repaired full-gate handoff. No live SSH or other-feature takeover. |
+| MT-RERUN-TRAIN | `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json`: assembly and five gates completed; 2,014 Chat/router passes, full suite 4,041 passes/9 skips/2 failures | Preserve/deliver the existing source handoff, collect the two fixture patches under their existing lineages, then recapture and run every canonical gate. No unnamed assembly coordinator or whole-tab prerequisite. |
+| PARITY-NATIVE-LINUX | Earlier inspected `autowork-execution/slot-data/PARITY-NATIVE-LINUX/attempt-1/report.json`: readiness-only `9f70e019`; not re-inspected in this five-task pass | Retained continuation is unchanged: consume matching offline source, reconcile only its inactive native delta, then run mandatory native/mapped checks. Do not claim that this pass refreshed or qualified it. |
+| VERIFY-CHAT-TRANSCRIPT-NATIVE | `autowork-execution/slot-data/VERIFY-CHAT-TRANSCRIPT-NATIVE/attempt-1/report.json`: clean `4534a6ee`, verifies 2,014-pass receipt but all 47 overlay members mismatch (42 differ, five absent) | Supported coordinator refresh first, then reconcile only the eight retained keyboard files in set-aside-1. No tests/native qualification ran; no receipt repinning or process-restart claim. |
 
 Older `slot-history` reports and the interrupted `67d3527f` integration remain
-historical evidence; they are not the current reports above. At this documentation
-inspection, all six slots were held and none of their recorded worker process
-birth identities matched a live process. Recheck before adoption; this observation
+historical evidence; they are not the current five reports above. At this documentation
+inspection, the five requested slots were held and none of their recorded worker
+process birth identities matched a live process. Recheck before adoption; this observation
 is not permanent ownership release. This docs pass changes no worker checkout,
 source input, lease, admission pin or runtime setting.
 
 ### Recovery sequence
 
-1. **Existing coordinator assembles source, not task completion.**
-   `MT-RERUN-TRAIN` already owns the combined-source handoff. Its prior receipt-only
-   Touches declaration omitted the exact files named by the worker's assembly
-   report; TODO now declares those retained paths. This is bounded reconciliation
-   of existing deltas by that same coordinator, not a transfer of feature ownership
-   or new authority for an independent worker. Use only the supported isolated
-   integration path. Preserve producer worktrees, queue snapshots and dirty state;
-   never merge/rebase/switch branches or bypass source-refresh/admission guards to
-   force delivery. If that path is unavailable, retain the precise source-input
-   blocker rather than asking the owner to redesign the product.
-2. **Verify the retained artifacts before applying any delta.** The train report
-   names private scratch `/var/tmp/aw-1000-8d90af7b-4/mt-rerun-train/assembly/`:
-   `candidate-manifest.json`, `compatibility.json`, `terminal-receipts.json` and
-   three owner-named patches. The exact patch SHA-256 values are:
+1. **Deliver the existing assembly, not whole-task completion.**
+   `MT-RERUN-TRAIN` owns the already produced combined-source handoff and retains
+   aggregate gate acceptance. The native coordinator supplies matching source to
+   stale consumer assignments through the supported source-refresh/integration
+   path, preserving producers, queue snapshots and dirty state. No feature worker
+   merges/rebases/switches branches, imports a foreign queue or bypasses admission
+   pins. The body change does not itself refresh a workspace. If the supported
+   path cannot deliver this input, report that exact source-delivery failure; do
+   not ask for new product intent or wait for whole-tab/Android/live completion.
+2. **Verify current artifacts before reuse.** The latest train report names
+   private scratch `/var/tmp/aw-1000-8d90af7b-2/train-assembly/` containing
+   `handoff.json`, `frozen-source.json`, `members.json`, `combined-source.patch`,
+   `checks.json`, terminal logs/exits and `assembly-review.md`. The older
+   `mt-rerun-train/assembly` path is absent, not the required future deliverable.
+   The three exact member patch SHA-256 values remain:
 
    | Patch | SHA-256 |
    | --- | --- |
@@ -67,46 +80,75 @@ source input, lease, admission pin or runtime setting.
    | WING-001-b3.patch | `a0a6f8d461243279101aae92695dd92da959f8600ed7d673a9e4e7698419cea6` |
 
    Scratch is evidence, not permanent authority: if absent or changed, re-read the
-   held producer and its report and reconstruct only its attributable delta after
-   checking inactivity. Do not fabricate the old hash or substitute an entire tree.
-   The SSH report's earlier manifest patch has a different hash; compare provenance
-   rather than treating those captures as byte-identical.
-3. **Reconcile five shared paths once.** The train's comparison found identical
-   layout-width repairs, a formatting-only SSH gateway delta versus the tab's
-   current gateway version, and three differing localization paths. Keep the tab
-   gateway, one layout repair, merge the disjoint English ARB keys and run
-   `flutter gen-l10n`; do not hand-merge generated localization. Parser paths are
-   disjoint. Individual patch applicability is not combined qualification.
-4. **Publish a matched offline handoff before platform acceptance.** Capture
-   HEAD/tree and any dirty overlay fingerprints. Bind the retained Chat/router
-   receipt to its actual source closure; changed inputs require affected checks
-   again. Its raw log SHA-256 is
-   `5838eae4b2614865b33b4d5b2e2dcef4595e09f54492e0058bfb069e5e9b0827`,
-   exit file 0, terminal `+1996: All tests passed!`. The separate red full-suite
-   log SHA-256 is `22251a420a86d91312100db3875853ed8b3a278ae1978a7feea272f504a8dde5`,
-   exit file 1. These hashes and terminal results were checked during this docs
-   pass, not rerun. Supply the corrected offline source/receipt to parser, SSH
-   and native owners without waiting for whole-train, whole-tab or Android/live
-   completion. These are source prerequisites, not new completion dependencies.
-5. **Retain the remaining failed gates under existing owners.** Parser recognition
-   already has its delta. The same full run also failed compact Profiles traversal
-   at `test/shared/widgets/inventory_keyboard_navigation_test.dart:259` (no
-   EditableText) and the native footer oracle through
-   `test/integration/linux_profile_footer_native_runner_test.dart`, at
-   `integration_test/support/profile_footer_native_fixture.dart:102` (0 outline
-   pixels, expected at least 24). The SSH browser run additionally failed Tools
-   disclosure at `playwright/tests/regression/browser-surfaces.spec.mjs:146`,
-   waiting for `/Default Tools/`; later default specs did not run. Reconcile these
-   with the existing inventory/native-fixture owners on combined source; do not
-   weaken assertions or infer a product defect, flakiness, three isolated green
-   revisions or a red canonical main from these candidate receipts. No new owner
-   product decision, live access or duplicate parser repair is needed.
-6. **Finish every retained gate on its actual input.** Recapture preflight and
-   execute the five MT-RERUN-TRAIN gates separately, then the indexed browser
-   phase. Native owners resume only their retained deltas and mandatory mapped
-   scenarios, keeping browser/widget/native/live proof separate. Existing
-   acceptance remains unchanged, including Android public-control journeys and
-   unavailable native-serve tabs. No full gate is waived by an offline handoff.
+   retained producer/report, recheck inactivity and recapture only attributable
+   deltas. Never fabricate an old hash or substitute an entire tree. The SSH
+   provenance report establishes that the earlier `e3faa0d4` capture differs only
+   by its untracked quality receipt; all 17 tracked patch chunks match.
+3. **Do not repeat the completed overlap reconciliation.** The coordinator kept
+   the Tab gateway and one identical layout repair, merged disjoint English ARB
+   keys and regenerated both localization outputs. Parser paths are disjoint.
+   Preserve this exact union; apply only subsequent attributable corrections.
+   Parser consumers check both layout/gateway files against `frozen-source.json`,
+   not merely against the two old failing Git blobs. Native consumers compare all
+   47 overlay members before reconciling their own delta.
+4. **Verify the matched handoff and terminal receipts.** The current identities are:
+
+   | Artifact | Identity / SHA-256 |
+   | --- | --- |
+   | HEAD | `35d7976af08992305dcc63ecab08da5c06d561b6` |
+   | Assembled tree (no commit) | `a2213ffd78bf6a485e09de0d218cc617f273a78e` |
+   | Combined patch | `1c169ec1c114a01213ace13f55d17d3de9516ddf60f4281656abd40ce2c3d886` |
+   | 47-file overlay digest | `4e042e0b2a521b1c6f6b65d48cf12080ba1580d7b90570045789fabb06b730c1` |
+   | 737-file source closure digest | `7856a5355fef4510ec83cfea65868c6c0a9f5cca1f50f64b6c11f7f154a96acc` |
+   | `chat-router.log` | `f80d5c71b5aea2678d6a345b13f9d6e548666b39bfa1f360b26a972be30ff6f7` |
+   | `flutter-test.log` | `874df22b756e1704c2c7649e3d946f4efe997295c46ebe72c96b8a501c0521ba` |
+   | `assembly-review.md` | `fb451f214b20e2aefc47cf6d57169f611d968befd0dc29f390e54743a2333ce6` |
+
+   `frozen-source.json` retains 1,531 per-file input hashes, including the overlay.
+   Chat/router exit is 0, terminal `+2014: All tests passed!`; full-suite exit is 1,
+   terminal `+4041 ~9 -2: Some tests failed.`. These logs and patch/review hashes
+   were checked during this docs pass, not rerun. Receipt verification is not a
+   pass on unmatched consumer input. Changed runtime/test/dependency inputs require
+   affected checks again; documentation-only drift is recorded separately, never
+   used to silently repin the old receipt.
+5. **Collect the two bounded fixture corrections.** The repair slices below make
+   the formerly unnamed existing-owner handoffs executable without reopening
+   completed historical tasks. Preserve all assertions and original train/tab/SSH
+   acceptance. Do not repeat unchanged red full commands, take over another
+   feature, infer flakiness, or call these candidate failures red canonical main.
+   Tools disclosure and parser recognition are not remaining repair tasks on this
+   assembled input. The indexed browser phase still owns its aggregate acceptance.
+6. **Finish every retained gate on its actual input.** After both fixture patches,
+   recapture preflight and execute the five MT-RERUN-TRAIN gates separately, then
+   the indexed browser phase. Native owners resume only their retained deltas and
+   mandatory mapped scenarios; browser/widget/native/live proof stays separate.
+   Android public-control journeys and native-serve unavailability remain as
+   accepted. No source handoff or narrower receipt waives a full gate.
+
+### Fixture repair slices
+
+These split only the failed-owner remediation already required by MT-RERUN-TRAIN;
+that task keeps its original aggregate acceptance, dependencies and ownership.
+Both slices are Next, after the owner's first Android-priority block and before
+train rerun. They are not new product features or duplicate historic completion.
+Their source is the same accepted [port roadmap](../../ROADMAP.md#flutter-port-execution-roadmap).
+The selector's formal dependencies are unchanged for existing tasks; the train's
+next action explicitly collects these patches before repeating its failed gate.
+
+| Slice | Existing lineage and bounded evidence | Return to coordinator |
+| --- | --- | --- |
+| PARITYUPDATE-005-11 | FINISH-DESKTOP-SHELL / inventory keyboard. `inventory_keyboard_navigation_test.dart:259` lacks first EditableText at compact Profiles/200%; SSH freshly reproduces it. The live test uses the production router and channel, retains modal Close semantics, Tab/Shift+Tab reachability, identity and zero incidental effects. | An attributable public-seam correction and all eight inventory cases green; no focus bypass, skip, assertion weakening or assumed product cause. |
+| PARITYUPDATE-006-f4 | Native-footer fixture lineage. `profile_footer_native_fixture.dart:102` gets 0 outline pixels vs >=24 through `linux_profile_footer_native_runner_test.dart`; SSH freshly reproduces it. Historical native receipts qualify other sources, not this combined tree. | Correct painted-focus oracle with strict negative control and unchanged accessibility/owner/effect checks; applicable existing isolated GTK journey and source/process/teardown receipts. |
+
+The eight preserved transcript-native files are `lib/features/hermes_chat/screens/widgets/hermes_chat_status.dart`,
+`integration_test/support/transcript_recovery_native_fixture.dart`,
+`integration_test/linux_transcript_keyboard_test.dart`,
+`integration_test/run_linux_transcript_keyboard.py`,
+`integration_test/support/transcript_keyboard_driver.dart`,
+`docs/quality/native-transcript-recovery.md`,
+`docs/quality/chat-transcript-native-keyboard.md` and its `-receipt.json` sibling.
+They remain in `.worktrees/autowork-VERIFY-CHAT-TRANSCRIPT-NATIVE-set-aside-1`;
+read-only status confirms preservation, not adoption or current qualification.
 
 The task order keeps the owner's Android priorities first; the integration
 producer precedes the parser/SSH recovery consumers after that block. Formal

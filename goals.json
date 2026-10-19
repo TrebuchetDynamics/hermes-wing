@@ -584,6 +584,8 @@
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
         "MT-VERIFY-BROWSER-GATES",
+        "PARITYUPDATE-005-11",
+        "PARITYUPDATE-006-f4",
         "PLANGAP-001-2f",
         "WING-TASK-409"
       ],
@@ -6902,6 +6904,8 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
+      "PARITYUPDATE-005-11",
+      "PARITYUPDATE-006-f4",
       "MT-RERUN-TRAIN",
       "PLANGAP-001-2f",
       "WING-001-b3",
@@ -7044,6 +7048,26 @@
       "section": "Next",
       "status": "open",
       "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
+    },
+    {
+      "depends_on": [
+        "FINISH-DESKTOP-SHELL"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-005-11",
+      "section": "Next",
+      "status": "open",
+      "title": "Repair compact Profiles keyboard fixture on the retained combined source"
+    },
+    {
+      "depends_on": [
+        "VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-006-f4",
+      "section": "Next",
+      "status": "open",
+      "title": "Repair profile-footer painted-focus oracle on the retained combined source"
     },
     {
       "depends_on": [],

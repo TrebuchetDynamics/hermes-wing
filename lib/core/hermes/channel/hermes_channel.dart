@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../client/hermes_session_history_export.dart';
 import 'hermes_approval_request.dart';
 import '../models/hermes_approval_decision.dart';
 import '../models/hermes_profile.dart';
@@ -16,6 +17,12 @@ export 'hermes_channel_state.dart';
 
 final class HermesSessionRestorationUnsupported implements Exception {
   const HermesSessionRestorationUnsupported();
+}
+
+/// Optional fixed Linux local-serve read surface, not canonical session.export.
+abstract interface class HermesSessionHistoryExportChannel {
+  bool get canExportSessionHistory;
+  HermesSessionHistoryExportAttempt beginSessionHistoryExport();
 }
 
 abstract interface class HermesAudioChannel {

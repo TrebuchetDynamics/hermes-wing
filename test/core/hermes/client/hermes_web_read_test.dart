@@ -40,6 +40,7 @@ void main() {
   });
   test('native lifecycle has only the fixed local read product import path', () {
     const internal = {
+      'lib/core/hermes/client/hermes_session_history_export.dart',
       'lib/core/hermes/client/hermes_web_read_client.dart',
       'lib/core/hermes/client/hermes_web_read_rpc.dart',
       'lib/core/hermes/client/hermes_web_lifecycle.dart',

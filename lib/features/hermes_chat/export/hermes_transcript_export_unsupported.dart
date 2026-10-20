@@ -10,5 +10,6 @@ class _UnsupportedTranscriptSaver implements HermesTranscriptSaver {
   Future<HermesTranscriptExportResult> save(
     HermesTranscriptExport snapshot, {
     required bool Function() canWrite,
+    Future<bool> Function()? confirmOverwrite,
   }) async => HermesTranscriptExportResult.unsupported;
 }

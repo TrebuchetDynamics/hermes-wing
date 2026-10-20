@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/client/hermes_web_read_client.dart';
@@ -171,8 +172,19 @@ void main() {
   test(
     'Stop captured target receipt is not terminal and no duplicate Stop',
     () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
       await channel.enableLocalServeChat();
+      final prepared = channel.beginSessionHistoryExport();
+      await prepared.collect();
+      final pending = channel.beginSessionHistoryExport();
       await channel.sendText('fixture');
+      expect(prepared.isCurrent, isFalse);
+      expect(channel.canExportSessionHistory, isFalse);
+      await expectLater(
+        pending.collect(),
+        throwsA(isA<HermesWebReadException>()),
+      );
       final target = channel.activeTurnInterruptionTarget!;
       expect(await channel.stopTurn(target), true);
       expect(channel.state.serveChat!.stopRequested, true);
@@ -185,6 +197,12 @@ void main() {
       });
       await flush();
       expect(channel.state.serveChat!.running, false);
+      expect(
+        prepared.isCurrent,
+        isFalse,
+        reason: 'Run completion cannot revive old bytes',
+      );
+      expect(pending.isCurrent, isFalse);
       expect(channel.state.activeMessages.last.status, HermesTurnStatus.failed);
       expect(fixture.count('session.interrupt'), 1);
       await channel.enableLocalServeChat();

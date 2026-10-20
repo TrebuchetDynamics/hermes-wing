@@ -94,6 +94,78 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @historyJsonAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Export paged history as JSON'**
+  String get historyJsonAction;
+
+  /// No description provided for @historyJsonConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'This fetches private, unredacted session history, including ancestor, compacted and tool content. Attachment URLs and HTML remain inert data. This is paged history, not a frozen snapshot: external same-length edits can evade checks. It is not an Agent backup or proof of atomic completeness. Preparation is limited to 60 seconds and 4 MiB. Cancel discards this attempt; a file write already started may still finish.'**
+  String get historyJsonConsent;
+
+  /// No description provided for @historyJsonPrepare.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare private JSON'**
+  String get historyJsonPrepare;
+
+  /// No description provided for @historyJsonProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing JSON: {count} messages fetched'**
+  String historyJsonProgress(int count);
+
+  /// No description provided for @historyJsonReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Paged history prepared: {count} messages. Save this private file only to a trusted destination.'**
+  String historyJsonReady(int count);
+
+  /// No description provided for @historyJsonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save JSON'**
+  String get historyJsonSave;
+
+  /// No description provided for @historyJsonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel export'**
+  String get historyJsonCancel;
+
+  /// No description provided for @historyJsonCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Save cancelled before writing.'**
+  String get historyJsonCancelled;
+
+  /// No description provided for @historyJsonFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'History export was discarded. The read failed, exceeded its limits, was cancelled, or its owner changed. Close and explicitly retry to start at page zero.'**
+  String get historyJsonFailed;
+
+  /// No description provided for @transcriptOverwriteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and allow replacement?'**
+  String get transcriptOverwriteTitle;
+
+  /// No description provided for @transcriptOverwriteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to the selected local destination? Any file there at write time will be replaced, including one created by another app while this dialog is open. Cancelling afterward cannot undo a write that already started.'**
+  String get transcriptOverwriteBody;
+
+  /// No description provided for @transcriptOverwriteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and allow replacement'**
+  String get transcriptOverwriteConfirm;
+
   /// No description provided for @managedSshSaveTarget.
   ///
   /// In en, this message translates to:

@@ -66,6 +66,7 @@ import '../groups/chat_group_controller.dart';
 import '../gateways/hermes_gateway_directory.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../export/hermes_transcript_export.dart';
+import '../export/hermes_session_history_export_dialog.dart';
 import '../providers/hermes_channel_provider.dart';
 import '../providers/managed_ssh_connection_controller.dart';
 import '../session/hermes_session_pin_store.dart';
@@ -1372,6 +1373,10 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     }
 
     final saver = ref.read(hermesTranscriptSaverProvider);
+    final historyChannel = channel is HermesSessionHistoryExportChannel
+        ? channel as HermesSessionHistoryExportChannel
+        : null;
+    var pagedHistory = false;
     Future<void>? exporting;
     void export(
       BuildContext sheetContext,
@@ -1412,6 +1417,17 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                   onTap: () =>
                       Navigator.pop(context, _TranscriptCopyFormat.markdown),
                 ),
+                if (saver.supported &&
+                    historyChannel?.canExportSessionHistory == true)
+                  ListTile(
+                    key: const ValueKey('hermes-export-history-json'),
+                    leading: const Icon(Icons.data_object),
+                    title: Text(strings.historyJsonAction),
+                    onTap: () {
+                      pagedHistory = true;
+                      Navigator.pop(context);
+                    },
+                  ),
                 if (saver.supported) ...[
                   ListTile(
                     key: const ValueKey('hermes-save-transcript-text'),
@@ -1435,6 +1451,26 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         ),
       );
       if (exporting != null) await exporting;
+      if (pagedHistory &&
+          sameOwner() &&
+          historyChannel?.canExportSessionHistory == true &&
+          context.mounted) {
+        final attempt = historyChannel!.beginSessionHistoryExport();
+        try {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => HermesSessionHistoryExportDialog(
+              channel: channel,
+              attempt: attempt,
+              saver: saver,
+              owns: sameOwner,
+            ),
+          );
+        } finally {
+          attempt.cancel();
+        }
+      }
       if (format == null || !context.mounted) return;
       await _copyTranscript(context, state, format, sameOwner);
     } finally {
@@ -1474,7 +1510,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                 session: state.activeSession,
               );
         final snapshot = HermesTranscriptExport(transcript, format);
-        final result = await saver.save(snapshot, canWrite: sameOwner);
+        final result = await saver.save(
+          snapshot,
+          canWrite: sameOwner,
+          confirmOverwrite: () =>
+              confirmTranscriptOverwrite(context, sameOwner),
+        );
         if (!sameOwner()) return;
         message = switch (result) {
           HermesTranscriptExportResult.downloadStarted =>

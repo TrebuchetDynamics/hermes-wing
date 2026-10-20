@@ -17,12 +17,13 @@ export async function handleLifecycle(req, res, url, state, json, readJsonBody, 
     const body = await readJsonBody(req);
     if (!body || Array.isArray(body) || typeof body !== 'object' ||
         Object.keys(body).some(key => key !== 'scenario') ||
-        (body.scenario !== undefined && body.scenario !== 'desktop-daily')) {
+        (body.scenario !== undefined && !['desktop-daily', 'tab-reconnect'].includes(body.scenario))) {
       return json(res, 400, { error: 'synthetic invalid lifecycle scenario' });
     }
     reset();
     state.lifecycle = { submits: [], approvals: [], stops: [], status_reads: [],
       history_reads: [], event_reads: [], transport_failures: [], unexpected_mutations: [] };
+    if (body.scenario === 'tab-reconnect') state.lifecycle.scenario = body.scenario;
     if (body.scenario === 'desktop-daily') {
       state.modelPicker = true;
       state.rejectModelLock = true;
@@ -53,7 +54,24 @@ export async function handleLifecycle(req, res, url, state, json, readJsonBody, 
     terminal(run, 'cancelled', 'Synthetic canonical stopped outcome.');
     return json(res, 200, lifecycleReceipt(state));
   }
+  if (fixture.scenario === 'tab-reconnect' && req.method === 'POST' &&
+      url === `${control}/disconnect`) {
+    const body = await readJsonBody(req);
+    const run = state.runs.get(body.run_id);
+    if (!run?.release || run.unavailable) return json(res, 409, { error: 'synthetic run not attached' });
+    run.unavailable = true;
+    record('transport_failures', { run_id: run.id, session_id: run.session_id, profile_id: 'default' });
+    run.release('disconnect');
+    return json(res, 200, lifecycleReceipt(state));
+  }
   if (req.method === 'POST' && url === `${control}/recover`) {
+    if (fixture.scenario === 'tab-reconnect') {
+      const body = await readJsonBody(req);
+      const run = state.runs.get(body.run_id);
+      if (!run?.unavailable) return json(res, 409, { error: 'synthetic run not disconnected' });
+      run.unavailable = false;
+      terminal(run, 'completed', 'Synthetic canonical tab recovery.');
+    }
     fixture.transport_unavailable = false;
     return json(res, 200, lifecycleReceipt(state));
   }
@@ -103,7 +121,7 @@ export async function handleLifecycle(req, res, url, state, json, readJsonBody, 
   if (req.method === 'POST' && url === '/v1/runs') {
     const body = await readJsonBody(req);
     const session = state.sessions.find(s => s.id === body.session_id);
-    if (!session || session.id === 'synthetic-untouched' || fixture.submits.length >= 5) {
+    if (!session || (session.id === 'synthetic-untouched' && fixture.scenario !== 'tab-reconnect') || fixture.submits.length >= 5) {
       return json(res, 409, { error: 'synthetic session/submission bound' });
     }
     const id = `run_${state.nextRunId++}`;
@@ -123,7 +141,7 @@ export async function handleLifecycle(req, res, url, state, json, readJsonBody, 
   const action = match[2];
   if (req.method === 'GET' && !action) {
     record('status_reads', { ...owner, status: run.status });
-    if (fixture.transport_unavailable) return json(res, 503, { error: 'synthetic transport unavailable' });
+    if (fixture.transport_unavailable || run.unavailable) return json(res, 503, { error: 'synthetic transport unavailable' });
     return json(res, 200, { ...owner, status: run.status,
       ...(run.status === 'completed' ? { output: run.reply } : {}) });
   }
@@ -160,7 +178,7 @@ export async function handleLifecycle(req, res, url, state, json, readJsonBody, 
     });
     run.release = null;
     if (choice === 'closed' || res.writableEnded) return;
-    if (choice === 'stop' || choice === 'reset') { res.end(); return; }
+    if (choice === 'stop' || choice === 'reset' || choice === 'disconnect') { res.end(); return; }
     if (choice === 'deny') {
       terminal(run, 'cancelled', 'Synthetic canonical denied outcome.');
       event('run.cancelled', { status: 'cancelled' });

@@ -11,6 +11,7 @@ import 'package:web/web.dart' as web;
 
 import 'core/hermes/channel/hermes_api_channel.dart';
 import 'core/hermes/setup/secure_hermes_endpoint_store.dart';
+import 'core/hermes/setup/secure_hermes_detached_run_store.dart';
 import 'features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'l10n/app_localizations.dart';
 import 'router/app_router.dart';
@@ -82,8 +83,28 @@ class _E2EEndpointStore extends SecureHermesEndpointStore {
   }
 }
 
+// Completion counters fence browser race assertions after the real operation,
+// not merely after the synthetic server has received a request.
+class _E2ERecoveryChannel extends HermesApiChannel {
+  _E2ERecoveryChannel()
+    : super(detachedRunStore: SecureHermesDetachedRunStore());
+
+  int reconciliationsStarted = 0;
+  int reconciliationsCompleted = 0;
+
+  @override
+  Future<void> reconcileActiveSession() async {
+    reconciliationsStarted++;
+    try {
+      await super.reconcileActiveSession();
+    } finally {
+      reconciliationsCompleted++;
+    }
+  }
+}
+
 void main() {
-  final hermesChannel = HermesApiChannel();
+  final hermesChannel = _E2ERecoveryChannel();
   final endpointStore = _E2EEndpointStore();
   _wingE2EEndpointSaveControl = ((JSString action) {
     switch (action.toDart) {
@@ -206,6 +227,8 @@ void main() {
       'status': hermesChannel.state.status.name,
       'selected_profile_id': hermesChannel.state.selectedProfileId,
       'active_session_id': hermesChannel.state.activeSessionId,
+      'reconciliations_started': hermesChannel.reconciliationsStarted,
+      'reconciliations_completed': hermesChannel.reconciliationsCompleted,
       'assigned_provider':
           hermesChannel.state.modelInventory?.assignment.activeProvider,
       'assigned_model':

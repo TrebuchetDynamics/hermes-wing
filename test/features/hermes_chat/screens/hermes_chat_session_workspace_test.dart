@@ -10,6 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
+import 'package:wing/core/hermes/client/hermes_api_client.dart';
+import 'package:wing/core/hermes/setup/secure_hermes_detached_run_store.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -193,7 +195,292 @@ class _TwoSessionNativeFixture extends LocalServeChatFixture {
   }
 }
 
+class WorkspaceRecoveryChannel extends HermesApiChannel {
+  WorkspaceRecoveryChannel({required super.clientBuilder})
+    : super(
+        detachedRunStore: SecureHermesDetachedRunStore(),
+        runStatusReconcileInterval: Duration.zero,
+      );
+
+  int recoverySettlements = 0;
+  @override
+  Future<void> reconcileActiveSession() async {
+    try {
+      await super.reconcileActiveSession();
+    } finally {
+      recoverySettlements++;
+    }
+  }
+}
+
+class WorkspaceRecoveryFixture {
+  final streams = <String, StreamController<String>>{};
+  final mutations = <String>[];
+  bool lostA = false;
+  bool canonicalA = false;
+  Completer<String>? statusA;
+  bool statusAEntered = false;
+  late final channel = WorkspaceRecoveryChannel(
+    clientBuilder: (config) => HermesApiClient(
+      config: config,
+      get: (uri, _) async {
+        if (uri.path == '/health') return '{"status":"ok"}';
+        if (uri.path == '/v1/capabilities') {
+          return jsonEncode({
+            'schema_version': 1,
+            'profile_context': {
+              'type': 'query',
+              'name': 'profile',
+              'required': true,
+              'default_profile_id': 'default',
+            },
+            'features': {
+              'run_submission': true,
+              'run_events_sse': true,
+              'run_status': true,
+              'run_stop': true,
+            },
+            'endpoints': {
+              'runs': {'method': 'POST', 'path': '/v1/runs'},
+              'run_events': {
+                'method': 'GET',
+                'path': '/v1/runs/{run_id}/events',
+              },
+              'run_status': {'method': 'GET', 'path': '/v1/runs/{run_id}'},
+              'run_stop': {'method': 'POST', 'path': '/v1/runs/{run_id}/stop'},
+              'session_messages': {
+                'method': 'GET',
+                'path': '/api/sessions/{session_id}/messages',
+              },
+            },
+          });
+        }
+        if (uri.path == '/api/sessions') {
+          return jsonEncode({
+            'data': [
+              for (final s in _sessions)
+                {'id': s.id, 'title': s.title, 'source': 'synthetic'},
+            ],
+          });
+        }
+        final id = uri.path.split('/')[3];
+        if (uri.path.startsWith('/v1/runs/')) {
+          expect(uri.queryParameters['profile'], 'default');
+          if (id == 'a' && statusA != null) {
+            statusAEntered = true;
+            return statusA!.future;
+          }
+          if (id == 'a' && lostA && !canonicalA) {
+            throw StateError('Synthetic loss');
+          }
+          return status(id);
+        }
+        return jsonEncode({
+          'object': 'list',
+          'session_id': id,
+          'data': [
+            if (streams.containsKey(id))
+              {
+                'id': 'user-$id',
+                'session_id': id,
+                'role': 'user',
+                'content': 'Synthetic run ${id.toUpperCase()}',
+              },
+            if (id == 'a' && canonicalA)
+              {
+                'id': 'canonical-a',
+                'session_id': id,
+                'role': 'assistant',
+                'content': 'Synthetic canonical A',
+              },
+          ],
+        });
+      },
+      post: (uri, _, body) async {
+        mutations.add(uri.path);
+        expect(uri.path, '/v1/runs');
+        final id = (jsonDecode(body) as Map)['session_id'];
+        return jsonEncode({'run_id': id, 'session_id': id, 'status': 'queued'});
+      },
+      getStream: (uri, _) {
+        final id = uri.path.split('/')[3];
+        final stream = StreamController<String>();
+        streams[id] = stream;
+        return stream.stream;
+      },
+    ),
+  );
+  String status(String id) => jsonEncode({
+    'run_id': id,
+    'session_id': id,
+    'status': id == 'a' && canonicalA ? 'completed' : 'running',
+  });
+  Future<void> dispose() async {
+    channel.dispose();
+    for (final stream in streams.values) {
+      await stream.close();
+    }
+  }
+}
+
 void main() {
+  testWidgets(
+    'Reconnect reconciles only the lost tab and late recovery cannot leave the focused sibling',
+    (tester) async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final f = WorkspaceRecoveryFixture();
+      addTearDown(f.dispose);
+      const origin = 'https://workspace.example';
+      await f.channel.connect(baseUrl: origin);
+      expect(
+        f.channel.state.isConnected,
+        isTrue,
+        reason: f.channel.state.errorMessage,
+      );
+      final directory = HermesGatewayDirectory(
+        store: FakeHermesEndpointStore(),
+        cache: FakeGatewayContactCache(),
+        loader: FakeGatewaySummaryLoader({}),
+        activeChannel: f.channel,
+      );
+      await mount(tester, f.channel, directory: directory);
+      Future<void> open(String id) async {
+        final chip = find.descendant(
+          of: find.byKey(tab(id, gateway: origin)),
+          matching: find.byType(ChoiceChip),
+        );
+        await tester.ensureVisible(chip);
+        await tester.tap(chip);
+        await tester.runAsync(() async {
+          await pumpEventQueue();
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(f.channel.state.activeSessionId, id);
+      }
+
+      await f.channel.selectSession('b');
+      await tester.pumpAndSettle();
+      expect(f.channel.state.selectedProfileId, 'default');
+      expect(find.byKey(tab('a', gateway: origin)), findsOneWidget);
+      expect(find.byKey(tab('b', gateway: origin)), findsOneWidget);
+      await tester.enterText(find.byKey(_composer), 'Synthetic run B');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pump();
+      await tester.runAsync(() async {
+        await pumpEventQueue();
+      });
+      await tester.pump();
+      expect(f.channel.state.activeSessionId, 'b');
+      expect(
+        f.streams.keys,
+        contains('b'),
+        reason: f.channel.state.errorMessage,
+      );
+      expect(
+        tester.widget<TextField>(find.byKey(_composer)).enabled,
+        isTrue,
+        reason:
+            'unresolved=${f.channel.state.hasUnreconciledRun} error=${f.channel.state.errorMessage}',
+      );
+      await tester.enterText(
+        find.byKey(_composer),
+        'Synthetic retained B draft',
+      );
+      composer(tester).selection = const TextSelection.collapsed(offset: 4);
+      final healthyB = f.streams['b'];
+      await open('a');
+      await tester.enterText(find.byKey(_composer), 'Synthetic run A');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pump();
+      await tester.runAsync(() async {
+        await pumpEventQueue();
+      });
+      expect(f.streams.keys, contains('a'));
+      f.statusA = Completer<String>();
+      final originalEofStatus = f.statusA!;
+      f.lostA = true;
+      await tester.runAsync(() async {
+        await f.streams['a']!.close();
+        await pumpEventQueue();
+      });
+      await tester.pump();
+      expect(f.channel.state.activeSessionId, 'a');
+      expect(f.channel.state.isSessionStreaming('b'), isTrue);
+      // Do not reselect A: foreground EOF must preserve the sibling even when
+      // no selection-time recovery flag has been populated.
+      expect(f.channel.state.isSessionStreaming('a'), isFalse);
+      expect(f.channel.state.errorMessage, isNotNull);
+      expect(f.statusAEntered, isTrue);
+      // Reconnect must supersede even the original stream's pending EOF read.
+      f.statusAEntered = false;
+      f.canonicalA = true;
+      f.statusA = Completer<String>();
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-chat-error-reconnect')),
+      );
+      await tester.runAsync(() async {
+        await pumpEventQueue();
+      });
+      await tester.pump();
+      expect(
+        f.channel.state.isSessionStreaming('b'),
+        isTrue,
+        reason: 'Recovering A must not retire the healthy B subscription',
+      );
+      expect(f.statusAEntered, isTrue);
+      expect(f.channel.recoverySettlements, 0);
+      expect(f.streams['b'], same(healthyB));
+      expect(f.channel.state.activeSessionId, 'a');
+      await open('b');
+      expect(f.channel.state.activeSessionId, 'b');
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      final focus = FocusManager.instance.primaryFocus;
+      expect(focus, isNotNull);
+      f.statusA!.complete(f.status('a'));
+      f.statusA = null;
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(f.channel.recoverySettlements, 1);
+      expect(f.channel.state.activeSessionId, 'b');
+      expect(FocusManager.instance.primaryFocus, same(focus));
+      expect(composer(tester).text, 'Synthetic retained B draft');
+      expect(
+        composer(tester).selection,
+        const TextSelection.collapsed(offset: 4),
+      );
+      // B's original stream still publishes only to B after A's late read.
+      f.streams['b']!.add(
+        'event: message.delta\ndata: {"run_id":"b","session_id":"b","delta":"Synthetic live B"}\n\n',
+      );
+      await tester.pump();
+      expect(f.channel.state.activeMessages.last.text, 'Synthetic live B');
+      await open('a');
+      expect(f.channel.state.activeMessages.last.text, 'Synthetic canonical A');
+      expect(f.channel.state.hasUnreconciledRun, isFalse);
+      originalEofStatus.complete(
+        '{"run_id":"a","session_id":"a","status":"running"}',
+      );
+      await tester.runAsync(() async {
+        await pumpEventQueue();
+      });
+      await tester.pump();
+      expect(f.channel.state.activeSessionId, 'a');
+      expect(f.channel.state.activeMessages.last.text, 'Synthetic canonical A');
+      expect(f.channel.state.hasUnreconciledRun, isFalse);
+      expect(f.channel.state.isSessionStreaming('b'), isTrue);
+      expect(f.mutations, ['/v1/runs', '/v1/runs']);
+      expect(tester.takeException(), isNull);
+      await f.channel.disconnect();
+      await tester.pump();
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
   testWidgets(
     'retired workspace Open and Close callbacks are inert after Chat unmount',
     (tester) async {

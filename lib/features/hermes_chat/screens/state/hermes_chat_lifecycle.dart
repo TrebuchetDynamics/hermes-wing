@@ -31,10 +31,7 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
       if (!recoverable) return;
       _reconnectingOnResume = true;
       try {
-        await directory.activate(
-          activeContactId,
-          preferredSessionId: state.activeSessionId,
-        );
+        await _reconnect(channel);
       } finally {
         _reconnectingOnResume = false;
       }

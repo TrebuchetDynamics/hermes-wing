@@ -5,6 +5,10 @@ Baseline: `7aada505772162d26be93a8eb44a2dd4e4629f5a`.
 This is an isolated local candidate, not coordinator integration, publication,
 native/device qualification or live Agent authentication.
 
+Follow-through: [two session-owned tabs](chat-tab-reconnect.md) distinguishes
+in-place lost-run recovery from full connection replacement and records bounded
+widget/compiled-browser isolation evidence.
+
 ## Change and source authority
 
 The existing saved-contact activation and exact-session restoration paths remain

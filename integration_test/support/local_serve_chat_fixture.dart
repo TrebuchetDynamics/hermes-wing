@@ -8,6 +8,8 @@ import 'local_serve_read_fixture.dart';
 class LocalServeChatFixture extends LocalServeReadFixture {
   final sockets = <WebSocket>[];
   final rpc = <Map<String, dynamic>>[];
+  final replies = <Map<String, dynamic>>[];
+  Completer<void>? replyReceived;
   final tickets = <String>{};
   int minted = 0, sequence = 0;
   bool denyTicket = false,
@@ -84,8 +86,13 @@ class LocalServeChatFixture extends LocalServeReadFixture {
     var stored = 'default-session';
     ws.listen((raw) async {
       final frame = jsonDecode(raw as String) as Map<String, dynamic>;
-      if (frame['method'] == null) return;
+      if (frame['method'] == null) {
+        replies.add(frame);
+        if (!(replyReceived?.isCompleted ?? true)) replyReceived!.complete();
+        return;
+      }
       rpc.add(frame);
+      if (await handleRpc(ws, frame)) return;
       final params = frame['params'] as Map;
       final method = frame['method'];
       Map<String, Object?> result;
@@ -182,6 +189,10 @@ class LocalServeChatFixture extends LocalServeReadFixture {
     return true;
   }
 
+  /// Fixed-operation fixture extensions, not a product RPC escape hatch.
+  Future<bool> handleRpc(WebSocket socket, Map<String, dynamic> frame) async =>
+      false;
+
   void event(
     String type,
     Map<String, Object?> payload, {
@@ -207,8 +218,9 @@ class LocalServeChatFixture extends LocalServeReadFixture {
     String id = 'queue-fixture',
     String serverId = 'srq-fixture',
     String session = 'default-session',
+    WebSocket? socket,
   }) {
-    sockets.last.add(
+    (socket ?? sockets.last).add(
       jsonEncode({
         'jsonrpc': '2.0',
         'id': serverId,

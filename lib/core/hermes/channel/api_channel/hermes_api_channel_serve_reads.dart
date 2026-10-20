@@ -255,6 +255,12 @@ extension _ServeReadsExtension on HermesApiChannel {
               offset + page.sessions.length < page.total,
         ),
       );
+    } catch (_) {
+      if (identical(_serveReader, reader) &&
+          _serveOwnerIsCurrent &&
+          !_state.isSelectingProfile) {
+        rethrow;
+      }
     } finally {
       if (identical(_serveReader, reader)) {
         _setState(_state.copyWith(isLoadingMoreSessions: false));
@@ -304,6 +310,13 @@ extension _ServeReadsExtension on HermesApiChannel {
           },
         ),
       );
+    } catch (_) {
+      if (identical(_serveReader, reader) &&
+          _serveOwnerIsCurrent &&
+          selection == _sessionSelectionGeneration &&
+          !_state.isSelectingProfile) {
+        rethrow;
+      }
     } finally {
       if (identical(_serveReader, reader)) {
         _setState(_state.copyWith(sessionsLoadingEarlierMessages: const {}));

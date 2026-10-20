@@ -303,6 +303,10 @@ class HermesChannelState {
 
   bool get isConnected => status == HermesConnectionStatus.connected;
 
+  /// Hidden canonical metadata may describe the active chat, not ordinary recents.
+  List<HermesSession> get visibleSessions =>
+      sessions.where((session) => !session.hidden).toList(growable: false);
+
   HermesSession? get activeSession {
     final id = activeSessionId;
     if (id == null) return null;

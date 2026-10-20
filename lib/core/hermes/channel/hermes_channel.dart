@@ -25,6 +25,14 @@ abstract interface class HermesSessionHistoryExportChannel {
   HermesSessionHistoryExportAttempt beginSessionHistoryExport();
 }
 
+/// Canonical Bot Chat is separate from ordinary session selection/creation.
+abstract interface class HermesBotChatChannel {
+  Future<bool> openBotChat({
+    bool background = false,
+    bool Function()? canAccept,
+  });
+}
+
 abstract interface class HermesAudioChannel {
   Future<String> transcribePcm16(Uint8List pcm16);
   Future<Uint8List> synthesizeSpeech(String text);

@@ -158,6 +158,15 @@ for (const width of [390, 1280]) {
     await page.getByLabel(/Synthetic workspace host.*online/).click();
     await expect.poll(async () => (await summary(page)).active_session_id).toBe('e2e-hermes-session');
     await fill(page, 'Message Endpoint contact…', 'Synthetic short A');
+    // REST is not the qualified canonical Bot contract: keep this exact draft.
+    if (width < 600) {
+      await page.getByRole('button', { name: 'More actions', exact: true }).click();
+      await page.getByRole('menuitem', { name: 'Bot Chat', exact: true }).click();
+    } else await page.getByRole('button', { name: 'Bot Chat', exact: true }).click();
+    await expect(page.locator('flt-semantics').getByText(/^Canonical Bot Chat requires/)).toBeVisible();
+    expect((await summary(page)).active_session_id).toBe('e2e-hermes-session');
+    await expectDraft(page, 'Synthetic short A');
+    expect((await receipt(request)).submits).toHaveLength(0);
     await chooseHistory(page, width, 'Synthetic untouched session');
     await expect.poll(async () => (await summary(page)).active_session_id).toBe('synthetic-untouched');
     await expect(page.getByRole('group', { name: /Synthetic isolated history\.$/ })).toBeVisible();

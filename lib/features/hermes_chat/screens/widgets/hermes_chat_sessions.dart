@@ -350,7 +350,7 @@ class _HermesSessionRailState extends ConsumerState<_HermesSessionRail>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final strings = _hermesStrings(context);
-    final allSessions = widget.state.sessions;
+    final allSessions = widget.state.visibleSessions;
     final sortedSourceOptions = _sortedSessionSources(context, allSessions);
     final filtered = _filterHermesSessions(
       allSessions,
@@ -1050,7 +1050,7 @@ class _HermesSessionsPanelState extends ConsumerState<HermesSessionsPanel>
   @override
   Widget build(BuildContext context) {
     final strings = _hermesStrings(context);
-    final allSessions = widget.state.sessions;
+    final allSessions = widget.state.visibleSessions;
     final sortedSourceOptions = _sortedSessionSources(context, allSessions);
     final filtered = _filterHermesSessions(
       allSessions,

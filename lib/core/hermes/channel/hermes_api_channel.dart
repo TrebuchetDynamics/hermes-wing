@@ -37,6 +37,7 @@ part 'api_channel/hermes_api_channel_serve_recovery.dart';
 part 'api_channel/hermes_api_channel_inventory.dart';
 part 'api_channel/hermes_api_channel_capabilities.dart';
 part 'api_channel/hermes_api_channel_sessions.dart';
+part 'api_channel/hermes_api_channel_bot_chat.dart';
 part 'api_channel/hermes_api_channel_profiles.dart';
 part 'api_channel/hermes_api_channel_providers.dart';
 part 'api_channel/hermes_api_channel_messaging.dart';
@@ -56,6 +57,7 @@ class HermesApiChannel extends ChangeNotifier
     implements
         HermesChannel,
         HermesAudioChannel,
+        HermesBotChatChannel,
         HermesSessionHistoryExportChannel,
         HermesApprovalLifecycleChannel {
   HermesApiChannel({
@@ -149,6 +151,8 @@ class HermesApiChannel extends ChangeNotifier
   int _connectionGeneration = 0;
   final _voiceOwners = <String, (int, String?, String?)>{};
   final _voiceReplyTurns = <String, HermesChatTurn>{};
+  Future<bool>? _botChatFlight;
+  (int, int, int, bool)? _botChatOwner;
   int _sessionSelectionGeneration = 0;
   int _profileSelectionGeneration = 0;
   int _jobsRequestGeneration = 0;
@@ -602,6 +606,12 @@ class HermesApiChannel extends ChangeNotifier
       !_serveTransient || (_serveReader != null && _state.isConnected);
 
   Future<void> enableLocalServeChat() => _qualifyServeChat();
+
+  @override
+  Future<bool> openBotChat({
+    bool background = false,
+    bool Function()? canAccept,
+  }) => _openBotChat(background: background, canAccept: canAccept);
   Future<bool> restoreSavedLocalServeConversation() =>
       _restoreSavedServeConversation();
   Future<void> retryLocalServeConversation() async {

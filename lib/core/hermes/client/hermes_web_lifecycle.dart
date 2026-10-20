@@ -16,6 +16,7 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
   Stream<void> get changes => _changes.stream;
   String get profile => _connection._profile;
   bool _productAuthorized = false;
+  bool _stagingBotChat = false;
   HermesWebProductAuthorization get productAuthorization =>
       _productAuthorized && !_connection._closed
       ? HermesWebProductAuthorization.authenticatedTicket
@@ -280,8 +281,12 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
       previous = seq;
       webString(event['type'], maximum: 128);
     }
+    final requests = webRows(result['open_requests'], 32);
+    if (_stagingBotChat && requests.isNotEmpty) {
+      throw const HermesWebReadException(HermesWebFailureKind.busy);
+    }
     _approvals.clear();
-    for (final request in webRows(result['open_requests'], 32)) {
+    for (final request in requests) {
       _serverRequest(webObject(request), replay: true);
     }
     if (epoch != _connection.replayEpoch ||
@@ -401,6 +406,11 @@ final class HermesWebLifecycle implements HermesServeLifecycle {
   }
 
   void _serverRequest(Map<String, dynamic> frame, {bool replay = false}) {
+    // A staging peer may share the active source's request. Even an error
+    // response would settle it globally, so abort this socket without replying.
+    if (_stagingBotChat) {
+      throw const HermesWebReadException(HermesWebFailureKind.busy);
+    }
     final id = webString(frame['id'], maximum: 128);
     final params = webObject(frame['params']);
     if (frame['method'] != 'approval' ||

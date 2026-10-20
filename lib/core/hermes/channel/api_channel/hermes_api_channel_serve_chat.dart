@@ -150,6 +150,7 @@ extension _ServeChatExtension on HermesApiChannel {
         !_state.isConnected ||
         _state.isSelectingProfile ||
         _serveSubmissionPending ||
+        _state.serveChat?.canSubmit != true ||
         !lifecycle.canSubmit ||
         imageDataUrl != null ||
         textAttachment != null) {

@@ -1,4 +1,7 @@
 {
+  "chatBotOpen": "Bot Chat",
+  "chatBotGap": "Canonical Bot Chat requires supported native Agent operations and settled history/replay. Ordinary sessions remain available; reconcile active work before switching.",
+  "chatBotFailure": "Bot Chat could not be confirmed. Your current conversation is unchanged. Retry explicitly; no message was sent.",
   "historyJsonAction": "Export paged history as JSON",
   "historyJsonConsent": "This fetches private, unredacted session history, including ancestor, compacted and tool content. Attachment URLs and HTML remain inert data. This is paged history, not a frozen snapshot: external same-length edits can evade checks. It is not an Agent backup or proof of atomic completeness. Preparation is limited to 60 seconds and 4 MiB. Cancel discards this attempt; a file write already started may still finish.",
   "historyJsonPrepare": "Prepare private JSON",

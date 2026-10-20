@@ -26,6 +26,7 @@ class HermesSession {
     this.lastActive,
     this.preview,
     this.parentSessionId,
+    this.hidden = false,
   });
 
   factory HermesSession.fromJson(Map<String, Object?> json) {
@@ -52,6 +53,7 @@ class HermesSession {
       lastActive: _sessionTimestampFromJson(json['last_active']),
       preview: wingOptionalStringFromJson(json['preview']),
       parentSessionId: wingOptionalStringFromJson(json['parent_session_id']),
+      hidden: json['hidden'] == true || json['hidden'] == 1,
     );
   }
 
@@ -77,6 +79,7 @@ class HermesSession {
   final String? lastActive;
   final String? preview;
   final String? parentSessionId;
+  final bool hidden;
 }
 
 class HermesSessionPage {

@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-PARITYUPDATE-006-f4 — USER_DECISION — effort investigate — unblocks 0
+
+- Task: PARITYUPDATE-006-f4 — Repair profile-footer painted-focus oracle on the retained combined source.
+- Needs: merge conflict; worker and canonical checkout preserved
+- Since: 2026-10-20T03:42:29Z
+- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/PARITYUPDATE-006-f4/), then rescope or split PARITYUPDATE-006-f4 in its TODO.md entry. The runner reruns it when the entry changes.
+
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

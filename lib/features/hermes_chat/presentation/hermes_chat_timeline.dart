@@ -948,7 +948,7 @@ String _visibleTurnTimestamp(
   return olderLabel;
 }
 
-class _TurnBubble extends StatelessWidget {
+class _TurnBubble extends ConsumerWidget {
   const _TurnBubble({
     required this.turn,
     required this.profileId,
@@ -998,7 +998,8 @@ class _TurnBubble extends StatelessWidget {
       _safeText.trim().isNotEmpty;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showTimestamps = ref.watch(transcriptTimestampsProvider);
     final isUser = turn.author == HermesTurnAuthor.user;
     final safeText = _safeText;
     final streaming = turn.status == HermesTurnStatus.streaming;
@@ -1096,21 +1097,27 @@ class _TurnBubble extends StatelessWidget {
               key: ValueKey('hermes-turn-metadata-${turn.id}'),
               mainAxisSize: MainAxisSize.min,
               children: [
-                Semantics(
-                  key: ValueKey('hermes-turn-timestamp-${turn.id}'),
-                  container: true,
-                  label: fullTimestamp,
-                  child: ExcludeSemantics(
-                    child: Tooltip(
-                      message: fullTimestamp,
-                      child: Text(
-                        visibleTimestamp,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontSize: 10,
-                          color: colors.onSurfaceVariant.withValues(
-                            alpha: 0.72,
-                          ),
-                        ),
+                Flexible(
+                  child: Semantics(
+                    key: ValueKey('hermes-turn-timestamp-${turn.id}'),
+                    container: true,
+                    label: fullTimestamp,
+                    child: ExcludeSemantics(
+                      child: Tooltip(
+                        message: fullTimestamp,
+                        child: showTimestamps
+                            ? Text(
+                                visibleTimestamp,
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      fontSize: 10,
+                                      color: colors.onSurfaceVariant.withValues(
+                                        alpha: 0.72,
+                                      ),
+                                    ),
+                              )
+                            // Keep a nonempty semantics rect for full-time inspection.
+                            : const SizedBox(width: 1, height: 16),
                       ),
                     ),
                   ),

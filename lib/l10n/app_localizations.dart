@@ -3578,6 +3578,30 @@ abstract class AppLocalizations {
   /// **'Open Wing settings.'**
   String get localCommandSettingsDescription;
 
+  /// No description provided for @localCommandTimestampsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle timestamp labels in this window. Use on, off, toggle or status; Agent defaults are not synced.'**
+  String get localCommandTimestampsDescription;
+
+  /// No description provided for @localCommandTimestampsUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage: /timestamps or /ts [on|off|toggle|status]. Local to this window; Agent defaults are not synced.'**
+  String get localCommandTimestampsUsage;
+
+  /// No description provided for @localCommandTimestampsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Timestamps on in this window. Agent defaults are not synced.'**
+  String get localCommandTimestampsOn;
+
+  /// No description provided for @localCommandTimestampsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Timestamps off in this window. Agent defaults are not synced.'**
+  String get localCommandTimestampsOff;
+
   /// No description provided for @localCommandUsageDescription.
   ///
   /// In en, this message translates to:

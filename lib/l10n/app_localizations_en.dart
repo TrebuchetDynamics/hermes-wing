@@ -2059,6 +2059,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localCommandSettingsDescription => 'Open Wing settings.';
 
   @override
+  String get localCommandTimestampsDescription =>
+      'Toggle timestamp labels in this window. Use on, off, toggle or status; Agent defaults are not synced.';
+
+  @override
+  String get localCommandTimestampsUsage =>
+      'Usage: /timestamps or /ts [on|off|toggle|status]. Local to this window; Agent defaults are not synced.';
+
+  @override
+  String get localCommandTimestampsOn =>
+      'Timestamps on in this window. Agent defaults are not synced.';
+
+  @override
+  String get localCommandTimestampsOff =>
+      'Timestamps off in this window. Agent defaults are not synced.';
+
+  @override
   String get localCommandUsageDescription =>
       'Show server-reported usage for the latest Hermes run.';
 

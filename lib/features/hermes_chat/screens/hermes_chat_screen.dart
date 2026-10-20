@@ -68,6 +68,7 @@ import '../diagnostics/hermes_diagnostics_export.dart';
 import '../export/hermes_transcript_export.dart';
 import '../export/hermes_session_history_export_dialog.dart';
 import '../providers/hermes_channel_provider.dart';
+import '../providers/transcript_timestamps_provider.dart';
 import '../providers/managed_ssh_connection_controller.dart';
 import '../session/hermes_session_pin_store.dart';
 import '../presentation/hermes_rich_text.dart';

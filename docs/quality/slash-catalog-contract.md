@@ -1,5 +1,54 @@
 # Curated composer commands and authoritative catalog
 
+## Local timestamp controls
+
+`PARITYGAP-001-3f` adds a bounded presentation-only command path. Type
+`/timestamps` or `/ts`; no argument and `toggle` invert visibility, `on`/`off`
+are idempotent, and `status` reports without changing it. Unrecognized arguments
+on either exact alias show localized usage rather than becoming a prompt.
+Help and suggestions expose both aliases; tap or keyboard selection uses the
+same handler. Other unknown slash commands retain their existing message path.
+
+Labels default off. The non-persisted
+[window-scoped provider](../../lib/features/hermes_chat/providers/transcript_timestamps_provider.dart)
+survives conversation/profile switches and Chat route remounts within the root
+app scope; a fresh scope resets it. There is no preference write, Agent config
+read/write, slash RPC, provider call, session creation or model-context change.
+**Agent configuration defaults remain unsynced.** Existing active-turn, IME,
+attachment and read-only admission remains in force; an attachment-bearing
+submission is still an ordinary prompt, not a display command.
+
+The [command handler](../../lib/features/hermes_chat/screens/state/hermes_chat_layout.dart)
+uses dismissible local feedback. The
+[existing timestamp renderer](../../lib/features/hermes_chat/presentation/hermes_chat_timeline.dart)
+hides only visible labels: full localized local date/time semantics remain,
+and keyboard/touch users can reveal labels through either command. Copy,
+read-aloud, source timestamps and transcript serialization are unchanged.
+
+Official read-only source at `158fd638da1629c8e62caf9ade1515d162def8ab`:
+`apps/desktop/src/store/display-timestamps.ts` defaults off and reads
+`display.timestamps` from config; `components/assistant-ui/thread/timeline-timestamp.tsx`
+and its nearest test gate visible stamps. `src/lib/desktop-slash-registry.json`
+contains both aliases; `desktop-slash-commands.ts:registryDerivedSpecs` maps
+these rows to backend execution, not a local action. Wing's deliberately
+unsynced local override is the accepted bounded adaptation, **not authoritative
+slash execution or full timestamp/config parity**. Upstream tests were read,
+not executed.
+
+Regression coverage extends the existing slash, rich-transcript and workspace
+widget modules: aliases/arguments and invalid zero-I/O, help/suggestions,
+IME/active-turn/attachment/read-only admission, full-time semantics, shared
+window lifetime, drafts/selection/focus, reset and 320/390/wide layouts with
+200% text and keyboard insets. The existing deterministic
+[transcript-export journey](../../playwright/tests/regression/transcript-export.spec.mjs)
+uses public compact/touch and wide/keyboard controls and checks exact export
+bytes and zero network mutations after toggling. It also corrects the old byte
+expectation to include the existing baseline session-metadata header.
+Linux-hosted widget and Chromium fixture checks do not qualify installed-device
+IME, TalkBack, live Agent execution or other platforms. Revisit this section if
+the local handler, provider lifetime, renderer or authoritative config contract
+changes. The original catalog investigation below remains historical evidence.
+
 ## Result and scope
 
 `DOC-SLASH-CATALOG-CONTRACT`, native card `t_c119f3de`, goal `SLASH-CATALOG`.

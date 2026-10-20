@@ -463,16 +463,16 @@ void main() {
     final composer = find.byKey(const ValueKey('hermes-composer-field'));
     final controller = tester.widget<TextField>(composer).controller!;
     controller.value = const TextEditingValue(
-      text: 'に',
-      selection: TextSelection.collapsed(offset: 1),
-      composing: TextRange(start: 0, end: 1),
+      text: '/ts on',
+      selection: TextSelection.collapsed(offset: 6),
+      composing: TextRange(start: 0, end: 6),
     );
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
 
     expect(channel.state.activeMessages, isEmpty);
-    expect(controller.text, 'に');
+    expect(controller.text, '/ts on');
     debugDefaultTargetPlatformOverride = null;
   });
 
@@ -818,6 +818,147 @@ void main() {
     expect(find.text('/new'), findsOneWidget);
   });
 
+  testWidgets('timestamp aliases are local, validated and idempotent', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    final channel = FakeHermesChannel();
+    channel.beginStreamingTurn('Synthetic question');
+    channel.completeStreamingTurn(text: 'Synthetic answer');
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_testApp(channel));
+    await tester.pumpAndSettle();
+    final originalTurns = channel.state.activeMessages;
+    final providersBefore = channel.loadProvidersCalls;
+    final modelsBefore = channel.loadModelsCalls;
+    final prefsBefore = (await SharedPreferences.getInstance()).getKeys();
+    final timestamp = find.byKey(
+      ValueKey('hermes-turn-timestamp-${originalTurns.last.id}'),
+    );
+    final labels = find.descendant(of: timestamp, matching: find.byType(Text));
+    expect(labels, findsNothing);
+    for (final alias in ['/timestamps', '/ts']) {
+      for (final (argument, visible) in [
+        ('', true),
+        ('on', true),
+        ('on', true),
+        ('status', true),
+        ('invalid', true),
+        ('on extra', true),
+        ('off', false),
+        ('off', false),
+        ('status', false),
+        ('toggle', true),
+        ('toggle', false),
+        ('', true),
+        ('off', false),
+        ('invalid', false),
+        ('on extra', false),
+      ]) {
+        await tester.enterText(
+          find.byKey(const ValueKey('hermes-composer-field')),
+          '$alias $argument',
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+        await tester.pumpAndSettle();
+        expect(
+          labels,
+          visible ? findsOneWidget : findsNothing,
+          reason: '$alias $argument',
+        );
+        final feedback = find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.byType(Text),
+        );
+        expect(feedback, findsOneWidget);
+        expect(
+          tester.widget<Text>(feedback).data,
+          argument == 'invalid' || argument == 'on extra'
+              ? 'Usage: /timestamps or /ts [on|off|toggle|status]. Local to this window; Agent defaults are not synced.'
+              : 'Timestamps ${visible ? 'on' : 'off'} in this window. Agent defaults are not synced.',
+        );
+        await tester.tap(
+          find.descendant(
+            of: find.byType(SnackBar),
+            matching: find.byTooltip('Close'),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+    }
+    for (final alias in ['timestamps', 'ts']) {
+      await tester.enterText(
+        find.byKey(const ValueKey('hermes-composer-field')),
+        '/$alias',
+      );
+      await tester.pump();
+      final suggestion = find.byKey(ValueKey('hermes-local-command-$alias'));
+      expect(suggestion, findsOneWidget);
+      if (alias == 'timestamps') {
+        await tester.tap(suggestion);
+      } else {
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      }
+      await tester.pumpAndSettle();
+      expect(labels, alias == 'timestamps' ? findsOneWidget : findsNothing);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.byTooltip('Close'),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+    expect(channel.state.activeMessages, originalTurns);
+    expect(channel.sentVoiceTranscripts, isEmpty);
+    expect(channel.createSessionCalls, isEmpty);
+    expect(channel.loadProvidersCalls, providersBefore);
+    expect(channel.loadModelsCalls, modelsBefore);
+    expect(channel.setProviderCredentialCalls, isEmpty);
+    expect(channel.assignModelCalls, isEmpty);
+    expect((await SharedPreferences.getInstance()).getKeys(), prefsBefore);
+    // With an attachment this remains an ordinary submission, not a display command.
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    tester
+        .widget<TextField>(composer)
+        .contentInsertionConfiguration!
+        .onContentInserted(
+          KeyboardInsertedContent(
+            mimeType: 'image/png',
+            uri: 'content://keyboard/synthetic',
+            data: Uint8List.fromList([
+              0x89,
+              0x50,
+              0x4e,
+              0x47,
+              0x0d,
+              0x0a,
+              0x1a,
+              0x0a,
+              0x00,
+            ]),
+          ),
+        );
+    await tester.pumpAndSettle();
+    await tester.enterText(composer, '/ts on');
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('hermes-local-command-suggestions')),
+      findsNothing,
+    );
+    await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+    await tester.pumpAndSettle();
+    expect(
+      channel.state.activeMessages.any((turn) => turn.text == '/ts on'),
+      isTrue,
+    );
+    expect(channel.sentImageDataUrls.single, isNotNull);
+    expect(labels, findsNothing);
+    debugDefaultTargetPlatformOverride = null;
+  });
+
   testWidgets('exact local clear command never reaches Hermes', (tester) async {
     final channel = FakeHermesChannel();
     addTearDown(channel.dispose);
@@ -868,6 +1009,8 @@ void main() {
     expect(find.text('Wing commands'), findsOneWidget);
     expect(find.text('/new'), findsOneWidget);
     expect(find.text('/usage'), findsOneWidget);
+    expect(find.text('/timestamps'), findsOneWidget);
+    expect(find.text('/ts'), findsOneWidget);
     expect(
       channel.state.activeMessages.where((turn) => turn.text == '/help'),
       isEmpty,
@@ -1373,7 +1516,7 @@ void main() {
 
     await tester.enterText(
       find.byKey(const ValueKey('hermes-composer-field')),
-      '/new',
+      '/ts on',
     );
     await tester.pump();
 
@@ -1406,7 +1549,7 @@ void main() {
     );
     expect(
       find.text(
-        '${strings.chatQueuedSummary(1, '/new')} '
+        '${strings.chatQueuedSummary(1, '/ts on')} '
         '${strings.chatQueuedWaitingForTransport}',
       ),
       findsOneWidget,

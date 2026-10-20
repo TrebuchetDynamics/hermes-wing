@@ -347,6 +347,7 @@
       "tasks": [
         "DOC-SLASH-CATALOG-CONTRACT",
         "DOC-SLASH-DENIAL-EVIDENCE",
+        "PARITYGAP-001-3f",
         "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT"
       ],
       "title": "Match supported full Desktop slash commands and completion"
@@ -3942,6 +3943,7 @@
         "PARITY-NATIVE-LINUX-LIVE",
         "PARITY-OFFICIAL-MATRIX",
         "PARITY-OFFICIAL-MATRIX-LIVE",
+        "PARITYGAP-002-76",
         "PARITYUPDATE-004-48",
         "PARITYUPDATE-004-48-LIVE"
       ],
@@ -6911,6 +6913,8 @@
       "ANDROID-CHAT-TOUCH-POLISH",
       "WING-001-b3",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
+      "PARITYGAP-001-3f",
+      "PARITYGAP-002-76",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -7015,6 +7019,22 @@
       "section": "Next",
       "status": "open",
       "title": "Trace reconnect for two distinct session-owned tab runs"
+    },
+    {
+      "depends_on": [],
+      "goal": "SLASH-CATALOG",
+      "id": "PARITYGAP-001-3f",
+      "section": "Next",
+      "status": "open",
+      "title": "Toggle transcript timestamps locally without Agent commands"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITYGAP-002-76",
+      "section": "Next",
+      "status": "open",
+      "title": "Export bounded paged session history as JSON on Linux"
     },
     {
       "depends_on": [

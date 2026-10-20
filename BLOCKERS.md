@@ -12,6 +12,7 @@ This file contains only hard blockers that require user action.
 - Needs: worker timeout after 5400 s
 - Since: 2026-10-20T10:43:05Z
 - Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/ANDROID-CANONICAL-BOT-CHAT/), then rescope or split ANDROID-CANONICAL-BOT-CHAT in its TODO.md entry. The runner reruns it when the entry changes.
+- Kind: held
 
 <!-- pi-autowork:questions:end -->
 

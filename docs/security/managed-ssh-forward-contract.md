@@ -190,6 +190,29 @@ retired credential against a replacement API origin or change its owner. Three
 deterministic regressions cover both switch paths and retained same-origin Retry
 after a failed serve read.
 
+## Terminal connection feedback
+
+An active unsuccessful acquisition captures only an allowlisted failure category
+before owned teardown clears channel state. Advertised API and explicit Android
+serve bootstrap rejections retain `HermesConnectionFailureKind` through a
+`ManagedSshAgentException`; SSH authentication/trust/timeout retain their separate
+`ManagedSshFailure`. Recovery-storage errors are classified at the load/save
+operation, never by parsing exception text. Unknown causes remain generic.
+No raw response, exception, credential, endpoint or path enters the explanation.
+
+The panel publishes persistent localized feedback only after cleanup settles,
+then permits a deliberate fresh-authentication attempt. Its existing semantic
+live region and Connect action are revealed through enclosing form/Chat scroll
+views without animation or focus theft. Long explanations remain scrollable.
+Cancellation, disposal, failed acquisition of an already-busy controller and
+superseded owners are not relabeled as Agent authentication failures. A replaced
+controller clears the retired form and fences its late result. No retry, fallback
+protocol, remote command or Agent mutation is added. See the
+[offline feedback receipt](../quality/managed-ssh-failure-feedback.md).
+
+This repairs inspected feedback-loss mechanisms. It neither reproduces the
+reported installed-phone failure nor establishes that its SSH target connects.
+
 ## Android Agent transport boundary
 
 The controller selects `connectForwardedApi` or `connectForwardedServeReads`

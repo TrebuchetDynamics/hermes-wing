@@ -2,9 +2,16 @@ import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
+import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/features/voice/services/platform/default_voice_capture_service.dart';
+import 'package:wing/l10n/app_localizations.dart';
+
+import '../test/features/hermes_chat/support/fake_hermes_channel.dart';
 
 import 'support/linux_test_isolation.dart';
 
@@ -86,15 +93,27 @@ void main() {
   testWidgets('Linux GTK IME commit and cancellation preserve text', (
     tester,
   ) async {
-    final text = TextEditingController();
-    addTearDown(text.dispose);
+    final channel = FakeHermesChannel();
+    addTearDown(channel.dispose);
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: TextField(controller: text)),
+      ProviderScope(
+        overrides: [
+          hermesChannelProvider.overrideWithValue(channel),
+          hermesEndpointStoreProvider.overrideWithValue(
+            const EmptyHermesEndpointStore(),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HermesChatScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(TextField));
+    final composer = find.byKey(const ValueKey('hermes-composer-field'));
+    final text = tester.widget<TextField>(composer).controller!;
+    await tester.tap(composer);
     await tester.pump();
     for (final mode in ['type', 'compose', 'compose_cancel']) {
       final result = await Process.run('/usr/bin/python3', [
@@ -108,6 +127,7 @@ void main() {
         mode == 'type' ? 'native keyboard input' : 'native keyboard input😀',
       );
       expect(text.value.composing.isCollapsed, isTrue);
+      expect(channel.sentImageDataUrls, isEmpty);
     }
     await tester.pumpWidget(const SizedBox.shrink());
   });

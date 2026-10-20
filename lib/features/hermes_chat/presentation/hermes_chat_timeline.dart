@@ -352,20 +352,34 @@ class _HermesTranscriptList extends StatelessWidget {
                   key: viewport.listKey,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: viewport.onScroll,
-                    child: ListView(
-                      key: const ValueKey('hermes-transcript'),
-                      controller: controller,
-                      reverse: true,
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: EdgeInsets.symmetric(
-                        horizontal:
-                            _HermesConversationGeometry.transcriptGutter(
-                              constraints.maxWidth,
-                            ),
-                        vertical: 12,
+                    child: Focus(
+                      canRequestFocus: false,
+                      onFocusChange: (hasFocus) {
+                        if (!hasFocus) return;
+                        final focused =
+                            FocusManager.instance.primaryFocus?.context;
+                        if (focused == null || !focused.mounted) return;
+                        // Directional Tab reveal cannot scroll back when
+                        // re-entering a reversed list from outside it.
+                        unawaited(
+                          Scrollable.ensureVisible(focused, alignment: 0.5),
+                        );
+                      },
+                      child: ListView(
+                        key: const ValueKey('hermes-transcript'),
+                        controller: controller,
+                        reverse: true,
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: EdgeInsets.symmetric(
+                          horizontal:
+                              _HermesConversationGeometry.transcriptGutter(
+                                constraints.maxWidth,
+                              ),
+                          vertical: 12,
+                        ),
+                        children: rows.reversed.toList(growable: false),
                       ),
-                      children: rows.reversed.toList(growable: false),
                     ),
                   ),
                 ),

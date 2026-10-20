@@ -584,7 +584,9 @@
         "MT-APP-SHELL-STATUS-BAR",
         "MT-RERUN-TRAIN",
         "MT-VERIFY-BROWSER-GATES",
+        "MT-VERIFY-BROWSER-GATES-LIVE",
         "PARITYUPDATE-005-11",
+        "PARITYUPDATE-005-11-LIVE",
         "PARITYUPDATE-006-f4",
         "PLANGAP-001-2f",
         "WING-TASK-409"
@@ -3736,6 +3738,7 @@
         "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY",
         "VERIFY-CHAT-TRANSCRIPT-NATIVE",
         "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
+        "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
         "VERIFY-CHAT-TRANSCRIPT-ORDER",
         "VERIFY-CHAT-TRANSCRIPT-RECONNECT"
       ],
@@ -3935,6 +3938,7 @@
         "PARITY-MAESTRO-ANDROID-DEVICE",
         "PARITY-MAESTRO-ANDROID-DEVICE-LIVE",
         "PARITY-NATIVE-LINUX",
+        "PARITY-NATIVE-LINUX-LIVE",
         "PARITY-OFFICIAL-MATRIX",
         "PARITY-OFFICIAL-MATRIX-LIVE",
         "PARITYUPDATE-004-48",
@@ -6904,16 +6908,9 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "PARITYUPDATE-005-11",
       "PARITYUPDATE-006-f4",
-      "MT-RERUN-TRAIN",
-      "PLANGAP-001-2f",
       "WING-001-b3",
-      "MT-VERIFY-BROWSER-GATES",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
-      "PARITY-NATIVE-LINUX",
-      "VERIFY-CHAT-TRANSCRIPT-NATIVE",
-      "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -6979,7 +6976,11 @@
       "PARITYUPDATE-002-5c-LIVE",
       "PARITYUPDATE-003-b1-LIVE",
       "PARITYUPDATE-004-48-LIVE",
-      "README-001-62-LIVE"
+      "README-001-62-LIVE",
+      "MT-VERIFY-BROWSER-GATES-LIVE",
+      "PARITYUPDATE-005-11-LIVE",
+      "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
+      "PARITY-NATIVE-LINUX-LIVE"
     ]
   },
   "tasks": [
@@ -7023,44 +7024,6 @@
     },
     {
       "depends_on": [
-        "MT-APP-SHELL-STATUS-BAR"
-      ],
-      "goal": "INTEGRATION",
-      "id": "MT-RERUN-TRAIN",
-      "section": "Next",
-      "status": "open",
-      "title": "Existing integration owner: rerun canonical merge-train gates on a newly captured combined tree; this receipt does not waive remaining gates"
-    },
-    {
-      "depends_on": [
-        "MT-RERUN-TRAIN"
-      ],
-      "goal": "INTEGRATION",
-      "id": "MT-VERIFY-BROWSER-GATES",
-      "section": "Next",
-      "status": "open",
-      "title": "Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts"
-    },
-    {
-      "depends_on": [],
-      "goal": "PARITY",
-      "id": "PARITY-NATIVE-LINUX",
-      "section": "Next",
-      "status": "open",
-      "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
-    },
-    {
-      "depends_on": [
-        "FINISH-DESKTOP-SHELL"
-      ],
-      "goal": "INTEGRATION",
-      "id": "PARITYUPDATE-005-11",
-      "section": "Next",
-      "status": "open",
-      "title": "Repair compact Profiles keyboard fixture on the retained combined source"
-    },
-    {
-      "depends_on": [
         "VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY"
       ],
       "goal": "INTEGRATION",
@@ -7068,34 +7031,6 @@
       "section": "Next",
       "status": "open",
       "title": "Repair profile-footer painted-focus oracle on the retained combined source"
-    },
-    {
-      "depends_on": [],
-      "goal": "INTEGRATION",
-      "id": "PLANGAP-001-2f",
-      "section": "Next",
-      "status": "open",
-      "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
-    },
-    {
-      "depends_on": [
-        "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
-      ],
-      "goal": "CHAT-FIDELITY",
-      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE",
-      "section": "Next",
-      "status": "open",
-      "title": "Keep recovered tool categories and exact-owner approval actions keyboard-operable in native Linux without mutation replay"
-    },
-    {
-      "depends_on": [
-        "VERIFY-CHAT-TRANSCRIPT-NATIVE"
-      ],
-      "goal": "CHAT-FIDELITY",
-      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
-      "section": "Next",
-      "status": "open",
-      "title": "Restore canonical tool ordering and retire approval actions after isolated native process restart without replay"
     },
     {
       "depends_on": [
@@ -7593,6 +7528,16 @@
     },
     {
       "depends_on": [
+        "MT-VERIFY-BROWSER-GATES"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-VERIFY-BROWSER-GATES-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for MT-VERIFY-BROWSER-GATES"
+    },
+    {
+      "depends_on": [
         "PARITY-LIVE-WORKFLOW"
       ],
       "goal": "M1",
@@ -7610,6 +7555,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-MAESTRO-ANDROID-DEVICE"
+    },
+    {
+      "depends_on": [
+        "PARITY-NATIVE-LINUX"
+      ],
+      "goal": "PARITY",
+      "id": "PARITY-NATIVE-LINUX-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITY-NATIVE-LINUX"
     },
     {
       "depends_on": [
@@ -7663,6 +7618,16 @@
     },
     {
       "depends_on": [
+        "PARITYUPDATE-005-11"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-005-11-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYUPDATE-005-11"
+    },
+    {
+      "depends_on": [
         "README-001-62"
       ],
       "goal": "LANDING-ONBOARDING",
@@ -7680,6 +7645,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for SECURITY-RETAINED-RELEASE-AUDIT"
+    },
+    {
+      "depends_on": [
+        "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART"
     },
     {
       "depends_on": [
@@ -8963,6 +8938,26 @@
       "title": "Repair historical candidate shell status-bar test surface collision"
     },
     {
+      "depends_on": [
+        "MT-APP-SHELL-STATUS-BAR"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-RERUN-TRAIN",
+      "section": "Done",
+      "status": "done",
+      "title": "Existing integration owner: rerun canonical merge-train gates on a newly captured combined tree; this receipt does not waive remaining gates"
+    },
+    {
+      "depends_on": [
+        "MT-RERUN-TRAIN"
+      ],
+      "goal": "INTEGRATION",
+      "id": "MT-VERIFY-BROWSER-GATES",
+      "section": "Done",
+      "status": "done",
+      "title": "Existing integration owner: qualify compiled combined-tree browser journeys and exact mutation counts"
+    },
+    {
       "depends_on": [],
       "goal": "M1",
       "id": "PARITY-APPROVAL-DISMISSAL",
@@ -9057,6 +9052,14 @@
       "title": "Qualify native bootstrap-denied restart and deliberate exact-owner keyboard recovery"
     },
     {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITY-NATIVE-LINUX",
+      "section": "Done",
+      "status": "done",
+      "title": "Execute and extend native Linux counterparts for mapped Android feature outcomes"
+    },
+    {
       "depends_on": [
         "PARITY-LIVE-DISPLAY-ISOLATION",
         "PARITY-LIVE-PROVIDER-CEILING"
@@ -9124,6 +9127,24 @@
       "section": "Done",
       "status": "done",
       "title": "Resolve uncovered Desktop outcome contracts without expanding active tasks"
+    },
+    {
+      "depends_on": [
+        "FINISH-DESKTOP-SHELL"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-005-11",
+      "section": "Done",
+      "status": "done",
+      "title": "Repair compact Profiles keyboard fixture on the retained combined source"
+    },
+    {
+      "depends_on": [],
+      "goal": "INTEGRATION",
+      "id": "PLANGAP-001-2f",
+      "section": "Done",
+      "status": "done",
+      "title": "Accept hash-suffixed task IDs in plan traceability without weakening guards"
     },
     {
       "depends_on": [
@@ -9319,6 +9340,26 @@
       "section": "Done",
       "status": "done",
       "title": "Keep streamed and recovered tool/approval rows readable and keyboard-operable at enlarged text without stale-owner actions"
+    },
+    {
+      "depends_on": [
+        "VERIFY-CHAT-TRANSCRIPT-ACCESSIBILITY"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE",
+      "section": "Done",
+      "status": "done",
+      "title": "Keep recovered tool categories and exact-owner approval actions keyboard-operable in native Linux without mutation replay"
+    },
+    {
+      "depends_on": [
+        "VERIFY-CHAT-TRANSCRIPT-NATIVE"
+      ],
+      "goal": "CHAT-FIDELITY",
+      "id": "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART",
+      "section": "Done",
+      "status": "done",
+      "title": "Restore canonical tool ordering and retire approval actions after isolated native process restart without replay"
     },
     {
       "depends_on": [

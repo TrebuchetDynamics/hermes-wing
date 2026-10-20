@@ -6,27 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-DOC-PARITY-TAB-CONTRACT — USER_INPUT — effort input — unblocks 3
-
-- Task: DOC-PARITY-TAB-CONTRACT — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
-- Needs: worker reported a blocker: The existing native coordinator must perform supported source-refresh/integration for THIS stale DOC-PARITY-TAB-CONTRACT assignment using the already assembled input: base35d7976af08992305dcc63ecab08da5c06d561b6, tree a2213ffd78bf6a485e09de0d218cc617f273a78e, verified47-member patch SHA2561c169ec1c114a01213ace13f55d17d3de9516ddf60f4281656abd40ce2c3d886. Source is recovered and available; do not as…
-- Since: 2026-10-19T09:19:37Z
-- Answer: Answer in DOC-PARITY-TAB-CONTRACT's TODO.md entry: widen `Touches:`, supply the input, narrow the acceptance, or add a dated `Owner decision:` line. The runner reruns it when the entry changes.
-
-### Q-PARITY-NATIVE-LINUX — USER_DECISION — effort investigate — unblocks 0
-
-- Task: PARITY-NATIVE-LINUX — Execute and extend native Linux
-- Needs: integration validation failed or changed the integration tree
-- Since: 2026-10-19T09:10:39Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/PARITY-NATIVE-LINUX/), then rescope or split PARITY-NATIVE-LINUX in its TODO.md entry. The runner reruns it when the entry changes.
-
-### Q-FULL-CHECK — USER_INPUT — effort input — unblocks 0
-
-- Task: the repository's whole offline test suite
-- Needs: no full-suite gate: a commit can land while breaking tests its own task never ran, and main is never checked
-- Since: 2026-10-18T18:36:32Z
-- Answer: Add one line to AGENTS.md, `Full check: <command>` (the command that runs the whole offline suite), or set PI_AUTOWORK_VALIDATE in the runner's settings.
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

@@ -29,6 +29,13 @@ Future<void> _revealVoiceOptions(WidgetTester tester) async {
   }
 }
 
+Finder _voiceEntry() {
+  final legacy = find.byKey(const ValueKey('hermes-mic-button'));
+  return legacy.evaluate().isNotEmpty
+      ? legacy
+      : find.byKey(const ValueKey('hermes-live-voice-start'));
+}
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({
@@ -274,10 +281,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
-        find.byKey(const ValueKey('hermes-mic-button')),
-      );
-      await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+      await tester.ensureVisible(_voiceEntry());
+      await tester.tap(_voiceEntry());
       await tester.pumpAndSettle();
       final mute = find.byKey(const ValueKey('hermes-voice-mute-output'));
       await tester.ensureVisible(mute);
@@ -327,7 +332,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+        await tester.tap(_voiceEntry());
         await tester.pumpAndSettle();
         expect(find.text('Listening for interruption'), findsOneWidget);
         expect(find.text('Playing assistant reply'), findsOneWidget);
@@ -372,6 +377,24 @@ void main() {
           find.byKey(const ValueKey('hermes-voice-mode-end-button')),
         );
         await tester.pump(const Duration(seconds: 1));
+        final composer = tester.widget<TextField>(
+          find.byKey(const ValueKey('hermes-composer-field')),
+        );
+        expect(composer.enabled, isTrue);
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('hermes-composer-field')),
+            matching: find.text('Message Hermes…'),
+          ),
+          findsOneWidget,
+        );
+        final semantics = tester.ensureSemantics();
+        try {
+          await tester.pump();
+          expect(find.bySemanticsLabel('Message Hermes…'), findsOneWidget);
+        } finally {
+          semantics.dispose();
+        }
       },
     );
   }
@@ -421,7 +444,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+      await tester.tap(_voiceEntry());
       await tester.pumpAndSettle();
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
@@ -514,7 +537,7 @@ void main() {
         find.byKey(const ValueKey('hermes-attachment-button')),
         findsOneWidget,
       );
-      expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
+      expect(_voiceEntry(), findsOneWidget);
       expect(
         tester
             .widget<IconButton>(
@@ -534,7 +557,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('hermes-send-button')), findsOneWidget);
-      expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
+      expect(_voiceEntry(), findsOneWidget);
       expect(
         find.byKey(const ValueKey('hermes-attachment-button')),
         findsOneWidget,
@@ -1178,7 +1201,7 @@ void main() {
       find.byKey(const ValueKey('hermes-composer-field')),
       'existing draft',
     );
-    await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+    await tester.tap(_voiceEntry());
     await tester.pumpAndSettle();
 
     expect(channel.sentVoiceTranscripts, ['draft from voice']);
@@ -1227,7 +1250,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+    await tester.tap(_voiceEntry());
     await tester.pumpAndSettle();
 
     expect(capture.captureCalls, 1);
@@ -1568,12 +1591,7 @@ void main() {
           .onChanged,
       isNull,
     );
-    expect(
-      tester
-          .widget<IconButton>(find.byKey(const ValueKey('hermes-mic-button')))
-          .onPressed,
-      isNull,
-    );
+    expect(tester.widget<IconButton>(_voiceEntry()).onPressed, isNull);
   });
 
   testWidgets(
@@ -1658,7 +1676,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Dictate a draft'));
       } else {
-        await tester.longPress(find.byKey(const ValueKey('hermes-mic-button')));
+        await tester.tap(find.byKey(const ValueKey('hermes-draft-mic-button')));
       }
       await tester.pump();
       expect(capture.captureCalls, 1);
@@ -1703,7 +1721,7 @@ void main() {
       find.byKey(const ValueKey('hermes-composer-field')),
       'existing draft',
     );
-    await tester.longPress(find.byKey(const ValueKey('hermes-mic-button')));
+    await tester.longPress(_voiceEntry());
     await tester.pump();
     composer.focusNode!.unfocus();
     await tester.pump();
@@ -1743,10 +1761,8 @@ void main() {
     // A screen reader must announce more than "button": the visual tooltip
     // moved onto a wrapper so long-press could dictate, which silently
     // stripped the name off the button's own node.
-    final mic = tester.getSemantics(
-      find.byKey(const ValueKey('hermes-mic-button')),
-    );
-    expect('${mic.label} ${mic.tooltip}', contains('Hands-free voice'));
+    final mic = tester.getSemantics(_voiceEntry());
+    expect('${mic.label} ${mic.tooltip}', contains('Start Live voice'));
   });
 
   testWidgets('hands-free voice state is announced, not shown only', (
@@ -1818,7 +1834,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+      await tester.tap(_voiceEntry());
       await tester.pumpAndSettle();
 
       expect(find.text('Live voice unavailable'), findsOneWidget);
@@ -1829,7 +1845,7 @@ void main() {
       expect(capture.captureCalls, 0);
       expect(channel.sentVoiceTranscripts, isEmpty);
       expect(find.text('Continue in text'), findsOneWidget);
-      expect(find.byKey(const ValueKey('hermes-mic-button')), findsOneWidget);
+      expect(_voiceEntry(), findsOneWidget);
 
       await tester.tap(find.text('Continue in text'));
       await tester.pumpAndSettle();
@@ -1860,7 +1876,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('hermes-mic-button')));
+    await tester.tap(_voiceEntry());
     await tester.pumpAndSettle();
 
     final error = tester.getSemantics(

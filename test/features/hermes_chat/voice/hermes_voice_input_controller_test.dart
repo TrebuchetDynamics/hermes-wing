@@ -14,6 +14,39 @@ import '../support/fake_hermes_channel.dart';
 
 void main() {
   test(
+    'live interruption targets the run that starts after listening begins',
+    () async {
+      final channel = FakeHermesChannel();
+      final capture = _FirstThenControlledCaptureService('first question');
+      final tts = FakeTextToSpeechService();
+      final controller = HermesVoiceInputController(
+        channel: () => channel,
+        captureService: () => capture,
+        textToSpeechService: () => tts,
+        settings: () => const WingVoiceSettings(
+          continuousVoiceEnabled: true,
+          speakRepliesEnabled: true,
+        ),
+        onDraft: (_) {},
+        rearmDelay: Duration.zero,
+      );
+      addTearDown(controller.dispose);
+      await controller.enableContinuous();
+      await pumpEventQueue();
+      expect(capture.captureCalls, 2);
+      channel.beginStreamingTurn('response starts after microphone rearmed');
+      capture.completeSecond('please change direction');
+      await pumpEventQueue();
+      expect(channel.stopActiveTurnCalls, 1);
+      expect(channel.sentVoiceTranscripts, [
+        'first question',
+        'please change direction',
+      ]);
+      expect(controller.error, isNull);
+    },
+  );
+
+  test(
     'silence during playback re-arms interruption capture before TTS ends',
     () async {
       final channel = FakeHermesChannel();

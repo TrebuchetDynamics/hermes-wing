@@ -296,7 +296,7 @@ void main() {
           replacement.profiles.remove('demo');
         }
         replacement.denyHistory = missing == 'session';
-        expect(await connect(), isFalse);
+        await expectLater(connect(), throwsA(isA<ManagedSshAgentException>()));
         expect(values[slot], raw);
         expect(channel.state.isConnected, isFalse);
         if (missing == 'profile') {
@@ -388,7 +388,7 @@ void main() {
       await controller.cancel();
       forward.origin = replacement.origin;
       replacement.denyHistory = true;
-      expect(await connect(), isFalse);
+      await expectLater(connect(), throwsA(isA<ManagedSshAgentException>()));
       expect(channel.state.isConnected, isFalse);
       expect(
         replacement.requests.last,
@@ -406,7 +406,7 @@ void main() {
     await controller.cancel();
     forward.origin = replacement.origin;
     replacement.profiles.remove('demo');
-    expect(await connect(), isFalse);
+    await expectLater(connect(), throwsA(isA<ManagedSshAgentException>()));
     expect(channel.state.isConnected, isFalse);
     expect(replacement.requests, ['GET /api/profiles']);
     replacement.profiles.add('demo');

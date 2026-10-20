@@ -215,6 +215,15 @@ setup is `flutter pub get` and `npm ci`.
 
 ## Validation
 
+The runner's whole offline Flutter test-suite entry point is:
+
+Full check: flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1
+
+This prepares checkout-local package metadata from the existing dependency cache
+without network access or lockfile changes. It does not replace the applicable
+formatting, analysis, browser, security or native qualification gates below, and
+it does not authorize live tests.
+
 Run the smallest relevant check while iterating, then the checks proportional to
 the affected boundary.
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -11,6 +13,8 @@ void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   binding.shouldPropagateDevicePointerEvents = true;
   WidgetController.hitTestWarningShouldBeFatal = true;
+
+  setUpAll(() => debugPrint('NATIVE_PARITY_PID=$pid'));
 
   Future<void> launch(WidgetTester tester, double width) async {
     SharedPreferences.setMockInitialValues({});
@@ -370,6 +374,81 @@ void main() {
       );
     }
 
+    testWidgets(
+      'Maestro approval Stop and offline status recovery width=$width',
+      (tester) async {
+        await launch(tester, width);
+        await tester.scrollUntilVisible(
+          find.text('Chat fixture'),
+          250,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tapText(tester, 'Chat fixture');
+        Future<void> send(String text) async {
+          await tester.enterText(
+            find.byKey(const ValueKey('hermes-composer-field')),
+            text,
+          );
+          await tester.pump();
+          await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+          for (var tick = 0; tick < 100; tick++) {
+            await tester.pump(const Duration(milliseconds: 50));
+            if (find.text('Approve once').hitTestable().evaluate().isNotEmpty) {
+              return;
+            }
+          }
+          fail('Approval did not become actionable after deliberate Send.');
+        }
+
+        await send('Fixture deny turn');
+        // Reviewing leaves the pending run animated behind the modal.
+        await tapText(tester, 'Review', waitForIdle: false);
+        expect(find.text('Review Hermes approval'), findsOneWidget);
+        await tapText(tester, 'Deny');
+        expect(find.textContaining('Fixture decision deny'), findsWidgets);
+        await send('Fixture stopped turn');
+        await tapText(tester, 'Stop');
+        expect(find.textContaining('Fixture approval 2'), findsNothing);
+        await send('Fixture next turn');
+        await tapText(tester, 'Approve once');
+        expect(find.textContaining('Fixture decision once'), findsWidgets);
+        // Offline recovery also animates until the explicit reconnect.
+        await control(tester, 'Disconnect fixture', waitForIdle: false);
+        final composer = find.byKey(const ValueKey('hermes-composer-field'));
+        expect(composer, findsNothing);
+        expect(find.byType(CircularProgressIndicator), findsWidgets);
+        await control(tester, 'Reconnect fixture', waitForIdle: false);
+        await tester.pumpAndSettle();
+        expect(composer, findsOneWidget);
+        expect(tester.widget<TextField>(composer).enabled, isTrue);
+        await tester.enterText(composer, 'Fixture unsent recovery draft');
+        await tester.pump();
+        expect(
+          tester
+              .widget<IconButton>(
+                find.byKey(const ValueKey('hermes-send-button')),
+              )
+              .onPressed,
+          isNotNull,
+        );
+        expect(find.textContaining('Fixture decision once'), findsWidgets);
+        expect(find.text('Approve once'), findsNothing);
+        await tapText(tester, 'Fixture controls');
+        for (final receipt in [
+          'Submitted turns: 3',
+          'Approval decisions: 2',
+          'Stop calls: 1',
+          'Active session: sess_1',
+        ]) {
+          expect(find.text(receipt), findsOneWidget);
+        }
+        await tapText(tester, 'Close controls');
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+      },
+    );
+
     testWidgets('Maestro screen tour on Linux at width $width', (tester) async {
       await launch(tester, width);
       await tester.tap(find.text('Start visual review'));
@@ -388,7 +467,8 @@ void main() {
         'Schedules',
         'What are we working on?',
         'Connect to Hermes',
-        'Set up Hermes on this phone',
+        // Linux Local uses direct connection, not the retired phone setup page.
+        'Add Hermes',
       ];
       for (var step = 0; step < titles.length * 2; step++) {
         expect(find.text('${step + 1} / 26'), findsOneWidget);
@@ -400,6 +480,16 @@ void main() {
           findsWidgets,
           reason: 'Visible destination at step ${step + 1}, width $width',
         );
+        if (step % titles.length == titles.length - 1) {
+          expect(
+            tester
+                .widget<ChoiceChip>(
+                  find.byKey(const ValueKey('hermes-connection-mode-local')),
+                )
+                .selected,
+            isTrue,
+          );
+        }
         expect(
           Theme.of(tester.element(destination.first)).brightness,
           step < titles.length ? Brightness.light : Brightness.dark,

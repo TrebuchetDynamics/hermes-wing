@@ -430,7 +430,6 @@ class HermesVoiceInputController extends ChangeNotifier {
 
     final channel = _channel();
     final captureSessionId = channel.state.activeSessionId;
-    final interruptionTarget = channel.activeTurnInterruptionTarget;
     final service = _captureService();
     _activeCaptureService = service;
     unawaited(_partialTranscriptSubscription?.cancel());
@@ -595,6 +594,9 @@ class HermesVoiceInputController extends ChangeNotifier {
         if (effectiveContinuous &&
             captureSessionId != null &&
             channel.state.isSessionStreaming(captureSessionId)) {
+          // Listening can start before Agent publishes its run. Capture the
+          // exact current target at interruption intent, not microphone rearm.
+          final interruptionTarget = channel.activeTurnInterruptionTarget;
           var stopped = false;
           try {
             if (interruptionTarget != null) {

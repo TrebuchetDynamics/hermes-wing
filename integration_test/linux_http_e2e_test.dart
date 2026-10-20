@@ -25,9 +25,20 @@ void main() {
 
   setUpAll(() async {
     // Reserve distinct ports together, releasing them immediately before launch.
+    final reserved = Platform.environment['AUTOWORK_PORT_BASE'];
+    final base = reserved == null ? null : int.parse(reserved);
+    if (base != null && (base < 1024 || base > 65436)) {
+      throw StateError('Invalid reserved fixture port range.');
+    }
     final sockets = <ServerSocket>[
-      await ServerSocket.bind(InternetAddress.loopbackIPv4, 0),
-      await ServerSocket.bind(InternetAddress.loopbackIPv4, 0),
+      await ServerSocket.bind(
+        InternetAddress.loopbackIPv4,
+        base == null ? 0 : base + 10,
+      ),
+      await ServerSocket.bind(
+        InternetAddress.loopbackIPv4,
+        base == null ? 0 : base + 11,
+      ),
     ];
     final ports = sockets.map((socket) => socket.port).toList();
     for (final socket in sockets) {
@@ -216,7 +227,9 @@ void main() {
         tester,
         () => find.text('Approve once').evaluate().isNotEmpty,
       );
-      await tester.tap(find.widgetWithText(ActionChip, 'Stop'));
+      final stop = find.byKey(const ValueKey('hermes-composer-stop-chip'));
+      expect(stop.hitTestable(), findsOneWidget);
+      await tester.tap(stop);
       await _wait(
         tester,
         () => !channel.state.isSessionStreaming(channel.state.activeSessionId!),

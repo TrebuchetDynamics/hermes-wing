@@ -8,7 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
+import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -19,38 +21,78 @@ import 'support/transcript_recovery_native_fixture.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  testWidgets('GTK keyboard canonical recovery and exact approval owner', (
+  unawaited(
+    binding.allTestsPassed.future.then((passed) async {
+      final root = Platform.environment['WING_TRANSCRIPT_ROOT'];
+      final phase = Platform.environment['WING_TRANSCRIPT_PHASE'];
+      if (root != null && {'write', 'verify'}.contains(phase)) {
+        final terminal = File('$root/cache/transcript-$phase-terminal.pending');
+        terminal.writeAsStringSync(
+          jsonEncode({
+            'phase': phase,
+            'native_pid': pid,
+            'passed': passed,
+            'tests': binding.results.length,
+          }),
+        );
+        terminal.renameSync('$root/cache/transcript-$phase-terminal.json');
+        await Future<void>.delayed(const Duration(seconds: 1));
+        exit(passed ? 0 : 1);
+      }
+    }),
+  );
+  testWidgets('GTK two-process canonical history and retired approval recovery', (
     tester,
   ) async {
     final root = Platform.environment['WING_TRANSCRIPT_ROOT'];
+    final phase = Platform.environment['WING_TRANSCRIPT_PHASE'];
     if (root == null ||
+        !{'write', 'verify'}.contains(phase) ||
         Platform.environment['HOME'] != '$root/home' ||
+        Platform.environment['DBUS_SESSION_BUS_ADDRESS'] != null ||
         Platform.environment['WING_LIVE_AUTH'] != null) {
-      throw StateError('Use the owned transcript launcher');
+      throw StateError('Use the owned transcript restart launcher');
     }
-    SharedPreferences.setMockInitialValues({
-      'wing.tips.dismissed.v1': ['moreDestinations', 'voice', 'approvals'],
-    });
+    // Real Linux preferences survive process exit; no mock initialization.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('wing.tips.dismissed.v1', [
+      'moreDestinations',
+      'voice',
+      'approvals',
+    ]);
+    final cache = GatewayContactCache();
+    const owner = GatewayContactId(
+      gatewayId: 'synthetic-transcript',
+      profileId: 'default',
+    );
+    final remembered = await cache.loadSelection();
+    expect(remembered?.sessionId, phase == 'write' ? null : reference.session);
+    if (phase == 'verify') expect(remembered?.contactId, owner);
     addTearDown(() => binding.setSurfaceSize(null));
     final highlight = FocusManager.instance.highlightStrategy;
     FocusManager.instance.highlightStrategy =
         FocusHighlightStrategy.alwaysTraditional;
     addTearDown(() => FocusManager.instance.highlightStrategy = highlight);
+
     for (final width in [390.0, 1280.0]) {
       for (final scale in [1.0, 2.0]) {
-        final fixture = TranscriptRecoveryNativeFixture();
-        final approvals = <HermesApprovalRequest>[];
-        final subscription = fixture.channel.approvalRequests.listen(
-          approvals.add,
+        debugPrint('TRANSCRIPT_PHASE $phase width=$width scale=$scale');
+        final prefix = '$root/cache/transcript-$width-$scale';
+        final fixture = TranscriptRecoveryNativeFixture(
+          leaseFile: File('$prefix-leases.json'),
         );
+        if (phase == 'write') fixture.canonical = false;
+        final channel = fixture.channel;
         final container = ProviderContainer(
           overrides: [
-            hermesChannelProvider.overrideWithValue(fixture.channel),
+            hermesChannelProvider.overrideWithValue(channel),
             hermesVoiceCaptureServiceProvider.overrideWithValue(null),
             hermesTextToSpeechServiceProvider.overrideWithValue(null),
           ],
         );
-        await fixture.channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+        expect(channel.state.activeSessionId, reference.session);
+        expect(channel.state.selectedProfileId ?? 'default', owner.profileId);
         Future<void> mount(double size) async {
           await binding.setSurfaceSize(Size(size, 1000));
           await tester.pumpWidget(
@@ -73,206 +115,211 @@ void main() {
           await reference.settle(tester);
         }
 
-        Future<void> reach(String label) async {
-          if (find.text(label).evaluate().isEmpty &&
+        Future<void> reach(Finder target) async {
+          expect(target, findsOneWidget);
+          await tester.ensureVisible(target);
+          for (var i = 0; i < 100; i++) {
+            final context = FocusManager.instance.primaryFocus?.context;
+            final control =
+                context?.findAncestorWidgetOfExactType<ListTile>() ??
+                context?.findAncestorWidgetOfExactType<TextButton>() ??
+                context?.findAncestorWidgetOfExactType<FilledButton>() ??
+                context?.findAncestorWidgetOfExactType<OutlinedButton>();
+            if (control != null &&
+                find
+                    .descendant(of: find.byWidget(control), matching: target)
+                    .evaluate()
+                    .isNotEmpty) {
+              final rect = tester.getRect(target);
+              expect(rect.left, greaterThanOrEqualTo(0));
+              expect(
+                rect.right,
+                lessThanOrEqualTo(
+                  MediaQuery.sizeOf(tester.element(target)).width,
+                ),
+              );
+              return;
+            }
+            await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+            await tester.pump();
+          }
+          fail('Keyboard cannot reach $target');
+        }
+
+        Future<void> expand(String id) async {
+          if (find
+                  .byKey(ValueKey('hermes-tool-activity-$id'))
+                  .evaluate()
+                  .isEmpty &&
               find.text('Latest activity').evaluate().isNotEmpty) {
-            await reference.reach(tester, 'Latest activity');
+            await reach(find.text('Latest activity'));
             await tester.sendKeyEvent(LogicalKeyboardKey.enter);
             await reference.settle(tester);
           }
-          await tester.ensureVisible(find.text(label));
-          await reference.reach(tester, label);
+          final title = find.descendant(
+            of: find.byKey(ValueKey('hermes-tool-activity-$id')),
+            matching: find.text('Hermes host activity · 2 steps'),
+          );
+          if (title.evaluate().isEmpty) {
+            // Like ensureVisible, prepare the reversed lazy viewport before
+            // exercising actual Tab/Enter on the disclosure (no pointer taps).
+            final scrollable = find.descendant(
+              of: find.byKey(const ValueKey('hermes-transcript')),
+              matching: find.byType(Scrollable),
+            );
+            tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+            await reference.settle(tester);
+          }
+          await reach(title);
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
           await reference.settle(tester);
-          final rect = tester.getRect(find.text(label));
-          expect(rect.left, greaterThanOrEqualTo(0));
-          expect(
-            rect.right,
-            lessThanOrEqualTo(
-              MediaQuery.sizeOf(tester.element(find.text(label))).width,
+        }
+
+        await mount(width);
+        if (phase == 'write') {
+          // One deliberate setup mutation per viewport; it is never replayed.
+          unawaited(channel.sendText('Synthetic pending restart request'));
+          await tester.runAsync(() async {
+            await pumpEventQueue();
+            fixture.canonical = true;
+            await channel.connect(baseUrl: 'http://127.0.0.1:8642');
+            await pumpEventQueue();
+          });
+        } else {
+          expect(fixture.mutations, isEmpty);
+          expect(channel.state.hasUnreconciledRun, true);
+        }
+        await tester.runAsync(
+          () => fixture.activeTools(approval: phase == 'write'),
+        );
+        await reference.settle(tester);
+        expect(channel.state.activeMessages.take(5).map((t) => t.id), [
+          'canonical-user',
+          'canonical-commentary',
+          'canonical-read',
+          'canonical-web',
+          'canonical-answer',
+        ]);
+        final tools = channel.state.activeMessages
+            .where((t) => t.kind == HermesTurnKind.toolCall)
+            .toList();
+        expect(tools.map((t) => (t.toolCall!.name, t.toolCall!.status)), [
+          ('read_file', 'completed'),
+          ('web_search', 'completed'),
+          ('terminal', 'failed'),
+          ('browser', 'running'),
+        ]);
+        if (phase == 'write') {
+          await reach(find.text('Approve once'));
+          await cache.saveSelection(
+            const GatewayContactSelection(
+              contactId: owner,
+              sessionId: reference.session,
             ),
           );
-          expect(rect.height, greaterThan(0));
+        } else {
+          for (final label in ['Approve once', 'Deny', 'Review']) {
+            expect(find.text(label), findsNothing);
+          }
+          // Canonical history order survives route remount and compact/wide return.
+          await tester.pumpWidget(const SizedBox.shrink());
+          await mount(width == 390 ? 1280 : 390);
+          await mount(width);
+          await expand('canonical-read');
+          expect(
+            tester.getTopLeft(find.text('File activity')).dy,
+            lessThan(tester.getTopLeft(find.text('Web activity')).dy),
+          );
+          await expand('tool-run_1:error-terminal');
+          expect(
+            tester.getTopLeft(find.text('Code activity')).dy,
+            lessThan(tester.getTopLeft(find.text('Browser activity')).dy),
+          );
+          expect(find.text('Host action needs attention'), findsWidgets);
+          expect(find.text('Working on Hermes host'), findsOneWidget);
+          expect(find.text(reference.hidden), findsNothing);
+          // Expired observation is not a successful terminal run; retain its lease.
+          await tester.runAsync(fixture.streams.last.close);
+          final expiryDeadline = DateTime.now().add(
+            const Duration(seconds: 40),
+          );
+          while (channel.state.activeMessages.last.status !=
+                  HermesTurnStatus.failed &&
+              DateTime.now().isBefore(expiryDeadline)) {
+            await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 200)),
+            );
+            await tester.pump();
+          }
+          await reference.settle(tester);
+          expect(channel.state.errorMessage, contains('timed out'));
+          expect(
+            channel.state.activeMessages.last.status,
+            HermesTurnStatus.failed,
+          );
+          expect(channel.state.activeMessages.last.toolCall, isNull);
+          expect(channel.state.hasUnreconciledRun, true);
+          expect(
+            channel.state.activeMessages
+                .where((t) => t.toolCall?.name == 'browser')
+                .single
+                .toolCall!
+                .status,
+            'running',
+          );
+          expect(fixture.mutations, isEmpty);
         }
-
-        Future<void> capture(String phase) async {
-          await tester.runAsync(() async {
-            await Future<void>.delayed(const Duration(milliseconds: 250));
-            final result = await Process.run('/usr/bin/import', [
-              '-window',
-              'root',
-              '$root/cache/transcript-$width-$scale-$phase.png',
-            ]);
-            expect(result.exitCode, 0);
-          });
-        }
-
-        await mount(width);
-        final first = fixture.channel.sendText(reference.prompt);
-        await tester.runAsync(fixture.prelude);
-        await reference.settle(tester);
-        await reach('Approve once');
-        final retired = approvals.last;
-        final oldFocus = FocusManager.instance.primaryFocus;
-        fixture.canonical = true;
-        await fixture.channel.connect(baseUrl: 'http://127.0.0.1:8642');
-        await first;
-        await reference.settle(tester);
-        expect(find.text('Approve once'), findsNothing);
-        expect(FocusManager.instance.primaryFocus, isNot(same(oldFocus)));
-        expect(
-          fixture.channel.state.activeMessages.map((t) => t.id),
-          fixture.history.history.map((r) => r['id']),
-        );
-        await expectLater(
-          fixture.channel.respondToApproval(
-            approvalId: retired.id,
-            runId: retired.runId,
-            origin: retired,
-            decision: HermesApprovalDecision.once,
-          ),
-          throwsStateError,
-        );
-        await tester.pumpWidget(const SizedBox.shrink());
-        await mount(width == 390 ? 1280 : 390);
-        await mount(width);
-        FocusManager.instance.primaryFocus?.unfocus();
-        await reference.settle(tester);
-        await capture('unfocused');
-        await reach('Hermes host activity · 2 steps');
-        await capture('focus');
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await reference.settle(tester);
-        expect(find.text('File activity'), findsOneWidget);
-        expect(find.text('Web activity'), findsOneWidget);
-        expect(find.text('Completed on Hermes host'), findsNWidgets(3));
-        expect(find.text(reference.hidden), findsNothing);
-        await capture('recovered');
-        await fixture.channel.reconcileActiveSession();
-        expect(fixture.mutations, ['/v1/runs']);
-        fixture.canonical = false;
-        await fixture.channel.connect(baseUrl: 'http://127.0.0.1:8642');
-        final second = fixture.channel.sendText('Synthetic current request');
-        await tester.runAsync(fixture.prelude);
-        await reference.settle(tester);
-        await capture('approval-unfocused');
-        await reach('Approve once');
-        await capture('approval');
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await reference.settle(tester);
-        expect(fixture.decisions, [
-          {
-            'path': '/v1/runs/run_2/approval',
-            'request_id': 'request_2',
-            'choice': 'once',
-          },
-        ]);
-        await tester.runAsync(fixture.complete);
-        await second;
-        await reference.settle(tester);
-        // Explicit failing decision retains exact owner; there is no auto retry.
-        final third = fixture.channel.sendText('Synthetic retry request');
-        await tester.runAsync(fixture.prelude);
-        await reference.settle(tester);
-        fixture.failNext = true;
-        await reach('Approve once');
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await reference.settle(tester);
-        expect(fixture.decisions.length, 2);
-        expect(find.text('Approve once'), findsOneWidget);
-        await mount(width == 390 ? 1280 : 390);
-        await mount(width);
-        expect(fixture.decisions.length, 2);
-        await reach('Approve once');
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await reference.settle(tester);
-        expect(fixture.decisions.length, 3);
-        expect(
-          fixture.decisions.skip(1),
-          everyElement({
-            'path': '/v1/runs/run_3/approval',
-            'request_id': 'request_3',
-            'choice': 'once',
-          }),
-        );
-        await tester.runAsync(fixture.complete);
-        await third;
-        await reference.settle(tester);
-        // An in-flight response's late failure cannot settle the replacement.
-        final fourth = fixture.channel.sendText('Synthetic delayed request');
-        await tester.runAsync(fixture.prelude);
-        await reference.settle(tester);
-        final delayedOwner = approvals.last;
-        final gate = Completer<void>();
-        fixture.gate = gate;
-        fixture.failNext = true;
-        await reach('Approve once');
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await reference.settle(tester);
-        expect(fixture.decisions.length, 4);
-        await fixture.channel.disconnect();
-        await fixture.channel.connect(baseUrl: 'http://127.0.0.1:8642');
-        await fourth;
-        final fifth = fixture.channel.sendText('Synthetic replacement request');
-        await tester.runAsync(fixture.prelude);
-        await reference.settle(tester);
-        expect(
-          approvals.last.connectionGeneration,
-          isNot(delayedOwner.connectionGeneration),
-        );
-        gate.complete();
-        await reference.settle(tester);
-        expect(fixture.decisions.length, 4);
-        await expectLater(
-          fixture.channel.respondToApproval(
-            approvalId: delayedOwner.id,
-            runId: delayedOwner.runId,
-            origin: delayedOwner,
-            decision: HermesApprovalDecision.once,
-          ),
-          throwsStateError,
-        );
-        await reach('Approve once');
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await reference.settle(tester);
-        expect(fixture.decisions.last, {
-          'path': '/v1/runs/run_5/approval',
-          'request_id': 'request_5',
-          'choice': 'once',
-        });
-        await tester.runAsync(fixture.complete);
-        await fifth;
-        expect(fixture.mutations.where((p) => p == '/v1/runs').length, 5);
-        expect(fixture.mutations.where((p) => p.endsWith('/stop')), isEmpty);
-        expect(fixture.mutations.length, 10);
+        expect(fixture.decisions, isEmpty);
+        expect(fixture.mutations, phase == 'write' ? ['/v1/runs'] : <String>[]);
         expect(tester.takeException(), isNull);
-        final receipt = File('$root/cache/transcript-$width-$scale.pending');
+        final selected = await cache.loadSelection();
+        final snapshot = {
+          'phase': phase,
+          'native_pid': pid,
+          'width': width,
+          'text_scale': scale,
+          'owner': {
+            'gateway': selected!.contactId.gatewayId,
+            'profile':
+                channel.state.selectedProfileId ?? selected.contactId.profileId,
+            'session': channel.state.activeSessionId,
+            'origin': Uri.parse(channel.state.connectedBaseUrl!).origin,
+          },
+          'canonical_ids': channel.state.activeMessages
+              .take(5)
+              .map((t) => t.id)
+              .toList(),
+          'tools': tools
+              .map(
+                (t) => {'name': t.toolCall!.name, 'status': t.toolCall!.status},
+              )
+              .toList(),
+          'approval_visible': find.text('Approve once').evaluate().isNotEmpty,
+          'unresolved': channel.state.hasUnreconciledRun,
+          'last_status': channel.state.activeMessages.last.status.name,
+        };
+        await tester.pumpWidget(const SizedBox.shrink());
+        container.dispose();
+        await fixture.dispose();
+        expect(fixture.decisions, isEmpty);
+        expect(fixture.mutations, phase == 'write' ? ['/v1/runs'] : <String>[]);
+        final leases =
+            jsonDecode(File('$prefix-leases.json').readAsStringSync()) as List;
+        expect(leases, hasLength(1));
+        final receipt = File('$prefix-$phase.pending');
         receipt.writeAsStringSync(
           jsonEncode({
-            'native_pid': pid,
-            'width': width,
-            'text_scale': scale,
-            'canonical_ids': fixture.history.history
-                .map((r) => r['id'])
-                .toList(),
-            'reads': fixture.reads,
+            ...snapshot,
+            'lease': leases.single,
+            'requests': fixture.requests,
             'mutations': fixture.mutations,
             'decisions': fixture.decisions,
-            'recovery_mutations': 0,
-            'creates': 0,
-            'stops': 0,
-            'retired_rejected': true,
-            'late_failure_fenced': true,
-            'explicit_retry_only': true,
           }),
         );
-        receipt.renameSync('$root/cache/transcript-$width-$scale.json');
+        receipt.renameSync('$prefix-$phase.json');
         await tester.runAsync(
           () => Future<void>.delayed(const Duration(seconds: 1)),
         );
-        await tester.pumpWidget(const SizedBox.shrink());
-        container.dispose();
-        await subscription.cancel();
-        await fixture.dispose();
       }
     }
   });

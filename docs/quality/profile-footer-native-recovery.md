@@ -189,6 +189,36 @@ task's private `$TMPDIR`. Coordinator integration and whole-train canonical gate
 remain separate; original completed footer tasks and platform/live limits do not
 change.
 
+### Earlier pre-prerequisite receipt (incoming history)
+
+The incoming branch retains an earlier native run before the baseline Chat test
+repair above: `native-eyrg63lq/verification.json`, status `PASS`, 140.146 seconds.
+All 14 focus rows reported 48–420 pixels; four activation and four recovery rows
+passed strict validation. That receipt bound its observed native child PID/start
+ticks, binary and source, confirmed unchanged copied source and dependencies,
+owned process group gone and isolated state removed.
+
+| Native artifact | SHA-256 |
+| --- | --- |
+| Source manifest | `706c851aa2b3c387021d6a2e5bceb035ffcc6bc6a7b08165e95c92c7f778f98a` |
+| Pre-check source archive | `ef198a0fe50db3cdd4bba077cc5772b18d4cd89fca5ff69ed60d1656c4130043` |
+| Native binary | `b8a25a7ccd447b340f7c93514f82d745ff54edb53df7a8c7cefd2559c217d97a` |
+| Footer receipt | `7b617c8dd75b8f1b68c551eab5fb64bbc74791b41051f6a508da73ef90695b43` |
+
+At that earlier snapshot, the required focused command passed 16 tests including
+the negative control; the native command and strict self-check passed. The
+source-bound repair was then an uncommitted worker patch, not a reopening of the
+original completed footer tasks. The required `flutter analyze --no-pub` was
+blocked by the unchanged baseline's top-level `testWidgets` call outside `main`
+at `test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59`
+(four parser errors and two info diagnostics). That earlier patch did not modify
+the Chat test; a parseable combined source or separately authorized repair was
+needed before it could commit. The prerequisite repair and rebuilt native run
+above supersede that blocker, without repinning this earlier receipt. Neither
+receipt qualifies the merged tree. Full `flutter test --concurrency=1` and
+canonical assembly gates remain `MT-RERUN-TRAIN`'s responsibility. The
+platform/live limits below remain unchanged.
+
 ## Boundaries
 
 Input is `WidgetTester.sendKeyEvent` in the native Flutter engine; resizing is the

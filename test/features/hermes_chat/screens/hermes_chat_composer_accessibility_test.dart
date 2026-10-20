@@ -21,11 +21,14 @@ const _field = ValueKey('hermes-composer-field');
 const _attachment = ValueKey('hermes-attachment-button');
 const _draft = ValueKey('hermes-draft-mic-button');
 const _model = ValueKey('hermes-composer-model-chip');
-const _voice = ValueKey('hermes-mic-button');
+Key get _voice =>
+    find.byKey(const ValueKey('hermes-mic-button')).evaluate().isNotEmpty
+    ? const ValueKey('hermes-mic-button')
+    : const ValueKey('hermes-live-voice-start');
 const _send = ValueKey('hermes-send-button');
 const _stop = ValueKey('hermes-composer-stop-chip');
 const _options = ValueKey('hermes-composer-voice-options');
-const _order = [_model, _attachment, _draft, _options, _voice, _send];
+List<Key> get _order => [_model, _attachment, _draft, _options, _voice, _send];
 
 final _scale = ValueNotifier<double>(2);
 void main() {

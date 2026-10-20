@@ -1200,7 +1200,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 isTurnActive: isTurnActive,
                 canSendTurns: canSendTurns,
                 hasUnreconciledRun: state.hasUnreconciledRun,
-                switchableSessions: switchableSessions,
+                switchableSessions: const [],
                 streamingSessionIds: streamingSessionIds,
                 unreadCompletedSessionIds: _unreadCompletedSessionIds,
                 onSelectSession: (session) =>
@@ -1429,7 +1429,11 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   ),
                 ),
               ),
-            if (canSendTurns)
+            // Active queue controls take precedence over introductory guidance
+            // when narrow or enlarged-text layouts have a limited height budget.
+            if (canSendTurns &&
+                constraints.maxWidth >= 600 &&
+                !(useCompactFollowUpActions && _followUps.isNotEmpty))
               WingTipCard(
                 tip: WingTip.voice,
                 text: AppLocalizations.of(context).tipVoice,
@@ -1838,13 +1842,21 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         canSendTurns &&
         !isTurnActive &&
         _retryableFailedUserText(state) != null;
+    final interruptionTarget = isTurnActive
+        ? channel.activeTurnInterruptionTarget
+        : null;
+    final stopOwnerGeneration = _composerStopOwnerGeneration;
     final strip = _HermesComposerStrip(
       modelLabel: modelLabel,
       isTurnActive: isTurnActive,
       canSendTurns: canSendTurns,
       hasUnreconciledRun: state.hasUnreconciledRun,
       canRetry: canRetry,
-      onStop: () => _stopActiveTurn(channel),
+      onStop: () => _stopActiveTurn(
+        channel,
+        interruptionTarget,
+        ownerGeneration: stopOwnerGeneration,
+      ),
       onRetry: () => _retryLastFailedTurn(channel),
       onSelectModel:
           !isTurnActive &&
@@ -1990,6 +2002,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     }
     final composing = _composerController.value.composing;
     if (composing.isValid && !composing.isCollapsed) {
+      // GTK must see Escape before Flutter's default dismissal consumes it.
+      if (!kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.linux &&
+          event.logicalKey == LogicalKeyboardKey.escape) {
+        return KeyEventResult.skipRemainingHandlers;
+      }
       return KeyEventResult.ignored;
     }
     final commands = _matchingLocalSlashCommands(
@@ -2667,25 +2685,44 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 icon: const Icon(Icons.tune_rounded),
               ),
               const Spacer(),
-              _buildMicButton(canSendTurns),
+              if (compact)
+                IconButton(
+                  key: const ValueKey('hermes-live-voice-start'),
+                  tooltip: strings.chatLiveVoiceStartAction,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  icon: const Icon(Icons.record_voice_over_outlined),
+                  onPressed:
+                      canSendTurns &&
+                          ref
+                              .watch(wingVoiceSettingsProvider)
+                              .continuousVoiceEnabled
+                      ? () => _setContinuousVoice(true)
+                      : null,
+                )
+              else
+                _buildMicButton(canSendTurns),
               _buildSendButton(channel, canSendTurns),
             ],
           ),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton.icon(
-              key: const ValueKey('hermes-live-voice-start'),
-              icon: const Icon(Icons.record_voice_over_outlined),
-              label: Text(strings.chatLiveVoiceStartAction),
-              onPressed:
-                  canSendTurns &&
-                      ref
-                          .watch(wingVoiceSettingsProvider)
-                          .continuousVoiceEnabled
-                  ? () => _setContinuousVoice(true)
-                  : null,
+          if (!compact)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: const ValueKey('hermes-live-voice-start'),
+                icon: const Icon(Icons.record_voice_over_outlined),
+                label: Text(strings.chatLiveVoiceStartAction),
+                onPressed:
+                    canSendTurns &&
+                        ref
+                            .watch(wingVoiceSettingsProvider)
+                            .continuousVoiceEnabled
+                    ? () => _setContinuousVoice(true)
+                    : null,
+              ),
             ),
-          ),
           if (_composerVoiceOptionsExpanded)
             Wrap(
               key: const ValueKey('hermes-composer-voice-options-panel'),
@@ -3102,6 +3139,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     );
     return () {
       if (!mounted ||
+          !ref.read(wingVoiceSettingsProvider).continuousVoiceEnabled ||
           generation != _composerOwnerGeneration ||
           voiceGeneration != _draftVoiceGateGeneration ||
           !identical(ref.read(hermesChannelProvider), channel)) {

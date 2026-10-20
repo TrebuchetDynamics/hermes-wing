@@ -64,7 +64,7 @@ void main() {
           'hermes-attachment-button',
           'hermes-draft-mic-button',
           'hermes-composer-voice-options',
-          'hermes-mic-button',
+          width < 720 ? 'hermes-live-voice-start' : 'hermes-mic-button',
           'hermes-send-button',
         ]) {
           final finder = find.byKey(ValueKey(id));

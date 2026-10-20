@@ -3,6 +3,11 @@
 Card: `t_912b8858`; task: `M1-NATIVE-APPROVAL-RESTORATION`; goal: `M1`.
 This qualifies a deterministic Linux GTK slice, not the live daily-use milestone.
 
+Historical receipt: the current target/launcher now implements the separately
+qualified [two-process transcript restart](native-transcript-restart.md).
+The archive-dependent commands and mounted-process claims below describe only
+this earlier run; use the successor's reproduction for current sources.
+
 ## Implemented
 
 Added the [native target](../../integration_test/linux_transcript_recovery_test.dart),
@@ -121,6 +126,10 @@ provider limits, real tool approvals/Stop, process relaunch restoration, physica
 keyboard/screen reader, other platforms and protected-main delivery are
 NOT_CHECKED. `PARITY-LIVE-WORKFLOW` remains partial/in_progress;
 `VERIFY-CHAT-TRANSCRIPT-NATIVE` is not closed. M1 remains open.
+The [complementary keyboard follow-through](chat-transcript-native-keyboard.md)
+records fresh Review/Space/Deny qualification and the retired Review-sheet repair,
+with explicit unrelated/environment check limits. It does not repeat or relabel
+these four historical source-bound cases.
 Next seam: actual-Agent qualification when supported budget/auth prerequisites
 exist; otherwise bounded native failure recovery. No follow-up card was created.
 

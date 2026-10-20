@@ -6,7 +6,7 @@ String planTaskBody({
 }) {
   final bodies = <({bool archived, bool checked, String text})>[];
   final marker = RegExp(
-    r'^- \[([ xX])\] \*\*([A-Z][A-Z0-9-]+)\*\*',
+    r'^- \[([ xX])\] \*\*([A-Za-z0-9][A-Za-z0-9_-]*)\*\*',
     multiLine: true,
   );
   for (final source in [

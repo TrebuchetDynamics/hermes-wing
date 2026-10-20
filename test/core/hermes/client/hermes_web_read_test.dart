@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/client/hermes_web_read_client.dart';
 
+import '../support/fixture_server.dart';
+
 const recoveryStore =
     'lib/core/hermes/setup/secure_hermes_serve_recovery_store.dart';
 
@@ -63,7 +65,7 @@ void main() {
   test(
     'ticket subprotocol ready permits only fixed ping and list reads',
     () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       final methods = <String>[];
       server.listen((request) async {
         expect(request.uri.query, isNot(contains('synthetic-owned-auth')));
@@ -158,7 +160,7 @@ void main() {
               as Map<String, dynamic>;
       final inventory = receipt['rest_list_envelope'] as Map<String, dynamic>;
       final history = receipt['rest_history_envelope'] as Map<String, dynamic>;
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final server = await bindHermesFixtureServer();
       final requests = <Uri>[];
       server.listen((request) async {
         requests.add(request.uri);

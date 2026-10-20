@@ -87,7 +87,7 @@ void main() {
 
   for (final initialWidth in [390.0, 1280.0]) {
     testWidgets(
-      'reasoning keyboard roundtrip from $initialWidth keeps expansion truthful and remounted focus reachable under reduced motion',
+      'reasoning keyboard roundtrip from $initialWidth keeps expansion truthful and owner focus stable under reduced motion',
       (tester) async {
         final semantics = tester.ensureSemantics();
         tester.view.devicePixelRatio = 1;
@@ -155,10 +155,10 @@ void main() {
           final oldElement = tester.element(find.byType(ExpansionTile));
           final oldFocus = FocusManager.instance.primaryFocus;
           await resize(tester, width);
-          // The exact-owner row survives, but the adaptive avatar wrapper
-          // remounts its tile. Expansion must still agree with the visible body.
-          expect(oldElement.mounted, isFalse);
-          expect(FocusManager.instance.primaryFocus, isNot(same(oldFocus)));
+          // The flat transcript keeps the exact-owner tile across widths;
+          // resizing must not discard its expansion or keyboard focus.
+          expect(oldElement.mounted, isTrue);
+          expect(FocusManager.instance.primaryFocus, same(oldFocus));
           expect(
             find.text('Synthetic adaptive reasoning at [redacted-path]'),
             findsOneWidget,

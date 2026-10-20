@@ -44,7 +44,9 @@ for (const width of [390, 1280]) {
     const receipts = [];
     await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
     for (const format of ['text', 'Markdown']) {
-      const expected = Buffer.from(Array.from({ length: 250 }, (_, i) => format === 'text'
+      const metadata = 'Session: E2E Hermes Session\nSession ID: e2e-hermes-session\nModel: hermes-agent\nMessages: 250\nModel config snapshot: no';
+      const header = format === 'text' ? `Session metadata\n${metadata}` : `## Session metadata\n\n${metadata}`;
+      const expected = Buffer.from(`${header}\n\n` + Array.from({ length: 250 }, (_, i) => format === 'text'
         ? `${i % 2 ? 'Hermes' : 'You'}:\nSynthetic loaded turn ${i}`
         : `## ${i % 2 ? 'Hermes' : 'You'}\n\nSynthetic loaded turn ${i}`).join('\n\n'), 'utf8');
       await actions(page, width);

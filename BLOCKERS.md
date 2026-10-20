@@ -6,14 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-ANDROID-CANONICAL-BOT-CHAT — USER_DECISION — effort investigate — unblocks 0
-
-- Task: ANDROID-CANONICAL-BOT-CHAT — Android canonical bot chat
-- Needs: worker timeout after 5400 s
-- Since: 2026-10-20T10:43:05Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/ANDROID-CANONICAL-BOT-CHAT/), then rescope or split ANDROID-CANONICAL-BOT-CHAT in its TODO.md entry. The runner reruns it when the entry changes.
-- Kind: held
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

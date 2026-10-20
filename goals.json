@@ -5778,7 +5778,8 @@
         "DOC-BACKEND-CONTRACT",
         "DOC-BACKEND-DISCONNECT-CONTRACT",
         "DOC-BACKEND-DISCONNECT-CONTRACT-LIVE",
-        "WING-001-b3"
+        "WING-001-b3",
+        "WING-001-b3-LIVE"
       ],
       "title": "Provide typed SSH/Docker/WSL backend lifecycle outcomes"
     },
@@ -6911,7 +6912,6 @@
     "tasks": [
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
-      "WING-001-b3",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "PARITYGAP-001-3f",
       "PARITYGAP-002-76",
@@ -6987,7 +6987,8 @@
       "PARITY-NATIVE-LINUX-LIVE",
       "PARITYUPDATE-006-f4-LIVE",
       "DOC-PARITY-TAB-CONTRACT-LIVE",
-      "ANDROID-CHAT-TOUCH-POLISH-LIVE"
+      "ANDROID-CHAT-TOUCH-POLISH-LIVE",
+      "WING-001-b3-LIVE"
     ]
   },
   "tasks": [
@@ -7026,16 +7027,6 @@
       "section": "Next",
       "status": "open",
       "title": "Export bounded paged session history as JSON on Linux"
-    },
-    {
-      "depends_on": [
-        "BACKEND-SSH-CONNECT"
-      ],
-      "goal": "REMOTE-BACKENDS",
-      "id": "WING-001-b3",
-      "section": "Next",
-      "status": "open",
-      "title": "Make SSH connection failures visible and actionable"
     },
     {
       "depends_on": [
@@ -7760,6 +7751,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Qualify supported authoritative slash execution and unavailable-action recovery"
+    },
+    {
+      "depends_on": [
+        "WING-001-b3"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "WING-001-b3-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for WING-001-b3"
     },
     {
       "depends_on": [
@@ -9543,6 +9544,16 @@
       "section": "Done",
       "status": "done",
       "title": "Preserve native footer profile context through management-route return and channel replacement without implicit mutations"
+    },
+    {
+      "depends_on": [
+        "BACKEND-SSH-CONNECT"
+      ],
+      "goal": "REMOTE-BACKENDS",
+      "id": "WING-001-b3",
+      "section": "Done",
+      "status": "done",
+      "title": "Make SSH connection failures visible and actionable"
     },
     {
       "depends_on": [

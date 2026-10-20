@@ -8203,3 +8203,59 @@ Section: Next.
   Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
   Next action: after the retained tab prerequisite and its required gates, capture source-bound baseline Chat/switcher states, then apply the settled UI Taste hierarchy/spacing/state direction only to observed issues. Preserve compact onboarding, existing action/owner semantics and unavailable-operation boundaries; compare final compact/wide light/dark renders and retain broader checks.
   UI Taste proof: follow the linked state/size matrix (320x480, 390x844, 844x390 and 1280px; light/dark, normal/200% text, reduced motion and keyboard/system insets). Capture idle/draft, streaming/tools, current approval, disconnected/error and switcher states. Retain >=48px hit targets, viewport bounds, reading-space and keyboard/Back guards; disclose capture-font/inset simulation. No new palette/framework/route/API, fabricated Bot support or duplicate SSH feedback fix.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="wing-001-b3"></a>
+
+- [x] **WING-001-b3** — Make SSH connection failures visible and actionable.
+  Goal: REMOTE-BACKENDS
+Section: Next.
+  Status: done
+  Payoff: an unsuccessful Connect tells the user what failed and offers a deliberate retry instead of appearing to do nothing.
+  Sources: [accepted implementation plan](docs/plans/2026-10-18-ssh-failure-feedback.md#scope), [full failure-feedback plan](docs/plans/2026-10-18-ssh-failure-feedback.md), [accepted SSH and evidence requirements](docs/product/prd.md#connection-path-requirements), [forwarding boundary](docs/security/managed-ssh-forward-contract.md#forwarding-and-lifecycle), `lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart`, `lib/features/hermes_chat/widgets/managed_ssh_connection_panel.dart`, `lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart`, `lib/core/hermes/channel/api_channel/hermes_api_channel_connection.dart`, and their existing panel/form/serve tests.
+  User report: "Ssh connrction silently fails" following QA APK delivery. The installed build and on-device failure have not been verified; do not label a source hypothesis as the user's reproduced cause.
+  Evidence: historical source inspection at 286e7d8209b944a3c84056205e42789fd5de375c; re-traced at d13b748a4d5b8d5a580f2e0735fbb08387cb2238 with the same feedback-loss mechanism still present. The panel already maps thrown exceptions and false returns to allowlisted inline errors. The form renders that error after the credential fields near its footer, with a live region but no failure-triggered reveal. In the advertised API path, the channel catches bootstrap failures into `connectionFailureKind`; the controller's unsuccessful-adoption branch then calls cancellation/disconnect before returning false, so the panel receives a generic failure rather than the original Agent failure category. Existing panel transport-error tests use FakeChannel; they do not establish narrow-phone visibility or classify a real production-channel bootstrap rejection. These are inspected mechanisms, not a device reproduction. No current Graphify graph exists; relationships were traced directly in source.
+  Owner clarification: diagnose the SSH failure path in code; failures must never be silent. Prepare the existing offline feedback repair, not a live SSH reproduction. Preserve a useful allowlisted explanation through cleanup instead of losing the cause behind a generic failure. This clarifies the desired outcome, not proof of a particular root cause. Existing live-test deferrals, authentication and service-change limits remain unchanged.
+  Scope: repair the existing managed SSH controller -> panel -> localized form -> real Chat/first-run connection presentation, for advertised API and Android's explicit serve selection. Start with a failing composed regression for an observed feedback gap; preserve completed BACKEND-SSH-CONNECT history. Include positive ready-state and cancellation/replacement regressions. Do not expand transport support, change Hermes Agent, modify credentials/trust policy, manage remote services, or attempt live authentication from this task.
+  Planner calls: prefer a shared root-cause feedback fix over a second diagnostics screen, raw exception display, or automatic transport probing. Keep existing connection contracts and ownership fences; capture only an allowlisted failure category at its producing stage before teardown clears channel state, then deliver the outcome to the still-current panel attempt. Reuse ManagedSshFailure and HermesConnectionFailureKind, extending only safe local cases if needed; do not parse exception text or invent a remote protocol. Preserve no-acquisition/cancel/stale outcomes separately from an active attempt's genuine failure. Exact internal representation is an implementation detail, not permission for shadow Agent state.
+  Presentation: keep a persistent localized failure summary visibly associated with Connect; reveal it on narrow/scrolled/keyboard-constrained layouts and expose it through the existing semantic live region. Distinguish SSH authentication/trust/network failure from Agent authentication, incompatible/unavailable selected API or serve surface, and storage failure only when the producer establishes that category. Otherwise show a useful generic failure and a deliberate retry route; never invent a diagnosis. Retain non-secret target fields, clear attempt secrets as today, and leave Connect usable only after owned cleanup settles. Do not claim that fixing feedback fixes the user's target connectivity.
+  Acceptance: every completed unsuccessful current attempt has a visible, non-color-only terminal explanation and a usable deliberate next action; no indefinite busy state after the attempt/owned cleanup settles. A composed production-channel fixture rejects Agent bootstrap authentication and proves that its safe category survives teardown into visible UI. Cover an unavailable/incompatible selected Agent surface, SSH authentication rejection/timeout, and storage denial without raw payloads. At phone width and 200% text, demonstrate the feedback and retry are actually reachable, not merely present offscreen in the widget tree. Known-good configured fixtures reach connected profile/history and call success once; failures never report connected. Cancel, disposal, route/owner/mode replacement and late old completions never repaint or disconnect a new owner. Changed/denied host keys still fail closed. Deliberate retry performs one attempt after fresh authentication; zero automatic retries, protocol fallback, prompts, approvals or Stop replay. Secrets/private endpoints/host paths remain absent from UI errors, logs, diagnostics and fixtures.
+  Regression detail: real API and explicit serve 401/403 classifications survive settled cleanup. At 320x480/200% and scroll-up-during-pending, assert actual feedback/retry viewport bounds and live-region semantics without test-side ensureVisible. Fixing feedback does not prove target connectivity.
+  Checks: planned, not executed by this planning pass: add the red production-composition case to `test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart` and the actual Chat/entry composition as needed; `flutter test --no-pub --concurrency=1 test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart test/features/hermes_chat/providers/managed_ssh_serve_test.dart test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart test/features/hermes_chat/screens/hermes_ssh_no_cli_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart test/core/hermes/ssh/`; `flutter gen-l10n` if English copy changes; format changed Dart files; `flutter analyze --no-pub`; `git diff --check`. Run the broader affected channel/Chat suite for shared channel or lifecycle edits. Record the narrow/200% failure-visibility and semantic assertions; fixtures are not native transport, IME or TalkBack evidence.
+  Dependencies: BACKEND-SSH-CONNECT.
+  Ownership: unclaimed; one isolated writer. Verify fresh worker/source ownership before implementation; historical active-worker statements are not current leases. Serialize shared Chat/channel changes and preserve other pinned assignments.
+  Touches: lib/core/hermes/ssh/, lib/core/hermes/channel/, lib/features/hermes_chat/, lib/features/enrollment/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart, test/core/hermes/, test/features/hermes_chat/, test/features/enrollment/, docs/security/managed-ssh-forward-contract.md, docs/runbooks/managed-ssh-disconnect-recovery.md, docs/quality/
+  External gates: the real reported phone/installed APK, native SSH authentication, secure storage, IME/TalkBack and live Agent reachability remain unverified. Reuse BACKEND-SSH-CONNECT-LIVE and BACKEND-SSH-KEY-NATIVE rather than create duplicate qualification tasks. Live checks need an approved isolated device/target and secret-safe authentication; no credentials in chat, no personal-runtime mutation, no provider spending or service restart is authorized here.
+  Recovery evidence: earlier `36f4155f` and `3dfdba5f` recoveries remain historical:
+  their 169 focused passes, timeout/interim totals and Tools browser failure are
+  not current results. The current Git-common
+  `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json` consumes the
+  coordinator's exact `a2213ffd` source, preserving feedback/fixture deltas and the
+  Tab/parser/localization union. Fresh SSH checks: 163 passed, 9 opt-in skips;
+  format/analyzer/audit/diff and web build pass. Fresh default browser: 89 passed,
+  one opt-in live skip, zero unexpected/flaky results across all nine specs.
+  Tools disclosure is no longer a current blocker. The report verifies and reuses
+  (does not rerun) the coordinator's 2,014-pass Chat/router receipt and terminal
+  full-suite exit 1 (4,041 passed, 9 skipped, 2 failed). Both fixture failures
+  freshly reproduce on the consumed input. No commit or full offline pass exists.
+  Parser ID/disposition planning is not reopened; its exact delta is consumed.
+  Resources: exclusive — serialize shared Chat/SSH fixture reconciliation and final gates.
+  Execution: [retained-source recovery and terminal gate procedure](docs/tasks/held-offline-recovery.md#recovery-sequence).
+  Current handoff: source delivery to SSH is resolved. Captured SSH patch
+  `a0a6f8d461243279101aae92695dd92da959f8600ed7d673a9e4e7698419cea6` differs from
+  the earlier `e3faa0d4` capture only by the previously untracked quality receipt;
+  all 17 tracked patch chunks match, as the current provenance report records.
+  Next action: preserve the consumed combined source and SSH delta. Obtain the
+  existing owners' attributable repairs from PARITYUPDATE-005-11 (Profiles keyboard)
+  and PARITYUPDATE-006-f4 (footer oracle), then consume the coordinator's repaired
+  source/full-gate handoff. Do not repeat unchanged failures, take over another
+  feature, recreate composed regressions or wait for Android/live tab completion.
+  Revalidate source bindings; run the listed focused checks and every full offline gate on
+  matching repaired source using disk scratch and supported terminal execution,
+  not one 1800-second wrapper around the whole chain. Do not waive failed tests
+  or edit coordinator-owned queue files from this worker. Keep phone/IME/TalkBack,
+  live SSH/authentication and target connectivity explicitly unverified.

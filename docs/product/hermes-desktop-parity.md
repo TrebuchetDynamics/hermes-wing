@@ -339,7 +339,7 @@ controls and complete composition remain gaps. The [global session modal](../qua
 | Web preview, file viewer, attachments/media                                   | partial          | Text/image attachments and bounded transcript media               | Advertised artifact/preview contracts and directory grants             |
 | Standalone Wing Office | retired in candidate | No Office route, navigation or feature runtime; shared Agent access retained | [Offline checks](../quality/office-retirement.md); independent review/delivery pending, not a Desktop parity gap |
 | Auto-updates and desktop window/install flows                                 | partial          | Linux install/build and native menu commands                      | Signed manifest, activation, health, and rollback evidence             |
-| Full Desktop slash-command catalog                                            | partial          | Curated local `/usage`, `/model`, `/persona`, `/version` commands | Agent command catalog/completion contract; no arbitrary shell dispatch |
+| Full Desktop slash-command catalog                                            | partial          | Curated local commands; `/timestamps` and `/ts` toggle window-local labels with full-time semantics ([scope](../quality/slash-catalog-contract.md#local-timestamp-controls)) | Agent catalog/completion/dispatch and timestamp config defaults remain unsynced; no arbitrary shell dispatch |
 
 The existing capability matrix above is not a fresh operation-by-operation runtime
 audit. Read [route status](routes.md) and the roadmap's preserved source/card receipts

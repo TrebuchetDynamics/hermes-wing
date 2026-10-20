@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { APP_URL as APP, enableFlutterAccessibility } from '../../support/flutter_semantics.mjs';
+import { keyboardActor } from '../../support/inventory_keyboard.mjs';
 
 async function actions(page, width) {
   if (width < 600) {
@@ -42,8 +43,37 @@ for (const width of [390, 1280]) {
     expect(await page.evaluate(() => JSON.parse(globalThis.wingE2ETranscriptProjection()).allocated_rows)).toBe(100);
     const readCount = historyReads.length;
     const receipts = [];
+    const actor = keyboardActor(page, testInfo, []);
+    const composer = page.getByRole('textbox', { name: 'Message Hermes…', exact: true });
+    const timestamp = page.getByText(/^\w+, \w+ \d+, \d{4}, \d{1,2}:\d{2}(?: [AP]M)?$/, { exact: true }).last();
+    await expect(timestamp).toBeVisible();
+    const fullTime = await timestamp.textContent();
+    await expect.poll(async () => (await timestamp.boundingBox()).width).toBeLessThan(2);
+    const command = async (text, feedback) => {
+      await actor.reach('textbox', 'Message Hermes…');
+      await actor.type('Message Hermes…', text);
+      if (width < 600) await page.getByRole('button', { name: /^Send(?: Send)?$/ }).click();
+      else {
+        await actor.reach('button', 'Send');
+        await actor.press('Enter');
+      }
+      const notice = page.getByRole('group', { name: feedback, exact: true });
+      await expect(notice).toBeVisible();
+      // Large localized feedback is dismissible without covering the next command.
+      await notice.getByRole('button', { name: /^Close(?: Close)?$/ }).click();
+      await actor.reach('textbox', 'Message Hermes…');
+      await expect(composer).toHaveValue('');
+      expect(await timestamp.textContent()).toBe(fullTime);
+    };
+    await command('/ts status', 'Timestamps off in this window. Agent defaults are not synced.');
+    await command('/timestamps invalid', 'Usage: /timestamps or /ts [on|off|toggle|status]. Local to this window; Agent defaults are not synced.');
+    await expect.poll(async () => (await timestamp.boundingBox()).width).toBeLessThan(2);
     await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
     for (const format of ['text', 'Markdown']) {
+      const visible = format === 'text';
+      await command(visible ? '/timestamps on' : '/ts off',
+        `Timestamps ${visible ? 'on' : 'off'} in this window. Agent defaults are not synced.`);
+      await expect.poll(async () => (await timestamp.boundingBox()).width > 5).toBe(visible);
       const metadata = 'Session: E2E Hermes Session\nSession ID: e2e-hermes-session\nModel: hermes-agent\nMessages: 250\nModel config snapshot: no';
       const header = format === 'text' ? `Session metadata\n${metadata}` : `## Session metadata\n\n${metadata}`;
       const expected = Buffer.from(`${header}\n\n` + Array.from({ length: 250 }, (_, i) => format === 'text'

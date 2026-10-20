@@ -1257,41 +1257,101 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     expect(tooltip.message, semantics.label);
   });
 
-  testWidgets('message timestamps show relative age with absolute details', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel();
-    channel.beginStreamingTurn(
-      'Question',
-      createdAt: DateTime.now().subtract(
-        const Duration(minutes: 2, seconds: 5),
-      ),
-    );
-    channel.completeStreamingTurn(text: 'Answer');
-    final assistantId = channel.state.activeMessages.last.id;
+  testWidgets(
+    'timestamp labels reveal locally without hiding full-time semantics',
+    (tester) async {
+      final channel = FakeHermesChannel();
+      channel.beginStreamingTurn(
+        'Question',
+        createdAt: DateTime.now().subtract(
+          const Duration(minutes: 2, seconds: 5),
+        ),
+      );
+      channel.completeStreamingTurn(text: 'Answer');
+      final assistantId = channel.state.activeMessages.last.id;
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [hermesChannelProvider.overrideWithValue(channel)],
-        child: _localizedApp(const HermesChatScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [hermesChannelProvider.overrideWithValue(channel)],
+          child: _localizedApp(const HermesChatScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    final timestamp = find.byKey(
-      ValueKey('hermes-turn-timestamp-$assistantId'),
-    );
-    expect(
-      find.descendant(of: timestamp, matching: find.text('2 minutes ago')),
-      findsOneWidget,
-    );
-    final semantics = tester.getSemantics(timestamp);
-    expect(semantics.label, contains(DateTime.now().year.toString()));
-    final tooltip = tester.widget<Tooltip>(
-      find.descendant(of: timestamp, matching: find.byType(Tooltip)),
-    );
-    expect(tooltip.message, semantics.label);
-  });
+      final timestamp = find.byKey(
+        ValueKey('hermes-turn-timestamp-$assistantId'),
+      );
+      final semanticsBefore = tester.getSemantics(timestamp).label;
+      expect(
+        find.descendant(of: timestamp, matching: find.byType(Text)),
+        findsNothing,
+      );
+      for (final width in [320.0, 390.0, 1280.0]) {
+        tester.view.physicalSize = Size(width, 1000);
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = 2;
+        tester.view.viewInsets = const FakeViewPadding(bottom: 180);
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetViewInsets);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await tester.pumpAndSettle();
+        for (final argument in ['on', 'off']) {
+          await tester.enterText(
+            find.byKey(const ValueKey('hermes-composer-field')),
+            '/ts $argument',
+          );
+          await tester.pump();
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('hermes-send-button')),
+          );
+          await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+          await tester.pumpAndSettle();
+          expect(
+            find.descendant(
+              of: timestamp,
+              matching: find.text('2 minutes ago'),
+            ),
+            argument == 'on' ? findsOneWidget : findsNothing,
+          );
+          expect(tester.getSemantics(timestamp).label, semanticsBefore);
+          expect(tester.takeException(), isNull);
+          await tester.tap(
+            find.descendant(
+              of: find.byType(SnackBar),
+              matching: find.byTooltip('Close'),
+            ),
+          );
+          await tester.pumpAndSettle();
+        }
+        await tester.enterText(
+          find.byKey(const ValueKey('hermes-composer-field')),
+          '/timestamps invalid',
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Usage: /timestamps or /ts'),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+        await tester.tap(
+          find.descendant(
+            of: find.byType(SnackBar),
+            matching: find.byTooltip('Close'),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+      final semantics = tester.getSemantics(timestamp);
+      expect(semantics.label, contains(DateTime.now().year.toString()));
+      final tooltip = tester.widget<Tooltip>(
+        find.descendant(of: timestamp, matching: find.byType(Tooltip)),
+      );
+      expect(tooltip.message, semantics.label);
+    },
+  );
 
   testAndroid('long press offers copy and reply actions', (tester) async {
     final channel = FakeHermesChannel();

@@ -443,6 +443,102 @@ void main() {
   );
 
   testWidgets(
+    'timestamp visibility belongs to the window, not a Chat mount or owner',
+    (tester) async {
+      final channel = WorkspaceChannel();
+      final page = ValueNotifier<Widget>(const HermesChatScreen());
+      addTearDown(channel.dispose);
+      addTearDown(page.dispose);
+      await mount(tester, channel, page: page);
+      channel.beginStreamingTurn('Synthetic A');
+      channel.completeStreamingTurn(text: 'Synthetic answer A');
+      await tester.pumpAndSettle();
+      Future<void> command(String text) async {
+        await tester.enterText(find.byKey(_composer), text);
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+        await tester.pumpAndSettle();
+      }
+
+      Finder labels() => find.descendant(
+        of: find.byKey(
+          ValueKey(
+            'hermes-turn-timestamp-${channel.state.activeMessages.last.id}',
+          ),
+        ),
+        matching: find.byType(Text),
+      );
+      expect(labels(), findsNothing);
+      await command('/timestamps on');
+      expect(labels(), findsOneWidget);
+      await tester.enterText(find.byKey(_composer), 'Synthetic A draft');
+      composer(tester).selection = const TextSelection.collapsed(offset: 3);
+      await channel.selectSession('b');
+      channel.beginStreamingTurn('Synthetic B');
+      channel.completeStreamingTurn(text: 'Synthetic answer B');
+      await tester.pumpAndSettle();
+      expect(labels(), findsOneWidget);
+      await tester.enterText(find.byKey(_composer), 'Synthetic B draft');
+      composer(tester).selection = const TextSelection.collapsed(offset: 5);
+      tester.view.physicalSize = const Size(1280, 900);
+      await tester.pumpAndSettle();
+      await cycle(tester);
+      expect(composer(tester).text, 'Synthetic A draft');
+      expect(
+        composer(tester).selection,
+        const TextSelection.collapsed(offset: 3),
+      );
+      expect(
+        tester.widget<TextField>(find.byKey(_composer)).focusNode!.hasFocus,
+        isTrue,
+      );
+      expect(labels(), findsOneWidget);
+      tester.view.physicalSize = const Size(390, 844);
+      await tester.pumpAndSettle();
+      await cycle(tester, reverse: true);
+      expect(composer(tester).text, 'Synthetic B draft');
+      expect(
+        composer(tester).selection,
+        const TextSelection.collapsed(offset: 5),
+      );
+      await channel.selectProfile('other');
+      channel.beginStreamingTurn('Synthetic other profile');
+      channel.completeStreamingTurn(text: 'Synthetic other answer');
+      await tester.pumpAndSettle();
+      expect(labels(), findsOneWidget);
+      page.value = const Text('Another surface');
+      await tester.pumpAndSettle();
+      page.value = const HermesChatScreen();
+      await tester.pumpAndSettle();
+      expect(labels(), findsOneWidget);
+      // A new root scope represents fresh app-window state, not a route remount.
+      await tester.pumpWidget(const SizedBox());
+      await mount(tester, channel);
+      expect(labels(), findsNothing);
+      await tester.enterText(find.byKey(_composer), '/ts on');
+      await tester.pump();
+      final retainedSend = tester
+          .widget<IconButton>(find.byKey(const ValueKey('hermes-send-button')))
+          .onPressed!;
+      channel.nativeServe = true;
+      channel.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(find.byKey(_composer)).enabled, isFalse);
+      // A retained control cannot revive admission after the transport changes.
+      composer(tester).text = '/ts on';
+      retainedSend();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(composer(tester).text, '/ts on');
+      expect(labels(), findsNothing);
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
     'compact visited tabs restore each draft and text selection by keyboard',
     (tester) async {
       final channel = WorkspaceChannel();

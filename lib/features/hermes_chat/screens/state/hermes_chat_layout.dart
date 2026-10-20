@@ -2166,6 +2166,9 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     HermesChannel channel,
   ) {
     if (_isTurnActive(channel.state)) return false;
+    if (command.id == 'timestamps' || command.id == 'ts') {
+      return _runTimestampCommand('', channel);
+    }
     _composerController.clear();
     switch (command.id) {
       case 'new':
@@ -2350,9 +2353,53 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     }
   }
 
+  bool _runTimestampCommand(String argument, HermesChannel channel) {
+    final composing = _composerController.value.composing;
+    if (_isTurnActive(channel.state) ||
+        _stagedAttachment != null ||
+        _sessionRestorationUnsettled ||
+        _composerCompositionActive ||
+        composing.isValid && !composing.isCollapsed ||
+        channel.state.isServeReadOnly && !_canSendTurns(channel.state)) {
+      return false;
+    }
+    final strings = AppLocalizations.of(context);
+    final current = ref.read(transcriptTimestampsProvider);
+    final next = switch (argument) {
+      '' || 'toggle' => !current,
+      'on' => true,
+      'off' => false,
+      'status' => current,
+      _ => null,
+    };
+    _composerController.clear();
+    if (next != null) {
+      ref.read(transcriptTimestampsProvider.notifier).setVisible(next);
+    }
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger?.removeCurrentSnackBar();
+    messenger?.showSnackBar(
+      SnackBar(
+        showCloseIcon: true,
+        content: Text(
+          next == null
+              ? strings.localCommandTimestampsUsage
+              : next
+              ? strings.localCommandTimestampsOn
+              : strings.localCommandTimestampsOff,
+        ),
+      ),
+    );
+    return true;
+  }
+
   bool _runExactLocalSlashCommand(String text, HermesChannel channel) {
     if (_isTurnActive(channel.state)) return false;
     final commandText = text.trim().toLowerCase();
+    final tokens = commandText.split(RegExp(r'\s+'));
+    if (tokens.first == '/timestamps' || tokens.first == '/ts') {
+      return _runTimestampCommand(tokens.skip(1).join(' '), channel);
+    }
     final strings = AppLocalizations.of(context);
     for (final command in _localSlashCommands(strings, channel.state)) {
       if (command.command == commandText) {
@@ -2397,6 +2444,13 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       description: strings.localCommandUsageDescription,
       icon: Icons.data_usage_outlined,
     ),
+    for (final alias in ['timestamps', 'ts'])
+      _LocalSlashCommand(
+        id: alias,
+        command: '/$alias',
+        description: strings.localCommandTimestampsDescription,
+        icon: Icons.schedule_outlined,
+      ),
     _LocalSlashCommand(
       id: 'help',
       command: '/help',

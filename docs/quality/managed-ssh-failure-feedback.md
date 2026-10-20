@@ -1,90 +1,83 @@
 # Managed SSH failure feedback — WING-001-b3
 
-Status: recovered offline candidate; required whole-train validation remains held.
-This is not integration, native qualification or proof that the reported phone
-connects to its target.
+Status: offline feedback repair verified on baseline
+`83fcbc032a7c871c17258d8b46a58a18bd4fea04`. The runtime changes and regressions
+already arrived through `414f5b49`; this closeout updates their evidence, without
+reimporting patches or duplicating implementation. Integration acceptance remains
+with the runner. The reported installed-phone failure is not reproduced.
 
-## Retained repair
+## Implemented behavior
 
-The accepted [plan](../plans/2026-10-18-ssh-failure-feedback.md) traces a source
-mechanism: Agent bootstrap publishes `connectionFailureKind`, but unsuccessful
-SSH adoption tears down that state before presenting a generic result. The
-controller captures only the safe category before joined cleanup and delivers it
-to the still-current localized panel. Cancellation, stale ownership and no
-acquisition remain distinct from actual failures.
+The accepted [plan](../plans/2026-10-18-ssh-failure-feedback.md) identifies a source
+mechanism: Agent bootstrap publishes a typed failure, but unsuccessful SSH
+adoption clears channel state during teardown. The
+[controller](../../lib/features/hermes_chat/providers/managed_ssh_connection_controller.dart)
+captures only an allowlisted category, joins owned cleanup and reports it to the
+still-current [localized panel](../../lib/features/hermes_chat/widgets/managed_ssh_connection_panel.dart).
+Cancellation, stale ownership and no acquisition remain distinct from an active
+attempt's genuine failure.
 
-SSH authentication/trust/timeout retain separate typed explanations. Recovery
-load/save and channel-preflight storage rejection are classified at those
-operations, never by exception-text parsing. A captured channel-intent guard
-rejects obsolete feedback across replacement preflight and connect/disconnect
-roundtrips, including return to an identical disconnected state.
+SSH authentication/trust/timeout and Agent authentication/incompatible/unavailable
+surface failures retain separate explanations. Recovery load/save and channel
+preflight storage rejection are classified at those producing operations, never
+by parsing exception text. The
+[channel intent guard](../../lib/core/hermes/channel/hermes_api_channel.dart)
+fences old feedback across replacement preflight and connect/disconnect
+roundtrips, including a return to identical disconnected state.
 
-The existing summary/live region and Connect action reveal through enclosing
+The existing [form](../../lib/features/hermes_chat/widgets/managed_ssh_connection_form.dart)
+reveals its persistent summary/live region and Connect action through enclosing
 scroll views without animation or focus theft. Long explanations reveal their
 start and remain scrollable to retry. Attempt credentials/key selection clear;
-non-secret target fields remain. No protocol probing, automatic retry, remote
-service management, trust-policy change or Agent mutation is added.
+non-secret target fields remain. Retry requires fresh authentication after owned
+cleanup settles. No automatic retry, protocol probing, remote service management,
+trust-policy change or Agent mutation is introduced.
 
-## Source-bound evidence
+## Observable regression evidence
 
-The retained attempt on `36f4155f87e4c6ddaa1123a1c9baba0989081663` recorded 169
-focused passes and 9 opt-in skips. Its production-channel fixtures cover API
-401/403/incompatible bootstrap feedback after held cleanup, actual Chat entry at
-320×480 / 200% text with an 80px simulated inset, summary/Connect viewport bounds,
-hit testing, live-region semantics and a deliberate fresh-auth keyboard retry.
-The resulting full Chat is rendered separately at 800×1200. Real HTTP serve
-fixtures cover 401/403/404 without fallback or mutation. Storage, unknown failure,
-pending tunnel loss, cancellation and replacement regressions remain retained.
-These are historical Linux-hosted deterministic checks, not fresh acceptance on
-coordinator-combined source.
+The existing [production-composition cases](../../test/features/hermes_chat/widgets/managed_ssh_connection_panel_test.dart)
+exercise API 401/403 and incompatible bootstrap responses after held cleanup.
+At **320×480 / 200% text / simulated 80px inset**, the user scrolls up while
+pending; actual summary and Connect bounds, hit testing and live-region semantics
+are asserted without a test-side reveal after failure. Fresh-auth keyboard retry
+is submitted at that size, once. The resulting full Chat is rendered separately
+at 800×1200 and reaches exact profile/session/history once.
 
-Independent review of that attempt identified preflight-storage feedback and
-post-cleanup intent-fencing gaps. Both were reproduced RED and repaired, with
-focused regressions passing. The retained full test command did not finish:
-2,975 passes and 54 failures were interim counts before timeout, not terminal
-suite totals. No successful full gate or browser build was supplied by that run.
+[Explicit serve fixtures](../../test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart)
+exercise real HTTP 401/403/404 category preservation without fallback or mutation.
+The panel/provider regressions also cover storage denial, SSH authentication and
+timeout, unknown failure, pending tunnel loss, cancellation and replacement.
+[Form tests](../../test/features/hermes_chat/widgets/managed_ssh_connection_form_test.dart)
+prove that long feedback is revealed and retry remains reachable by ordinary
+scrolling. Changed/denied host keys still fail closed. Fixtures are not native
+SSH, secure-storage or screen-reader qualification.
 
-## Fresh recovery checks on `3dfdba5f` plus this candidate
+## Fresh checks on this baseline
 
-- The retained focused SSH/form/entry command passed **169 tests**, with **9
-  opt-in skips**. `flutter test --no-pub --concurrency=1
-  test/core/hermes/channel/` additionally passed **593 tests**.
-- `flutter gen-l10n`, whole-source format verification, `flutter analyze --no-pub`,
-  `npm audit` (zero vulnerabilities) and `git diff --check` passed.
-- `flutter build web --release -t lib/main_e2e.dart` completed. Its dependency
-  WebAssembly dry-run/font warnings do not establish WebAssembly or native support.
-- Fresh `npm run web:e2e` rebuilt the deterministic target and stopped in its first
-  default spec: **11 passed, 1 failed**. The failing case is **Tools inventory
-  supports search and resolved-tool disclosure**, waiting for the **Default Tools**
-  button. Later default specs did not run. This is not a green browser gate.
-- The required full test command was not repeated on the unchanged failed
-  runtime/test baseline. Its mandatory terminal result remains unavailable until
-  the coordinator supplies the combined source below. No failure is waived.
+- Listed SSH/form/provider/entry/core checks: **163 passed, 9 opt-in skips**.
+- Broader named Chat/router/channel checks: **2,613 passed**.
+- Format verification: **624 files**, zero changes. Analysis found no issues;
+  npm audit found zero vulnerabilities. Diff and changed local links passed.
+- Fresh deterministic web build followed by all nine default browser specs:
+  **89 passed, 1 opt-in live skip**, zero unexpected or flaky results.
 
-These passes are tied only to this recovered candidate, not the reviewed tab
-candidate or a canonical combined train.
+Six cases initially encountered occupied fixture ports. Each passed its one
+isolated rerun on unused ports within the assigned range; the complete listed
+SSH command then passed on that subrange. No listener was stopped and no test
+assertion, fixture or runtime source was changed. Those transient test IDs remain
+in the worker report's `unrelated_failures`, not as task blockers.
 
-## Recovery and held train input
+The worker did **not** run the full test check: the runner owns that check on the
+merged tree before review, and its result is the acceptance gate. Named suites
+above are scoped evidence, not a substitute or a claimed whole-suite pass.
+Earlier recovery counts, timeouts and held-source/browser findings remain in
+this file's history; they are not current results or new source prerequisites.
 
-The [recovery handoff](../tasks/held-offline-recovery.md#recovery-sequence) assigns
-combined-source assembly to the existing coordinator. The resumed worker
-recovered its own idle candidate rather than recreating regressions or importing
-another task's changes. The assigned `3dfdba5f` baseline does not contain the
-reviewed tab repair `3b7871db`; its runtime/test input is unchanged from the old
-SSH attempt's baseline. The retained layout/gateway test prerequisite repairs
-remain in this candidate for coordinator reconciliation, not duplicate ownership.
+## Still unverified
 
-The MCP plan's apparent missing-task failure is the accepted hash-ID parser
-defect owned by **PLANGAP-001-2f**. Its plan map and archived task body already
-exist. No task-ID, disposition, coordinator-owned queue edit or product decision
-is required from this SSH worker. Parser and Chat repairs must be combined before
-whole-repository gates are repeated. Inventory-keyboard/footer failures retain
-their existing owners. Do not waive failing checks or repin historical receipts.
-
-## Unverified live tail
-
-The installed APK and reported phone failure remain unreproduced. Native SSH,
-platform secure storage, actual IME/TalkBack and live Agent reachability remain
-with **BACKEND-SSH-CONNECT-LIVE** and **BACKEND-SSH-KEY-NATIVE-LIVE**. Linux widget
-fixtures and Android platform overrides are not device evidence. No live
+Fixing feedback does not establish target connectivity. The reported phone/APK,
+native SSH authentication and host trust, platform secure storage, actual
+IME/TalkBack and live Agent reachability remain unverified under
+**BACKEND-SSH-CONNECT-LIVE** and **BACKEND-SSH-KEY-NATIVE-LIVE**. Executed checks were
+Linux-hosted deterministic widgets/platform overrides and Chromium. No live
 credentials, provider spending, service restart, push or deployment was attempted.

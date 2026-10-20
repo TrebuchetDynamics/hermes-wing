@@ -224,7 +224,7 @@ do not qualify Android SSH, physical devices, native screen readers, platform IM
 speech hardware or live Agent/authentication/provider services. Those remain
 separate pending qualification; no live provider spending was performed.
 
-### Current recovery on `3d1102ee`
+### Retained recovery on `3d1102ee`
 
 The retained `3b7871db` runtime/test/browser source applies without conflicts;
 this baseline has no production/test/dependency-lock delta from its `cd548599`
@@ -259,6 +259,87 @@ binds the corrected source and terminal logs under the assigned disk-backed task
 scratch. Fixture ports were serialized in an unoccupied subrange of the assigned
 range; an unrelated repository's listeners were left untouched.
 
-Revisit this receipt when workspace ordering/lifetime, channel interruption,
+### Task-local qualification on `07c04774`
+
+The runner explicitly removed the source-refresh prerequisite. The corrected
+31-path Tab delta (`3dec5799`) was recovered without importing the foreign train
+assembly. Baseline width-test registration was repaired in a separate commit:
+the existing case now runs inside `main`, with its assertions retained and its
+DPR/channel lifecycle restored. All six width cases pass.
+
+Fresh terminal results are **198 listener**, **12 workspace**, **74 repair** and
+**1,996 Chat/router** passes (15m25s). Localization generation, all 619 Dart files'
+formatting and analysis pass. The 737-file runtime/test/browser/dependency closure
+is byte-identical to the corrected producer, so the recorded independent mounted
+Open/Close correction review remains applicable; no correction review or historical
+gate was relabeled as a new execution. Its compact-JSON path/hash digest is
+`213a9d04c637350a778ff39d453b7fc0d7aacd472c6c523cbbc1d21130a346c7`.
+
+The full Flutter command completed with **4,010 passes, nine skips and nine
+failures**, exit 1; it is not an unqualified green full suite. All failing tests
+are untouched. Isolated reruns using the real private TMPDIR passed the Linux
+feature-runner contract, release-workflow contract and four Local enrollment
+cases; their earlier failures involved the proc-FD temporary-path alias. The
+remaining plan-traceability, compact Profiles traversal and footer outline-pixel
+cases also fail on the exact `07c04774` baseline. Under the updated runner rules,
+all nine IDs and their isolated/baseline evidence are recorded as unrelated
+failures, not task blockers. No assertions or parser IDs/dispositions were changed.
+
+A fresh release E2E build succeeded. All nine default browser processes reached
+terminal aggregates: **89 passes**, one intentional live-provider skip and no
+executed retries. Both dedicated workspace journeys passed at 390/1280px without
+retries. npm audit found zero vulnerabilities; dependency locks remain unchanged.
+Native fixtures and browser servers were serialized on the assigned ports.
+Existing WASM dry-run/font warnings remain non-fatal, not WASM qualification.
+
+These are Linux widget and headless Chromium receipts for the task-local repair,
+not canonical integration or platform/live acceptance. Native-serve tabs remain
+**unavailable**, including Android SSH serve. Isolated Android public-control,
+physical/native accessibility, IME, speech hardware and live Agent/provider
+qualification remain pending. The held-successful-Stop workspace-roundtrip
+coverage limit remains explicit. Exact commands and artifacts are in the task
+report; no live provider spending occurred.
+
+### Compact playback recovery on `48c609e9`
+
+The existing tabs and owner guards are already present on this baseline; no
+historical assembly or coordinator metadata was imported. The `187cdc8c`
+task-local receipt above was recovered as historical documentation only.
+
+Compact idle Live entry had replaced the existing mic helper even during ordinary
+reply playback, hiding its **Stop speaking** action. The command bar now keeps
+that helper reachable while speaking and restores idle Live entry afterward.
+The existing speech controller still owns cancellation, queue invalidation,
+owner/generation checks and teardown; no Agent run-Stop behavior changed.
+
+A freshly compiled baseline reproduced both reported 390px browser failures.
+One new [voice lifecycle regression](../../test/features/hermes_chat/screens/hermes_chat_voice_lifecycle_test.dart)
+failed at the missing Stop control after actual public Send/playback, then passed
+with the repair at 390px, 200% text and a 240px inset. It retains hit testing,
+48px target size, visible bounds, draft preservation and no-exception checks.
+The browser idle-entry helper now requires the exact current **Start Live voice**
+button to be visible and enabled instead of the former two-label fallback;
+audio Stop and session-change assertions and audio fixtures remain unchanged.
+Both rebuilt named browser cases pass without retries.
+
+Fresh terminal checks passed: 198 listener, 12 workspace, 74 repair and 103
+voice/mobile/controller cases; **2,020 Chat/router cases**; all 624 Dart files'
+formatting and clean analysis. The fresh rebuilt default browser gate reached
+all nine terminal aggregates: **89 passes**, one intentional live-provider skip,
+no executed retries. Both dedicated workspace journeys passed without retries.
+npm audit found zero vulnerabilities and dependency locks remain unchanged.
+Independent source review found no critical or important issue in the changed
+layout, public regression, strict browser contract or preserved cancellation path.
+It did not independently execute these gates. The whole Flutter suite is reserved
+for the runner's merged-tree gate and was not run by this worker.
+
+Linux widgets and headless Chromium were exercised, not physical speech, native
+accessibility/IME, Android public-control or live Agent/provider qualification.
+Native-serve tabs remain unavailable, including Android SSH serve; the existing
+held-successful-Stop workspace-roundtrip coverage limit remains explicit.
+No live provider spending or upstream changes occurred. Existing dependency
+WASM/font warnings do not establish WASM support.
+
+Revisit these receipts when workspace ordering/lifetime, channel interruption,
 draft generations, exact restoration, or upstream pane/keyboard/close semantics
 change.

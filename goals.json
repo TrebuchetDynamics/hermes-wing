@@ -588,6 +588,7 @@
         "PARITYUPDATE-005-11",
         "PARITYUPDATE-005-11-LIVE",
         "PARITYUPDATE-006-f4",
+        "PARITYUPDATE-006-f4-LIVE",
         "PLANGAP-001-2f",
         "WING-TASK-409"
       ],
@@ -6908,7 +6909,6 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
-      "PARITYUPDATE-006-f4",
       "WING-001-b3",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "CONNECTION-LINK-RETIREMENT",
@@ -6980,7 +6980,8 @@
       "MT-VERIFY-BROWSER-GATES-LIVE",
       "PARITYUPDATE-005-11-LIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
-      "PARITY-NATIVE-LINUX-LIVE"
+      "PARITY-NATIVE-LINUX-LIVE",
+      "PARITYUPDATE-006-f4-LIVE"
     ]
   },
   "tasks": [
@@ -7021,16 +7022,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace reconnect for two distinct session-owned tab runs"
-    },
-    {
-      "depends_on": [
-        "VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY"
-      ],
-      "goal": "INTEGRATION",
-      "id": "PARITYUPDATE-006-f4",
-      "section": "Next",
-      "status": "open",
-      "title": "Repair profile-footer painted-focus oracle on the retained combined source"
     },
     {
       "depends_on": [
@@ -7625,6 +7616,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITYUPDATE-005-11"
+    },
+    {
+      "depends_on": [
+        "PARITYUPDATE-006-f4"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-006-f4-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYUPDATE-006-f4"
     },
     {
       "depends_on": [
@@ -9137,6 +9138,16 @@
       "section": "Done",
       "status": "done",
       "title": "Repair compact Profiles keyboard fixture on the retained combined source"
+    },
+    {
+      "depends_on": [
+        "VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY"
+      ],
+      "goal": "INTEGRATION",
+      "id": "PARITYUPDATE-006-f4",
+      "section": "Done",
+      "status": "done",
+      "title": "Repair profile-footer painted-focus oracle on the retained combined source"
     },
     {
       "depends_on": [],

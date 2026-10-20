@@ -328,47 +328,6 @@ Section: Next.
 
 ### **P4** — Extended experiences and physical qualification
 
-- [ ] **PARITYUPDATE-006-f4** — Repair profile-footer painted-focus oracle on the retained combined source.
-  Goal: INTEGRATION
-Section: Next.
-  Status: open
-  Payoff: restore a trustworthy focus oracle without waiving native/footer assertions.
-  Sources: [accepted integrated port and accessibility scope](ROADMAP.md#flutter-port-execution-roadmap), [native footer proof](docs/quality/profile-footer-native.md#acceptance-evidence), [recovery oracle](docs/quality/profile-footer-native-recovery.md#delivered-oracle), [repair handoff](docs/tasks/held-offline-recovery.md#fixture-repair-slices).
-  Scope: bounded fixture/oracle repair split from MT-RERUN-TRAIN, retaining the
-  existing native-footer implementation lineage. Inspect rendered focus, capture
-  coordinates, fixture timing and test isolation on the matched combined source.
-  Do not assume product failure or flakiness; no theme redesign, weaker threshold,
-  new harness, Agent operation, dependency or system installation is admitted.
-  Acceptance: reproduce the widget-harness failure at fixture line 102 (0 outline
-  pixels versus >=24), then repair the attributable cause while preserving real
-  painted-focus detection, all 100/200% text and adaptive-return phases, inverse
-  traversal, hit-test/48px bounds, redaction, owner retirement and zero-effect checks.
-  Retain strict receipt validation and prove a missing focus indicator is rejected.
-  Run the existing isolated Linux footer journey if fixture/rendering inputs change;
-  a widget or validator pass alone is not native proof. Return a source-bound patch
-  to the coordinator; original completed footer tasks and remaining platform/live
-  boundaries stay unchanged. The parent still requires all canonical gates.
-  Checks: planned reproduction and final `flutter test --no-pub --concurrency=1 test/integration/linux_profile_footer_native_runner_test.dart test/shared/widgets/app_shell_profile_footer_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart`; `python3 -B integration_test/run_linux_profile_footer_native.py --self-check`; for changed fixture/rendering inputs `python3 -B integration_test/run_linux_profile_footer_native.py` with owned source/build/process/teardown receipts; format changed Dart files; `flutter analyze --no-pub`; `git diff --check`. Full `flutter test --concurrency=1` remains MT-RERUN-TRAIN's gate after assembly.
-  Dependencies: VERIFY-PROFILE-FOOTER-NATIVE-RECOVERY (done).
-  Ownership: existing native-footer fixture implementation lineage; one supported isolated writer, not the SSH or tab worker taking over another feature.
-  Touches: integration_test/support/profile_footer_native_fixture.dart, integration_test/linux_profile_footer_native_test.dart, integration_test/run_linux_profile_footer_native.py, test/integration/linux_profile_footer_native_runner_test.dart, test/shared/widgets/app_shell_profile_footer_test.dart, test/shared/widgets/app_shell_focus_traversal_test.dart, test/shared/widgets/app_shell_navigation_groups_test.dart, docs/quality/
-  Resources: exclusive — serialize retained-source reconciliation and owned native fixture execution.
-  Evidence: Git-common `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json` records the second terminal full-suite failure on tree `a2213ffd78bf6a485e09de0d218cc617f273a78e`; `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json` freshly reproduces `Native footer journey oracle runs in widget harness`. No three isolated green revisions or flaky classification exists. Earlier native footer receipts qualify only their stated sources.
-  Retained repair: 2026-10-19 readback finds a clean, inactive worker at
-  `8e99a83cad223d8c471f9474f00daa37347e3fbe`, matching its attempt-1 report.
-  Its four footer fixture/runner/regression files already match canonical main
-  byte-for-byte; the layout-test delta is only `1440.0, 1000.0` versus equivalent
-  `1440, 1000` literals. Recovery documentation and source-bound native receipts
-  differ. The report records passing focused/native checks, not new checks in
-  this planning pass. The engine's interrupted label does not mean code is lost.
-  Next action: the existing coordinator reconciles this retained result and its
-  source-bound native evidence through the supported continuation. Do not repeat
-  the implemented oracle repair, restore the older layout spelling, or overwrite
-  newer source. Preserve the negative control and native receipts; requalify only
-  evidence invalidated by actual input differences, then complete the task's
-  existing integration/closeout checks. Keep whole-train and platform/live gates
-  separate; no completion or installed-device acceptance is supplied by this note.
-
 - [ ] **WING-001-b3** — Make SSH connection failures visible and actionable.
   Goal: REMOTE-BACKENDS
 Section: Next.
@@ -1591,4 +1550,13 @@ does not mark any check passed or authorize live actions.
   - OS keyring, saved-credential upgrade/readback and signed installer/service/update/rollback acceptance need separately authorized platform checks.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITY-NATIVE-LINUX.
+  Status: open
+
+- [ ] PARITYUPDATE-006-f4-LIVE — Live checks for PARITYUPDATE-006-f4
+  Scope: Run the live checks the offline work for PARITYUPDATE-006-f4 left pending.
+  Acceptance: Each check passes on the real target:
+  - Physical keyboard/OS-window resize and screen-reader qualification remain unverified; retained Linux GTK/Xvfb native evidence uses WidgetTester input and framework viewport resizing.
+  - Android/other platforms, live Agent/provider transport, OS keyring, install/update/signing and release qualification remain unchanged and unverified by this deterministic fixture.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITYUPDATE-006-f4.
   Status: open

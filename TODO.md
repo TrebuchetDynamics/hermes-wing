@@ -118,29 +118,6 @@ needs its own exact capability, ownership and qualification evidence.
 
 ### **P0** — Android SSH, multi-session chat and touch polish
 
-- [ ] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Trace reconnect for two distinct session-owned tab runs
-  Goal: PARITY-TABS
-Section: Next.
-  Summary: Implement and qualify reconnect for two distinct session-owned conversation tabs.
-  Payoff: one disconnected tab cannot lose or mutate the other conversation.
-  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [PARITY-TABS](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary).
-  Scope: the tab presentation from DOC-PARITY-TAB-CONTRACT, shared Agent channel
-  reconciliation and deterministic widget/browser tests. Exclude upstream edits,
-  shadow run state, credential discovery, installs and live provider calls.
-  Acceptance: disconnect one exact host/profile/session/run, recover canonical
-  status/history without replaying sends, approvals or Stop, and retain the other
-  tab's identity, draft and focus. Late results cannot retarget either tab. Prove
-  this through public controls with nearest regressions and a compiled fixture.
-  Dependencies: DOC-PARITY-TAB-CONTRACT; not eligible until that task is done.
-  Ownership: unclaimed in this index; verify tracker and continuation leases first.
-  Checks: planned nearest workspace recovery tests created with the predecessor; `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`; `flutter analyze`; rebuilt fixture and Android disconnect/recovery journeys.
-  Android focus: reconcile each open conversation's exact owner through tunnel
-  loss/replacement and profile switching; keep other Agent-owned runs independent.
-  Ignore late events from old generations and restore only authoritative current
-  state. Do not turn foreground switching into an Android background-service claim.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/router/, lib/app/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/router/, integration_test/, playwright/tests/, docs/quality/
-  Status: open
-
 - [ ] **ANDROID-CANONICAL-BOT-CHAT** — Android canonical bot chat
   Goal: PARITY-TABS
 Section: Next.
@@ -1406,4 +1383,13 @@ does not mark any check passed or authorize live actions.
   - No live Agent/provider or other native platform qualification was performed. Agent-config defaults remain explicitly unsynced; authoritative slash catalog/dispatch is unchanged and unavailable through this local control.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: PARITYGAP-001-3f.
+  Status: open
+
+- [ ] DOC-PARITY-TAB-RECONNECT-CONTRACT-LIVE — Live checks for DOC-PARITY-TAB-RECONNECT-CONTRACT
+  Scope: Run the live checks the offline work for DOC-PARITY-TAB-RECONNECT-CONTRACT left pending.
+  Acceptance: Each check passes on the real target:
+  - Physical Android with authenticated native SSH: two exact session-owned runs, tunnel loss/replacement and profile switching, stale old-generation events, canonical recovery, retained sibling draft/selection/focus and zero send/approval/Stop replay. No Android runtime or SSH tunnel was exercised here.
+  - Native/live Agent authentication and provider execution, OS suspension/process death and platform secure-store survival remain unqualified. Browser viewports do not qualify Android or a background service; full connection replacement does not promise automatic reattachment of all sibling streams.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: DOC-PARITY-TAB-RECONNECT-CONTRACT.
   Status: open

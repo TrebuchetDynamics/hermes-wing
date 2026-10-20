@@ -5285,7 +5285,8 @@
         "ANDROID-CANONICAL-BOT-CHAT",
         "DOC-PARITY-TAB-CONTRACT",
         "DOC-PARITY-TAB-CONTRACT-LIVE",
-        "DOC-PARITY-TAB-RECONNECT-CONTRACT"
+        "DOC-PARITY-TAB-RECONNECT-CONTRACT",
+        "DOC-PARITY-TAB-RECONNECT-CONTRACT-LIVE"
       ],
       "title": "Provide owner-safe multi-conversation tabs and close/Stop behavior"
     },
@@ -6912,7 +6913,6 @@
   "priority_order": {
     "schema": 1,
     "tasks": [
-      "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "CONNECTION-LINK-RETIREMENT",
@@ -6990,7 +6990,8 @@
       "ANDROID-CHAT-TOUCH-POLISH-LIVE",
       "WING-001-b3-LIVE",
       "PARITYGAP-002-76-LIVE",
-      "PARITYGAP-001-3f-LIVE"
+      "PARITYGAP-001-3f-LIVE",
+      "DOC-PARITY-TAB-RECONNECT-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7003,16 +7004,6 @@
       "section": "Next",
       "status": "open",
       "title": "Android canonical bot chat"
-    },
-    {
-      "depends_on": [
-        "DOC-PARITY-TAB-CONTRACT"
-      ],
-      "goal": "PARITY-TABS",
-      "id": "DOC-PARITY-TAB-RECONNECT-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace reconnect for two distinct session-owned tab runs"
     },
     {
       "depends_on": [
@@ -7431,6 +7422,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-PARITY-TAB-CONTRACT"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-RECONNECT-CONTRACT"
+      ],
+      "goal": "PARITY-TABS",
+      "id": "DOC-PARITY-TAB-RECONNECT-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-PARITY-TAB-RECONNECT-CONTRACT"
     },
     {
       "depends_on": [
@@ -8676,6 +8677,16 @@
       "section": "Done",
       "status": "done",
       "title": "Trace exact tab switching and close/Stop ownership"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY-TABS",
+      "id": "DOC-PARITY-TAB-RECONNECT-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace reconnect for two distinct session-owned tab runs"
     },
     {
       "depends_on": [

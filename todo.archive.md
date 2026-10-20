@@ -8384,3 +8384,33 @@ Section: Next.
   localization Dart is regeneration-only. No active task contract is expanded.
   Next action: pin current Chat callers/tests, add a failing alias/visibility
   regression and wire the existing local command seam to window-local presentation.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="doc-parity-tab-reconnect-contract"></a>
+
+- [x] **DOC-PARITY-TAB-RECONNECT-CONTRACT** — Trace reconnect for two distinct session-owned tab runs
+  Goal: PARITY-TABS
+Section: Next.
+  Summary: Implement and qualify reconnect for two distinct session-owned conversation tabs.
+  Payoff: one disconnected tab cannot lose or mutate the other conversation.
+  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [PARITY-TABS](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary).
+  Scope: the tab presentation from DOC-PARITY-TAB-CONTRACT, shared Agent channel
+  reconciliation and deterministic widget/browser tests. Exclude upstream edits,
+  shadow run state, credential discovery, installs and live provider calls.
+  Acceptance: disconnect one exact host/profile/session/run, recover canonical
+  status/history without replaying sends, approvals or Stop, and retain the other
+  tab's identity, draft and focus. Late results cannot retarget either tab. Prove
+  this through public controls with nearest regressions and a compiled fixture.
+  Dependencies: DOC-PARITY-TAB-CONTRACT; not eligible until that task is done.
+  Ownership: unclaimed in this index; verify tracker and continuation leases first.
+  Checks: planned nearest workspace recovery tests created with the predecessor; `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`; `flutter analyze`; rebuilt fixture and Android disconnect/recovery journeys.
+  Android focus: reconcile each open conversation's exact owner through tunnel
+  loss/replacement and profile switching; keep other Agent-owned runs independent.
+  Ignore late events from old generations and restore only authoritative current
+  state. Do not turn foreground switching into an Android background-service claim.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/router/, lib/app/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/router/, integration_test/, playwright/tests/, docs/quality/
+  Status: done

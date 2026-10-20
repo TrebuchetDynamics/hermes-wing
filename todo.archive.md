@@ -8038,3 +8038,119 @@ Section: Next.
   evidence invalidated by actual input differences, then complete the task's
   existing integration/closeout checks. Keep whole-train and platform/live gates
   separate; no completion or installed-device acceptance is supplied by this note.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="doc-parity-tab-contract"></a>
+
+- [x] **DOC-PARITY-TAB-CONTRACT** — Add owner-safe conversation tabs with keyboard switching and explicit close/Stop recovery.
+  Goal: PARITY-TABS
+Section: Next.
+  Status: done
+  Payoff: preserve distinct conversations without losing drafts or stopping another run.
+  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority), [PARITY-TABS](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary).
+  Scope: existing shell/chat composition, channel ownership contracts and nearest
+  widget/browser fixtures. Trace official contribution pane-tree, focused-session ownership and close/keyboard callers, then
+  implement the smallest supported presentation. Keep Agent session/run state
+  authoritative. Exclude upstream edits, arbitrary IPC and live provider spending.
+  Acceptance: two host/profile/session-owned tabs retain their own draft and
+  selection through keyboard switching. Close targets only the intended run and
+  preserves uncertainty until authoritative Stop/readback resolves it. Other tabs
+  remain unchanged. Unsupported Stop stays explicit. Prove through widget and
+  freshly compiled fixture journeys. Document deliberate Desktop deviations.
+  Review closeout retains those criteria: resolve the 44 confirmed pre-existing
+  listener-expectation failures in `hermes_chat_session_mutation_owner_test.dart`
+  and `hermes_chat_queued_dialog_intent_test.dart`, without removing stale-owner,
+  cancellation, late-result or observer-release assertions. The required merged
+  Chat/router suite must pass; pre-existing failures are not a waiver. Independently
+  verify the native-serve A → B → A close finding: an unconfirmed running owner must
+  not become idle-close eligible after session selection. Until authoritative native
+  lifecycle reconciliation is qualified, verify the candidate's explicit transport
+  exclusion, including cached callbacks, and transport-qualified documentation.
+  Exclusion is an unavailable outcome, not completion of Android SSH tab acceptance.
+  Dependencies: none for this shared-client slice. Existing authority and
+  named-target consent still apply. Reference: the
+  [pinned comparison](docs/quality/graphify-wing-recomparison.md).
+  Official source leads: [pane composition and identity findings](docs/analysis/official-desktop-graphify.md#bounded-knowledge-study-and-planning-consequences). Imports alone do not establish keyboard/close behavior. Preserve per-pane drafts, reject stale owner events, release request leases on failure and keep expired input inoperable through switch/disconnect/resume. Qualify supported transport behavior without claiming JSON-RPC adoption.
+  Ownership: unclaimed in this index; verify tracker/continuation leases first.
+  Checks: reconcile committed candidate `3b7871db5a9005c4fc43f01bf245f596f735b454` before changing source; its report records the listener/layout repairs and terminal worker gates, not merged-candidate acceptance. Verify its `test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart` ownership/switching regressions, then `flutter test --no-pub test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`; `flutter analyze`; rebuilt deterministic browser and isolated Android public-control journeys. First run `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart test/features/hermes_chat/screens/hermes_chat_queued_dialog_intent_test.dart` on the captured merged candidate. The refreshed integration report also names `hermes_chat_layout_width_test.dart:59-82` (test registration outside `main`, formatter/analyzer/compile failure) and `hermes_chat_slash_commands_test.dart:1524` (4-pixel overflow in the narrow-phone 200% queue-manager case). Reconcile these in the existing Chat repair, without dropping the width, large-text or no-exception assertions. Run `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart`, then `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart test/features/hermes_chat/screens/hermes_chat_window_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_accessibility_test.dart test/features/hermes_chat/screens/hermes_reasoning_disclosure_adaptive_test.dart test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart`. Retain the full Chat/router, fresh web build/E2E and independent-review requirements below. Run native fixture and browser suites serially: their assigned port range is shared. A timeout or missing terminal aggregate is incomplete verification, never a pass.
+  Android focus: ordinary multiple conversations per profile and across profiles
+  retain independent drafts/history/run and attention state while switching. Use a
+  touch-accessible compact session switcher as the Desktop tab equivalent; do not
+  squeeze a desktop pane tree into a phone. Background completion never steals
+  focus and approvals/Stop bind to the captured owner, not whichever chat is visible.
+  Reuse existing session CRUD; no shared draft or shadow run-state database.
+  Retained checks: `flutter analyze --no-pub`; `flutter test --no-pub --concurrency=1 test/features/hermes_chat/ test/router/`; `flutter build web --release -t lib/main_e2e.dart` before `npm run web:e2e`. Require source-bound independent review of owner isolation, per-tab drafts and close/Stop behavior. Planned checks only, not executed passes; native/live grants remain unchanged.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, lib/router/, lib/app/, lib/shared/, test/core/hermes/, test/features/hermes_chat/, test/router/, integration_test/, playwright/tests/, docs/quality/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
+  Evidence: resolve private runner paths from `git rev-parse --git-common-dir`.
+  The earlier review log `autowork-execution/449074dddc8d47c8949f8b11d6fd7a27.log`
+  reports the required merged-candidate suite red with 44 confirmed pre-existing
+  failures. The historical report at
+  `autowork-execution/slot-history/DOC-PARITY-TAB-CONTRACT/1/slot-data/attempt-2/report.json`
+  records the native-close finding, listener-harness correction and native-serve
+  exclusion in worker commit `1dfa7bd35b409d759fdcd6a154345828b86c85ba`.
+  Its cited scratch review/failure-summary files are not present under the current
+  attempt directory; do not treat those old paths as available evidence. Its
+  reported 1,943 retained passes qualify only that worker tree, not the current
+  candidate. Inspect retained changes rather than reimplementing them.
+  The later integration receipt `autowork-execution/f12ff11360124dc78c39313d92c0af0c.json`
+  records timeout on candidate `cc17733cd3df5405a8627d6acc924620228f21ff`, based on
+  `b5c4a4bff404c72b08e816f3f429db13252049e3`; it supplies no passing acceptance.
+  Current recovery evidence: `autowork-execution/slot-data/DOC-PARITY-TAB-CONTRACT/attempt-1/report.json`
+  is now the read-only recovery on `35d7976a`, not the earlier committed attempt.
+  It preserves `d7952ec9d9d83494c6b31b1bf78cf5f40bb4193d` and recaptures the
+  corrected 31-path Tab patch as SHA-256
+  `3dec5799d1324246fa5887205d69cf6590b191473a9c9c1110990bfeffb19acf`.
+  The mounted Open/Close guards and public callback-unmount regression received
+  fresh independent correction re-review with no findings; no tests ran in that
+  recovery. The historical 1,995/1,996 passes and 4,016-pass/9-skip/3-failure run
+  belong to earlier sources, not this attempt. Do not reconstruct absent old logs
+  or repin their manifest. Direct held-successful-Stop workspace-roundtrip coverage
+  remains a stated limit. The subsequent MT-RERUN-TRAIN report delivers the
+  reviewed combined source and 2,014-pass Chat/router receipt identified in the
+  recovery sequence; its full suite still has two fixture failures, now split
+  below. This is offline source delivery, not whole-tab or Android acceptance.
+  The earlier tree-identical `67d3527f` integration ended CHILDREN_TERMINATED
+  without acceptance. Neither worker passes nor that interruption qualifies the
+  current combined source, Android or live behavior.
+  Resources: exclusive — serialize retained candidate recovery, fixture ports and
+  final source-bound checks; use disk-backed task scratch, not shared RAM cleanup.
+  Execution: [retained-candidate sequence and scratch setup](docs/tasks/held-offline-recovery.md#disk-backed-scratch-without-shared-cleanup).
+  Browser recovery: 2026-10-19 inspection of the latest integration receipt
+  `autowork-execution/4078982f126a4ed48841faabc5db238e.json` records a terminal
+  browser failure, not a source-delivery or owner-approval hold. At 390px,
+  `playwright/tests/regression/chat-tts.spec.mjs:675` and `:903` cannot find
+  Stop speaking; the reviewer reports both reproduce individually. Main and the
+  integration tree have identical `hermes_chat_layout.dart` blob `561559e0`.
+  Its compact command-bar branch replaces `_buildMicButton` with the live-voice
+  start action even during speech; `_buildMicButton` already owns the speaking
+  Stop control. This is source diagnosis, not a newly executed regression result.
+  Next action: recover the existing `187cdc8c` task result and current canonical
+  source through the same coordinator; do not rebuild the historical 47-file
+  assembly or reimplement tabs. Reproduce the two named browser cases, then keep
+  the existing `_buildMicButton` reachable while compact playback is speaking,
+  preserving idle live-voice entry and exact-owner cancellation. Add the nearest
+  compact widget regression, including retained large-text/inset and no-overflow
+  assertions. Rebuild the deterministic web target before the focused cases and
+  required full default browser gate; retain audio-stop/session-change assertions,
+  merged Chat/router gates and source-bound review. No selector relaxation,
+  speech-state simulation, fixture-only waiver, new runtime or live operation.
+  Reuse retained code and valid source-matching checks; rerun checks invalidated
+  by the actual repair. Correction re-review is already recorded; repeat it only
+  if its inputs/callers change. Preserve both fixture handoffs and their receipts.
+  The parser repair remains PLANGAP-001-2f's delta; do not rename IDs or change
+  the MCP disposition. Worker receipts do not replace required integration checks. Use the documented ignored,
+  disk-backed task TMPDIR with at least 2 GiB free, separate bounded commands and
+  supported tracked execution for long gates. Keep the runner report destination
+  and prior evidence; never delete another task's scratch or bypass runner limits.
+  Feature workers do not take over another task's repairs; the existing integration
+  coordinator reconciles retained deltas within its corrected assembly footprint.
+  Publish the reviewed offline repair's
+  source identity and terminal Chat/router receipt for downstream qualification
+  without marking this task done or waiting for Android/live completion.
+  Native-serve tabs remain explicitly unavailable; that exclusion does not satisfy
+  Android SSH acceptance. Isolated Android public-control journeys remain required.
+  Historical lock overlays stay preserved separately; no lockfile edit is added.

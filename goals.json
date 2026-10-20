@@ -5279,6 +5279,7 @@
       "tasks": [
         "ANDROID-CANONICAL-BOT-CHAT",
         "DOC-PARITY-TAB-CONTRACT",
+        "DOC-PARITY-TAB-CONTRACT-LIVE",
         "DOC-PARITY-TAB-RECONNECT-CONTRACT"
       ],
       "title": "Provide owner-safe multi-conversation tabs and close/Stop behavior"
@@ -6905,7 +6906,6 @@
   "priority_order": {
     "schema": 1,
     "tasks": [
-      "DOC-PARITY-TAB-CONTRACT",
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "ANDROID-CHAT-TOUCH-POLISH",
@@ -6981,7 +6981,8 @@
       "PARITYUPDATE-005-11-LIVE",
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
       "PARITY-NATIVE-LINUX-LIVE",
-      "PARITYUPDATE-006-f4-LIVE"
+      "PARITYUPDATE-006-f4-LIVE",
+      "DOC-PARITY-TAB-CONTRACT-LIVE"
     ]
   },
   "tasks": [
@@ -7004,14 +7005,6 @@
       "section": "Next",
       "status": "open",
       "title": "Android chat touch polish"
-    },
-    {
-      "depends_on": [],
-      "goal": "PARITY-TABS",
-      "id": "DOC-PARITY-TAB-CONTRACT",
-      "section": "Next",
-      "status": "open",
-      "title": "Trace exact tab switching and close/Stop ownership"
     },
     {
       "depends_on": [
@@ -7430,6 +7423,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for DOC-NATIVE-FAILURE-BOUNDARY"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY-TABS",
+      "id": "DOC-PARITY-TAB-CONTRACT-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for DOC-PARITY-TAB-CONTRACT"
     },
     {
       "depends_on": [
@@ -8627,6 +8630,14 @@
       "section": "Done",
       "status": "done",
       "title": "Compare grouped-recents ownership separately from profile-footer composition"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY-TABS",
+      "id": "DOC-PARITY-TAB-CONTRACT",
+      "section": "Done",
+      "status": "done",
+      "title": "Trace exact tab switching and close/Stop ownership"
     },
     {
       "depends_on": [

@@ -3931,6 +3931,7 @@
       "status": "partial",
       "tasks": [
         "ANDROID-CHAT-TOUCH-POLISH",
+        "ANDROID-CHAT-TOUCH-POLISH-LIVE",
         "DOC-PARITY-COVERAGE",
         "DOC-PARITY-PLATFORM-DEVIATIONS",
         "FILES-TERMINAL-BROWSE",
@@ -6910,7 +6911,6 @@
     "tasks": [
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
-      "ANDROID-CHAT-TOUCH-POLISH",
       "WING-001-b3",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "PARITYGAP-001-3f",
@@ -6986,7 +6986,8 @@
       "VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART-LIVE",
       "PARITY-NATIVE-LINUX-LIVE",
       "PARITYUPDATE-006-f4-LIVE",
-      "DOC-PARITY-TAB-CONTRACT-LIVE"
+      "DOC-PARITY-TAB-CONTRACT-LIVE",
+      "ANDROID-CHAT-TOUCH-POLISH-LIVE"
     ]
   },
   "tasks": [
@@ -6999,16 +7000,6 @@
       "section": "Next",
       "status": "open",
       "title": "Android canonical bot chat"
-    },
-    {
-      "depends_on": [
-        "DOC-PARITY-TAB-CONTRACT"
-      ],
-      "goal": "PARITY",
-      "id": "ANDROID-CHAT-TOUCH-POLISH",
-      "section": "Next",
-      "status": "open",
-      "title": "Android chat touch polish"
     },
     {
       "depends_on": [
@@ -7045,6 +7036,16 @@
       "section": "Next",
       "status": "open",
       "title": "Make SSH connection failures visible and actionable"
+    },
+    {
+      "depends_on": [
+        "ANDROID-CHAT-TOUCH-POLISH"
+      ],
+      "goal": "PARITY",
+      "id": "ANDROID-CHAT-TOUCH-POLISH-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for ANDROID-CHAT-TOUCH-POLISH"
     },
     {
       "depends_on": [
@@ -7769,6 +7770,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for WING-TASK-408"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY",
+      "id": "ANDROID-CHAT-TOUCH-POLISH",
+      "section": "Done",
+      "status": "done",
+      "title": "Android chat touch polish"
     },
     {
       "depends_on": [

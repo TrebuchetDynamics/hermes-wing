@@ -8154,3 +8154,52 @@ Section: Next.
   Native-serve tabs remain explicitly unavailable; that exclusion does not satisfy
   Android SSH acceptance. Isolated Android public-control journeys remain required.
   Historical lock overlays stay preserved separately; no lockfile edit is added.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="android-chat-touch-polish"></a>
+
+- [x] **ANDROID-CHAT-TOUCH-POLISH** — Android chat touch polish
+  Goal: PARITY
+Section: Next.
+  Status: done
+  Payoff: Android SSH chat feels like official Desktop designed for a phone.
+  Sources: [UI Taste refinement direction](docs/plans/2026-10-03-desktop-port-goal.md#ui-taste-chat-refinement), [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
+  [official design contract](https://github.com/NousResearch/hermes-agent/blob/158fd638da1629c8e62caf9ade1515d162def8ab/apps/desktop/DESIGN.md),
+  [current route support](docs/product/routes.md#routes).
+  Scope: existing Chat/connection/profile/session presentation; reuse shared theme
+  tokens and controls unchanged. Layout/copy refinements stay in Chat-local consumers
+  and the explicitly listed localization files; no lib/theme/ or lib/shared/ edits. Prioritize transcript/composer, visible owner/connection identity,
+  quick profile/bot/session selection and readable tool/running/approval states.
+  Reuse tokens and adaptive controls; no redesign of unrelated settings, new route
+  dashboard, heavy effect dependency, fake Bot support, Office, or Agent mutation.
+  Acceptance: Desktop hierarchy/terminology remain recognizable without cramped
+  desktop panels. Draft/scroll/focus survive switcher and overlay returns; exact
+  owner labels prevent sends or decisions to the wrong conversation. Running,
+  approval, failure and disconnected states are understandable without color alone.
+  Software keyboard, Android Back/cancel, safe areas, portrait/landscape, 200% text,
+  reduced motion and keyboard traversal leave every critical action operable.
+  Touch targets are at least 48 logical pixels; no gesture/hover-only actions.
+  Actual unsupported Bot or transport controls explain their gaps instead of
+  rendering fabricated success. Keep wide-layout and existing owner/replay tests.
+  Record reference/candidate visual comparison and deliberate mobile differences;
+  final mockups and runtime/a11y evidence are not pre-approved by this task.
+  Checks: planned nearest widget/semantics regressions including
+  `test/features/hermes_chat/screens/android_chat_touch_layout_test.dart` (to create),
+  then `flutter test --no-pub test/features/hermes_chat/screens/android_chat_touch_layout_test.dart`;
+  `flutter analyze`; source-bound screenshot review plus isolated Waydroid public
+  control, keyboard/Back and text-scaling journeys. Record TalkBack as unverified
+  unless actually exercised; browser viewports do not qualify Android input.
+  Dependencies: DOC-PARITY-TAB-CONTRACT.
+  Ownership: wing; open/unclaimed, verify live ownership before implementation.
+  Partial delivery: compact Welcome, Add Hermes, SSH key/password and Termux
+  presentation is locally integrated at d7277c7e. The [bounded UI receipt](docs/quality/connection-entry-labels.md#compact-android-connection-presentation)
+  records 103 passing focused tests, clean analysis, widget renders, a detected
+  SafeArea negative control, source-review approval and a verified test APK.
+  No physical Android, real IME, TalkBack or live SSH outcome is qualified.
+  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart
+  Next action: after the retained tab prerequisite and its required gates, capture source-bound baseline Chat/switcher states, then apply the settled UI Taste hierarchy/spacing/state direction only to observed issues. Preserve compact onboarding, existing action/owner semantics and unavailable-operation boundaries; compare final compact/wide light/dark renders and retain broader checks.
+  UI Taste proof: follow the linked state/size matrix (320x480, 390x844, 844x390 and 1280px; light/dark, normal/200% text, reduced motion and keyboard/system insets). Capture idle/draft, streaming/tools, current approval, disconnected/error and switcher states. Retain >=48px hit targets, viewport bounds, reading-space and keyboard/Back guards; disclose capture-font/inset simulation. No new palette/framework/route/API, fabricated Bot support or duplicate SSH feedback fix.

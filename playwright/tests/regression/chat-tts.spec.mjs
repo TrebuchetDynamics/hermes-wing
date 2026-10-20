@@ -179,23 +179,12 @@ async function sendChat(page, text, { testInfo, screenshotPrefix } = {}) {
 }
 
 async function expectVoiceInputAvailable(page) {
-  const legacyDirectControl = page.getByRole("button", {
-    name: "Speak and send",
+  const liveVoiceControl = page.getByRole("button", {
+    name: "Start Live voice",
+    exact: true,
   });
-  const handsFreeControl = page.getByRole("button", {
-    name: "Hands-free voice",
-  });
-  await expect
-    .poll(
-      async () =>
-        (await legacyDirectControl.count()) + (await handsFreeControl.count()),
-    )
-    .toBeGreaterThan(0);
-  if (await handsFreeControl.count()) {
-    await expect(handsFreeControl).toBeVisible();
-  } else {
-    await expect(legacyDirectControl).toBeVisible();
-  }
+  await expect(liveVoiceControl).toBeVisible();
+  await expect(liveVoiceControl).toBeEnabled();
 }
 
 test.beforeEach(async ({ request }) => {

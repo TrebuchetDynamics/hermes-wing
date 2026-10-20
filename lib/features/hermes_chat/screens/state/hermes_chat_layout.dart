@@ -2685,7 +2685,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 icon: const Icon(Icons.tune_rounded),
               ),
               const Spacer(),
-              if (compact)
+              if (compact && !_voiceInputController.speaking)
                 IconButton(
                   key: const ValueKey('hermes-live-voice-start'),
                   tooltip: strings.chatLiveVoiceStartAction,

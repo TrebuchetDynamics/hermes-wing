@@ -43,6 +43,77 @@ void main() {
     });
   });
   testWidgets(
+    'compact reply playback keeps Stop reachable at 200% text with an inset',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 1000);
+      tester.view.devicePixelRatio = 1;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 240);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      final tts = _LiveSpeechService();
+      final capture = _LiveCaptureService();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hermesChannelProvider.overrideWithValue(channel),
+            wingVoiceSettingsProvider.overrideWith(
+              () => _TestVoiceSettingsController(
+                const WingVoiceSettings(speakRepliesEnabled: true),
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: const TextScaler.linear(2),
+                disableAnimations: true,
+              ),
+              child: child!,
+            ),
+            home: HermesChatScreen(
+              textToSpeechServiceOverride: tts,
+              voiceCaptureServiceOverride: capture,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final live = find.byKey(const ValueKey('hermes-live-voice-start'));
+      expect(live.hitTestable(), findsOneWidget);
+      final composer = find.byKey(const ValueKey('hermes-composer-field'));
+      await tester.enterText(composer, 'synthetic spoken reply');
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('hermes-send-button')));
+      await tester.pumpAndSettle();
+      expect(tts.spoken, ['echo: synthetic spoken reply']);
+      await tester.enterText(composer, 'Retain this draft');
+      await tester.pumpAndSettle();
+      final stop = find.byTooltip('Stop speaking');
+      expect(stop.hitTestable(), findsOneWidget);
+      expect(tester.getSize(stop).shortestSide, greaterThanOrEqualTo(48));
+      expect(tester.getRect(stop).bottom, lessThanOrEqualTo(760));
+      expect(tester.takeException(), isNull);
+      final stops = tts.stops;
+      await tester.tap(stop);
+      await tester.pumpAndSettle();
+      expect(tts.stops, stops + 1);
+      expect(stop, findsNothing);
+      expect(live.hitTestable(), findsOneWidget);
+      expect(capture.calls, 0);
+      expect(
+        tester.widget<TextField>(composer).controller!.text,
+        'Retain this draft',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'Live voice is an explicit session-only conversation at 390 / 200%',
     (tester) async {
       tester.view.physicalSize = const Size(390, 1000);

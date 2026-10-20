@@ -115,11 +115,88 @@ no harness, dependency or native capability. In this worker, the existing
 `.task-evidence/t_66ec0dbc` evidence location points to
 `$TMPDIR/profile-footer-native-evidence`.
 
-Final native evidence: `native-eyrg63lq/verification.json`, status `PASS`,
-140.146 seconds. All 14 focus rows report 48–420 pixels; four activation and four
-recovery rows pass strict validation. The receipt binds the observed native
+Final native evidence after the baseline test repair:
+`native-vtm5zb33/verification.json`, status `PASS`, 141.278 seconds. All 14 focus
+rows report 48–420 pixels; four activation and four recovery rows pass strict
+validation. The receipt binds the observed native
 child PID/start ticks, binary and source, confirms unchanged copied source and
 dependencies, owned process group gone and isolated state removed.
+
+| Native artifact | SHA-256 |
+| --- | --- |
+| Source manifest | `8b5d4a2e8e7f5d5a5faeb410bfa915356d08de61150b11152a9d52650b2479b1` |
+| Pre-check source archive | `5e502f8c12d844d3e7332f5cd66a89ba5193d575e0ef2ff780427f85eb1fa660` |
+| Native binary | `e5ee60c7966ea8dbc6b6da4fccac42c97ad5a0c8c4f8bc74b1f919fc4bbb167a` |
+| Footer receipt | `db863619f2f1916b7295a1eacf3c22a06fc8ea9343ff6045870e8cc8917bf0b8` |
+
+The baseline's top-level `testWidgets` registration in
+`test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart` prevented
+analysis. Separate prerequisite commit `78114a47d7d2647efb6edf5606163e26c3957e73`
+moves it inside `main`, preserving both assertions. Running the newly registered
+case exposed its missing unit device-pixel ratio: 1440 physical pixels did not
+provide the intended wide logical viewport. It now sets and restores the ratio
+like its neighboring cases and disposes its fake channel. All six Chat layout
+cases pass. No production behavior changed. The native journey was rebuilt and
+rerun against these changed manifest inputs; the old receipt was not repinned.
+
+Final offline checks pass:
+
+```sh
+flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart
+flutter test --no-pub --concurrency=1 test/integration/linux_profile_footer_native_runner_test.dart test/shared/widgets/app_shell_profile_footer_test.dart test/shared/widgets/app_shell_focus_traversal_test.dart
+python3 -B integration_test/run_linux_profile_footer_native.py --self-check
+python3 -B integration_test/run_linux_shell_compact_return.py --self-check
+python3 -B integration_test/run_linux_profile_footer_native.py
+flutter analyze --no-pub
+dart format --output=none --set-exit-if-changed integration_test/support/profile_footer_native_fixture.dart test/integration/linux_profile_footer_native_runner_test.dart test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart
+git diff --check
+```
+
+The footer command passes 16 tests including the negative control; analysis
+reports no issues. This source-bound repair is a local worker candidate for
+coordinator integration, not a reopening of the original completed footer tasks.
+Full `flutter test --concurrency=1` and canonical assembly gates remain
+`MT-RERUN-TRAIN`'s responsibility. The platform/live limits below remain unchanged.
+
+### Retained continuation (attempt 2)
+
+The supported continuation starts at retained commit
+`8e99a83cad223d8c471f9474f00daa37347e3fbe` with a clean worktree, not an
+uncommitted or missing repair. It preserves prerequisite `78114a47` and the
+existing negative control. The original `reproduce.log` still records the exact
+line-102 failure above; this continuation does not recreate the old defect.
+
+Read-only comparison with reference `main` at
+`b0a78c0216cd0c4e627fe20a5914e97f31b8f8aa` finds the fixture, both runners and
+runner regression byte-identical. The layout-test difference is only equivalent
+`1440.0, 1000.0` versus `1440, 1000` literals; no spelling restoration or source
+replacement is needed. This observation does not integrate this task branch.
+
+All 834 current native inputs and their archived bytes match the retained
+`native-vtm5zb33` manifest. Archive, dependency-manifest and footer-receipt digests
+match the verification record; strict validation still accepts all fourteen
+focus, four activation and four recovery rows. The recorded native PID/start
+identity is retired, its driver group is gone and isolated state is absent.
+The native receipt above is reused on matching inputs, not rerun or repinned.
+Only this documentation changes during continuation; no fixture/rendering input
+invalidates that evidence.
+
+Fresh offline execution passes the 16 footer/focus tests, six Chat layout tests,
+compact-runner regression, both runner self-checks, four-file Dart format check,
+analysis and diff check. Cached offline package resolution preserves
+the lockfile. Attempt-2 logs and read-only evidence verification remain under the
+task's private `$TMPDIR`. Coordinator integration and whole-train canonical gates
+remain separate; original completed footer tasks and platform/live limits do not
+change.
+
+### Earlier pre-prerequisite receipt (incoming history)
+
+The incoming branch retains an earlier native run before the baseline Chat test
+repair above: `native-eyrg63lq/verification.json`, status `PASS`, 140.146 seconds.
+All 14 focus rows reported 48–420 pixels; four activation and four recovery rows
+passed strict validation. That receipt bound its observed native child PID/start
+ticks, binary and source, confirmed unchanged copied source and dependencies,
+owned process group gone and isolated state removed.
 
 | Native artifact | SHA-256 |
 | --- | --- |
@@ -128,15 +205,17 @@ dependencies, owned process group gone and isolated state removed.
 | Native binary | `b8a25a7ccd447b340f7c93514f82d745ff54edb53df7a8c7cefd2559c217d97a` |
 | Footer receipt | `7b617c8dd75b8f1b68c551eab5fb64bbc74791b41051f6a508da73ef90695b43` |
 
-The required focused command above passes 16 tests including the negative
-control; the native command and strict self-check pass. This source-bound repair
-is an uncommitted worker patch, not a reopening of the original completed footer
-tasks. The required `flutter analyze --no-pub` is blocked by the unchanged
-baseline's top-level `testWidgets` call outside `main` at
-`test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59`
-(four parser errors and two info diagnostics). That unrelated Chat test is not
-modified here; a parseable combined source or separately authorized repair is
-needed before this task can commit. Full `flutter test --concurrency=1` and
+At that earlier snapshot, the required focused command passed 16 tests including
+the negative control; the native command and strict self-check passed. The
+source-bound repair was then an uncommitted worker patch, not a reopening of the
+original completed footer tasks. The required `flutter analyze --no-pub` was
+blocked by the unchanged baseline's top-level `testWidgets` call outside `main`
+at `test/features/hermes_chat/screens/hermes_chat_layout_width_test.dart:59`
+(four parser errors and two info diagnostics). That earlier patch did not modify
+the Chat test; a parseable combined source or separately authorized repair was
+needed before it could commit. The prerequisite repair and rebuilt native run
+above supersede that blocker, without repinning this earlier receipt. Neither
+receipt qualifies the merged tree. Full `flutter test --concurrency=1` and
 canonical assembly gates remain `MT-RERUN-TRAIN`'s responsibility. The
 platform/live limits below remain unchanged.
 

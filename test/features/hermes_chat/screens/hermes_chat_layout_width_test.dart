@@ -60,7 +60,7 @@ void main() {
     (tester) async {
       final channel = FakeHermesChannel();
       addTearDown(channel.dispose);
-      tester.view.physicalSize = const Size(1440, 1000);
+      tester.view.physicalSize = const Size(1440.0, 1000.0);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);

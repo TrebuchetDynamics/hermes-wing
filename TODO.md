@@ -191,15 +191,28 @@ Section: Next.
   Resources: exclusive — serialize retained candidate recovery, fixture ports and
   final source-bound checks; use disk-backed task scratch, not shared RAM cleanup.
   Execution: [retained-candidate sequence and scratch setup](docs/tasks/held-offline-recovery.md#disk-backed-scratch-without-shared-cleanup).
-  Next action: preserve `d7952ec9` and corrected patch `3dec5799`, then have the
-  existing coordinator deliver its already assembled `a2213ffd` input through the
-  supported native source-refresh/integration path. Verify the exact 47-file
-  manifest and patch `1c169ec1` from the recovery sequence before resuming; a docs
-  edit alone does not refresh the assigned `35d7976a` baseline. Do not wait for
-  whole-train or Android/live completion, overwrite the corrected producer, or
-  import a queue snapshot. Correction re-review is already recorded; repeat it
-  only if its inputs/callers change. Complete all required merged-source and fresh
-  browser gates, retaining the two separately assigned fixture repair handoffs.
+  Browser recovery: 2026-10-19 inspection of the latest integration receipt
+  `autowork-execution/4078982f126a4ed48841faabc5db238e.json` records a terminal
+  browser failure, not a source-delivery or owner-approval hold. At 390px,
+  `playwright/tests/regression/chat-tts.spec.mjs:675` and `:903` cannot find
+  Stop speaking; the reviewer reports both reproduce individually. Main and the
+  integration tree have identical `hermes_chat_layout.dart` blob `561559e0`.
+  Its compact command-bar branch replaces `_buildMicButton` with the live-voice
+  start action even during speech; `_buildMicButton` already owns the speaking
+  Stop control. This is source diagnosis, not a newly executed regression result.
+  Next action: recover the existing `187cdc8c` task result and current canonical
+  source through the same coordinator; do not rebuild the historical 47-file
+  assembly or reimplement tabs. Reproduce the two named browser cases, then keep
+  the existing `_buildMicButton` reachable while compact playback is speaking,
+  preserving idle live-voice entry and exact-owner cancellation. Add the nearest
+  compact widget regression, including retained large-text/inset and no-overflow
+  assertions. Rebuild the deterministic web target before the focused cases and
+  required full default browser gate; retain audio-stop/session-change assertions,
+  merged Chat/router gates and source-bound review. No selector relaxation,
+  speech-state simulation, fixture-only waiver, new runtime or live operation.
+  Reuse retained code and valid source-matching checks; rerun checks invalidated
+  by the actual repair. Correction re-review is already recorded; repeat it only
+  if its inputs/callers change. Preserve both fixture handoffs and their receipts.
   The parser repair remains PLANGAP-001-2f's delta; do not rename IDs or change
   the MCP disposition. Worker receipts do not replace required integration checks. Use the documented ignored,
   disk-backed task TMPDIR with at least 2 GiB free, separate bounded commands and
@@ -341,7 +354,20 @@ Section: Next.
   Touches: integration_test/support/profile_footer_native_fixture.dart, integration_test/linux_profile_footer_native_test.dart, integration_test/run_linux_profile_footer_native.py, test/integration/linux_profile_footer_native_runner_test.dart, test/shared/widgets/app_shell_profile_footer_test.dart, test/shared/widgets/app_shell_focus_traversal_test.dart, test/shared/widgets/app_shell_navigation_groups_test.dart, docs/quality/
   Resources: exclusive — serialize retained-source reconciliation and owned native fixture execution.
   Evidence: Git-common `autowork-execution/slot-data/MT-RERUN-TRAIN/attempt-1/report.json` records the second terminal full-suite failure on tree `a2213ffd78bf6a485e09de0d218cc617f273a78e`; `autowork-execution/slot-data/WING-001-b3/attempt-1/report.json` freshly reproduces `Native footer journey oracle runs in widget harness`. No three isolated green revisions or flaky classification exists. Earlier native footer receipts qualify only their stated sources.
-  Next action: obtain matched coordinator source through the supported path, diagnose the existing painted-focus oracle, and return its bounded correction with negative-control and applicable native receipts. Do not edit production UI to satisfy an unproven fixture hypothesis.
+  Retained repair: 2026-10-19 readback finds a clean, inactive worker at
+  `8e99a83cad223d8c471f9474f00daa37347e3fbe`, matching its attempt-1 report.
+  Its four footer fixture/runner/regression files already match canonical main
+  byte-for-byte; the layout-test delta is only `1440.0, 1000.0` versus equivalent
+  `1440, 1000` literals. Recovery documentation and source-bound native receipts
+  differ. The report records passing focused/native checks, not new checks in
+  this planning pass. The engine's interrupted label does not mean code is lost.
+  Next action: the existing coordinator reconciles this retained result and its
+  source-bound native evidence through the supported continuation. Do not repeat
+  the implemented oracle repair, restore the older layout spelling, or overwrite
+  newer source. Preserve the negative control and native receipts; requalify only
+  evidence invalidated by actual input differences, then complete the task's
+  existing integration/closeout checks. Keep whole-train and platform/live gates
+  separate; no completion or installed-device acceptance is supplied by this note.
 
 - [ ] **WING-001-b3** — Make SSH connection failures visible and actionable.
   Goal: REMOTE-BACKENDS

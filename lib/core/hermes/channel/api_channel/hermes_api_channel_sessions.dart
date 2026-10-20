@@ -91,6 +91,12 @@ extension _SessionsExtension on HermesApiChannel {
       throw StateError('Hermes channel is not connected.');
     }
     _requireKnownSession(sessionId);
+    if (!_state.isSessionStreaming(sessionId)) {
+      // Exact readback supersedes a retired stream's pending EOF/status work.
+      // Otherwise a late nonterminal read could resurrect its resolved lease
+      // and failed transcript. Healthy sibling stream generations stay intact.
+      _sessionStreamGenerations[sessionId] = ++_nextStreamGeneration;
+    }
     final selectionGeneration = ++_sessionSelectionGeneration;
     final connectionGeneration = _connectionGeneration;
     final profileSelectionGeneration = _profileSelectionGeneration;

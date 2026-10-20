@@ -325,9 +325,25 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       }
       return;
     }
+    final state = channel.state;
+    final sessionId = state.activeSessionId;
+    if (state.isConnected &&
+        (state.hasUnreconciledRun || state.hasStreamingSessions) &&
+        sessionId != null &&
+        !state.isSessionStreaming(sessionId)) {
+      // Foreground EOF may not set the selection-time recovery flag. Never
+      // retire a healthy sibling just to read this selection's status/history.
+      // The channel fences the exact owner and selection generation.
+      try {
+        await channel.reconcileActiveSession();
+      } catch (_) {
+        // Keep the existing recovery error and duplicate-send guard visible.
+        // Failed reads never authorize a resend or a replacement conversation.
+      }
+      return;
+    }
     final directory = ref.read(hermesGatewayDirectoryProvider);
     final contactId = directory.activeContactId;
-    final sessionId = channel.state.activeSessionId;
     if (contactId != null && sessionId != null) {
       // Ordinary connect selects page-zero defaults. A saved conversation must
       // instead use exact owner restoration, including its profile and failures.

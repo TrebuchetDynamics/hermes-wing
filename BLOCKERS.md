@@ -6,7 +6,7 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-PARITYUPDATE-006-f4 — USER_DECISION — effort investigate — unblocks 5
+### Q-PARITYUPDATE-006-f4 — USER_DECISION — effort investigate — unblocks 0
 
 - Task: PARITYUPDATE-006-f4 — Repair profile-footer painted-focus oracle on the retained combined source.
 - Needs: merge conflict; worker and canonical checkout preserved

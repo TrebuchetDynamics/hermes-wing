@@ -348,6 +348,7 @@
         "DOC-SLASH-CATALOG-CONTRACT",
         "DOC-SLASH-DENIAL-EVIDENCE",
         "PARITYGAP-001-3f",
+        "PARITYGAP-001-3f-LIVE",
         "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT"
       ],
       "title": "Match supported full Desktop slash commands and completion"
@@ -6914,7 +6915,6 @@
       "DOC-PARITY-TAB-RECONNECT-CONTRACT",
       "ANDROID-CANONICAL-BOT-CHAT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
-      "PARITYGAP-001-3f",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -6989,7 +6989,8 @@
       "DOC-PARITY-TAB-CONTRACT-LIVE",
       "ANDROID-CHAT-TOUCH-POLISH-LIVE",
       "WING-001-b3-LIVE",
-      "PARITYGAP-002-76-LIVE"
+      "PARITYGAP-002-76-LIVE",
+      "PARITYGAP-001-3f-LIVE"
     ]
   },
   "tasks": [
@@ -7012,14 +7013,6 @@
       "section": "Next",
       "status": "open",
       "title": "Trace reconnect for two distinct session-owned tab runs"
-    },
-    {
-      "depends_on": [],
-      "goal": "SLASH-CATALOG",
-      "id": "PARITYGAP-001-3f",
-      "section": "Next",
-      "status": "open",
-      "title": "Toggle transcript timestamps locally without Agent commands"
     },
     {
       "depends_on": [
@@ -7574,6 +7567,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-OFFICIAL-MATRIX"
+    },
+    {
+      "depends_on": [
+        "PARITYGAP-001-3f"
+      ],
+      "goal": "SLASH-CATALOG",
+      "id": "PARITYGAP-001-3f-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYGAP-001-3f"
     },
     {
       "depends_on": [
@@ -9142,6 +9145,14 @@
       "section": "Done",
       "status": "done",
       "title": "Establish the authoritative exact session provider/model read"
+    },
+    {
+      "depends_on": [],
+      "goal": "SLASH-CATALOG",
+      "id": "PARITYGAP-001-3f",
+      "section": "Done",
+      "status": "done",
+      "title": "Toggle transcript timestamps locally without Agent commands"
     },
     {
       "depends_on": [],

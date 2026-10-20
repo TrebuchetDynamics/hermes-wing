@@ -8334,3 +8334,53 @@ Section: Next.
   selection/run generations, not just equality of the visible owner tuple.
   Next action: pin current reader/saver callers and add a raw two-page export
   regression with owner-change/partial-failure negative controls before wiring UI.
+
+
+<!-- archived from TODO.md -->
+
+Source section: Now / Next
+
+<a id="paritygap-001-3f"></a>
+
+- [x] **PARITYGAP-001-3f** — Toggle transcript timestamps locally without Agent commands.
+  Goal: SLASH-CATALOG
+Section: Next.
+  Status: done
+  Payoff: reveal message times or reduce visual clutter without sending a prompt.
+  Sources: [accepted local timestamp slice](docs/plans/2026-10-03-desktop-port-goal.md#local-timestamp-controls), [targeted source boundary](docs/plans/2026-10-03-desktop-port-goal.md#evidence-and-scope-boundary), [existing slash contract](docs/quality/slash-catalog-contract.md).
+  Scope: extend the existing local command interception, help/suggestions and
+  existing transcript timestamp renderer for /timestamps and /ts with empty,
+  on, off, toggle and status arguments. Keep one ephemeral window-local override
+  shared by its conversations; default visual labels off, reset with new app
+  window state. No preference persistence, Agent configuration/default sync,
+  new RPC, palette, dependency, model context or broad slash transport work.
+  Acceptance: both aliases toggle by default; on/off are idempotent; status
+  reports actual state without changing it. Invalid recognized arguments show
+  localized usage and never fall through to a prompt. Preserve unrelated unknown
+  slash behavior and active-turn, IME, attachment and read-only admission. Prove
+  zero sends, slash RPCs, session creation, config writes and provider calls.
+  Hide only visible timestamp labels, never source timestamps or export bytes;
+  retain full local-time accessibility and keyboard/touch reveal through the
+  same command path. Do not remove copy/read-aloud controls. Window-local state
+  survives existing profile/session/pane switches and compact/wide resize without
+  mixing drafts, focus or selection; fresh window state resets it. At 320px,
+  390px and wide layouts with 200% text/insets, commands, localized usage/status
+  and timestamp inspection remain operable. Use existing local feedback, not an
+  Agent turn or mutation replay. Agent-config defaults remain explicitly unsynced.
+  Checks: planned additions to existing slash, rich-transcript and workspace
+  tests, including both aliases/all arguments, invalid zero-I/O, unknown-command,
+  default/off/on, full-time semantics, switch/reset and no-overflow regressions;
+  `flutter gen-l10n`; format changed Dart files; `flutter analyze --no-pub`;
+  `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart test/features/hermes_chat/screens/hermes_chat_session_workspace_test.dart`;
+  add compact/wide public-control cases in the existing deterministic transcript
+  or command browser journey; build `flutter build web --release --no-pub -t lib/main_e2e.dart`
+  before `npm run web:e2e`; `git diff --check`. These are required future checks,
+  not passing evidence. Physical IME/TalkBack and installed-device proof stay separate.
+  Dependencies: None.
+  Ownership: one ordinary isolated implementation writer; reuse shared Chat owners.
+  Touches: lib/features/hermes_chat/, test/features/hermes_chat/, playwright/tests/regression/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart, docs/quality/, docs/product/hermes-desktop-parity.md
+  Readiness: bounded client-local implementation; the deferred authoritative
+  slash task and its Agent execution acceptance are unchanged. Generated
+  localization Dart is regeneration-only. No active task contract is expanded.
+  Next action: pin current Chat callers/tests, add a failing alias/visibility
+  regression and wire the existing local command seam to window-local presentation.

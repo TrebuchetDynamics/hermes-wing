@@ -9,6 +9,17 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatBotOpen => 'Bot Chat';
+
+  @override
+  String get chatBotGap =>
+      'Canonical Bot Chat requires supported native Agent operations and settled history/replay. Ordinary sessions remain available; reconcile active work before switching.';
+
+  @override
+  String get chatBotFailure =>
+      'Bot Chat could not be confirmed. Your current conversation is unchanged. Retry explicitly; no message was sent.';
+
+  @override
   String get historyJsonAction => 'Export paged history as JSON';
 
   @override

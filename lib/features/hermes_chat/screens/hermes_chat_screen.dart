@@ -408,6 +408,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   final _composerDrafts = HermesComposerDraftStore();
   final _workspaceTabs = <HermesComposerDraftKey, _HermesWorkspaceTab>{};
   bool _workspaceOpening = false;
+  bool _botChatOpening = false;
   bool _workspaceClosing = false;
   final _workspaceCloseDisposals = <VoidCallback>{};
   _ComposerDraftKey? _activeComposerDraftKey;
@@ -1758,6 +1759,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               _buildProfileSwitcher(context, channel, state),
             if (!compactAppBar) ...[
               IconButton(
+                key: const ValueKey('hermes-bot-chat-button'),
+                tooltip: strings.chatBotOpen,
+                icon: const Icon(Icons.smart_toy_outlined),
+                onPressed: _botChatOpening
+                    ? null
+                    : () => unawaited(_openBotChat(channel)),
+              ),
+              IconButton(
                 key: const ValueKey('hermes-sessions-button'),
                 tooltip: _usesDesktopKeyboardShortcuts
                     ? strings.desktopSessionsShortcutTooltip(
@@ -1795,6 +1804,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                       );
                     case 'sessions':
                       _showSessionsPanel(context, channel);
+                    case 'bot-chat':
+                      unawaited(_openBotChat(channel));
                     case 'new-session':
                       unawaited(_createSession(context, channel));
                     case 'copy-transcript':
@@ -1819,6 +1830,15 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                     child: ListTile(
                       leading: const Icon(Icons.view_list_outlined),
                       title: Text(strings.chatShellSessionsLabel),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'bot-chat',
+                    enabled: !_botChatOpening,
+                    child: ListTile(
+                      leading: const Icon(Icons.smart_toy_outlined),
+                      title: Text(strings.chatBotOpen),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),

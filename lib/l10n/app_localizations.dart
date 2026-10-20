@@ -94,6 +94,24 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatBotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Bot Chat'**
+  String get chatBotOpen;
+
+  /// No description provided for @chatBotGap.
+  ///
+  /// In en, this message translates to:
+  /// **'Canonical Bot Chat requires supported native Agent operations and settled history/replay. Ordinary sessions remain available; reconcile active work before switching.'**
+  String get chatBotGap;
+
+  /// No description provided for @chatBotFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Bot Chat could not be confirmed. Your current conversation is unchanged. Retry explicitly; no message was sent.'**
+  String get chatBotFailure;
+
   /// No description provided for @historyJsonAction.
   ///
   /// In en, this message translates to:

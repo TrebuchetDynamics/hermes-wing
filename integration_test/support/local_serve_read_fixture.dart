@@ -13,12 +13,13 @@ class LocalServeReadFixture {
   Completer<void>? holdProfiles;
   Completer<void>? profilesRequested;
   String get origin => 'http://127.0.0.1:${server.port}';
+  int get portOffset => 0;
 
   Future<void> start() async {
     final base = int.tryParse(Platform.environment['AUTOWORK_PORT_BASE'] ?? '');
     server = await HttpServer.bind(
       InternetAddress.loopbackIPv4,
-      base == null ? 0 : base + (_nextPort++ % 100),
+      base == null ? 0 : base + ((portOffset + _nextPort++) % 100),
     );
     server.listen((request) async {
       requests.add('${request.method} ${request.uri.path}');

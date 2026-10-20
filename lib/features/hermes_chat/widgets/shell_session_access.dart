@@ -526,7 +526,7 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
     // Exact source identity is separate from its redacted display label. Dart's
     // insertion-ordered map preserves first encounter and incoming row order.
     final groups = <String?, List<HermesSession>>{};
-    for (final session in state.sessions) {
+    for (final session in state.visibleSessions) {
       final source = session.source.trim().isEmpty ? null : session.source;
       (groups[source] ??= []).add(session);
     }

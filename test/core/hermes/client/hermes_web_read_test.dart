@@ -44,6 +44,7 @@ void main() {
       'lib/core/hermes/client/hermes_web_read_client.dart',
       'lib/core/hermes/client/hermes_web_read_rpc.dart',
       'lib/core/hermes/client/hermes_web_lifecycle.dart',
+      'lib/core/hermes/client/hermes_web_bot_chat.dart',
       'lib/core/hermes/models/hermes_web_reads.dart',
       'lib/core/hermes/channel/hermes_api_channel.dart',
       'lib/core/hermes/channel/api_channel/hermes_api_channel_serve_reads.dart',

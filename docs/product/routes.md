@@ -32,6 +32,11 @@ Hermes Wing uses one adaptive route tree. Compact Chat prioritizes the transcrip
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
 
+Chat's compact More actions menu and wide header offer **Bot Chat** for the
+selected profile through verified native registry, hidden-state and history/replay
+operations. REST and unsettled native conversations show an explicit gap; native
+multi-tab qualification is unchanged. See the [bounded Bot Chat behavior and limits](../quality/android-canonical-bot-chat.md).
+
 Compact Chat uses the same below-600px header threshold as the compact shell.
 Its composer exposes draft dictation and Live voice as distinct named controls,
 without a duplicate hands-free microphone or a separate Live entry row. Phone

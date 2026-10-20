@@ -11,6 +11,51 @@ class _HermesWorkspaceTab {
 }
 
 extension _HermesChatSessionWorkspace on _HermesChatScreenState {
+  Future<void> _openBotChat(HermesChannel channel) async {
+    if (!mounted || _botChatOpening || _sessionRestorationUnsettled) return;
+    final directory = _gatewayDirectory;
+    final contact = directory.activeContactId;
+    final state = channel.state;
+    final owner = _composerOwnerGeneration;
+    final draft = _composerCompositionRevision;
+    bool current() =>
+        mounted &&
+        owner == _composerOwnerGeneration &&
+        draft == _composerCompositionRevision &&
+        identical(ref.read(hermesChannelProvider), channel) &&
+        identical(_gatewayDirectory, directory) &&
+        directory.activeContactId == contact &&
+        !directory.isActivating &&
+        !_profileSwitchPending &&
+        channel.state.isConnected &&
+        !channel.state.isSelectingProfile &&
+        channel.state.connectedBaseUrl == state.connectedBaseUrl &&
+        channel.state.selectedProfileId == state.selectedProfileId &&
+        channel.state.activeSessionId == state.activeSessionId;
+    if (!current()) return;
+    _setState(() => _botChatOpening = true);
+    try {
+      if (channel is! HermesBotChatChannel) {
+        throw UnsupportedError('Canonical Bot Chat unavailable.');
+      }
+      await (channel as HermesBotChatChannel).openBotChat(canAccept: current);
+    } catch (error) {
+      if (!mounted || !current()) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error is UnsupportedError
+                ? _hermesStrings(context).chatBotGap
+                : _hermesStrings(context).chatBotFailure,
+          ),
+        ),
+      );
+    } finally {
+      _botChatOpening = false;
+      if (mounted) _setState(() {});
+    }
+  }
+
   void _rememberWorkspaceTab(HermesChannel channel) {
     // Native serve selection currently retires its single lifecycle without a
     // terminal readback barrier. Do not offer tabs over history-only reads.

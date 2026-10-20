@@ -20,6 +20,16 @@ final class HermesWebReadClient {
     required bool Function() isCurrent,
   }) => throw UnsupportedError('Local serve export unavailable.');
 
+  Future<HermesServeLifecycle?> prepareBotChat({
+    required bool knownCanonical,
+    required bool allowCreate,
+    required String idempotencyKey,
+    required bool Function() canAccept,
+  }) => throw UnsupportedError('Canonical Bot Chat requires native transport.');
+
+  void adoptPreparedBotChat() =>
+      throw UnsupportedError('Canonical Bot Chat requires native transport.');
+
   void disconnect() {}
   void closeLifecycle() {}
   Future<HermesServeLifecycle> connectLifecycleForProduct() =>

@@ -12,6 +12,7 @@ export '../models/hermes_web_reads.dart';
 
 part 'hermes_web_read_rpc.dart';
 part 'hermes_web_lifecycle.dart';
+part 'hermes_web_bot_chat.dart';
 
 /// Fixed loopback REST reads and separately authenticated native chat.
 final class HermesWebReadClient {
@@ -186,6 +187,32 @@ final class HermesWebReadClient {
   }
 
   Future<HermesWebReadConnection> connectReads() => _connect();
+
+  /// Stages only the fixed canonical Bot contract on a fresh authenticated
+  /// lifecycle. The caller owns this reader until it explicitly adopts it.
+  Future<HermesServeLifecycle?> prepareBotChat({
+    required bool knownCanonical,
+    required bool allowCreate,
+    required String idempotencyKey,
+    required bool Function() canAccept,
+  }) => _prepareBotChat(
+    knownCanonical: knownCanonical,
+    allowCreate: allowCreate,
+    idempotencyKey: idempotencyKey,
+    canAccept: canAccept,
+  );
+
+  /// Synchronous owner handoff only. Staging cannot answer server requests.
+  void adoptPreparedBotChat() {
+    final lifecycle = _connection?._lifecycle;
+    if (lifecycle == null ||
+        !lifecycle._stagingBotChat ||
+        !lifecycle.canSubmit ||
+        lifecycle.approvals.isNotEmpty) {
+      throw const HermesWebReadException(HermesWebFailureKind.busy);
+    }
+    lifecycle._stagingBotChat = false;
+  }
 
   /// Ticket authentication is distinct from successful REST reads. This fixed
   /// contract also requires the Agent's exclusive-submit and request negotiation.

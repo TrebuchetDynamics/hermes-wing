@@ -158,6 +158,37 @@ coordinator integration, not a reopening of the original completed footer tasks.
 Full `flutter test --concurrency=1` and canonical assembly gates remain
 `MT-RERUN-TRAIN`'s responsibility. The platform/live limits below remain unchanged.
 
+### Retained continuation (attempt 2)
+
+The supported continuation starts at retained commit
+`8e99a83cad223d8c471f9474f00daa37347e3fbe` with a clean worktree, not an
+uncommitted or missing repair. It preserves prerequisite `78114a47` and the
+existing negative control. The original `reproduce.log` still records the exact
+line-102 failure above; this continuation does not recreate the old defect.
+
+Read-only comparison with reference `main` at
+`b0a78c0216cd0c4e627fe20a5914e97f31b8f8aa` finds the fixture, both runners and
+runner regression byte-identical. The layout-test difference is only equivalent
+`1440.0, 1000.0` versus `1440, 1000` literals; no spelling restoration or source
+replacement is needed. This observation does not integrate this task branch.
+
+All 834 current native inputs and their archived bytes match the retained
+`native-vtm5zb33` manifest. Archive, dependency-manifest and footer-receipt digests
+match the verification record; strict validation still accepts all fourteen
+focus, four activation and four recovery rows. The recorded native PID/start
+identity is retired, its driver group is gone and isolated state is absent.
+The native receipt above is reused on matching inputs, not rerun or repinned.
+Only this documentation changes during continuation; no fixture/rendering input
+invalidates that evidence.
+
+Fresh offline execution passes the 16 footer/focus tests, six Chat layout tests,
+compact-runner regression, both runner self-checks, four-file Dart format check,
+analysis and diff check. Cached offline package resolution preserves
+the lockfile. Attempt-2 logs and read-only evidence verification remain under the
+task's private `$TMPDIR`. Coordinator integration and whole-train canonical gates
+remain separate; original completed footer tasks and platform/live limits do not
+change.
+
 ## Boundaries
 
 Input is `WidgetTester.sendKeyEvent` in the native Flutter engine; resizing is the

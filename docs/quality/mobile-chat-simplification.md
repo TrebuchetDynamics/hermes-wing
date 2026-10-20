@@ -49,3 +49,115 @@ resolution passed with no dependency changes. Node 22.23.3 was used for Chromium
 
 This receipt does not claim full Desktop parity, physical voice qualification,
 60-fps performance or signed-distribution readiness.
+
+## Android Chat touch polish — task-local candidate
+
+Task: **ANDROID-CHAT-TOUCH-POLISH**, baseline `83fcbc03`. The retained tab
+prerequisite is already integrated; its [workspace receipt](chat-session-workspace.md)
+remains authoritative about unsupported native-serve tabs, including Android SSH.
+This section qualifies only the bounded presentation changes below, not the
+complete Android multi-session outcome or coordinator integration.
+
+### Observed problems and changes
+
+The [accepted UI Taste direction](../plans/2026-10-03-desktop-port-goal.md#ui-taste-chat-refinement)
+and official [Desktop design contract at `158fd638`](https://github.com/NousResearch/hermes-agent/blob/158fd638da1629c8e62caf9ade1515d162def8ab/apps/desktop/DESIGN.md)
+are source references, not an executed Desktop screenshot comparison. Desktop
+keeps Chat primary, overlays short-lived, hierarchy flat and focus intent-owned.
+The read-only upstream checkout at that revision was inspected; it was not changed.
+
+Matched production-widget baseline/candidate renders show:
+
+- The profile picker's fixed heading/search/footer left its selected row clipped
+  at 320×480/200% text with an IME inset. At 844×390/200%, fixed chrome overflowed.
+  [ChatProfilePicker](../../lib/features/hermes_chat/widgets/chat_profile_picker.dart)
+  now scrolls heading, search, selected identity, rows and Manage together.
+  Manage follows the loaded rows rather than floating at the foot of a mostly
+  empty sheet. This deliberate touch adaptation also works at wide sizes.
+- Filtering/Clear keeps the focused search visible; only explicit row navigation
+  reveals a row. Independent review caught an intermediate Clear regression;
+  the matching-query/Clear bounds assertion reproduced it before correction.
+- The [Sessions modal](../../lib/features/hermes_chat/screens/state/hermes_chat_connection.dart)
+  previously extended its scrolling viewport to y=820 with a keyboard boundary
+  of y=540. Its entire existing panel now excludes the IME through bottom padding.
+  Both modal routes retain system safe areas, not just favorable button placement.
+
+Theme/shared controls, typography/palettes, transcript/composer geometry, owner
+fences, Agent calls, approvals, Stop and unsupported-operation behavior are
+unchanged. No Bot inventory or transport success is fabricated. Search still uses
+loaded inventory; opening either picker adds no Agent read or mutation.
+
+### Source-bound visual evidence
+
+The [focused public-widget target](../../test/features/hermes_chat/screens/android_chat_touch_layout_test.dart)
+provides optional captures via `WING_TOUCH_CAPTURE=<task scratch>/candidate` and
+`WING_TOUCH_FONT_ROOT=<Flutter SDK>/bin/cache/artifacts/material_fonts`.
+
+- Matrix: 320×480, 390×844, 844×390 and 1280×900; default light/dark;
+  normal/200% text; reduced motion; 24px top/bottom system padding; simulated
+  140px IME on short surfaces and 280px otherwise.
+- Each side has 161 PNGs: idle, multiline draft, switcher, no-match, revealed
+  selected row, revealed Manage, streaming/tools, current approval, failure and
+  disconnected states in all 16 combinations, plus the Sessions keyboard state.
+- Scratch `baseline/`, `candidate/`, `comparison.png` and `visual-manifest.json`
+  bind images to production/test/theme SHA-256 values. Baseline production is
+  exactly `83fcbc03`; a scratch **capture-only** harness suppresses assertions to
+  retain known broken renders. That process is not a passing test receipt.
+  Candidate captures run the real assertions without suppression.
+- Widget captures load SDK Roboto as the system-font substitute, including
+  capture-only ListTile/Chip font resolution. All geometry/tokens remain
+  production values. Insets are simulated reserved space, not a painted Android
+  keyboard. These are isolated production Chat widgets, not full Android shells.
+- Source-bound image review confirms removal of constrained-picker overflow and
+  exposes the row/Manage through scrolling. Wide light/dark retain the same
+  controls; approval/running/error states remain labeled and unchanged. Short
+  200% layouts still require ordinary scrolling to read full cards; no action
+  relies on hover, drag dismissal or color alone. This is not visual pre-approval
+  or a general parity verdict.
+
+### Fresh offline checks
+
+Flutter 3.44.2 / Dart 3.12.2; Node 22.22.2; Linux widget runner and system Chromium.
+No dependency/lockfile changes. Final results:
+
+- `flutter pub get --offline --enforce-lockfile`: passed.
+- `flutter test --no-pub test/features/hermes_chat/screens/android_chat_touch_layout_test.dart`:
+  two focused scenarios passed. Profile coverage exercises all 16 combinations,
+  48px/hit-testable rows and Manage, search visibility, nonzero browsed transcript
+  offset, draft/selection and caller-focus retention on simulated platform Back,
+  and zero incidental decisions/sends/Stop/profile selections.
+- Nearest union (`flutter test --no-pub --concurrency=1`): **290 passed** across
+  the touch target and existing composer/transcript/reasoning accessibility,
+  profile/session picker, session workspace, width/mobile, approval dismissal,
+  session-mutation owner and queued-dialog intent files. Existing keyboard,
+  wide-layout, owner/race and replay assertions remain intact.
+- Isolated negative controls detected removing Sessions keyboard padding
+  (820 > 540) and profile route safe-area protection (sheet top 0 < 24).
+  Both protections were restored and the focused target passed again.
+- Changed-file formatting, `flutter analyze` and `git diff --check`: passed.
+- `flutter build web --release -t lib/main_e2e.dart`: passed. Existing dependency
+  Wasm/font warnings do not establish Wasm qualification.
+- Fresh Chromium with `--retries=0`: **eight passed** — four rendered profile
+  owner-switch/overlay-history cases at 390/1280px (idle and active run), two
+  owner-bound workspace/draft/uncertain-Stop cases and two lifecycle cases
+  (authoritative Stop; session search/bulk-selection without deletion).
+  Commands use the existing `chat-workspace-overlay.spec.mjs` with
+  `--grep 'Profiles rendered owner switch'`, then `chat-session-workspace.spec.mjs`
+  and `hermes-lifecycle.spec.mjs`. Owned fixture ports were stopped afterward.
+
+Independent final review is recorded with the task report. The full Flutter
+suite is reserved for the runner's merged-tree gate, not claimed here.
+
+### Pending Android/live qualification
+
+Waydroid reports running, but IP is UNKNOWN and ADB lists no target. The bounded
+shell probe fails with “needs root access”; no system escalation, container
+restart or installation was attempted. Isolated Waydroid public-control,
+real IME/Back, text-scaling and owner-switch journeys remain **pending live**.
+TalkBack is **unverified**. Physical devices, live SSH/Agent/provider behavior,
+secure storage and acoustic outcomes were not exercised. Browser widths and
+simulated platform Back do not qualify Android input. Native-serve tabs and
+cross-profile background streaming retain the workspace receipt's limitations.
+
+Revisit this evidence when picker layout, focus/reveal behavior, insets, ownership
+or shared theme/control geometry changes.

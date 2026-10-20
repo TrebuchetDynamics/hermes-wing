@@ -60,17 +60,21 @@ class _ChatProfilePickerState extends State<ChatProfilePicker> {
       _highlightedId = matches.firstOrNull?.id;
     }
     setState(() {});
-    _reveal(_highlightedId);
+    _reveal(_highlightedId, editing: _searchFocus.hasFocus);
   }
 
-  void _reveal(String? id) {
+  void _reveal(String? id, {bool editing = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final row = _rows[id]?.currentContext;
-      if (row != null) {
+      // Filtering keeps the focused editor visible. Only explicit row
+      // navigation may scroll it away in a short keyboard viewport.
+      final target = editing ? _searchFocus.context : _rows[id]?.currentContext;
+      if (target != null) {
         Scrollable.ensureVisible(
-          row,
-          alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+          target,
+          alignmentPolicy: editing
+              ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+              : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
         );
       }
     });
@@ -130,53 +134,54 @@ class _ChatProfilePickerState extends State<ChatProfilePicker> {
     return SafeArea(
       child: Focus(
         onKeyEvent: _key,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Semantics(
-                header: true,
-                child: Text(
-                  strings.switchAgentTitle,
-                  style: Theme.of(context).textTheme.titleLarge,
+        child: SingleChildScrollView(
+          key: const ValueKey('chat-profile-viewport'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    strings.switchAgentTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
-                key: const ValueKey('chat-profile-search'),
-                controller: _query,
-                focusNode: _searchFocus,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: strings.chatProfileSearch,
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _query.text.isEmpty
-                      ? null
-                      : IconButton(
-                          key: const ValueKey('chat-profile-clear'),
-                          tooltip: strings.profilesSearchClear,
-                          onPressed: () {
-                            _query.clear();
-                            setState(
-                              () => _highlightedId = _matches.firstOrNull?.id,
-                            );
-                            _searchFocus.requestFocus();
-                            _reveal(_highlightedId);
-                          },
-                          icon: const Icon(Icons.clear),
-                        ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  key: const ValueKey('chat-profile-search'),
+                  controller: _query,
+                  focusNode: _searchFocus,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: strings.chatProfileSearch,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _query.text.isEmpty
+                        ? null
+                        : IconButton(
+                            key: const ValueKey('chat-profile-clear'),
+                            tooltip: strings.profilesSearchClear,
+                            onPressed: () {
+                              _query.clear();
+                              setState(
+                                () => _highlightedId = _matches.firstOrNull?.id,
+                              );
+                              _searchFocus.requestFocus();
+                              _reveal(_highlightedId, editing: true);
+                            },
+                            icon: const Icon(Icons.clear),
+                          ),
+                  ),
+                  onChanged: (_) {
+                    setState(() => _highlightedId = _matches.firstOrNull?.id);
+                    _reveal(_highlightedId, editing: true);
+                  },
                 ),
-                onChanged: (_) {
-                  setState(() => _highlightedId = _matches.firstOrNull?.id);
-                  _reveal(_highlightedId);
-                },
               ),
-            ),
-            Expanded(
-              child: matches.isEmpty
+              matches.isEmpty
                   ? Center(
                       child: Semantics(
                         liveRegion: true,
@@ -190,65 +195,63 @@ class _ChatProfilePickerState extends State<ChatProfilePicker> {
                         ),
                       ),
                     )
-                  : SingleChildScrollView(
+                  : Column(
                       key: const ValueKey('chat-profile-list'),
-                      child: Column(
-                        children: [
-                          for (final profile in matches)
-                            KeyedSubtree(
-                              key: _rows.putIfAbsent(profile.id, GlobalKey.new),
-                              child: Focus(
-                                canRequestFocus: false,
-                                onFocusChange: (focused) {
-                                  if (focused) {
-                                    setState(() => _highlightedId = profile.id);
-                                    _reveal(profile.id);
-                                  }
-                                },
-                                child: Semantics(
-                                  selected: profile.id == widget.selectedId,
-                                  hint: profile.id == _highlightedId
-                                      ? strings.chatProfileHighlighted
-                                      : null,
-                                  child: ListTile(
-                                    key: ValueKey(
-                                      'chat-profile-row-${profile.id}',
-                                    ),
-                                    leading: Icon(
-                                      profile.id == widget.selectedId
-                                          ? Icons.radio_button_checked
-                                          : Icons.radio_button_unchecked,
-                                    ),
-                                    trailing: profile.id == _highlightedId
-                                        ? const Icon(Icons.chevron_right)
-                                        : null,
-                                    title: Text(
-                                      widget.preview(
-                                        profile.displayName.isEmpty
-                                            ? profile.id
-                                            : profile.displayName,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      '${strings.agentStableId(widget.preview(profile.id))}${profile.model.isEmpty ? '' : '\n${widget.preview(profile.model)}'}',
-                                    ),
-                                    selected: profile.id == widget.selectedId,
-                                    onTap: () => widget.onChoose(profile.id),
+                      children: [
+                        for (final profile in matches)
+                          KeyedSubtree(
+                            key: _rows.putIfAbsent(profile.id, GlobalKey.new),
+                            child: Focus(
+                              canRequestFocus: false,
+                              onFocusChange: (focused) {
+                                if (focused) {
+                                  setState(() => _highlightedId = profile.id);
+                                  _reveal(profile.id);
+                                }
+                              },
+                              child: Semantics(
+                                selected: profile.id == widget.selectedId,
+                                hint: profile.id == _highlightedId
+                                    ? strings.chatProfileHighlighted
+                                    : null,
+                                child: ListTile(
+                                  key: ValueKey(
+                                    'chat-profile-row-${profile.id}',
                                   ),
+                                  leading: Icon(
+                                    profile.id == widget.selectedId
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_unchecked,
+                                  ),
+                                  trailing: profile.id == _highlightedId
+                                      ? const Icon(Icons.chevron_right)
+                                      : null,
+                                  title: Text(
+                                    widget.preview(
+                                      profile.displayName.isEmpty
+                                          ? profile.id
+                                          : profile.displayName,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    '${strings.agentStableId(widget.preview(profile.id))}${profile.model.isEmpty ? '' : '\n${widget.preview(profile.model)}'}',
+                                  ),
+                                  selected: profile.id == widget.selectedId,
+                                  onTap: () => widget.onChoose(profile.id),
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
-            ),
-            TextButton.icon(
-              key: const ValueKey('chat-profile-manage'),
-              onPressed: widget.onManage,
-              icon: const Icon(Icons.settings_outlined),
-              label: Text(strings.chatProfileManage),
-            ),
-          ],
+              TextButton.icon(
+                key: const ValueKey('chat-profile-manage'),
+                onPressed: widget.onManage,
+                icon: const Icon(Icons.settings_outlined),
+                label: Text(strings.chatProfileManage),
+              ),
+            ],
+          ),
         ),
       ),
     );

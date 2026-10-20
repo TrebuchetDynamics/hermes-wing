@@ -3945,6 +3945,7 @@
         "PARITY-OFFICIAL-MATRIX",
         "PARITY-OFFICIAL-MATRIX-LIVE",
         "PARITYGAP-002-76",
+        "PARITYGAP-002-76-LIVE",
         "PARITYUPDATE-004-48",
         "PARITYUPDATE-004-48-LIVE"
       ],
@@ -6914,7 +6915,6 @@
       "ANDROID-CANONICAL-BOT-CHAT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "PARITYGAP-001-3f",
-      "PARITYGAP-002-76",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
       "FILES-TERMINAL-BROWSE",
@@ -6988,7 +6988,8 @@
       "PARITYUPDATE-006-f4-LIVE",
       "DOC-PARITY-TAB-CONTRACT-LIVE",
       "ANDROID-CHAT-TOUCH-POLISH-LIVE",
-      "WING-001-b3-LIVE"
+      "WING-001-b3-LIVE",
+      "PARITYGAP-002-76-LIVE"
     ]
   },
   "tasks": [
@@ -7019,14 +7020,6 @@
       "section": "Next",
       "status": "open",
       "title": "Toggle transcript timestamps locally without Agent commands"
-    },
-    {
-      "depends_on": [],
-      "goal": "PARITY",
-      "id": "PARITYGAP-002-76",
-      "section": "Next",
-      "status": "open",
-      "title": "Export bounded paged session history as JSON on Linux"
     },
     {
       "depends_on": [
@@ -7581,6 +7574,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for PARITY-OFFICIAL-MATRIX"
+    },
+    {
+      "depends_on": [
+        "PARITYGAP-002-76"
+      ],
+      "goal": "PARITY",
+      "id": "PARITYGAP-002-76-LIVE",
+      "section": "Needs decision",
+      "status": "open",
+      "title": "Live checks for PARITYGAP-002-76"
     },
     {
       "depends_on": [
@@ -9139,6 +9142,14 @@
       "section": "Done",
       "status": "done",
       "title": "Establish the authoritative exact session provider/model read"
+    },
+    {
+      "depends_on": [],
+      "goal": "PARITY",
+      "id": "PARITYGAP-002-76",
+      "section": "Done",
+      "status": "done",
+      "title": "Export bounded paged session history as JSON on Linux"
     },
     {
       "depends_on": [],

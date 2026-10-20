@@ -272,74 +272,6 @@ Section: Next.
   Next action: pin current Chat callers/tests, add a failing alias/visibility
   regression and wire the existing local command seam to window-local presentation.
 
-- [ ] **PARITYGAP-002-76** — Export bounded paged session history as JSON on Linux.
-  Goal: PARITY
-Section: Next.
-  Status: open
-  Payoff: save fetched session history beyond the currently loaded transcript,
-  with honest privacy, cancellation and consistency boundaries.
-  Sources: [accepted paged export slice](docs/plans/2026-10-03-desktop-port-goal.md#paged-session-json-export), [resolved source contract](docs/quality/unowned-desktop-outcomes-contract.md#hd-export), [targeted source boundary](docs/plans/2026-10-03-desktop-port-goal.md#evidence-and-scope-boundary).
-  Scope: add a separate explicit JSON export action on the existing authenticated
-  Linux local-serve reader. Reuse HermesChannel/HermesApiChannel, the bounded
-  HermesWebReadClient request seam, export object and conditional saver. Capture
-  connection/generation/origin, profile, requested stored session and selection
-  owner once. No new transport, credential acquisition, Agent file access, host
-  save, backup/import, /save dispatch, clipboard fallback or Android saver.
-  Acceptance: collect fixed GET session-messages pages with explicit profile,
-  oldest order, limit 500 and include_compacted=true through the existing bounded
-  authenticated client. Add a raw projected-page parser, not serialization of
-  lossy display DTOs or repeated visible-history backfill. Require exact envelope,
-  offset/order/limit/returned count and stable resolved identity on every page;
-  terminate on a short/empty page, including a terminal empty exact-multiple page.
-  Retain authenticated ancestor/compacted/raw structured/tool rows without
-  weakening ordinary chat identity checks or interpreting attachment URLs/HTML.
-  Wrong owner/tip, duplicate/repeated rows/pages, malformed/missing pagination,
-  auth/redirect/network failure, cancel/disposal/disconnect or local run/selection
-  change discard the attempt with zero save. Explicit retry starts at zero.
-  Preserve 1 MiB per-response and 4 MiB final UTF-8 limits including wrapper;
-  bound total collection to 60 seconds. No partial success, disk spooling or
-  increased caps. Emit exported_at, captured session_id/title, session:null unless
-  exact safe metadata is already available, correct message_count and raw messages.
-  Use generic hermes-session.json and JSON MIME; no client-added private origin,
-  credential or destination metadata. Require private/unredacted export consent,
-  visible preparation/progress/cancel, then explicit Save with immutable ephemeral
-  owner-bound bytes. Check owner before picker and after return, immediately
-  before write. Distinguish cancel, unsupported, failure, saved and downloadStarted;
-  require overwrite consent and never claim cancellation rolled back an OS write.
-  Existing loaded text/Markdown copy/save redaction, bytes and no-history-fetch
-  behavior remain unchanged. Unsupported transports/platforms stay unavailable.
-  State before export that this is paged history, not a frozen snapshot: external
-  same-length edits can evade checks; no complete=true or atomic completeness
-  claim. The Linux implementation does not close all HD-EXPORT runtime cells.
-  Checks: create focused raw-page/collector/channel regressions for 0/499/500/501/1000
-  synthetic rows, terminal paging, Unicode bytes, raw/ancestor content, bad identity,
-  pagination/drift/auth/redirect/deadline/limit failures, cancel/late-owner and zero
-  partial saves. Extend current saver and loaded-export regressions, including
-  extension/MIME, overwrite consent, stale picker and error outcomes. Scan all
-  HermesChannel implementers, format switches and saver callers; keep deterministic
-  fakes coherent. `flutter gen-l10n`; format changed Dart files; `flutter analyze --no-pub`;
-  `flutter test --no-pub --concurrency=1 test/core/hermes/client/ test/core/hermes/channel/ test/features/hermes_chat/export/ test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart`;
-  full offline suite before integration under existing gates. If browser adapter
-  changes, fresh deterministic web build before browser E2E. `git diff --check`;
-  validate changed JSON/Markdown. All commands are planned, not executed passes.
-  Dependencies: None.
-  Ownership: one ordinary isolated implementation writer; normal shared-channel integration.
-  Touches: lib/core/hermes/channel/, lib/core/hermes/client/, lib/core/hermes/models/hermes_web_reads.dart, lib/features/hermes_chat/, lib/l10n/app_en.arb, lib/l10n/app_localizations.dart, lib/l10n/app_localizations_en.dart, test/core/hermes/, test/features/hermes_chat/, integration_test/support/, lib/main_e2e.dart, playwright/tests/regression/, docs/quality/, docs/product/hermes-desktop-feature-matrix.json, docs/product/hermes-desktop-feature-matrix.md, docs/product/hermes-desktop-parity.md
-  External gates: named isolated Linux GTK save/overwrite/cancel/owner-switch
-  and destination-byte readback; actual Agent projection and other platforms
-  remain separate qualification, not prerequisites to offline implementation.
-  Readiness: bounded offline consumer using the already admitted fixed Linux
-  history-read contract. Canonical session.export and private native tickets are
-  different unimplemented boundaries; do not acquire them as a shortcut.
-  Implementation note: the reviewed file_selector_linux 0.9.4 chooser does not
-  explicitly enable overwrite confirmation, and the current saver calls saveTo
-  directly. Implement explicit local consent rather than assuming the picker
-  supplies it; mocked picker tests alone do not qualify real GTK behavior.
-  Cancel only the export attempt, never disconnect the shared reader. Capture
-  selection/run generations, not just equality of the visible owner tuple.
-  Next action: pin current reader/saver callers and add a raw two-page export
-  regression with owner-change/partial-failure negative controls before wiring UI.
-
 ## Needs decision
 
 - [ ] **CONNECTION-LINK-RETIREMENT** — Goal: CONNECTION-PATHS. Retire legacy
@@ -1499,4 +1431,13 @@ does not mark any check passed or authorize live actions.
   - Actual constrained Android IME/TalkBack and native presentation remain unverified. Executed Linux-hosted deterministic widgets/platform overrides and Chromium only; opt-in live/SSH cases skipped. No live credentials, personal-runtime mutation, provider spending, service restart, push or deployment attempted.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: WING-001-b3.
+  Status: open
+
+- [ ] PARITYGAP-002-76-LIVE — Live checks for PARITYGAP-002-76
+  Scope: Run the live checks the offline work for PARITYGAP-002-76 left pending.
+  Acceptance: Each check passes on the real target:
+  - Named isolated Linux GTK paged-JSON preparation/save/replacement-consent/refusal/cancel/owner-switch and destination-byte readback. Retained loaded-export native test was updated but not run on GTK here.
+  - Actual unmodified Agent projection, including compacted and ancestor records, remains live qualification. Other platforms and HD-EXPORT runtime cells remain open; no frozen snapshot, backup/import, canonical export or private ticket support is claimed.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: PARITYGAP-002-76.
   Status: open

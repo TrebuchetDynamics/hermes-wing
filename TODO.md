@@ -122,6 +122,12 @@ needs its own exact capability, ownership and qualification evidence.
   Goal: PARITY-TABS
 Section: Next.
   Status: open
+  Owner decision (2026-10-20, /blockers): Not a rescope. Both attempts finished: attempt 2
+  committed 87938f2f01b2d4c7d2ad6caec8c5302fc54782ab and reported every listed check passing,
+  then its session never exited and the 5400 s timeout discarded the commit (attempt 1 the same,
+  at 90b2c7b4747eed6eaf80e21539dfc97e683526ee).
+  Next action: Restore 87938f2f01b2d4c7d2ad6caec8c5302fc54782ab instead of reimplementing,
+  merge current main, rerun the listed checks on the result and report; do not redo the work.
   Payoff: each bot opens its ongoing Bot Chat without stealing or forking an ordinary conversation.
   Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
   [official Bot Chat source](https://github.com/NousResearch/hermes-agent/blob/158fd638da1629c8e62caf9ade1515d162def8ab/apps/desktop/src/plugins/hermes-bots/canonical-chat.ts),

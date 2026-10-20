@@ -8,6 +8,21 @@ Their accepted sources, scopes, ownership and mandatory checks remain authoritat
 
 ### Latest inspected frontier
 
+The 2026-10-19 Tab integration receipt
+`autowork-execution/4078982f126a4ed48841faabc5db238e.json` supersedes the
+source-delivery hold for the current continuation. Required browser verification
+now fails because Stop speaking is absent in two 390px cases at
+`playwright/tests/regression/chat-tts.spec.mjs:675` and `:903`; the reviewer
+reports both reproduce individually. Main and the integration tree share layout
+blob `561559e0`: the compact action branch bypasses `_buildMicButton`, which
+already supplies Stop during speech. This is source diagnosis and retained review
+evidence, not a fresh browser pass. The existing Tab task now owns that bounded
+repair and its full required verification; no new product decision, task ID,
+acceptance waiver or worker takeover is needed. Preserve the retained task result
+`187cdc8c`, the separate footer repair and the qualification boundaries. The
+assembly details below remain historical provenance, not instructions to recreate
+an obsolete input before repairing compact speech controls.
+
 The latest coordinator report supersedes the earlier missing-assembly hold.
 `MT-RERUN-TRAIN` delivered a reviewed offline handoff: HEAD
 `35d7976af08992305dcc63ecab08da5c06d561b6` plus the exact 47-file overlay yields
@@ -139,7 +154,7 @@ next action explicitly collects these patches before repeating its failed gate.
 | Slice | Existing lineage and bounded evidence | Return to coordinator |
 | --- | --- | --- |
 | PARITYUPDATE-005-11 | Done and [archived](../../todo.archive.md#parityupdate-005-11) by `ab7bad6024cfd015495049f97e227cedfa8e869b`. The attempt-1 report records all eight inventory cases passing after the mounted-search/traversal correction, retaining the keyboard, modal, identity and zero-incidental-effect assertions. | Repair already integrated; do not request another patch or historical source handoff. `PARITYUPDATE-005-11-LIVE` remains separately open under Needs decision; native/device/live acceptance is not inferred. |
-| PARITYUPDATE-006-f4 | Native-footer fixture lineage. `profile_footer_native_fixture.dart:102` gets 0 outline pixels vs >=24 through `linux_profile_footer_native_runner_test.dart`; SSH freshly reproduces it. Historical native receipts qualify other sources, not this combined tree. | Correct painted-focus oracle with strict negative control and unchanged accessibility/owner/effect checks; applicable existing isolated GTK journey and source/process/teardown receipts. |
+| PARITYUPDATE-006-f4 | Clean retained worker `8e99a83c` matches its report. The four footer fixture/runner/regression files already match main; the layout difference is only equivalent numeric literal spelling. Recovery docs and native receipt bindings still differ. | Reconcile the retained result and exact-source receipts through the existing coordinator. Do not reimplement the oracle or roll back newer source. Keep the strict negative control and required integration/native qualification; this inspection supplies no new pass or completion. |
 
 For PARITYUPDATE-005-11, the retained `answers.md` explicitly removed the historical
 source-refresh prerequisite and permitted the separate layout-test syntax repair.

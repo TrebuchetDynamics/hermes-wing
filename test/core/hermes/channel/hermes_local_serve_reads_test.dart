@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:wing/core/hermes/channel/hermes_api_channel.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 
@@ -65,6 +67,44 @@ void main() {
       expect(channel.state.activeSessionId, 'default-session');
       expect(fixture.requests.every((r) => r.startsWith('GET ')), isTrue);
       expect(fixture.requests, isNot(contains('GET /api/capabilities')));
+    },
+  );
+
+  test(
+    'paged export lease rejects selection roundtrips and disconnect without changing chat',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      expect(channel.canExportSessionHistory, isFalse);
+      await connect();
+      expect(channel.canExportSessionHistory, isTrue);
+      final original = channel.state.activeMessages;
+      final attempt = channel.beginSessionHistoryExport();
+      final json = jsonDecode(await attempt.collect()) as Map;
+      expect(json['session_id'], 'default-session');
+      expect(json['message_count'], 2);
+      expect(channel.state.activeMessages, original);
+      expect(
+        fixture.requests.last,
+        'GET /api/sessions/default-session/messages',
+      );
+      await channel.selectSession('default-session');
+      expect(
+        attempt.isCurrent,
+        isFalse,
+        reason: 'Generation, not tuple equality',
+      );
+      final cancelled = channel.beginSessionHistoryExport();
+      cancelled.cancel();
+      expect(channel.state.isConnected, isTrue);
+      final profileRoundtrip = channel.beginSessionHistoryExport();
+      await channel.selectProfile('demo');
+      await channel.selectProfile('default');
+      expect(profileRoundtrip.isCurrent, isFalse);
+      final disconnected = channel.beginSessionHistoryExport();
+      await channel.disconnect();
+      expect(disconnected.isCurrent, isFalse);
+      expect(channel.canExportSessionHistory, isFalse);
     },
   );
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'hermes_chat_turn.dart';
 
 /// Only the fixed, authenticated native serve workflow implements this seam.
@@ -184,6 +186,46 @@ final class HermesWebMessage {
   final String role;
   final String? content, toolName, toolCallId, reasoning, displayKind;
   final DateTime? timestamp;
+}
+
+/// Private export projection only. Ordinary chat keeps its exact row-owner checks.
+/// Ancestor rows retain physical identity; the authenticated envelope resolves tip.
+final class HermesWebRawHistoryPage {
+  HermesWebRawHistoryPage.fromJson(
+    Map<String, dynamic> json,
+    String profile, {
+    required int offset,
+  }) : resolvedSessionId = webString(json['session_id'], maximum: 128) {
+    webIdentity(json['profile'], profile);
+    _identity(resolvedSessionId);
+    final pagination = webObject(json['pagination']);
+    webIdentity(webInteger(pagination['limit'], maximum: 500), 500);
+    webIdentity(webInteger(pagination['offset']), offset);
+    webIdentity(pagination['order'], 'oldest');
+    final rows = webRows(json['messages'], 500);
+    webIdentity(webInteger(pagination['returned'], maximum: 500), rows.length);
+    final encoded = <String>[];
+    final ids = <int>[];
+    for (final raw in rows) {
+      final row = webObject(raw);
+      _identity(webString(row['session_id'], maximum: 128));
+      ids.add(webInteger(row['id'], maximum: 9007199254740991));
+      // Preserve structured/tool/hidden content without interpreting URLs or HTML.
+      encoded.add(jsonEncode(row));
+    }
+    encodedMessages = List.unmodifiable(encoded);
+    messageIds = List.unmodifiable(ids);
+  }
+
+  static void _identity(String value) {
+    if (!RegExp(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$').hasMatch(value)) {
+      throw const HermesWebReadException(HermesWebFailureKind.identity);
+    }
+  }
+
+  final String resolvedSessionId;
+  late final List<String> encodedMessages;
+  late final List<int> messageIds;
 }
 
 final class HermesWebHistoryPage {

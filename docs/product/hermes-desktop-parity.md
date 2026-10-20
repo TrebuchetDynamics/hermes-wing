@@ -18,6 +18,15 @@ operation, authorization and secret-handling rules are unchanged.
 
 ## Current delivery assessment
 
+The bounded [Linux paged JSON export](../quality/paged-session-json-export.md)
+adds an offline-tested fixed authenticated local-serve history consumer with
+private-content consent, progress/cancel and separate owner-bound Save. It is not
+a frozen snapshot or backup; same-length external edits can evade paging checks.
+Loaded redacted text/Markdown exports are unchanged. Real GTK JSON
+save/overwrite/cancel/owner-switch and destination-byte readback, actual Agent
+projection and other platforms remain separate qualification; `HD-EXPORT`
+runtime cells are not closed by this implementation.
+
 Current feature comparison: [October 18 upstream refresh](../quality/official-desktop-parity-refresh-2026-10-18.md), pinned to `a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70`. Existing priorities remain unchanged; new contract follow-ups are appended. Canonical gateway/submission/queue changes are source gaps, not newly qualified functionality. The retained checkpoints below describe their original sources and targets.
 
 

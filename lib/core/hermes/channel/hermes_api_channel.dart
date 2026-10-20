@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../protocol/wing_json.dart';
 import '../../protocol/voice/models/wing_voice_run.dart';
 import '../client/hermes_api_client.dart';
+import '../client/hermes_session_history_export.dart';
 import '../client/hermes_api_config.dart';
 import '../client/hermes_web_read_client_unsupported.dart'
     if (dart.library.io) '../client/hermes_web_read_client.dart';
@@ -55,6 +56,7 @@ class HermesApiChannel extends ChangeNotifier
     implements
         HermesChannel,
         HermesAudioChannel,
+        HermesSessionHistoryExportChannel,
         HermesApprovalLifecycleChannel {
   HermesApiChannel({
     HermesApiClient Function(HermesApiConfig config)? clientBuilder,
@@ -124,6 +126,7 @@ class HermesApiChannel extends ChangeNotifier
   HermesServeLifecycle? _serveLifecycle;
   StreamSubscription<void>? _serveChanges;
   int _serveQualification = 0;
+  int _serveExportRunGeneration = 0;
   bool _qualifyingServeChat = false;
   bool _serveSubmissionPending = false;
   HermesServeLifecycle? _serveStopPending;
@@ -171,6 +174,59 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   HermesChannelState get state => _state;
+
+  @override
+  bool get canExportSessionHistory =>
+      !kIsWeb &&
+      defaultTargetPlatform == TargetPlatform.linux &&
+      _serveReader != null &&
+      _serveOwnerIsCurrent &&
+      _state.isConnected &&
+      !_state.isSelectingProfile &&
+      !_serveRestorationPending &&
+      !_qualifyingServeChat &&
+      !_serveSubmissionPending &&
+      !_state.hasUnreconciledRun &&
+      _state.serveChat?.running != true &&
+      _serveLifecycle?.disconnected != true &&
+      _state.activeSessionId != null &&
+      _state.selectedProfileId != null;
+
+  @override
+  HermesSessionHistoryExportAttempt beginSessionHistoryExport() {
+    if (!canExportSessionHistory) {
+      throw StateError('Paged history export unavailable.');
+    }
+    final reader = _serveReader!;
+    final owner = (
+      _connectionGeneration,
+      _profileSelectionGeneration,
+      _sessionSelectionGeneration,
+      _serveQualification,
+      _serveExportRunGeneration,
+      _state.connectedBaseUrl,
+      _state.selectedProfileId,
+      _state.activeSessionId,
+    );
+    return reader.beginHistoryExport(
+      _state.activeSessionId!,
+      title: _state.activeSession?.title,
+      isCurrent: () =>
+          canExportSessionHistory &&
+          identical(reader, _serveReader) &&
+          owner ==
+              (
+                _connectionGeneration,
+                _profileSelectionGeneration,
+                _sessionSelectionGeneration,
+                _serveQualification,
+                _serveExportRunGeneration,
+                _state.connectedBaseUrl,
+                _state.selectedProfileId,
+                _state.activeSessionId,
+              ),
+    );
+  }
 
   @override
   Stream<HermesApprovalRequest> get approvalRequests =>

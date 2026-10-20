@@ -1,3 +1,4 @@
+import 'hermes_session_history_export.dart';
 import '../models/hermes_profile.dart';
 import '../models/hermes_web_reads.dart';
 
@@ -12,6 +13,12 @@ final class HermesWebReadClient {
   }) {
     throw UnsupportedError('Local serve reads require native transport.');
   }
+
+  HermesSessionHistoryExportAttempt beginHistoryExport(
+    String session, {
+    required String? title,
+    required bool Function() isCurrent,
+  }) => throw UnsupportedError('Local serve export unavailable.');
 
   void disconnect() {}
   void closeLifecycle() {}

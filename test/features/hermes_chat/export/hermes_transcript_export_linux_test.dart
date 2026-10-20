@@ -46,7 +46,11 @@ void main() {
         );
         final file = File('${root.path}/${snapshot.filename}');
         choose = () async => file.path;
-        final result = await saver.save(snapshot, canWrite: () => true);
+        final result = await saver.save(
+          snapshot,
+          canWrite: () => true,
+          confirmOverwrite: () async => true,
+        );
         expect(result.name, 'saved');
         expect(
           await file.readAsBytes(),
@@ -56,11 +60,81 @@ void main() {
         expect(arguments['suggestedName'], snapshot.filename);
         expect(arguments['initialDirectory'], isNull);
         expect((arguments['acceptedTypeGroups'] as List).single['extensions'], [
-          format == HermesTranscriptExportFormat.text ? 'txt' : 'md',
+          switch (format) {
+            HermesTranscriptExportFormat.text => 'txt',
+            HermesTranscriptExportFormat.markdown => 'md',
+            HermesTranscriptExportFormat.json => 'json',
+          },
         ]);
       },
     );
   }
+
+  test(
+    'JSON metadata and explicit overwrite consent fence every write',
+    () async {
+      final snapshot = HermesTranscriptExport(
+        '{"synthetic":"日本語"}',
+        HermesTranscriptExportFormat.json,
+      );
+      expect(snapshot.filename, 'hermes-session.json');
+      expect(snapshot.mimeType, 'application/json');
+      final file = File('${root.path}/hermes-session.json');
+      await file.writeAsString('previous');
+      choose = () async => file.path;
+      expect(
+        await saver.save(snapshot, canWrite: () => true),
+        HermesTranscriptExportResult.cancelled,
+      );
+      expect(await file.readAsString(), 'previous');
+      expect(
+        await saver.save(
+          snapshot,
+          canWrite: () => true,
+          confirmOverwrite: () async => false,
+        ),
+        HermesTranscriptExportResult.cancelled,
+      );
+      expect(await file.readAsString(), 'previous');
+      var current = true;
+      expect(
+        await saver.save(
+          snapshot,
+          canWrite: () => current,
+          confirmOverwrite: () async {
+            current = false;
+            return true;
+          },
+        ),
+        HermesTranscriptExportResult.cancelled,
+      );
+      expect(await file.readAsString(), 'previous');
+      expect(
+        await saver.save(
+          snapshot,
+          canWrite: () => true,
+          confirmOverwrite: () async => true,
+        ),
+        HermesTranscriptExportResult.saved,
+      );
+      expect(await file.readAsBytes(), utf8.encode('{"synthetic":"日本語"}'));
+      await file.delete();
+      // A new destination can become occupied after selection. Never infer
+      // replacement consent from a previous absence check.
+      expect(
+        await saver.save(
+          snapshot,
+          canWrite: () => true,
+          confirmOverwrite: () async {
+            await file.writeAsString('created concurrently');
+            return false;
+          },
+        ),
+        HermesTranscriptExportResult.cancelled,
+      );
+      expect(await file.readAsString(), 'created concurrently');
+    },
+  );
 
   test('cancellation and stale intent before picker do not write', () async {
     final snapshot = HermesTranscriptExport(
@@ -114,7 +188,11 @@ void main() {
       );
       choose = () async => '${root.path}/missing/target.txt';
       await expectLater(
-        saver.save(snapshot, canWrite: () => true),
+        saver.save(
+          snapshot,
+          canWrite: () => true,
+          confirmOverwrite: () async => true,
+        ),
         throwsA(isA<FileSystemException>()),
       );
       expect(await root.list().toList(), isEmpty);

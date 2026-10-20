@@ -129,6 +129,21 @@ void main() {
           await tester.pump();
           await drive('save', 'hermes-transcript.$extension');
           final deadline = DateTime.now().add(const Duration(seconds: 15));
+          final confirm = find.widgetWithText(
+            FilledButton,
+            'Save and allow replacement',
+          );
+          while (confirm.evaluate().isEmpty &&
+              DateTime.now().isBefore(deadline)) {
+            await tester.pump(const Duration(milliseconds: 100));
+          }
+          expect(confirm, findsOneWidget);
+          expect(
+            await file.exists(),
+            isFalse,
+            reason: 'Chooser acceptance alone is not replacement consent',
+          );
+          await tester.tap(confirm);
           while (!await file.exists() && DateTime.now().isBefore(deadline)) {
             await tester.pump(const Duration(milliseconds: 100));
           }

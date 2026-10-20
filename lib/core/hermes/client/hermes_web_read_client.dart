@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'hermes_session_history_export.dart';
 import '../models/hermes_web_reads.dart';
 import '../models/hermes_chat_turn.dart';
 import '../models/hermes_profile.dart';
@@ -155,6 +156,32 @@ final class HermesWebReadClient {
       limit: limit,
       offset: offset,
       order: order,
+    );
+  }
+
+  HermesSessionHistoryExportAttempt beginHistoryExport(
+    String session, {
+    required String? title,
+    required bool Function() isCurrent,
+  }) {
+    _validateIdentity(session);
+    final generation = _generation;
+    _current(generation);
+    return HermesSessionHistoryExportAttempt(
+      sessionId: session,
+      title: title,
+      isCurrent: () => !_closed && generation == _generation && isCurrent(),
+      readPage: (offset) async {
+        final json = await _request(
+          '/api/sessions/$session/messages',
+          query: {
+            ..._page(500, offset, maximum: 500),
+            'order': 'oldest',
+            'include_compacted': 'true',
+          },
+        );
+        return HermesWebRawHistoryPage.fromJson(json, _profile, offset: offset);
+      },
     );
   }
 

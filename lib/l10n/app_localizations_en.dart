@@ -9,6 +9,49 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get historyJsonAction => 'Export paged history as JSON';
+
+  @override
+  String get historyJsonConsent =>
+      'This fetches private, unredacted session history, including ancestor, compacted and tool content. Attachment URLs and HTML remain inert data. This is paged history, not a frozen snapshot: external same-length edits can evade checks. It is not an Agent backup or proof of atomic completeness. Preparation is limited to 60 seconds and 4 MiB. Cancel discards this attempt; a file write already started may still finish.';
+
+  @override
+  String get historyJsonPrepare => 'Prepare private JSON';
+
+  @override
+  String historyJsonProgress(int count) {
+    return 'Preparing JSON: $count messages fetched';
+  }
+
+  @override
+  String historyJsonReady(int count) {
+    return 'Paged history prepared: $count messages. Save this private file only to a trusted destination.';
+  }
+
+  @override
+  String get historyJsonSave => 'Save JSON';
+
+  @override
+  String get historyJsonCancel => 'Cancel export';
+
+  @override
+  String get historyJsonCancelled => 'Save cancelled before writing.';
+
+  @override
+  String get historyJsonFailed =>
+      'History export was discarded. The read failed, exceeded its limits, was cancelled, or its owner changed. Close and explicitly retry to start at page zero.';
+
+  @override
+  String get transcriptOverwriteTitle => 'Save and allow replacement?';
+
+  @override
+  String get transcriptOverwriteBody =>
+      'Save to the selected local destination? Any file there at write time will be replaced, including one created by another app while this dialog is open. Cancelling afterward cannot undo a write that already started.';
+
+  @override
+  String get transcriptOverwriteConfirm => 'Save and allow replacement';
+
+  @override
   String get managedSshSaveTarget => 'Save SSH settings';
 
   @override

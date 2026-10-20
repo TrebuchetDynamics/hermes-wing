@@ -14,13 +14,16 @@ void main() {
         expect(snapshot.bytes, utf8.encode(text));
         expect(utf8.decode(snapshot.bytes), text);
         expect(() => snapshot.bytes[0] = 0, throwsUnsupportedError);
-        expect(snapshot.filename, matches(r'^hermes-transcript\.(txt|md)$'));
         expect(
-          snapshot.mimeType,
-          format == HermesTranscriptExportFormat.text
-              ? 'text/plain;charset=utf-8'
-              : 'text/markdown;charset=utf-8',
+          snapshot.filename,
+          matches(r'^hermes-(transcript\.(txt|md)|session\.json)$'),
         );
+        expect(snapshot.mimeType, switch (format) {
+          HermesTranscriptExportFormat.text => 'text/plain;charset=utf-8',
+          HermesTranscriptExportFormat.markdown =>
+            'text/markdown;charset=utf-8',
+          HermesTranscriptExportFormat.json => 'application/json',
+        });
       },
     );
   }

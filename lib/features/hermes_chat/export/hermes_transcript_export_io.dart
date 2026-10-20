@@ -17,15 +17,15 @@ class _LinuxTranscriptSaver implements HermesTranscriptSaver {
   Future<HermesTranscriptExportResult> save(
     HermesTranscriptExport snapshot, {
     required bool Function() canWrite,
+    Future<bool> Function()? confirmOverwrite,
   }) async {
     if (!canWrite()) return HermesTranscriptExportResult.cancelled;
     final location = await getSaveLocation(
       suggestedName: snapshot.filename,
       acceptedTypeGroups: [
         XTypeGroup(
-          extensions: [
-            snapshot.format == HermesTranscriptExportFormat.text ? 'txt' : 'md',
-          ],
+          extensions: [snapshot.extension],
+          mimeTypes: [snapshot.mimeType.split(';').first],
         ),
       ],
     );
@@ -34,6 +34,14 @@ class _LinuxTranscriptSaver implements HermesTranscriptSaver {
     if (location == null || !canWrite()) {
       return HermesTranscriptExportResult.cancelled;
     }
+    // file_selector_linux does not promise overwrite confirmation. Ask for
+    // replacement consent even for a new path: another process could create it
+    // before saveTo opens it. Consent covers the destination at write time;
+    // never pass its private path into UI or logs.
+    if (!canWrite() || !(await confirmOverwrite?.call() ?? false)) {
+      return HermesTranscriptExportResult.cancelled;
+    }
+    if (!canWrite()) return HermesTranscriptExportResult.cancelled;
     await XFile.fromData(
       snapshot.bytes,
       mimeType: snapshot.mimeType,

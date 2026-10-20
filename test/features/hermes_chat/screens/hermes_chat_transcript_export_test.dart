@@ -7,6 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/client/hermes_session_history_export.dart';
+import 'package:wing/core/hermes/models/hermes_web_reads.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/export/hermes_transcript_export.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -28,6 +31,7 @@ class Saver implements HermesTranscriptSaver {
   Future<HermesTranscriptExportResult> save(
     HermesTranscriptExport snapshot, {
     required bool Function() canWrite,
+    Future<bool> Function()? confirmOverwrite,
   }) async {
     snapshots.add(snapshot);
     final started = startedWriteGate;
@@ -44,6 +48,49 @@ class Saver implements HermesTranscriptSaver {
     writes.add(snapshot);
     return HermesTranscriptExportResult.downloadStarted;
   }
+}
+
+class HistoryChannel extends FakeHermesChannel
+    implements HermesSessionHistoryExportChannel {
+  @override
+  bool get canExportSessionHistory => true;
+  int reads = 0;
+  bool failRead = false;
+  Completer<void>? readGate;
+  @override
+  HermesSessionHistoryExportAttempt beginSessionHistoryExport() =>
+      HermesSessionHistoryExportAttempt(
+        sessionId: state.activeSessionId!,
+        title: 'Captured',
+        isCurrent: () => true,
+        readPage: (offset) async {
+          reads++;
+          if (readGate != null) await readGate!.future;
+          if (failRead) throw StateError('private failure');
+          return HermesWebRawHistoryPage.fromJson(
+            {
+              'session_id': 'sess_1',
+              'profile': 'default',
+              'messages': [
+                {
+                  'id': 1,
+                  'session_id': 'ancestor',
+                  'content': {'text': 'raw 日本語'},
+                  'role': 'tool',
+                },
+              ],
+              'pagination': {
+                'limit': 500,
+                'offset': offset,
+                'order': 'oldest',
+                'returned': 1,
+              },
+            },
+            'default',
+            offset: offset,
+          );
+        },
+      );
 }
 
 List<HermesChatTurn> history([int count = 250]) => List.generate(
@@ -112,6 +159,174 @@ void main() {
       'wing.tips.dismissed.v1': ['moreDestinations', 'voice', 'approvals'],
     }),
   );
+  testWidgets('whole preparation deadline discards even a late page', (
+    tester,
+  ) async {
+    final gate = Completer<HermesWebRawHistoryPage>();
+    final attempt = HermesSessionHistoryExportAttempt(
+      sessionId: 'requested',
+      title: null,
+      isCurrent: () => true,
+      readPage: (_) => gate.future,
+    );
+    Object? failure;
+    unawaited(
+      attempt.collect().then<void>(
+        (_) => fail('must not finish'),
+        onError: (Object e) {
+          failure = e;
+        },
+      ),
+    );
+    await tester.pump(const Duration(seconds: 60));
+    expect(failure, isA<HermesWebReadException>());
+    expect(attempt.isCurrent, isFalse);
+    gate.complete(
+      HermesWebRawHistoryPage.fromJson(
+        {
+          'session_id': 'requested',
+          'profile': 'default',
+          'messages': [],
+          'pagination': {
+            'limit': 500,
+            'offset': 0,
+            'order': 'oldest',
+            'returned': 0,
+          },
+        },
+        'default',
+        offset: 0,
+      ),
+    );
+    await tester.pump();
+    expect(attempt.isCurrent, isFalse);
+  });
+
+  testWidgets(
+    'private paged JSON needs consent, then separate Save with frozen raw bytes',
+    (tester) async {
+      final channel = HistoryChannel()..replaceTranscript(history(1));
+      addTearDown(channel.dispose);
+      final saver = Saver();
+      await open(tester, channel, saver: saver);
+      await actions(tester);
+      final action = find.byKey(const ValueKey('hermes-export-history-json'));
+      await tester.ensureVisible(action);
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('not a frozen snapshot'), findsOneWidget);
+      expect(channel.reads, 0);
+      expect(saver.writes, isEmpty);
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-prepare-history-json')),
+      );
+      await tester.pumpAndSettle();
+      expect(channel.reads, 1);
+      expect(saver.writes, isEmpty);
+      await tester.tap(find.byKey(const ValueKey('hermes-save-history-json')));
+      await tester.pumpAndSettle();
+      final snapshot = saver.writes.single;
+      expect(snapshot.filename, 'hermes-session.json');
+      expect((jsonDecode(utf8.decode(snapshot.bytes)) as Map)['messages'], [
+        {
+          'id': 1,
+          'session_id': 'ancestor',
+          'content': {'text': 'raw 日本語'},
+          'role': 'tool',
+        },
+      ]);
+      expect(channel.loadEarlierMessagesCalls, 0);
+      channel.replaceTranscript(history(2));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('History export was discarded'), findsNothing);
+      await channel.selectSession('other');
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Transcript download requested.'),
+        findsNothing,
+      );
+      expect(saver.writes, hasLength(1));
+    },
+  );
+  for (final outcome in [
+    'cancel',
+    'owner',
+    'dispose',
+    'failure',
+    'cancelReady',
+    'ownerPicker',
+    'saveCancel',
+  ]) {
+    testWidgets('paged $outcome discards private bytes without partial save', (
+      tester,
+    ) async {
+      final channel = HistoryChannel()..replaceTranscript(history(1));
+      addTearDown(channel.dispose);
+      final saver = Saver();
+      await open(tester, channel, saver: saver);
+      await actions(tester);
+      final action = find.byKey(const ValueKey('hermes-export-history-json'));
+      await tester.ensureVisible(action);
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      channel.readGate = Completer<void>();
+      channel.failRead = outcome == 'failure';
+      await tester.tap(
+        find.byKey(const ValueKey('hermes-prepare-history-json')),
+      );
+      await tester.pump();
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      if (outcome == 'cancelReady' ||
+          outcome == 'ownerPicker' ||
+          outcome == 'saveCancel') {
+        channel.readGate!.complete();
+        await tester.pumpAndSettle();
+        final cachedSave = tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('hermes-save-history-json')),
+            )
+            .onPressed!;
+        if (outcome == 'cancelReady') {
+          await tester.tap(
+            find.byKey(const ValueKey('hermes-cancel-history-json')),
+          );
+          // Route disposal is delayed by its reverse animation. A retained
+          // callback must already be inert in that very same frame.
+          cachedSave();
+        } else if (outcome == 'saveCancel') {
+          saver.cancel = true;
+          cachedSave();
+        } else {
+          saver.gate = Completer<void>();
+          cachedSave();
+          await tester.pump();
+          await channel.selectSession('other');
+          saver.gate!.complete();
+        }
+      }
+      if (outcome == 'cancel') {
+        await tester.tap(
+          find.byKey(const ValueKey('hermes-cancel-history-json')),
+        );
+      }
+      if (outcome == 'owner') await channel.selectSession('other');
+      if (outcome == 'dispose') await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+      if (!channel.readGate!.isCompleted) channel.readGate!.complete();
+      await tester.pumpAndSettle();
+      expect(saver.writes, isEmpty);
+      if (outcome == 'saveCancel') {
+        expect(find.text('Save cancelled before writing.'), findsOneWidget);
+      }
+      expect(
+        find.byKey(const ValueKey('hermes-save-history-json')),
+        findsNothing,
+      );
+      expect(find.textContaining('private failure'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets(
     'unsupported native runner explains availability without fake save',
     (tester) async {

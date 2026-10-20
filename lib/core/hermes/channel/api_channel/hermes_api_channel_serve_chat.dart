@@ -88,6 +88,10 @@ extension _ServeChatExtension on HermesApiChannel {
         _state.isSelectingProfile) {
       return;
     }
+    if (_state.serveChat?.running != lifecycle.running ||
+        _state.hasUnreconciledRun != lifecycle.needsReconciliation) {
+      _serveExportRunGeneration++;
+    }
     final open = lifecycle.approvals;
     for (final request in _pendingApprovals.values.toList()) {
       if (open[request.id]?.serverId != request.toolCallId) {
@@ -151,6 +155,7 @@ extension _ServeChatExtension on HermesApiChannel {
         textAttachment != null) {
       throw StateError('This local serve connection cannot submit this turn.');
     }
+    _serveExportRunGeneration++;
     _serveSubmissionPending = true;
     _syncServeChat(lifecycle);
     try {

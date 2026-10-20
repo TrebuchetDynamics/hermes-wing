@@ -2084,8 +2084,8 @@
         "lib/features/hermes_chat/screens/hermes_chat_screen.dart",
         "lib/features/hermes_chat/export/hermes_transcript_export_io.dart"
       ],
-      "current_wing_subset": "Wing exports/copies only loaded turns as text/Markdown; native saver is Linux-only and web uses its own download adapter. Owner fencing rechecks native chooser completion.",
-      "remaining_gap": "Contract trace resolves oldest-first compacted/ancestor message paging and client JSON assembly, not a frozen multi-page snapshot, stable lineage/revision or owner-safe download. Wing still lacks all-message JSON; Android native save remains unsupported and loaded text is not completeness.",
+      "current_wing_subset": "Loaded text/Markdown exports remain redacted and fetch no history. Linux fixed authenticated local-serve reads additionally offer explicit private paged JSON preparation, progress/cancel and separate owner-bound Save with local overwrite consent. See docs/quality/paged-session-json-export.md for offline evidence and limits.",
+      "remaining_gap": "Paged JSON is not a frozen snapshot: external same-length edits can evade checks. Linux GTK JSON save/overwrite/cancel/owner-switch and destination-byte readback, actual Agent projection and other platforms remain unqualified. HD-EXPORT runtime cells remain open; Android native save is unsupported.",
       "unowned_outcome_contract": {
         "task_id": "PARITYUPDATE-004-48",
         "document": "docs/quality/unowned-desktop-outcomes-contract.md#hd-export",
@@ -2097,7 +2097,7 @@
         "candidate_paths": [
           "integration_test/linux_transcript_export_e2e_test.dart"
         ],
-        "acceptance": "Run GTK export byte-readback/cancel candidate; compare loaded scope/format against official helper and reject stale owner before native write.",
+        "acceptance": "Retain loaded-export GTK candidate; separately qualify paged JSON preparation/save, overwrite consent, cancellation, owner-switch and destination-byte readback on isolated Linux GTK with actual Agent projection.",
         "launcher_paths": [
           "scripts/run_linux_native_input_e2e.sh"
         ]
@@ -2140,7 +2140,7 @@
         "DOC-M5-LARGE-TEXT-EVIDENCE-LIVE",
         "PARITY-MAESTRO-ANDROID-DEVICE-LIVE"
       ],
-      "existing_task_coverage": "Archived feedback repair and message-action/device qualification cover existing exports only; no full authoritative JSON export implementation task found.",
+      "existing_task_coverage": "PARITYGAP-002-76 implements the bounded Linux fixed-reader paged JSON consumer offline. Archived feedback and message-action/device qualification cover loaded exports; native/live JSON qualification remains separate.",
       "refresh_followup_task_ids": [
         "PARITYUPDATE-004-48"
       ]

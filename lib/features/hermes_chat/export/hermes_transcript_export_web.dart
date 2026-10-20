@@ -14,7 +14,11 @@ class _BrowserTranscriptSaver implements HermesTranscriptSaver {
   Future<HermesTranscriptExportResult> save(
     HermesTranscriptExport snapshot, {
     required bool Function() canWrite,
+    Future<bool> Function()? confirmOverwrite,
   }) async {
+    if (snapshot.format == HermesTranscriptExportFormat.json) {
+      return HermesTranscriptExportResult.unsupported;
+    }
     if (!canWrite()) return HermesTranscriptExportResult.cancelled;
     // No await before click: retain explicit browser user activation. This is
     // a download request, not proof that the browser/OS persisted the file.

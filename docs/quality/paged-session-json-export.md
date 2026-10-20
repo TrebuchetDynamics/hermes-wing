@@ -13,8 +13,9 @@ also traced `hermes_state_messages.py`: authenticated ancestor rows keep their
 physical session identity, the envelope names the resolved continuation tip,
 and physical IDs are not necessarily display-order monotonic. This is a projected
 history export, not an Agent database backup. The task's detailed accepted slice
-is its supplied task contract; the historical plan's `paged-session-json-export`
-anchor is absent in this checkout and is not used as proof of implementation.
+is its [accepted paged-session JSON scope](../plans/2026-10-03-desktop-port-goal.md#paged-session-json-export).
+That plan records intent; the implementation and executed checks below, not the
+plan's presence, establish the bounded offline outcome.
 
 On Linux, Chat's existing transcript menu offers **Export paged history as JSON**
 only for the fixed authenticated local-serve reader with a settled, idle owner.

@@ -1280,3 +1280,147 @@ separate; this planning pass runs no UI mutation, worker or schedule.
 sole implementation owner, dependent on `DOC-PARITY-TAB-CONTRACT`. The existing
 [plan index](README.md#plan-to-task-coverage) already maps this accepted port plan
 and task. No task is reopened, duplicated, marked done or reprioritized here.
+
+## Verified Desktop implementation successors
+
+Status: Accepted
+
+The owner selected **implementation-ready tasks for verified gaps**, rather than
+another inventory-only refresh. This section applies the existing official-Desktop
+port mandate to two bounded missing consumers. Append them behind current work;
+Android SSH, multisession, canonical Bot Chat and touch polish retain their order.
+Planning does not start a worker, resume a paused job, authorize live operations,
+change credentials, or establish platform acceptance.
+
+Offline delivery checkpoint, 2026-10-20: `PARITYGAP-001-3f` and
+`PARITYGAP-002-76` are now recorded done, and their implementation commits
+`1fd0293bc665d8659f72867369ba60df3e09ba1d` and
+`9849fea349d5e26166052e024e498f9269d7af4e` are ancestors of canonical main.
+The [local-command record](../quality/slash-catalog-contract.md) and
+[paged-JSON record](../quality/paged-session-json-export.md) own their actual
+implementation and verification limits. The scope and checks below remain the
+accepted contracts, not instructions to reimplement completed consumers. Physical
+input, named GTK export and live Agent projection remain separately unverified.
+
+### Evidence and scope boundary
+
+Targeted official source: `0b10b9f8155a7ecadd8c540b87712c791b5c8ac9`, acquired into
+a separate research checkout. The permanent `hermes-agent/` reference was unchanged.
+Compared with the matrix's `a2ad0d5b639160fbb41b2bee8d1ca1e65e544c70`, 127 Desktop
+paths changed (43 added, 84 modified). This pass traced selected callers, producers
+and nearest tests; it did not requalify all 50 matrix groups, update their global
+pin, or execute upstream/product tests. Wing source was inspected at `e7ef9822`;
+current-source checks remain necessary during implementation. No source-current
+graph exists: evidence is direct source tracing, not graph or runtime proof.
+
+Primary leads at the new official pin:
+
+- [Local timestamp dispatch](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/apps/desktop/src/app/session/hooks/use-prompt-actions/slash-desktop-commands.ts#L478-L495),
+  [window override](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/apps/desktop/src/store/display-timestamps.ts#L1-L29)
+  and [dispatch tests](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/apps/desktop/src/app/session/hooks/use-prompt-actions/slash-desktop-commands.test.tsx#L479-L509).
+- [Session JSON wrapper](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/apps/desktop/src/lib/session-export.ts#L29-L59),
+  [paged history](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/apps/desktop/src/api/sessions.ts#L668-L713)
+  and [Agent history projection](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/hermes_cli/web_routers/sessions.py#L739-L783).
+- [New native save seam](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/apps/desktop/electron/save-text-file.ts#L36-L103)
+  and [canonical session.export](https://github.com/NousResearch/hermes-agent/blob/0b10b9f8155a7ecadd8c540b87712c791b5c8ac9/gateway/session_tui_ops.py#L86-L117)
+  are distinct from sidebar projected-history export; they are not a new Wing
+  transport grant or permission to port Electron filesystem authority.
+
+### Local timestamp controls
+
+Status: Accepted
+
+`PARITYGAP-001-3f` owns only `/timestamps` and `/ts` with empty/on/off/toggle/status
+arguments, suggestions and localized usage/status. Reuse Wing's existing local
+command interception and timestamp renderer. The state is ephemeral to this app
+window, shared across its conversation switches, not Agent configuration or a
+per-profile preference. Match Desktop's default off where no authoritative
+configuration default is available. Do not invent Agent-config synchronization.
+
+Recognized invalid arguments never fall through into a prompt. Commands produce
+zero Agent RPC/configuration/provider calls, create no session and do not widen
+read-only/active-turn/IME/attachment admission. Unknown unrelated slash text keeps
+its existing behavior. Visual timestamps can be hidden without deleting their
+metadata, changing export bytes, or removing copy/read-aloud controls. Full local
+time remains available to accessibility; keyboard/touch users can reveal it via
+the same local command path. Preserve draft, selection and focus through toggles
+and owner/layout changes. A new app-window state resets the override.
+
+Extend the existing slash, rich-transcript and workspace widget tests. Add compact
+and wide compiled-browser cases through the existing deterministic fixture, with
+build-before-E2E and zero-effect assertions. Include 200% text and constrained
+insets. The authoritative slash transport remains separately deferred; this local
+presentation command does not close that gap or any physical IME/TalkBack gate.
+
+### Paged session JSON export
+
+Status: Accepted
+
+`PARITYGAP-002-76` adds a separate explicit JSON action for the existing authenticated
+Linux local-serve reader. Reuse `HermesChannel`/`HermesApiChannel`, the bounded
+`HermesWebReadClient` request seam and `HermesTranscriptSaver`; do not expose HTTP
+clients or credentials to feature UI. Other transports and Android remain
+unavailable in this slice. Do not reuse lossy display DTOs or repeatedly call
+visible-history backfill to assemble the export.
+
+Collect raw projected maps from the fixed session-messages route with captured
+profile/session/connection identity, oldest-first pages of at most 500 and
+`include_compacted=true`. Validate each exact envelope and monotonic pagination;
+stop only at a proven short/empty terminal page. Retain ancestor rows under the
+qualified current-session projection without relaxing ordinary history identity
+validation. A changed resolved session, owner/selection/run state, duplicate or
+repeated page, cancellation, malformed result or page failure discards the whole
+attempt. Explicit retry starts at zero; reconnect never resumes an export.
+
+Keep the existing 1 MiB HTTP response and 4 MiB final UTF-8 export bounds, counting
+the JSON wrapper; impose a 60-second total collection deadline. These are Wing
+safety bounds, not upstream guarantees. Do not add disk spooling, partial-success
+files, larger caps, arbitrary endpoints or an Agent-host save command. The wrapper
+contains exported_at, session_id, title, nullable verified session metadata,
+message_count and messages. Use the captured ID and a generic local filename;
+never add private endpoints, credentials or chosen paths to metadata or diagnostics.
+
+Require affirmative private/unredacted-data consent, show prepare/progress/cancel,
+then require an explicit Save action. Prepared bytes are ephemeral and owner-bound.
+Reuse conditional savers, JSON extension/MIME mapping and native chosen destination;
+confirm overwrite rather than silently replacing files. Check owner immediately
+before write, including after chooser return. Once OS writing begins, cancellation
+is not rollback; report errors honestly and never delete a user's file to simulate
+it. Existing redacted loaded-text/Markdown exports and their no-history-fetch
+behavior remain unchanged. Download started is not saved-file confirmation.
+
+This is **paged projected history, not a frozen snapshot or database backup**.
+Offset reads can miss undetectable same-length external edits; an unchanged count
+or a second scan cannot prove atomic completeness. Disclose this before export and
+advise avoiding edits in other clients while preparing. Do not emit complete=true
+or promise all-message consistency under concurrent external mutation.
+
+Tests cover 0/499/500/501/1000 synthetic rows, Unicode byte limits, terminal empty
+pages, raw structured/tool/compacted/ancestor content, malformed pagination,
+redirect/auth/error/timeout/drift paths, cancel/owner replacement and zero partial
+save. Keep saver cancellation/error/overwrite and loaded-export regressions. A
+future named Linux GTK save/readback journey and actual Agent projection remain
+separate runtime qualification; no Android/web acquisition or installed-device
+support is implied by a browser saver or compilation.
+
+### Not promoted by this pass
+
+- Canonical attachment is source-feasible but still needs the separate bounded
+  native design/security admission required by [the client ADR](../adr/client.md#decision).
+  Completed `PARITYUPDATE-001-aa` research and its live follow-up do not grant it.
+- Canonical pending input depends on that consumer boundary. Send-time transcript
+  row correlation and durable partial-lock clarification readback remain missing
+  combined guarantees; live testing cannot supply producer fields. Preserve
+  `PARITYUPDATE-002-5c` and its explicit limits rather than reopen its research.
+- Foreign import lacks an admitted consumer/preview-to-import binding. Radio is
+  client-local but is not a tiny UI addition: external discovery/media privacy and
+  lifecycle preparation remain. Vault, packages, Screen and Pets stay outside these
+  two tasks; no secret, execution, computer-control or spending authority is added.
+- Existing speech ownership/continuation and reasoning disclosure have bounded
+  implementations. No new broker/delta-buffer task is justified without an actual
+  Wing defect. Agent display-default precedence and delegation settings require
+  their own qualified configuration projection, not a shadow local setting.
+
+Preserve the [50-group matrix](../product/hermes-desktop-feature-matrix.json), its
+runtime cells and all completed studies. These two tasks close only their named
+consumer slices when their future checks pass; they do not close full parity.

@@ -1071,6 +1071,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         context: context,
         showDragHandle: true,
         isScrollControlled: true,
+        useSafeArea: true,
         builder: (sheetContext) {
           modalContext = sheetContext;
           modalRoute = ModalRoute.of<String>(sheetContext);

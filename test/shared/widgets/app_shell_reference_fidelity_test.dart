@@ -5,11 +5,27 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/shared/widgets/app_shell_desktop_style.dart';
+import 'package:wing/theme/wing_theme.dart';
 
 import '../../features/hermes_chat/support/fake_hermes_channel.dart';
 import 'app_shell_navigation_groups_test.dart' as navigation;
 
 void main() {
+  test('shell inherits every selected palette in both modes', () {
+    for (final palette in WingThemePalette.values) {
+      for (final brightness in Brightness.values) {
+        final theme = wingThemeFor(palette, brightness);
+        final style = AppShellDesktopStyle.fromTheme(theme);
+        expect(style.accent, theme.colorScheme.primary);
+        expect(style.workArea, theme.colorScheme.surface);
+        expect(style.rail, theme.colorScheme.surfaceContainerLow);
+        expect(
+          style.sidebarTheme(theme).colorScheme.primary,
+          theme.colorScheme.primary,
+        );
+      }
+    }
+  });
   testWidgets(
     'redesigned shell uses Desktop palette and navigation type scale',
     (tester) async {

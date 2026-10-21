@@ -590,8 +590,52 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 
 ### Primer cambio implementado de CLONE-03
 
+Refinamiento visual: Appearance agrupa modo y galería bajo Theme y separa
+Typography después de la galería, conforme al orden de secciones del pin oficial.
+En móvil el control de modo usa una fila cuando cabe y las miniaturas son más
+bajas; texto grande mantiene distribución vertical y área mínima de 48 px.
+Verificación con Flutter 3.44.9: 48 pruebas Settings/router, análisis, formato,
+build web E2E y 2 recorridos Chromium sin retries a 390/1280 px. Capturas
+inspeccionadas durante el refinamiento; no equivalen a comparación 1:1 Desktop.
+El árbol completo de subpáginas sigue pendiente.
+
+Tamaño de conversación: Appearance expone la preferencia de escala de transcript
+ya existente, antes accesible por pinch. Reutiliza el provider y clave actuales;
+preserva el default Wing y los valores intermedios guardados. Los presets
+90/100/110/125/150/175 siguen `appearance-settings.tsx:689-703` y
+`store/chat-text-scale.ts` del pin oficial. No es escala global ni selector de
+fuentes, y no completa el subárbol Typography. Dos regresiones a 390/1280 px con
+texto 200% verifican selección, persistencia y recarga sin alterar el modo de tema.
+Pasaron 48 pruebas Settings/router, análisis, formato y build Linux debug con
+Flutter 3.44.9 (fuera del pin documental 3.44.2). No se ejecutó E2E web ni se
+declara comparación visual Desktop o calificación física por ese build.
+
+Galería visual de Appearance: el selector de paleta es ahora una cuadrícula de
+miniaturas seleccionables, siguiendo el patrón `ThemeGallery` de
+`apps/desktop/src/app/settings/appearance-settings.tsx` del pin `47b23fa048`.
+Se conservan las cinco paletas Wing y sus claves/defaults existentes; no se
+presentan como el catálogo completo de temas Desktop. La selección tiene nombre,
+estado semántico y check visible. La cuadrícula adapta columnas al ancho del panel
+y texto grande; las miniaturas decorativas no entran en el árbol accesible.
+
+Verificación local: 46 pruebas Settings/router; análisis sin issues; formato de
+los tres Dart modificados y `git diff --check`; build web E2E release. Chromium:
+2 casos a 390/1280 px verifican selección, recarga persistida y desplazamiento a
+la última paleta sin errores de render. Se inspeccionaron ambas capturas. Un
+intento de teclado mediante foco DOM no activó el control; no se declara
+calificación de teclado nativo. La prueba final usa click semántico. No se ejecutó
+la suite E2E completa ni comparación renderizada con Desktop.
+Se usó Flutter 3.44.9 instalado: evidencia fuera del pin 3.44.2 de CONTRIBUTING,
+cuyo SDK no está disponible localmente. No equivale a aceptación con ese pin.
+
 Seguimiento: `/settings?tab=voice|appearance|chat|connections` abre la categoría
-local correspondiente. Un cambio de intent sobre la misma pantalla actualiza
+local correspondiente; también se admiten los IDs oficiales `config:voice`,
+`config:appearance`, `config:chat` y `gateway`. La selección manual actualiza
+la URL con replace (sin apilar una ruta por categoría) y preserva otros parámetros.
+Los aliases cortos existentes siguen admitidos para no romper enlaces guardados.
+Pasaron las mismas 46 pruebas Settings/router y análisis tras esta extensión.
+
+Un cambio de intent sobre la misma pantalla actualiza
 contenido y selector; valores desconocidos o Chat sin spellcheck caen a Appearance
 sin categoría vacía. Se conserva la navegación manual y no hay llamadas Agent al
 abrir el deep link. Pasaron 46 pruebas Settings/router y análisis con Flutter

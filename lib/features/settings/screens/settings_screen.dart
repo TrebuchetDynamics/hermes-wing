@@ -23,9 +23,14 @@ part 'settings_voice_screen.dart';
 enum _SettingsCategory { appearance, chat, voice, connections }
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({this.initialCategory, super.key});
+  const SettingsScreen({
+    this.initialCategory,
+    this.onCategoryChanged,
+    super.key,
+  });
 
   final String? initialCategory;
+  final ValueChanged<String>? onCategoryChanged;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -36,9 +41,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   _SettingsCategory _resolveCategory(String? name) =>
       _SettingsCategory.values
-          .where((category) => category.name == name)
+          .where(
+            (category) =>
+                category.name ==
+                switch (name) {
+                  'config:appearance' => 'appearance',
+                  'config:chat' => 'chat',
+                  'config:voice' => 'voice',
+                  'gateway' => 'connections',
+                  _ => name,
+                },
+          )
           .firstOrNull ??
       _SettingsCategory.appearance;
+
+  void _selectCategory(_SettingsCategory category) {
+    setState(() => _category = category);
+    widget.onCategoryChanged?.call(switch (category) {
+      _SettingsCategory.appearance => 'config:appearance',
+      _SettingsCategory.chat => 'config:chat',
+      _SettingsCategory.voice => 'config:voice',
+      _SettingsCategory.connections => 'gateway',
+    });
+  }
 
   @override
   void initState() {
@@ -163,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                       onChanged: (category) {
                         if (category != null) {
-                          setState(() => _category = category);
+                          _selectCategory(category);
                         }
                       },
                     ),
@@ -200,8 +225,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                                 leading: Icon(icons[category], size: 20),
                                 title: Text(labels[category]!),
-                                onTap: () =>
-                                    setState(() => _category = category),
+                                onTap: () => _selectCategory(category),
                               ),
                             ),
                         ],
@@ -245,38 +269,6 @@ class _SettingsCategoryContent extends StatelessWidget {
   );
 }
 
-// As in Desktop ListRow, the pane's width (not the window) owns control layout.
-class _SettingsControlRow extends StatelessWidget {
-  const _SettingsControlRow({required this.label, required this.control});
-
-  final String label;
-  final Widget control;
-
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final title = Text(label, style: Theme.of(context).textTheme.bodyLarge);
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child:
-            constraints.maxWidth >= 640 &&
-                MediaQuery.textScalerOf(context).scale(14) <= 18
-            ? Row(
-                children: [
-                  Expanded(child: title),
-                  const SizedBox(width: 24),
-                  SizedBox(width: 300, child: control),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [title, const SizedBox(height: 12), control],
-              ),
-      );
-    },
-  );
-}
-
 class _AppearanceSettingsSection extends ConsumerWidget {
   const _AppearanceSettingsSection();
 
@@ -299,16 +291,23 @@ class _AppearanceSettingsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(
+          strings.settingsThemeHeading,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: LayoutBuilder(
             builder: (context, constraints) {
               // Vertical native segments preserve full labels at 200% text.
               final stacked =
-                  constraints.maxWidth < 360 ||
+                  constraints.maxWidth < 240 ||
                   MediaQuery.textScalerOf(context).scale(14) > 18;
               return SegmentedButton<ThemeMode>(
                 key: const ValueKey('settings-theme-mode'),
+                style: const ButtonStyle(
+                  minimumSize: WidgetStatePropertyAll(Size(48, 48)),
+                ),
                 direction: stacked ? Axis.vertical : Axis.horizontal,
                 showSelectedIcon: false,
                 segments: modes,
@@ -319,43 +318,214 @@ class _AppearanceSettingsSection extends ConsumerWidget {
             },
           ),
         ),
-        const Divider(height: 1),
-        _SettingsControlRow(
-          label: strings.themePaletteLabel,
-          control: Semantics(
-            identifier: 'settings-palette-picker',
-            label: strings.themePaletteLabel,
-            child: DropdownButtonFormField<WingThemePalette>(
-              key: const ValueKey('settings-palette-picker'),
-              initialValue: appearance.palette,
-              isExpanded: true,
-              itemHeight: null,
-              decoration: const InputDecoration(isDense: false),
-              items: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            strings.themePaletteLabel,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final largeText = MediaQuery.textScalerOf(context).scale(14) > 20;
+            final columns = largeText || constraints.maxWidth < 440
+                ? 1
+                : constraints.maxWidth < 720
+                ? 2
+                : 3;
+            final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+            return Wrap(
+              key: const ValueKey('settings-theme-gallery'),
+              spacing: 12,
+              runSpacing: 12,
+              children: [
                 for (final palette in WingThemePalette.values)
-                  DropdownMenuItem(
-                    value: palette,
-                    child: Row(
-                      children: [
-                        ExcludeSemantics(
-                          child: CircleAvatar(
-                            backgroundColor: palette.seed,
-                            radius: 8,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(_paletteLabel(strings, palette))),
-                      ],
+                  SizedBox(
+                    width: width,
+                    child: _ThemePreviewChoice(
+                      palette: palette,
+                      label: _paletteLabel(strings, palette),
+                      selected: appearance.palette == palette,
+                      onSelected: () =>
+                          unawaited(controller.setPalette(palette)),
                     ),
                   ),
               ],
-              onChanged: (palette) {
-                if (palette != null) unawaited(controller.setPalette(palette));
-              },
+            );
+          },
+        ),
+        const SizedBox(height: 32),
+        const Divider(height: 1),
+        const SizedBox(height: 24),
+        Text(
+          strings.settingsTypographyHeading,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const _ChatTextScaleSetting(),
+      ],
+    );
+  }
+}
+
+class _ChatTextScaleSetting extends ConsumerWidget {
+  const _ChatTextScaleSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final scale = ref.watch(wingChatPreferencesProvider).transcriptTextScale;
+    final percent = (scale * 100).round();
+    // Pinch zoom can retain intermediate values; displaying Settings must not
+    // silently round or overwrite that saved presentation preference.
+    final percentages = {90, 100, 110, 125, 150, 175, percent}.toList()..sort();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            strings.chatTextScaleTitle,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            strings.chatTextScaleDescription,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final value in percentages)
+                ChoiceChip(
+                  key: ValueKey('settings-chat-text-scale-$value'),
+                  label: Text('$value%'),
+                  selected: value == percent,
+                  onSelected: (_) => ref
+                      .read(wingChatPreferencesProvider.notifier)
+                      .setTranscriptTextScale(value / 100),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemePreviewChoice extends StatelessWidget {
+  const _ThemePreviewChoice({
+    required this.palette,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final WingThemePalette palette;
+  final String label;
+  final bool selected;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final preview = wingThemeFor(palette, theme.brightness).colorScheme;
+    final border = selected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.outlineVariant;
+    return Semantics(
+      selected: selected,
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: border, width: selected ? 2 : 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: ValueKey('settings-theme-${palette.name}'),
+          onTap: onSelected,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ExcludeSemantics(
+                  child: Container(
+                    height: MediaQuery.sizeOf(context).width < 600 ? 64 : 88,
+                    decoration: BoxDecoration(
+                      color: preview.surface,
+                      border: Border.all(color: preview.outlineVariant),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 30,
+                          color: preview.surfaceContainerLow,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 5,
+                                  width: 52,
+                                  color: preview.onSurface,
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  height: 4,
+                                  width: 76,
+                                  color: preview.onSurfaceVariant,
+                                ),
+                                const Spacer(),
+                                Align(
+                                  alignment: AlignmentDirectional.centerEnd,
+                                  child: Container(
+                                    height: 16,
+                                    width: 42,
+                                    decoration: BoxDecoration(
+                                      color: preview.primary,
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(label, style: theme.textTheme.labelLarge),
+                    ),
+                    const SizedBox(width: 8),
+                    if (selected)
+                      Icon(
+                        Icons.check,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

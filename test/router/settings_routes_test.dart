@@ -36,7 +36,7 @@ void main() {
     addTearDown(container.dispose);
     final router = container.read(routerProvider);
     addTearDown(router.dispose);
-    router.go('${AppRoutes.settings}?tab=voice');
+    router.go('${AppRoutes.settings}?tab=config:voice');
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -97,6 +97,10 @@ void main() {
     await tester.pumpAndSettle();
 
     await selectCategory('Connections');
+    expect(
+      router.routeInformationProvider.value.uri.queryParameters['tab'],
+      'gateway',
+    );
     final diagnostics = find.byKey(const ValueKey('settings-diagnostics-link'));
     await Scrollable.ensureVisible(tester.element(diagnostics), alignment: 0.5);
     await tester.pumpAndSettle();

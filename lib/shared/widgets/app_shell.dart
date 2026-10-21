@@ -422,7 +422,7 @@ class _DesktopShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style = AppShellDesktopStyle.forBrightness(theme.brightness);
+    final style = AppShellDesktopStyle.fromTheme(theme);
     final workflowCount = AppShellPresentation(
       AppLocalizations.of(context),
     ).workflowDestinations.length;
@@ -625,8 +625,8 @@ class _DesktopShell extends StatelessWidget {
                           message: destinations[index].label,
                           excludeFromSemantics: true,
                           child: TextButton(
-                            style: AppShellDesktopStyle.forBrightness(
-                              theme.brightness,
+                            style: AppShellDesktopStyle.fromTheme(
+                              theme,
                             ).navigationStyle(selected: selectedIndex == index),
                             onPressed: () => onSelected(index),
                             child: expanded
@@ -672,9 +672,7 @@ class _DesktopProfileFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final style = AppShellDesktopStyle.forBrightness(
-      Theme.of(context).brightness,
-    );
+    final style = AppShellDesktopStyle.fromTheme(Theme.of(context));
     // Bound after redaction; use the same safe context in every new surface.
     final profile = wingRedactedPreview(status.profile, maxLength: 80);
     final label =
@@ -768,7 +766,7 @@ class _DesktopStatusBarState extends State<_DesktopStatusBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style = AppShellDesktopStyle.forBrightness(theme.brightness);
+    final style = AppShellDesktopStyle.fromTheme(theme);
     final rows = widget.status.infoRows;
     return Container(
       key: const ValueKey('app-shell-status-bar'),

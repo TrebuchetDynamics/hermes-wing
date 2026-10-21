@@ -35,31 +35,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Theme'), findsOneWidget);
+    expect(find.text('Typography'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Typography')).dy,
+      greaterThan(
+        tester
+            .getBottomRight(
+              find.byKey(const ValueKey('settings-theme-gallery')),
+            )
+            .dy,
+      ),
+    );
+    for (final palette in WingThemePalette.values) {
+      expect(
+        find.byKey(ValueKey('settings-theme-${palette.name}')),
+        findsOneWidget,
+      );
+    }
 
     await tester.scrollUntilVisible(find.text('Dark'), 200);
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('settings-palette-picker')),
-    );
-    final pickerBounds = tester.getRect(
-      find.byKey(const ValueKey('settings-palette-picker')),
-    );
-    final labelBounds = tester.getRect(find.text('Wing').hitTestable());
-    expect(labelBounds.top, greaterThanOrEqualTo(pickerBounds.top));
-    expect(labelBounds.bottom, lessThanOrEqualTo(pickerBounds.bottom));
-    await tester.tap(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Semantics &&
-            widget.properties.identifier == 'settings-palette-picker',
-      ),
-    );
+    final forest = find.byKey(const ValueKey('settings-theme-forest'));
+    await tester.ensureVisible(forest);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Forest').last);
+    expect(forest.hitTestable(), findsOneWidget);
+    await tester.tap(forest);
     await tester.pumpAndSettle();
 
     final prefs = await SharedPreferences.getInstance();
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == 'Forest' &&
+            widget.properties.selected == true &&
+            widget.properties.button == true,
+      ),
+      findsOneWidget,
+    );
     expect(prefs.getString('wing.theme.mode'), 'dark');
     expect(prefs.getString('wing.theme.palette'), 'forest');
   });
@@ -93,25 +108,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('settings-palette-picker')),
-    );
+    final forest = find.byKey(const ValueKey('settings-theme-forest'));
+    await tester.ensureVisible(forest);
     await tester.pumpAndSettle();
-    final pickerBounds = tester.getRect(
-      find.byKey(const ValueKey('settings-palette-picker')),
-    );
-    final labelBounds = tester.getRect(find.text('Wing').hitTestable());
-    expect(labelBounds.top, greaterThanOrEqualTo(pickerBounds.top));
-    expect(labelBounds.bottom, lessThanOrEqualTo(pickerBounds.bottom));
-    await tester.tap(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is Semantics &&
-            widget.properties.identifier == 'settings-palette-picker',
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Forest').last);
+    expect(forest.hitTestable(), findsOneWidget);
+    await tester.tap(forest);
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);

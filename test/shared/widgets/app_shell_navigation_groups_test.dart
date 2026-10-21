@@ -7,6 +7,7 @@ import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart
 import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/app_routes.dart';
 import 'package:wing/shared/widgets/app_shell.dart';
+import 'package:wing/theme/wing_theme.dart';
 
 import '../../features/hermes_chat/support/fake_hermes_channel.dart';
 
@@ -63,6 +64,7 @@ Future<GoRouter> pumpShell(
     ProviderScope(
       overrides: [hermesChannelProvider.overrideWithValue(channel)],
       child: MaterialApp.router(
+        theme: wingLightTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,

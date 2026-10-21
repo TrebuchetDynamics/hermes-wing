@@ -7093,6 +7093,30 @@ abstract class AppLocalizations {
   /// **'Accent color'**
   String get themePaletteLabel;
 
+  /// No description provided for @settingsThemeHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeHeading;
+
+  /// No description provided for @settingsTypographyHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Typography'**
+  String get settingsTypographyHeading;
+
+  /// No description provided for @chatTextScaleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat text size'**
+  String get chatTextScaleTitle;
+
+  /// No description provided for @chatTextScaleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust conversation text without changing the rest of the interface.'**
+  String get chatTextScaleDescription;
+
   /// No description provided for @themePaletteWing.
   ///
   /// In en, this message translates to:

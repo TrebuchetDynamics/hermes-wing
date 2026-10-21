@@ -16,7 +16,15 @@ class AppShellDesktopStyle {
   });
 
   factory AppShellDesktopStyle.forBrightness(Brightness brightness) {
-    final colors = HermesDesktopTokens.colors(brightness);
+    return AppShellDesktopStyle._fromColors(
+      HermesDesktopTokens.colors(brightness),
+    );
+  }
+
+  factory AppShellDesktopStyle.fromTheme(ThemeData theme) =>
+      AppShellDesktopStyle._fromColors(theme.colorScheme);
+
+  factory AppShellDesktopStyle._fromColors(ColorScheme colors) {
     return AppShellDesktopStyle._(
       rail: colors.surfaceContainerLow,
       workArea: colors.surface,

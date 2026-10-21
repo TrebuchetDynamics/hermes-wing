@@ -124,8 +124,7 @@ needs its own exact capability, ownership and qualification evidence.
   Qualify exact advertised atomic restore authority before native recovery.
   Sources: [accepted continuation](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview),
   [contract trace](docs/quality/diagnostics-backup-contract.md).
-  Scope: validate an exact advertised Agent recovery operation and its profile,
-  archive, revision, rollback and activation boundaries before implementing a Wing caller.
+  Scope: validate an exact advertised Agent recovery operation and its profile, archive, revision, rollback and activation boundaries before implementing a Wing caller.
   Acceptance: authenticated secret-safe operation identity and all-resource rollback
   must be established; separately approved native target checks must prove recovery.
   Dependencies: DOC-DIAGNOSTICS-BACKUP-CONTRACT is complete. Blocked by missing
@@ -183,16 +182,7 @@ patches, personal credential discovery, service restarts or provider spending.
   Keep offline removal/build evidence separate from native/device/live acceptance;
   do not block independent closeout on an invented approval or report completion
   from implementation alone. Preserve installed services, raw records and history.
-  Scope: remove lib/core/wing_link, wing_link service tree, install-wing-link.sh,
-  delivery scripts, dependency closure, platform hosts, service/packaging hooks,
-  release/smoke jobs and obsolete fixtures/exports. Current docs and landing visuals
-  must contain no legacy setup offer. Historical receipts stay clearly historical.
-  Current-user README, getting-started, PRD and docs navigation no longer promote
-  Link installation or pairing. Android prerequisites also distinguish optional
-  VPN connectivity from required transport security; neither VPN nor pairing is
-  mandatory. Retain this boundary while retiring remaining consumers; historical
-  runbooks are not replacement qualification.
-  Preserve legacy contract/security checks until their consumers are removed.
+  Scope: remove lib/core/wing_link, wing_link service tree, install-wing-link.sh, delivery scripts, dependency closure, platform hosts, service/packaging hooks, release/smoke jobs and obsolete fixtures/exports. Current docs and landing visuals must contain no legacy setup offer. Historical receipts stay clearly historical. Current-user README, getting-started, PRD and docs navigation no longer promote Link installation or pairing. Android prerequisites also distinguish optional VPN connectivity from required transport security; neither VPN nor pairing is mandatory. Retain this boundary while retiring remaining consumers; historical runbooks are not replacement qualification. Preserve legacy contract/security checks until their consumers are removed.
   Acceptance: packaging and new phone setup include no Wing Link binary/service or
   pairing bootstrap; direct/native workflows pass on named Linux and Android targets.
   Installed paired records and personal runtimes are not erased or restarted.
@@ -342,8 +332,7 @@ Section: Needs decision.
   Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap),
   [catalog contract](docs/quality/slash-catalog-contract.md),
   [denial and recovery evidence](docs/quality/slash-denial-evidence.md).
-  Scope: implement only exact advertised unmodified Agent command contracts and their
-  coherent composer/recovery consumers; preserve direct Agent ownership and no replay.
+  Scope: implement only exact advertised unmodified Agent command contracts and their coherent composer/recovery consumers; preserve direct Agent ownership and no replay.
   Acceptance: catalog/completion/dispatch identity and grants match the selected Agent;
   unavailable-action disclosure and zero specialized I/O have production-path oracles;
   ordinary chat fallback is explicit. Record separate native/live proof before parity.
@@ -364,12 +353,7 @@ Section: Needs decision.
   then remaining consumers/fixtures and packaging handoff. Do not spend another
   occurrence on broad parity discovery or README polishing instead of this outcome.
   Payoff: connect directly without a second service, pairing, wing-cli or Link token.
-  Scope: enrollment, Local platform flow, profile/catalog callers, Connections and
-  nearest production-control tests. Retire explicit pairing/handoff payloads and
-  routes, Local/Termux bootstrap, dormant builders/directory adapters and legacy
-  credential/contact APIs after the active enrollment slice. Reuse current Agent
-  APIs and Linux discovery; do not expand or replace the management service.
-  Unsupported operations must explain unavailable Agent support, not invoke a shell.
+  Scope: enrollment, Local platform flow, profile/catalog callers, Connections and nearest production-control tests. Retire explicit pairing/handoff payloads and routes, Local/Termux bootstrap, dormant builders/directory adapters and legacy credential/contact APIs after the active enrollment slice. Reuse current Agent APIs and Linux discovery; do not expand or replace the management service. Unsupported operations must explain unavailable Agent support, not invoke a shell.
   Acceptance: fresh/saved Local, SSH and Remote use zero Link requests or setup
   prerequisites. Profile/model choice does not fetch the Link catalog. Cancelling
   replacement setup and reconnect preserve exact host/profile/session and no replay.
@@ -452,10 +436,7 @@ Section: Needs decision.
   and [connection frontier](docs/plans/2026-10-03-desktop-port-goal.md#current-connection-frontier).
   Graph evidence: partial; source-bound job inspection establishes a paused
   15-minute job, not installed admission, live ownership or an executed canary.
-  Scope: preserve and finish the current Wing candidate; reconcile existing
-  connection owners; update/read back the existing paused job prompt; qualify
-  one manually triggered occurrence and gated schedule resumption. Use an existing
-  eligible CONNECTION-PATHS implementation task, not duplicate product work.
+  Scope: preserve and finish the current Wing candidate; reconcile existing connection owners; update/read back the existing paused job prompt; qualify one manually triggered occurrence and gated schedule resumption. Use an existing eligible CONNECTION-PATHS implementation task, not duplicate product work.
   Acceptance: observe safe admission, relevant passing checks, independent review,
   a scoped implementation commit on canonical main and worker release. Existing
   chat work, documentation-only commits and job status `ok` do not count. Resume
@@ -484,9 +465,7 @@ active workers and coordinate exact source ownership before dispatch.
   Historical inputs: `wing_link/internal/app/serve.go` and
   `wing_link/internal/app/serve_test.go` were removed at 963b9b5b; use immutable
   Git history for the archived contract, not nonexistent current handlers.
-  Scope: one management-route family, existing tooling, in-process disposable
-  recorder fixtures and documentation corrections. Exclude live listeners,
-  personal credentials, peer administration, API redesign and new dependencies.
+  Scope: one management-route family, existing tooling, in-process disposable recorder fixtures and documentation corrections. Exclude live listeners, personal credentials, peer administration, API redesign and new dependencies.
   Acceptance: execute schema-to-handler checks for self-read/revoke, exact grants,
   pending/revoked authority and method/protocol errors. Reject an isolated incorrect
   schema copy; keep generated credentials and fixture bodies out of receipts.
@@ -509,8 +488,7 @@ active workers and coordinate exact source ownership before dispatch.
   Payoff: preserve a distinct remaining proof slice after the current task.
   Sources: [API-CONFORMANCE](docs/api/wing-link.openapi.yaml),
   [retirement boundary](docs/adr/product.md#complete-removal-including-legacy).
-  Scope: read-only source, nearest tests and sanitized receipt inspection for this
-  outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
+  Scope: read-only source, nearest tests and sanitized receipt inspection for this outcome. Exclude implementation, upstream edits, secrets, installs and live actions.
   Acceptance: Compare code-first schema and existing dispatch tests for omitted, supported and unsupported generations with method/auth errors. Record conformance proof or the exact unexecuted check; no sockets.
   Dependencies: DOC-API-DEVICE-SELF-CONFORMANCE; not eligible until that task is done.
   Ownership: unclaimed in this index; verify tracker and continuation leases first.
@@ -595,10 +573,7 @@ does not mark any check passed or authorize live actions.
   Sources: [delivery map](docs/quality/linux-desktop-delivery-evidence.md),
   [uninstall map](docs/quality/linux-desktop-uninstall-evidence.md#exact-remaining-proof),
   [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap).
-  Scope: separately approved disposable Linux target and synthetic state only;
-  qualify complete bundle/launcher ownership, activation/rollback, client-only removal,
-  retained endpoint identity and actual keyring reinstall readability. Preserve Agent
-  services, credentials, raw legacy records and unrelated files. No live operation now.
+  Scope: separately approved disposable Linux target and synthetic state only; qualify complete bundle/launcher ownership, activation/rollback, client-only removal, retained endpoint identity and actual keyring reinstall readability. Preserve Agent services, credentials, raw legacy records and unrelated files. No live operation now.
   Acceptance: named-target source/artifact-bound receipts prove each operation and
   failure/recovery outcome; missing client-only producer, signing or access remain
   explicit gaps. Offline source and mocked storage checks cannot close this task.
@@ -631,8 +606,7 @@ does not mark any check passed or authorize live actions.
   Qualify scheduled-job inventory on an authenticated native Agent target.
   Payoff: close the native/live inventory gap without treating fixtures as support.
   Sources: [source-bound inventory receipt](docs/quality/schedules-inventory-evidence.md#historical-browser-evidence-and-the-missing-live-oracle).
-  Scope: installed Linux Wing against an existing approved isolated authenticated,
-  unmodified Agent target. No Agent changes, service changes, inference or mutations.
+  Scope: installed Linux Wing against an existing approved isolated authenticated, unmodified Agent target. No Agent changes, service changes, inference or mutations.
   Acceptance: verify exact advertised jobs/grants/profile contract, real denial,
   pending A-to-B read isolation and explicit B recovery with owner-scoped request
   receipts and zero mutations; keyboard recovery remains operable. If the contract
@@ -652,8 +626,7 @@ does not mark any check passed or authorize live actions.
   and production draft preservation.
   Sources: [adaptive-return limits](docs/quality/shell-compact-return-native.md)
   and [shell persistence evidence](docs/quality/shell-persistence-native.md).
-  Scope: use an explicitly approved disposable native target and its public
-  keyboard/window controls; preserve personal storage and all Agent identities.
+  Scope: use an explicitly approved disposable native target and its public keyboard/window controls; preserve personal storage and all Agent identities.
   Acceptance: collapse with OS keyboard input, resize wide-to-compact-to-wide,
   retain production draft and collapsed intent without incidental Agent calls,
   then relaunch and verify persisted sidebar intent. Record exact source, target,
@@ -675,8 +648,7 @@ does not mark any check passed or authorize live actions.
   from process death and real secure storage.
   Sources: [M2 baseline and exact scenario](docs/quality/2026-10-06-m2-continuity-baseline.md#exactly-one-future-scenario-android-m2-death-complete-01)
   and [BLK-20261006-W02](BLOCKERS.md#blk-20261006-w02--physical-device-run-for-m2-android-recovery).
-  Scope: only the admitted isolated device scenario and sanitized receipt;
-  exclude personal credentials, unadmitted QA runtime and synthetic qualification claims.
+  Scope: only the admitted isolated device scenario and sanitized receipt; exclude personal credentials, unadmitted QA runtime and synthetic qualification claims.
   Acceptance: named-device receipt proves completion while absent, exact restoration
   and authoritative no-replay counts. A device alone does not supply missing admission.
   Dependencies: owner-provided device and the existing admission prerequisites.
@@ -697,11 +669,7 @@ does not mark any check passed or authorize live actions.
   Payoff: prove installed daily use and retained-state recovery, not just APK launch.
   Sources: [M6](ROADMAP.md#m6--deliver-an-integrated-qualified-alpha),
   [first missing binding](docs/quality/m6-android-integrated-receipt-gap.md#first-missing-binding).
-  Scope: separately admitted candidate and disposable named Android target; bind
-  installed artifact/package/process identity to applicable M1–M5 outcomes, then
-  a distinct verified predecessor and approved upgrade/failure/recovery sequence.
-  Preserve paired/personal apps, credentials and Agent state. No release, deployment,
-  upstream edits, invented contracts or unapproved inference is authorized here.
+  Scope: separately admitted candidate and disposable named Android target; bind installed artifact/package/process identity to applicable M1–M5 outcomes, then a distinct verified predecessor and approved upgrade/failure/recovery sequence. Preserve paired/personal apps, credentials and Agent state. No release, deployment, upstream edits, invented contracts or unapproved inference is authorized here.
   Acceptance: exact source/tag/certificate/artifact and installed-byte readback;
   named target/OS/ABI/package/process generations; applicable workflow receipts and
   exact-owner canonical restoration with zero replay. Upgrade and recovery must

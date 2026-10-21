@@ -555,7 +555,7 @@ void main() {
     expect(find.byType(Card), findsNothing);
     expect(find.byKey(const ValueKey('settings-theme-mode')), findsOneWidget);
     expect(find.byKey(const ValueKey('settings-voice-link')), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('settings-category-chat')));
+    await tester.tap(find.byKey(const ValueKey('settings-category-voice')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
     await tester.tap(
@@ -627,7 +627,7 @@ void main() {
         (await SharedPreferences.getInstance()).getString('wing.theme.palette'),
         'forest',
       );
-      for (final category in ['Chat', 'Connections', 'Appearance']) {
+      for (final category in ['Chat', 'Voice', 'Connections', 'Appearance']) {
         await tester.tap(
           find.byKey(const ValueKey('settings-category-picker')),
         );
@@ -636,13 +636,22 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         if (category == 'Chat') {
+          expect(
+            find.byKey(const ValueKey('settings-voice-link')),
+            findsNothing,
+          );
+          expect(
+            find.byKey(const ValueKey('chat-spellcheck-enabled')),
+            findsOneWidget,
+          );
+        } else if (category == 'Voice') {
           final voice = find.byKey(const ValueKey('settings-voice-link'));
           await tester.ensureVisible(voice);
           await tester.pumpAndSettle();
           expect(voice.hitTestable(), findsOneWidget);
           expect(
             find.byKey(const ValueKey('chat-spellcheck-enabled')),
-            findsOneWidget,
+            findsNothing,
           );
         } else if (category == 'Connections') {
           final diagnostics = find.byKey(
@@ -727,7 +736,7 @@ void main() {
     }
 
     await activateWithKeyboard(
-      find.byKey(const ValueKey('settings-category-chat')),
+      find.byKey(const ValueKey('settings-category-voice')),
     );
     expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
     await activateWithKeyboard(

@@ -20,7 +20,7 @@ import '../providers/voice_settings_provider.dart';
 part 'settings_diagnostics_screen.dart';
 part 'settings_voice_screen.dart';
 
-enum _SettingsCategory { appearance, chat, connections }
+enum _SettingsCategory { appearance, chat, voice, connections }
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -38,17 +38,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final labels = {
       _SettingsCategory.appearance: strings.settingsAppearanceSection,
       _SettingsCategory.chat: strings.settingsChatSection,
+      _SettingsCategory.voice: strings.settingsVoiceSection,
       _SettingsCategory.connections: strings.gatewayDestination,
     };
     const icons = {
       _SettingsCategory.appearance: Icons.palette_outlined,
       _SettingsCategory.chat: Icons.chat_bubble_outline,
+      _SettingsCategory.voice: Icons.mic_none_outlined,
       _SettingsCategory.connections: Icons.dns_outlined,
     };
     final hasSpellcheck = WidgetsBinding
         .instance
         .platformDispatcher
         .nativeSpellCheckServiceDefined;
+    final categories = [
+      for (final category in _SettingsCategory.values)
+        if (category != _SettingsCategory.chat || hasSpellcheck) category,
+    ];
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.settingsDestination),
@@ -82,6 +88,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                           _SettingsCategory.chat => [
                             if (hasSpellcheck) const _ChatSettingsSection(),
+                          ],
+                          _SettingsCategory.voice => [
                             const _VoiceSettingsSection(),
                           ],
                           _SettingsCategory.connections => [
@@ -118,7 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         labelText: strings.settingsDestination,
                       ),
                       items: [
-                        for (final category in _SettingsCategory.values)
+                        for (final category in categories)
                           DropdownMenuItem(
                             value: category,
                             child: Text(labels[category]!),
@@ -147,7 +155,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: ListView(
                         padding: const EdgeInsets.all(12),
                         children: [
-                          for (final category in _SettingsCategory.values)
+                          for (final category in categories)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: ListTile(

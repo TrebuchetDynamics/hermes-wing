@@ -1993,7 +1993,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) unawaited(_showGatewayContacts());
+        if (didPop) return;
+        // Some Android IMEs forward Back after starting keyboard dismissal.
+        // Consume that gesture before changing the conversation owner.
+        if (_composerFocusNode.hasFocus) {
+          _composerFocusNode.unfocus();
+          return;
+        }
+        unawaited(_showGatewayContacts());
       },
       child: content,
     );

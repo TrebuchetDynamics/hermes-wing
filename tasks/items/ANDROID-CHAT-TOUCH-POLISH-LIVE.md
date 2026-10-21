@@ -19,3 +19,34 @@ exclusions = []
 +++
 
 - Touches: none before conversion; ** stands for the whole repository
+
+## Completed emulator-engine composer slice
+
+- Added `integration_test/android_chat_usability_test.dart`, reusing production
+  Chat and existing deterministic regression scenarios on the Android engine.
+- Five cases passed on `wing_ssh_qa` (`emulator-5554`, x86_64, isolated `.qa`
+  debug package): compact header/composer at 390/480/599 logical pixels,
+  retained draft during a streamed fixture response, and Enter/Space control
+  traversal at 200% text with reduced motion and explicit capture cancellation.
+- Command: `WING_ISOLATED_DEVICE_TEST=1 flutter test --no-pub --device-id emulator-5554 --dart-define=WING_ANDROID_CHAT_USABILITY_QA=true integration_test/android_chat_usability_test.dart`.
+  Flutter 3.44.9 analysis passed; changed-file formatting passed. Android builds
+  still warn that secure storage requests SDK 37 while this SDK compiles at 36.
+- This runner explicitly uses framework text/key input and mocked service/storage
+  seams. It does not qualify real OS IME/Back, TalkBack, physical touch, live
+  Agent/SSH, secure persistence or voice. Those original acceptance cells remain
+  open; do not repeat the completed composer slice as new implementation.
+
+## Android OS Back correction
+
+- Reproduced on the emulator using ADB OS input: focusing the production composer,
+  typing a synthetic draft and pressing Back opened contacts instead of retaining
+  Chat. The input-method service confirmed the software keyboard was visible.
+- Chat now consumes Back while its composer owns focus, unfocusing it before
+  allowing a subsequent Back to navigate to contacts. Added a focused regression
+  preserving exact contact, draft and saved endpoint.
+- The same OS-input journey passed after the change: keyboard visible before Back,
+  exact draft and Send control still present afterward. The isolated `.qa` fixture
+  uses production Chat and synthetic Agent state, not live authentication.
+- Added `integration_test/android_chat_input_main.dart` for explicit isolated
+  OS-input QA. Physical touch, TalkBack, live Agent/SSH and acoustic checks remain
+  open; this does not close the full task.

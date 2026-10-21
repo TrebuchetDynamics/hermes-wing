@@ -240,9 +240,9 @@ are not whole-app accessibility qualification.
 
 ## Typography
 
-The real inherited family is `sans-serif`, with `Helvetica Neue`, `Arial`, and
-`DejaVu Sans` fallbacks from `lib/theme/wing_theme.dart`. This is system/native
-fallback, not a claim that a single named face renders on every platform.
+The configured inherited family is `Segoe UI`, with platform fallbacks defined
+in `lib/theme/wing_theme.dart`. This is system/native fallback, not a claim that
+a single named face renders on every platform.
 
 - **Navigation:** `shell-nav`; regular inactive labels, semibold selection through
   `shell-nav-selected`. No display/headline scale is established here.
@@ -251,8 +251,9 @@ fallback, not a claim that a single named face renders on every platform.
 - **Icons:** Flutter Material icons, navigation/toggle (16px) and status (12px),
   not Desktop's Lucide set or circular-mark hover swap.
 
-Desktop's Latin face is **Manrope**; **Cairo** is an Arabic Unicode subset.
-Neither is bundled by this slice. Exact font and script fidelity remain gaps.
+Earlier Manrope/Cairo comparisons are historical, not current official Desktop
+parity evidence. Wing does not bundle those fonts. Exact font and script fidelity
+remain unqualified; configured family names alone do not establish rendered parity.
 
 ## Layout
 

@@ -35,11 +35,92 @@ Iterable<String> _allRenderedText(WidgetTester tester) => tester
     .map((text) => text.data ?? text.textSpan?.toPlainText() ?? '')
     .toList();
 
+HermesCapabilityDocument _credentialCapabilities({String? only}) =>
+    HermesCapabilityDocument.fromJson({
+      'schema_version': 1,
+      'profile_context': {'type': 'query', 'name': 'profile', 'required': true},
+      'auth': {
+        'granted_scopes': ['providers:write'],
+      },
+      'endpoints': {
+        if (only == null || only == 'set')
+          'provider_credential_set': {
+            'method': 'PUT',
+            'path': '/api/providers/{slug}/credential',
+            'required_scopes': ['providers:write'],
+          },
+        if (only == null || only == 'delete')
+          'provider_credential_delete': {
+            'method': 'DELETE',
+            'path': '/api/providers/{slug}/credential',
+            'required_scopes': ['providers:write'],
+          },
+        if (only == null || only == 'validate')
+          'provider_credential_validate': {
+            'method': 'POST',
+            'path': '/api/providers/{slug}/credential/validate',
+            'required_scopes': ['providers:write'],
+          },
+      },
+    });
+
 void main() {
+  for (final only in ['set', 'delete', 'validate']) {
+    testWidgets('credential authority is independent: $only', (tester) async {
+      final channel = FakeHermesChannel(
+        capabilities: _credentialCapabilities(only: only),
+        providers: const [_configuredProvider],
+      );
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+                .widget<FilledButton>(find.widgetWithText(FilledButton, 'Set'))
+                .onPressed !=
+            null,
+        only == 'set',
+      );
+      expect(
+        tester
+                .widget<TextButton>(find.widgetWithText(TextButton, 'Remove'))
+                .onPressed !=
+            null,
+        only == 'delete',
+      );
+      expect(
+        tester
+                .widget<OutlinedButton>(
+                  find.widgetWithText(OutlinedButton, 'Validate'),
+                )
+                .onPressed !=
+            null,
+        only == 'validate',
+      );
+    });
+  }
+  testWidgets('missing capabilities cannot dispatch credential operations', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(providers: const [_configuredProvider]);
+    addTearDown(channel.dispose);
+    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
+    await tester.enterText(find.byType(TextField), 'synthetic-only');
+    for (final label in ['Set', 'Remove', 'Validate']) {
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+    expect(channel.setProviderCredentialCalls, isEmpty);
+    expect(channel.removeProviderCredentialCalls, isEmpty);
+    expect(channel.validateProviderCredentialCalls, isEmpty);
+  });
   testWidgets(
     'revoked capability prevents dispatch from an open credential sheet',
     (tester) async {
-      final channel = FakeHermesChannel(providers: const [_configuredProvider]);
+      final channel = FakeHermesChannel(
+        capabilities: _credentialCapabilities(),
+        providers: const [_configuredProvider],
+      );
       addTearDown(channel.dispose);
       await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
       await tester.pumpAndSettle();
@@ -79,7 +160,10 @@ void main() {
   testWidgets('never renders a stored key even when configured', (
     tester,
   ) async {
-    final channel = FakeHermesChannel(providers: const [_configuredProvider]);
+    final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
+      providers: const [_configuredProvider],
+    );
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
@@ -96,7 +180,10 @@ void main() {
   });
 
   testWidgets('the obscured value input starts empty', (tester) async {
-    final channel = FakeHermesChannel(providers: const [_configuredProvider]);
+    final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
+      providers: const [_configuredProvider],
+    );
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
@@ -110,7 +197,10 @@ void main() {
   testWidgets('set forwards the typed value via setProviderCredential', (
     tester,
   ) async {
-    final channel = FakeHermesChannel(providers: const [_configuredProvider]);
+    final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
+      providers: const [_configuredProvider],
+    );
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
@@ -129,7 +219,10 @@ void main() {
   });
 
   testWidgets('remove calls removeProviderCredential', (tester) async {
-    final channel = FakeHermesChannel(providers: const [_configuredProvider]);
+    final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
+      providers: const [_configuredProvider],
+    );
     addTearDown(channel.dispose);
 
     await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
@@ -147,6 +240,7 @@ void main() {
     tester,
   ) async {
     final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
       providers: const [_configuredProvider],
       validateProviderResult: const HermesCredentialProbe(
         ok: true,
@@ -167,6 +261,7 @@ void main() {
 
   testWidgets('validate reports the probe round-trip latency', (tester) async {
     final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
       providers: const [_configuredProvider],
       validateProviderResult: const HermesCredentialProbe(
         ok: true,
@@ -194,6 +289,7 @@ void main() {
     tester,
   ) async {
     final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
       providers: const [_configuredProvider],
       validateProviderResult: const HermesCredentialProbe(
         ok: true,
@@ -240,6 +336,7 @@ void main() {
     tester,
   ) async {
     final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
       providers: const [_configuredProvider],
       validateProviderResult: HermesCredentialProbe(
         ok: false,
@@ -268,6 +365,7 @@ void main() {
 
   testWidgets('probe results stay usable at 200% text scale', (tester) async {
     final channel = FakeHermesChannel(
+      capabilities: _credentialCapabilities(),
       providers: const [_configuredProvider],
       validateProviderResult: const HermesCredentialProbe(
         ok: true,
@@ -355,7 +453,8 @@ void main() {
 }
 
 class _ThrowingValidationChannel extends FakeHermesChannel {
-  _ThrowingValidationChannel({required super.providers});
+  _ThrowingValidationChannel({required super.providers})
+    : super(capabilities: _credentialCapabilities());
 
   @override
   Future<HermesCredentialProbe> validateProviderCredential({

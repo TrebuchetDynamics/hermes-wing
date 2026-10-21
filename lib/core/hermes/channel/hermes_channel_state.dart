@@ -238,6 +238,20 @@ class HermesChannelState {
     'providers:write',
   );
 
+  bool get canRemoveProviderCredential => _allowsEndpoint(
+    'provider_credential_delete',
+    'DELETE',
+    '/api/providers/{slug}/credential',
+    'providers:write',
+  );
+
+  bool get canValidateProviderCredential => _allowsEndpoint(
+    'provider_credential_validate',
+    'POST',
+    '/api/providers/{slug}/credential/validate',
+    'providers:write',
+  );
+
   bool get canReadModels =>
       _allowsEndpoint('models', 'GET', '/api/models', 'models:read');
 

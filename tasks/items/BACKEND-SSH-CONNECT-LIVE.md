@@ -20,3 +20,20 @@ exclusions = []
 
 - Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository
+
+## Legacy branch reconciliation
+
+The retained `wt/android-ssh-reconnect` dirty candidate was reviewed against
+current main. Profile-path bootstrap, forwarded-owner recovery, typed Agent
+failures and SSH retry routing are already implemented by newer main code.
+Do not reimport its older controller/panel: doing so would regress host-pin checks,
+bootstrap-loss fencing and disconnect-before-forward-release ordering.
+
+The additional opt-in SSH credential persistence/reconnect/forget implementation
+is not accepted as complete: it lacks current owner fencing, explicit save outcome
+and real process-restart evidence. Its original tracked delta and untracked tests
+are preserved in the private branch-cleanup archive, not shipped as support.
+If resumed, adapt it to the current secure target/trust/recovery stores; retain
+API/serve separation and require explicit consent, stale-save rejection and
+two-process Android Keystore verification. The path-profile regression was rescued
+separately onto current main. This task's live acceptance remains open.

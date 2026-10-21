@@ -20,3 +20,17 @@ exclusions = []
 
 - Sources: [existing goal authority](docs/product/prd.md#core-journeys), [retained parent and qualifications](todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository
+
+## Completed offline cancellation correction
+
+- Reproduced both pending-configuration races with a delayed platform-channel
+  response: `speak` was called after `stop` and after `dispose`. Both regressions
+  failed on the original implementation.
+- Added a cancellation generation and terminal disposal fence. A cancelled
+  configuration cannot submit speech or recreate a disposed engine; an explicit
+  new utterance after Stop still works. No Agent contract/state changed.
+- Flutter 3.44.9: `flutter test --no-pub --concurrency=1 test/features/voice/services/tts test/features/hermes_chat/voice test/features/hermes_chat/screens/hermes_chat_voice_lifecycle_test.dart`
+  passed all 136 tests; `flutter analyze --no-pub` passed. Platform responses were
+  deterministic mocks, not physical audio.
+- Do not repeat the offline implementation. The original physical/acoustic
+  acceptance remains open and requires matching target/engine evidence.

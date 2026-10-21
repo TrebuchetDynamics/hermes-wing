@@ -70,25 +70,27 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
     }
   }
 
-  void _assertOwner() {
+  void _assertOwner(bool Function(HermesChannelState) allows) {
     _observeOwner();
     if (_ownerInvalid ||
         !identical(widget.channel, _ownerChannel) ||
-        (widget.channel.state.capabilities != null &&
-            !widget.channel.state.canWriteProviders)) {
+        !allows(widget.channel.state)) {
       throw StateError('Provider sheet ownership changed. Reopen the sheet.');
     }
   }
 
-  Future<void> _runAction(Future<void> Function() action) async {
+  Future<void> _runAction(
+    Future<void> Function() action,
+    bool Function(HermesChannelState) allows,
+  ) async {
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      _assertOwner();
+      _assertOwner(allows);
       await action();
-      _assertOwner();
+      _assertOwner(allows);
       if (mounted) await Navigator.of(context).maybePop();
     } catch (_) {
       if (!mounted) return;
@@ -114,6 +116,7 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
         envVar: _envVar,
         value: value,
       ),
+      (state) => state.canWriteProviders,
     );
   }
 
@@ -123,6 +126,7 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
         slug: _provider.slug,
         envVar: _envVar,
       ),
+      (state) => state.canRemoveProviderCredential,
     );
   }
 
@@ -148,11 +152,11 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
     });
     final stopwatch = Stopwatch()..start();
     try {
-      _assertOwner();
+      _assertOwner((state) => state.canValidateProviderCredential);
       final probe = await widget.channel.validateProviderCredential(
         slug: _provider.slug,
       );
-      _assertOwner();
+      _assertOwner((state) => state.canValidateProviderCredential);
       if (!mounted) return;
       setState(() {
         _validationOk = probe.ok;
@@ -320,7 +324,11 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
                   child: Text(strings.cancelAction),
                 ),
                 OutlinedButton.icon(
-                  onPressed: _busy ? null : _validate,
+                  onPressed:
+                      _busy ||
+                          !widget.channel.state.canValidateProviderCredential
+                      ? null
+                      : _validate,
                   icon: const Icon(Icons.verified_outlined),
                   label: Text(strings.validateCredentialAction),
                 ),
@@ -329,12 +337,18 @@ class _ProviderCredentialSheetState extends State<ProviderCredentialSheet> {
                     style: TextButton.styleFrom(
                       foregroundColor: theme.colorScheme.error,
                     ),
-                    onPressed: _busy ? null : _remove,
+                    onPressed:
+                        _busy ||
+                            !widget.channel.state.canRemoveProviderCredential
+                        ? null
+                        : _remove,
                     icon: const Icon(Icons.delete_outline),
                     label: Text(strings.removeCredentialAction),
                   ),
                 FilledButton.icon(
-                  onPressed: _busy ? null : _set,
+                  onPressed: _busy || !widget.channel.state.canWriteProviders
+                      ? null
+                      : _set,
                   icon: const Icon(Icons.save_outlined),
                   label: Text(strings.setCredentialAction),
                 ),

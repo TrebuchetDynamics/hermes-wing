@@ -39,6 +39,7 @@ void main() {
             base64Url.encode(List.generate(32, (_) => random.nextInt(256)));
         final agent = credential();
         final link = credential();
+        final replacement = credential();
         // Seed a historical secure record; management is no longer a public API.
         await secure.write(
           key: bundleKey,
@@ -52,21 +53,38 @@ void main() {
             },
           ]),
         );
+        await store.save(
+          profileId: 'linux-keyring-regression',
+          baseUrl: 'http://127.0.0.1:18642',
+          apiKey: replacement,
+          label: 'Isolated native storage regression',
+        );
+        final updated = await store.load();
+        expect(updated?.apiKey == replacement, isTrue);
+        expect(updated?.id == 'linux-keyring-regression', isTrue);
+        expect((await rawRow())['wingLinkToken'] == link, isTrue);
         // Only high-entropy credential digests cross the process boundary outside
         // secure storage; plaintext credentials never enter ordinary preferences.
         await File(receipt).writeAsString(
-          jsonEncode({'agent': digest(agent), 'link': digest(link)}),
+          jsonEncode({'agent': digest(replacement), 'link': digest(link)}),
         );
         final prefs = await SharedPreferences.getInstance();
         final values = prefs
             .getKeys()
             .map((key) => prefs.get(key).toString())
             .join('\n');
-        expect(values.contains(agent) || values.contains(link), isFalse);
+        expect(
+          values.contains(agent) ||
+              values.contains(link) ||
+              values.contains(replacement),
+          isFalse,
+        );
       } else {
         final expected = jsonDecode(await File(receipt).readAsString()) as Map;
         final saved = await store.load();
         expect(saved != null, isTrue);
+        expect(saved?.id == 'linux-keyring-regression', isTrue);
+        expect(saved?.baseUrl == 'http://127.0.0.1:18642', isTrue);
         final legacy = await rawRow();
         expect(
           saved!.apiKey != null && legacy['wingLinkToken'] != null,

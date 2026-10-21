@@ -1,10 +1,21 @@
 #!/usr/bin/env bash
 # Qualify the actual Linux secret-service plugin across two app processes.
-# Requires Flutter Linux build dependencies, Xvfb, D-Bus, and GNOME Keyring.
+# Requires Flutter Linux build dependencies, D-Bus, and GNOME Keyring.
+# Uses the current Wayland display, or Xvfb when Wayland is unavailable.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 umask 077
-keyring_test_root=$(mktemp -d /tmp/wing-keyring.XXXXXX)
+keyring_test_root=$(mktemp -d "${TMPDIR:?Set TMPDIR to a private scratch directory}/wing-keyring.XXXXXX")
+display_runner=()
+if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+  if [[ "$WAYLAND_DISPLAY" != /* ]]; then
+    export WAYLAND_DISPLAY="${XDG_RUNTIME_DIR:?Wayland requires XDG_RUNTIME_DIR}/$WAYLAND_DISPLAY"
+  fi
+  [[ -S "$WAYLAND_DISPLAY" ]] || { printf '%s\n' 'Wayland socket unavailable' >&2; exit 1; }
+else
+  command -v xvfb-run >/dev/null
+  display_runner=(xvfb-run -a)
+fi
 cleanup_keyring_test() {
   local keyring_cleanup_status=$?
   # Desktop portals can leave FUSE mounts after the isolated bus exits.
@@ -31,9 +42,10 @@ export XDG_RUNTIME_DIR="$keyring_test_root/run"
 mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_RUNTIME_DIR"
 export WING_ISOLATED_KEYRING=1
 export WING_KEYRING_RECEIPT="$keyring_test_root/receipt.json"
-dbus-run-session -- xvfb-run -a bash -c '
+dbus-run-session -- "${display_runner[@]}" bash -c '
   set -euo pipefail
   python3 -c "import secrets; print(secrets.token_hex(32))" | gnome-keyring-daemon --unlock --components=secrets > /dev/null
-  WING_KEYRING_PHASE=write timeout 300s flutter test -d linux integration_test/linux_secure_storage_integration_test.dart --reporter expanded
-  WING_KEYRING_PHASE=verify timeout 300s flutter test -d linux integration_test/linux_secure_storage_integration_test.dart --reporter expanded
+  flutter pub get --offline --enforce-lockfile
+  WING_KEYRING_PHASE=write timeout 300s flutter test --no-pub -d linux integration_test/linux_secure_storage_integration_test.dart --reporter expanded
+  WING_KEYRING_PHASE=verify timeout 300s flutter test --no-pub -d linux integration_test/linux_secure_storage_integration_test.dart --reporter expanded
 '

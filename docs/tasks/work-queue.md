@@ -34,6 +34,26 @@ resume schedules, authorize live access or certify product acceptance.
 
 ## Goals
 
+### Owner-requested pending-work summary
+
+This table summarizes the existing task records; it is not a second execution
+queue or a completion receipt. Keep each task's original acceptance and gates.
+The owner confirmed the local connection issue resolved; do not select it again
+as an unresolved defect without new evidence.
+
+| Task | Remaining outcome | Current gate and completed subset |
+| --- | --- | --- |
+| [ANDROID-CANONICAL-BOT-CHAT-LIVE](../../tasks/items/ANDROID-CANONICAL-BOT-CHAT-LIVE.md) | Bot Chat and per-profile sessions against a real Agent on Android | Emulator available; three deterministic Android-engine journeys delivered in `47d793a1`. Real Agent authentication, managed SSH, arbitration and native lifecycle/accessibility remain unqualified. |
+| [ANDROID-CHAT-TOUCH-POLISH-LIVE](../../tasks/items/ANDROID-CHAT-TOUCH-POLISH-LIVE.md) | OS keyboard, Back, large text and mobile accessibility | Emulator available; five composer/accessibility engine cases delivered in `980f6fc1`. Framework input is not real IME/Back or TalkBack qualification. |
+| [DOC-VOICE-QUALIFICATION-LIVE](../../tasks/items/DOC-VOICE-QUALIFICATION-LIVE.md) | Real microphone input and acoustic voice behavior | Physical device, capture/permission consent and acoustic checks; emulator results cannot close this task. |
+| [PARITY-LIVE-WORKFLOW-LIVE](../../tasks/items/PARITY-LIVE-WORKFLOW-LIVE.md) | Generation, approvals, authoritative Stop and exact recovery | Disposable authenticated QA target, exact grants and supported provider-call admission remain required. |
+| [VERIFY-DESKTOP-NATIVE-DELIVERY](../../tasks/items/VERIFY-DESKTOP-NATIVE-DELIVERY.md) | Install, update and client-only uninstall with retained data | Approved disposable Linux target and artifact/recovery evidence; a local build or launch is not delivery qualification. |
+| [FILES-TERMINAL-BROWSE](../../tasks/items/FILES-TERMINAL-BROWSE.md) | Bounded file browser and read-only previews | Safe Agent root/authentication/containment contract remains unverified. Positive implementation is deferred; no shell or Agent modification substitute. |
+| [FILES-TERMINAL-DOWNLOAD](../../tasks/items/FILES-TERMINAL-DOWNLOAD.md) | Explicit verified file download to the device | Depends on `FILES-TERMINAL-BROWSE` and its authoritative root/access guarantees. |
+
+Do not repeat the delivered emulator slices as new feature implementation. Mark
+the full tasks done only after their remaining acceptance has executed successfully.
+
 Goal status and sources live in the [goal records](../../tasks/goals/), linked
 by each task's `goal` field. Preserve unmet and unverified outcomes even when
 an offline implementation is done. Native/device, live-Agent and delivery gates

@@ -14,18 +14,23 @@ final class PlatformTextToSpeechService implements TextToSpeechService {
   final FlutterTtsEngineFactory _engineFactory;
   FlutterTts? _engine;
   bool _configured = false;
+  int _generation = 0;
+  bool _disposed = false;
 
   FlutterTts get _tts => _engine ??= _engineFactory();
 
   @override
   Future<void> speak(String text) async {
     final trimmed = text.trim();
-    if (trimmed.isEmpty) return;
+    if (trimmed.isEmpty || _disposed) return;
+    final generation = _generation;
+    final engine = _tts;
     if (!_configured) {
-      await _tts.awaitSpeakCompletion(true);
+      await engine.awaitSpeakCompletion(true);
+      if (_disposed || generation != _generation) return;
       _configured = true;
     }
-    final result = await _tts.speak(trimmed);
+    final result = await engine.speak(trimmed);
     // Android reports a rejected utterance as 0 instead of throwing. Do not
     // advance the spoken cursor or re-arm as if that chunk was audible.
     if (result == 0) {
@@ -35,11 +40,14 @@ final class PlatformTextToSpeechService implements TextToSpeechService {
 
   @override
   Future<void> stop() async {
+    ++_generation;
     await _engine?.stop();
   }
 
   @override
   Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
     await stop();
     _engine = null;
   }

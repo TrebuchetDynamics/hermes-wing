@@ -45,7 +45,7 @@ Docs map:
   warrants a new executable test.
 
 Ownership check: the coordinator assigned this branch/worktree. The baseline
-[task index](../../TODO.md) places this task in Next and makes
+[task index](../tasks/work-queue.md#current-work-queue) places this task in Next and makes
 `DOC-M4-KANBAN-PAGINATION-EVIDENCE` dependent on it. The local Autowork status
 records this task as running and holds the overlapping follow-up. The inspected
 [continuation ledger](../plans/2026-10-03-desktop-port-goal.md) has no matching

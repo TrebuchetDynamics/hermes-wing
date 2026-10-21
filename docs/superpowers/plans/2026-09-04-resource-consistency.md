@@ -5,7 +5,7 @@
 Disposition: Historical. Owner isolation and terminal certainty retained; old race/performance matrices are not fully qualified.
 
 Canonical owners: `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-SETUP-AUTH-MATRIX`, `VERIFY-LIVE-WORKFLOW-RECOVERY`, `WING-TASK-406`, `WING-TASK-407`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

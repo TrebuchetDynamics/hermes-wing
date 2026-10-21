@@ -5,7 +5,7 @@
 Disposition: Historical. Withdrawn comparison; successors rebuild official evidence, not the old work packages.
 
 Canonical owners: `PARITY-OFFICIAL-MATRIX`, `CONNECTION-OFFICIAL-DESKTOP-PORT`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

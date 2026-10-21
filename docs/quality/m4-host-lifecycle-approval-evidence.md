@@ -32,7 +32,7 @@ its trace commit `c0c90a4295d08a5431bc36aa9324e0cb057a9425` is an ancestor.
 The [continuation ledger](../plans/2026-10-03-desktop-port-goal.md) contains no
 matching task claim. These are local admission checks, **not a fresh external
 issue-tracker lease or release of another worker's ownership**. No other task was
-selected. `CONNECTION-LINK-RETIREMENT` in the baseline [task index](../../TODO.md)
+selected. `CONNECTION-LINK-RETIREMENT` in the baseline [task index](../tasks/work-queue.md#current-work-queue)
 already records delivered offline removal with named Linux/Android replacement
 acceptance still open. This page hands evidence back to that owner; it neither
 reopens deletion work nor closes replacement acceptance.

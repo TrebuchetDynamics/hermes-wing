@@ -5,7 +5,7 @@
 Disposition: Historical. Dated findings require fresh reproduction; successors are not historical completion proof.
 
 Canonical owners: `PARITY-OFFICIAL-MATRIX`, `VERIFY-CHAT-TRANSCRIPT-NATIVE`, `MT-RERUN-TRAIN`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

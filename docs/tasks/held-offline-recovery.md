@@ -1,6 +1,6 @@
 # Retained offline candidates: recovery order
 
-This is an execution handoff for the six existing tasks in [TODO](../../TODO.md#now--next),
+This is an execution handoff for the six existing tasks in [work queue](work-queue.md#current-work-queue),
 not a new product plan, acceptance waiver, worker dispatch or integration receipt.
 Their accepted sources, scopes, ownership and mandatory checks remain authoritative.
 

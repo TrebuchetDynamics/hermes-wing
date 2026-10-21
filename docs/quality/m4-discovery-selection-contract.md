@@ -32,7 +32,7 @@ read-only checkout was inspected instead, without copying or changing it.
   review and `git diff --check`. Documentation only: no new test or test execution.
 
 The baseline `goals.json` records the prerequisite `DOC-M4-CONTRACT-CHECKPOINT`
-as Done and this follow-up as open/Next. The [task index](../../TODO.md) and
+as Done and this follow-up as open/Next. The [task index](../tasks/work-queue.md#current-work-queue) and
 [continuation ledger](../plans/2026-10-03-desktop-port-goal.md) were checked;
 historical broad ACTIVE entries are not a live lease for this file. The coordinator
 assigned this exact isolated task/worktree; this receipt does not claim a live

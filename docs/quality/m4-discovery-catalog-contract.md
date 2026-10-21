@@ -28,7 +28,7 @@ for each reference:
   contract/security review and `git diff --check`. No executable behavior changes,
   so no new tests or runtime test execution are required for this receipt.
 
-The coordinator assigned this isolated worker/branch. The baseline [task index](../../TODO.md)
+The coordinator assigned this isolated worker/branch. The baseline [task index](../tasks/work-queue.md#current-work-queue)
 places this task in Next, with no inspection dependency and implementation ownership
 unclaimed; its selection/install follow-up depends on this checkpoint. This is not
 an assertion of a live GitHub lease or authority over another worker. Root and

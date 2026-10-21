@@ -3,7 +3,7 @@
 Status: implemented and checked offline; independent same-card review pending.
 The final local task ref/SHA and repeated acceptance receipts are recorded in the
 native card handoff by `finish_task.py`. This worker does not integrate or publish.
-[CONNECTION-LINK-REMOVAL](../../TODO.md#now--next) remains in progress;
+[CONNECTION-LINK-REMOVAL](../tasks/work-queue.md#current-work-queue) remains in progress;
 CONNECTION-LINK-RETIREMENT is not closed.
 
 ## Source and admission

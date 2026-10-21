@@ -5,7 +5,7 @@
 Disposition: Historical. Secondary technique umbrella, not a separate program to restart or close.
 
 Canonical owners: `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-OFFICIAL-MATRIX`, `MT-RERUN-TRAIN`, `MT-VERIFY-BROWSER-GATES`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

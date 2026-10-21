@@ -5,7 +5,7 @@
 Disposition: Superseded. Current supported enrollment/persona assessment only; no proposed Agent routes.
 
 Canonical owners: `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M3-ROLLBACK-EVIDENCE`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 `DOC-PERSONA-EVIDENCE` is complete and retained in [TODO history](../../../todo.archive.md);

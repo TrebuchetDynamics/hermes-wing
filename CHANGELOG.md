@@ -6,6 +6,16 @@ All notable user-visible changes will be documented here.
 
 ### Added
 
+- Native-channel **Bot Chat** now adopts a profile's canonical hidden conversation
+  only after exact registry and history checks. Ordinary sessions remain separate;
+  unsettled work, REST-only Bot Chat and native tabs remain excluded. See the
+  [offline implementation boundary](docs/quality/android-canonical-bot-chat.md);
+  Android/live acceptance remains open.
+- Compact profile switching now scrolls the sheet chrome with its content, and
+  Sessions excludes IME insets while retaining safe areas. The
+  [touch-switcher checks](docs/quality/mobile-chat-simplification.md#android-chat-touch-polish--task-local-candidate)
+  do not qualify physical Android keyboard or device behavior.
+
 - The managed SSH form can explicitly select Hermes serve profile/session/history
   reads using the host-provided session token. API mode remains the default;
   chat requires separate ticket/operation negotiation. Explicitly saved serve SSH
@@ -90,12 +100,14 @@ All notable user-visible changes will be documented here.
   native WebSocket transport or establish live/device qualification.
 
 - The internal native-web lifecycle adapter now retires withdrawn approval
-  requests even when no local turn is running. This is a qualification-adapter
-  correction, not enabled production transport or live approval support. See the
+  requests even when no local turn is running. The adapter is now used by deliberately
+  enabled Linux loopback serve chat; this establishes neither live nor Android
+  approval support. See the
   [design boundary](docs/spec.md#approval-withdrawal-in-the-internal-lifecycle-adapter)
   and [remaining checks](docs/test-plan.md#idle-approval-withdrawal-regression).
 
-- Optional Local setup no longer starts inspection or setup after its controller
+- Historical, pre-retirement behavior (no longer offered): Optional Local setup
+  no longer starts inspection or setup after its controller
   is disposed. Teardown cancellation errors cannot leak into a replacement route.
   The [recovery receipt](docs/quality/local-setup-recovery.md) records focused tests
   and compiled browser fixtures, not actual installation or live authentication.
@@ -150,9 +162,8 @@ All notable user-visible changes will be documented here.
   drops management trust. See the [bounded editor evidence](docs/quality/saved-endpoint-edit.md):
   widgets and compiled Chromium pass; native/live and main delivery remain separate.
 
-- Chat **Add Hermes** now opens the direct Agent form. Enrollment offers it before
-  **Optional setup and pairing**, so direct Local/SSH/Remote entry does not require
-  Wing Link. The [first-run receipt](docs/quality/direct-first-run.md) records Linux
+- Chat **Add Hermes** opens the direct Agent form. Historical enrollment also offered
+  **Optional setup and pairing**; that flow is retired, not a current prerequisite. The [first-run receipt](docs/quality/direct-first-run.md) records Linux
   widget/Chromium qualification. The [native first-run receipt](docs/quality/direct-first-run-native.md)
   adds Linux GTK fixture evidence; live authentication, Android and main delivery remain open.
   SSH now supports attempt-scoped private-key selection, encrypted-key passphrases

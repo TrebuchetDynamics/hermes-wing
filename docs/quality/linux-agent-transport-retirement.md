@@ -1,7 +1,7 @@
 # Linux Agent transport journey retirement
 
 Task: `t_7795c4c1`, bounded consumer slice of
-[CONNECTION-LINK-REMOVAL](../../TODO.md#now--next).
+[CONNECTION-LINK-REMOVAL](../tasks/work-queue.md#current-work-queue).
 Admitted base: `f78b164ac3f2315284f88120c6b1238b48e55248`.
 The [accepted retirement decision](../adr/product.md#complete-removal-including-legacy)
 requires removing client consumers while preserving retained service safety.

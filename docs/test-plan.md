@@ -239,6 +239,19 @@ dependencies and platform qualification boundaries.
 Do not claim physical Android sleep, notification delivery or energy savings from
 fixtures. Measure those outcomes on the named device and exact source if selected.
 
+## Chat switching and Bot Chat verification
+
+The [native Bot Chat receipt](quality/android-canonical-bot-chat.md) records
+registry/title/hidden-state, history and owner-replacement regressions. Reuse those
+checks only for matching inputs; native tabs and REST-only Bot Chat remain excluded.
+The [touch-switcher receipt](quality/mobile-chat-simplification.md#android-chat-touch-polish--task-local-candidate)
+covers scroll containment, safe areas, IME exclusion and keyboard traversal in
+offline fixtures. Neither receipt substitutes for the existing Android/live tasks.
+The [SSH serve receipt](quality/android-ssh-serve-offline.md) is historical offline
+evidence; qualify current saved destination/selection behavior against its actual
+secure store, not an older memory-only limitation. Native storage, installed-device
+keyboard behavior and live Agent outcomes require their own source-bound receipts.
+
 ## Scope and environments
 
 Test the Flutter Agent-only client without modifying Hermes Agent.
@@ -732,7 +745,7 @@ and [full log](../.task-evidence/desktop-connection-docs/npm-test.log) retain th
 executed result. This run used the shared current worktree, not a pinned isolated
 snapshot. It does not supersede native/live qualification or prove the whole
 tree passed. The later [Gateway harness repair](quality/gateway-keyboard-bootstrap-repair.md)
-closes FIX-GATEWAY-KEYBOARD-390 in [root TODO](../TODO.md#now--next): six focused
+closes FIX-GATEWAY-KEYBOARD-390 in [work queue](tasks/work-queue.md#current-work-queue): six focused
 cases and 68 nearest checks pass after correcting the history envelope.
 The full-suite failure remains historical evidence, not a current open repair.
 No product or test repair was performed during that earlier documentation pass.
@@ -956,7 +969,8 @@ model-pair readback, other platforms and protected-main delivery.
 
 ## Developer gate
 
-From the repository root, use Flutter 3.44.2, Node.js 22 and Go 1.26 for Wing Link.
+From the repository root, use Flutter 3.44.2 and Node.js 22.
+The plan/task tooling regression also requires Python 3.11+ for standard-library TOML parsing.
 Resolve dependencies as described in [Contributing](../CONTRIBUTING.md).
 Run focused tests while iterating, then checks proportional to the changed boundary.
 The complete existing gate is owned by [Contributing](../CONTRIBUTING.md#required-checks).
@@ -1252,7 +1266,7 @@ The existing security successor must verify absent installer assets, CLI actions
 discovery and special profile setup, while preserving generic Agent inventory,
 historical audit data and external installations. Run the root audit and the
 focused retirement checks on the supported toolchain with exact source bindings.
-The [backlog](../TODO.md#now--next) lists these checks; this pass runs none of them.
+The [backlog](tasks/work-queue.md#current-work-queue) lists these checks; this pass runs none of them.
 
 For each executed check, record the exact command, exit status, parsed result
 counts where available, source identity, target and log/receipt references.
@@ -1343,7 +1357,7 @@ shell failures: two palette/selection assertions in
 `test/shared/widgets/app_shell_reference_fidelity_test.dart` and a removed-brand
 assertion in `test/shared/widgets/app_shell_test.dart`. See the
 [retained log](../.task-evidence/repo-docs-npm-test.log). The subsequent
-FINISH-DESKTOP-SHELL qualification is complete in [root TODO](../TODO.md#now--next).
+FINISH-DESKTOP-SHELL qualification is complete in [work queue](tasks/work-queue.md#current-work-queue).
 DOC-GLOBAL-SESSIONS-CURRENT-CHECK remains done for its separately attributed receipt.
 This is a separate historical failed run, not the isolated mirror's incomplete attempt.
 It does not establish a session-authority defect. The subsequent commit `1afe1307`
@@ -1387,7 +1401,7 @@ runner, storage and observer prerequisites for the remaining
 [ANDROID-M2-DEATH-COMPLETE-01 scenario](quality/2026-10-06-m2-continuity-baseline.md#exactly-one-future-scenario-android-m2-death-complete-01).
 Its offline integrity receipt matches 28 scoped source fingerprints; it is not
 independent final approval or Android qualification.
-The goal ledger marks [DOC-M2-ANDROID-PREFLIGHT](../TODO.md#now--next) done
+The goal ledger marks [DOC-M2-ANDROID-PREFLIGHT](tasks/work-queue.md#current-work-queue) done
 for source-only preparation. Its retained receipt does not establish independent
 final approval. The [counting-contract artifact](quality/2026-10-06-m2-counting-contract.md)
 now traces the inspected metrics, run status, replay and authentication-audit reads.
@@ -1397,7 +1411,7 @@ coverage and closed observation intervals. Its disposition remains
 files and the document, not an installed runtime. The goal ledger now records
 DOC-M2-COUNTING-CONTRACT done for that source-only slice. Its retained receipt
 does not establish independent native review. The
-[recovery-read admission task](../TODO.md#now--next) now has a
+[recovery-read admission task](tasks/work-queue.md#current-work-queue) now has a
 [source-bound characterization receipt](quality/2026-10-06-m2-recovery-read-admission.md).
 Retained logs record 16 focused passes, one nearest recreation pass and clean
 analysis in an isolated mirror. Green characterization assertions reproduced three
@@ -1410,7 +1424,7 @@ The exact completed-status/history positive case is demonstrated, not unconditio
 recovery admission. The [independent same-card review](../.task-evidence/t_3c5078de/review-validation.json)
 approves the bounded characterization, not product recovery. It independently
 repeats the 16 focused checks, one nearest check and clean analysis. The ledger
-records that slice done. [Root TODO](../TODO.md#now--next) orders three bounded
+records that slice done. [Work queue](tasks/work-queue.md#current-work-queue) orders three bounded
 repair oracles for ambiguous 404, history identity and declared history admission.
 The later [ambiguous-404 repair receipt](quality/2026-10-06-m2-ambiguous-404.md)
 records 18 focused, 78 nearest and 42 restoration passes, plus clean formatting
@@ -1540,7 +1554,7 @@ All four recorded production/test/runbook fingerprints match this snapshot.
 This is retained synthetic evidence on Node v26.7.0, not a new test run or
 Node 22 qualification. The goal ledger now records DOC-M6-OFFLINE-CHECKER done
 for the bounded comparator slice; its retained receipt does not establish native
-same-card approval. The [Node 22 proof task](../TODO.md#now--next) covers baseline
+same-card approval. The [Node 22 proof task](tasks/work-queue.md#current-work-queue) covers baseline
 execution without treating another runtime version as a pass. Actual public candidate
 comparison, signatures and installed-runtime qualification remain NOT_CHECKED.
 A passing comparison does not prove install, upgrade,
@@ -1557,7 +1571,7 @@ failure, negotiation precedence and dispatch boundaries are checked without sock
 This is inspected execution evidence, not a new run by this documentation pass.
 The goal ledger now records DOC-API-CONFORMANCE done for discovery only; the
 receipt does not establish native same-card approval. The
-[device-self conformance task](../TODO.md#now--next) covers one remaining family.
+[device-self conformance task](tasks/work-queue.md#current-work-queue) covers one remaining family.
 Full OpenAPI standards validation, other management families,
 TLS/pinning, live transport and complete API conformance remain NOT_CHECKED.
 The whole API-CONFORMANCE goal remains unverified despite this bounded pass.

@@ -6,7 +6,7 @@ Disposition: Historical. Original extraction is not reopened. The diagnostics-re
 contract task is complete and archived; `WING-TASK-408` and
 `DOC-VOICE-QUALIFICATION` retain the current Settings-composition and voice outcomes.
 
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current
 scope and ordering. The archived diagnostics receipt is in
 [TODO history](../../../todo.archive.md). These connections are not implementation,

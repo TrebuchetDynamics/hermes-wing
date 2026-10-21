@@ -5,7 +5,7 @@
 Disposition: Historical. Physical voice and output cancellation remain bounded qualification, not old controller-test parity.
 
 Canonical owners: `DOC-VOICE-QUALIFICATION`, `DOC-VOICE-OUTPUT-CANCEL-EVIDENCE`, `PARITY-OFFICIAL-MATRIX`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

@@ -5,7 +5,7 @@
 Disposition: Historical. Artifact-bound qualification successors, not signed distribution or old plan completion.
 
 Canonical owners: `DOC-M6-CHECKER-NODE22`, `DOC-M6-INTEGRATED-RECEIPT-GAP`, `DOC-DESKTOP-UNINSTALL-EVIDENCE`, `MT-RERUN-TRAIN`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 `DOC-DESKTOP-DELIVERY-EVIDENCE` is complete and retained in [TODO history](../../../todo.archive.md);

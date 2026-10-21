@@ -6,7 +6,7 @@ Disposition: Deferred. No executable Nostr tasks. Reopening the decision is requ
 
 Canonical owners: none. This deferred proposal must not enter executable work
 until the owner reopens and accepts its scope.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

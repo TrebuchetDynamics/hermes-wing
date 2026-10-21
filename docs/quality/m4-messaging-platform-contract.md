@@ -49,7 +49,7 @@ Docs map and work boundary:
 
 Ownership: the coordinator assigned this exact branch/worktree/task; its local
 execution-slot metadata and live worker process were present. The baseline
-[task index](../../TODO.md) reserves this slice before its dependent host-lifecycle
+[task index](../tasks/work-queue.md#current-work-queue) reserves this slice before its dependent host-lifecycle
 follow-up; the [continuation ledger](../plans/2026-10-03-desktop-port-goal.md)
 had no matching task claim. This is local admission evidence, **not** a fresh
 external tracker lease check, ownership release or permission to start other work.

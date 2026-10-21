@@ -5,7 +5,7 @@
 Disposition: Current. Retained follow-through uses current owners; M2 device work remains Needs decision.
 
 Canonical owners: `CONNECTION-OWNER-RECONNECT`, `PARITY-LIVE-WORKFLOW`, `M2-DEVICE-QUALIFICATION`, `DOC-M5-ANDROID-FIXTURE`, `DOC-M3-CONTRACT-CHECKPOINT`, `DOC-M6-INTEGRATED-RECEIPT-GAP`, `DOC-NATIVE-DESIGN-REVIEW`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

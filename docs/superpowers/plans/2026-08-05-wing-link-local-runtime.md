@@ -5,7 +5,7 @@
 Disposition: Superseded. Retirement and retained security closure, not installer reconstruction.
 
 Canonical owners: `CONNECTION-LINK-REMOVAL`, `CONNECTION-LINK-RETIREMENT`, `VERIFY-OMNIROUTE-NODE22-CLOSURE`, `SECURITY-RETAINED-RELEASE-AUDIT`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

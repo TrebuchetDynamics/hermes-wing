@@ -114,7 +114,7 @@ scheduler change, commit, publication or live operation follows from saving this
 Disposition: Current. Accepted port and gated restart plan; native admission and product completion remain unverified.
 
 Canonical owners: `CONNECTION-CRON-ADMISSION`, `CONNECTION-CRON-CANARY`, `CONNECTION-LINK-REMOVAL`, `CONNECTION-OFFICIAL-DESKTOP-PORT`, `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-SETUP-AUTH-MATRIX`, `CONNECTION-LINK-RETIREMENT`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 
@@ -1276,7 +1276,7 @@ format changed Dart files and re-run affected checks. Shared controls require
 both compact and wide caller regressions. Review and implementation remain
 separate; this planning pass runs no UI mutation, worker or schedule.
 
-`ANDROID-CHAT-TOUCH-POLISH` in [TODO.md](../../TODO.md) and `goals.json` remains the
+`ANDROID-CHAT-TOUCH-POLISH` in [work queue](../tasks/work-queue.md#current-work-queue) and `goals.json` remains the
 sole implementation owner, dependent on `DOC-PARITY-TAB-CONTRACT`. The existing
 [plan index](README.md#plan-to-task-coverage) already maps this accepted port plan
 and task. No task is reopened, duplicated, marked done or reprioritized here.

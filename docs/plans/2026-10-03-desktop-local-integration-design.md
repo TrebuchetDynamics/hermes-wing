@@ -6,7 +6,7 @@ Disposition: **source-reviewed proposal; no privileged implementation authorizat
 Owner: `DOC-NATIVE-DESIGN-REVIEW`. The dependent
 `DOC-NATIVE-FAILURE-BOUNDARY` task still owns deeper failure-containment review;
 this document does not execute or close that task. See the
-[task bodies](../../TODO.md#now--next) and
+[task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage).
 
 The [contract/security evidence](../quality/native-local-integration-contract-review.md)

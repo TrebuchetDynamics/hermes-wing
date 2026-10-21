@@ -183,7 +183,7 @@ profile/provider, tools, schedules, artifact, voice, accessibility and tabs) rem
 in the preserved historical associations, not a newly duplicated port backlog.
 New group IDs (for example Bots, Cloud, session import and Starmap) are matrix
 identities, **not new task IDs**, completed work or released ownership.
-The coordinator-owned [TODO](../../TODO.md) and `goals.json` retain their existing
+The coordinator-owned [work queue](../tasks/work-queue.md#current-work-queue) and `goals.json` retain their existing
 statuses and leases. This source mapping does not close those tasks.
 
 Retired HD-PAIR/HD-TRUST/HD-OFFICE and the former standalone HD-BACKENDS grouping

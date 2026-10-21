@@ -9,7 +9,7 @@ At Wing baseline `eb070f1ce6a1d97d309d918e594eec5fe1428b1c`, the
 [predecessor retry](live-workflow-retry-r2.md#remaining-live-acceptance) still
 requires authoritative physical provider-call admission, disposable QA
 authentication/grants and the actual two-process workflow. The open
-`PARITY-LIVE-WORKFLOW-LIVE` entry in [the task index](../../TODO.md) preserves
+`PARITY-LIVE-WORKFLOW-LIVE` entry in [the task index](../tasks/work-queue.md#current-work-queue) preserves
 those requirements. Offline predecessor closeout is not a qualified live session.
 The [synthetic resumed-send receipt](native-resumed-send.md) is not a substitute.
 

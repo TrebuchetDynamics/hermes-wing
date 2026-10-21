@@ -10,7 +10,7 @@ first reply. This accepts the audience and outcome, not an unbuilt visual identi
 a live qualification result, analytics, deployment or implementation in this pass.
 Visual concepts and optional demo ideas below remain recommendations.
 
-The central queue is [TODO.md](../../TODO.md#now--next), with `goals.json` as its
+The central queue is [work queue](../tasks/work-queue.md#current-work-queue), with `goals.json` as its
 execution index. Keep the existing `CONNECTION-PATHS` focus and active removal
 owner. This page is a marketing/onboarding surface, not permission to redesign the
 Desktop-guided Flutter application or introduce another Agent backend.
@@ -132,7 +132,7 @@ results are **not run** by this plan. No new publication permission is implied.
 `LANDING-FIRST-REPLY` is complete for offline onboarding and archived in
 [TODO history](../../todo.archive.md); authenticated first reply remains with
 `CONNECTION-SETUP-AUTH-MATRIX`. The open `LANDING-PRODUCT-PROOF` and
-`LANDING-PAGES-QUALITY` tasks in [TODO.md](../../TODO.md#now--next) own the
+`LANDING-PAGES-QUALITY` tasks in [work queue](../tasks/work-queue.md#current-work-queue) own the
 remaining visual and delivery outcomes. The
 [plan-to-task coverage index](README.md#plan-to-task-coverage) records current
 owners. `PARITY-LIVE-WORKFLOW` retains combined live qualification ownership.
@@ -773,7 +773,7 @@ Unchanged shared imagery requires neither recapture nor a new product gate.
 
 ### Queue and non-goals
 
-`README-001-62` in [TODO.md](../../TODO.md) and `goals.json` owns this new refresh, appended
+`README-001-62` in [work queue](../tasks/work-queue.md#current-work-queue) and `goals.json` owns this new refresh, appended
 behind existing accepted work. The [plan index](README.md#plan-to-task-coverage)
 retains completed historical parents and current successors. No task is reopened,
 claimed, dispatched or completed by this plan. No commit, push, publication or

@@ -74,6 +74,26 @@ The [private APK handoff](runbooks/android/release-handoff.md#private-release-ap
 owns build and artifact checks. Device execution and integrated recovery remain
 separate qualification requirements.
 
+## Chat switching and canonical Bot Chat
+
+Current native-channel Bot Chat resolves the selected profile's exact registry
+title and hidden state, stages settled canonical history, then adopts it through
+the existing owner-fenced channel. Ordinary sessions remain separate. Unsettled
+source work cannot be replaced; REST-only Bot Chat and native tabs stay unavailable.
+See the [implementation and offline limits](quality/android-canonical-bot-chat.md).
+
+Compact profile switching scrolls the sheet's chrome and content together.
+The Sessions sheet excludes IME insets while retaining safe areas. The
+[touch-switcher receipt](quality/mobile-chat-simplification.md#android-chat-touch-polish--task-local-candidate)
+records bounded offline checks, not physical Android keyboard qualification.
+
+Android SSH offers explicit API/serve selection and separate serve-token entry;
+read-only connection and deliberate ticket-qualified chat are distinct. Owner
+generations fence late recovery. The [SSH serve receipt](quality/android-ssh-serve-offline.md)
+records its original offline boundary. Later saved destinations and matching
+selections use secure storage; they add neither automatic connection nor replay.
+Native storage, live SSH/Agent and device acceptance remain separate.
+
 ## Components and state
 
 The [secondary mobile study](quality/hermes-mobile-reference-study.md) identifies
@@ -86,17 +106,17 @@ Wing Link is deprecated by the [product decision](adr/product.md#wing-link-depre
 The service/client, installers and delivery dependencies are removed. Missing
 Agent capabilities must be explained, not emulated; historical receipts below
 refer only to their original snapshots.
-Linux Hermes-home discovery and Android same-phone setup are the planned Local
-replacement. Discovery is not authenticated runtime readiness. Preserve profile,
-session and credential ownership during migration.
+Linux metadata-only Hermes-home discovery and manual Android/Termux guidance
+implement the Local replacement. Discovery proves neither authenticated runtime
+readiness nor Project assignment. Preserve profile, session and credential ownership.
 
 The [port-wide fidelity requirements](product/prd.md#port-wide-fidelity-acceptance)
 govern presentation and behavior across these components. Desktop supplies the
 welcome flow, screen structure, terminology, layout, visual hierarchy and interaction
 reference. Reuse Flutter providers and channels rather than copying Electron internals.
-Agent authority and optional management remain independent of presentation fidelity.
+Agent authority and direct connection remain independent of presentation fidelity.
 
-The current development worktree gates fresh `/hermes` entry through
+The current implementation gates fresh `/hermes` entry through
 [`ConnectionEntryGate`](../lib/router/widgets/connection_entry_gate.dart) before
 exposing the connected shell. Empty secure storage shows
 [`HermesWelcome`](../lib/features/enrollment/widgets/hermes_welcome.dart): the
@@ -517,11 +537,11 @@ levels. See the
 [source comparison](product/desktop-connection-paths.md) and
 [bounded delivery receipt](quality/connection-primary-entry.md).
 
-The current development worktree routes Chat contact Add and connect-another
+The current implementation routes Chat contact Add and connect-another
 actions directly to `AppRoutes.addHermes`. `HermesEnrollmentScreen._chooserActions`
-also offers **Add Hermes** before **Optional setup and pairing**. The endpoint form
-links back to optional enrollment. These changes reuse the existing channel,
-storage and pairing contracts. The [first-run receipt](quality/direct-first-run.md)
+offers direct Agent entry. Linux Local performs metadata-only discovery; Android
+Local provides manual Termux preparation. No pairing flow is offered. These paths
+reuse the channel and secure-storage ownership contracts. The historical [first-run receipt](quality/direct-first-run.md)
 records passing public-entry, auth-denial/explicit-retry and optional-management
 recovery checks. Six browser traces contain no management requests or mutations.
 The [native first-run receipt](quality/direct-first-run-native.md) adds four passing
@@ -530,8 +550,9 @@ Synthetic read denial, explicit keyboard retry and owner replacement add no Agen
 mutations or management requests. Endpoint persistence uses an injected store, not
 physical secure storage. The launcher depends on attributed inherited helpers and
 a retained Git object, so its own-files commit is not a standalone launcher checkout.
-This pass inspects retained results, not a new product run. Live authentication,
-Android and main delivery remain open; the [test plan](test-plan.md#connection-path-verification)
+These retained receipts qualify their original snapshots, not a new product run
+or the replacement Local flow. Live authentication and Android qualification
+remain separate; the [test plan](test-plan.md#connection-path-verification)
 keeps those checks separate.
 
 The grouping reuses existing Riverpod/channel contracts and enrollment. Optional
@@ -572,7 +593,8 @@ The [authentication explanation receipt](quality/remote-auth-explanation.md) rec
 source inputs match the inspected snapshot. This is retained candidate evidence,
 not a new whole-tree check, live authentication or physical keychain qualification.
 
-Optional Local setup now rejects inspection, setup and cancellation after controller
+Historical, pre-retirement setup behavior follows; these controls are no longer
+offered. Optional Local setup rejected inspection, setup and cancellation after controller
 disposal. Teardown cancellation failures cannot escape into a replacement route.
 The [setup recovery receipt](quality/local-setup-recovery.md) records consent-bound
 Install/Adopt, Stop, inspection-only Check again and explicit Continue through the
@@ -589,7 +611,7 @@ Disposing Local setup then selecting a direct Agent contact performs no manageme
 request or Agent mutation. This closes the bounded routing/fixture gap, not actual
 installation/adoption, live authentication, Android or protected-main delivery.
 
-The current development worktree also implements **Edit saved Agent connection**
+The current implementation also implements **Edit saved Agent connection**
 in Add Hermes. The [editor receipt](quality/saved-endpoint-edit.md) records bounded
 widget/Chromium qualification. Its independent draft never prefills credentials.
 An unchanged canonical Agent URL may retain its saved credential. A changed URL
@@ -631,7 +653,7 @@ mutations. Four Linux GTK fixture cases pass at compact/wide widths and 100/200%
 text. Synthetic authority and endpoint storage do not qualify live authentication,
 physical keychain behavior, managed SSH or protected-main delivery.
 
-Managed SSH is implemented in the development worktree through
+Managed SSH is implemented through
 `ManagedSshForward` and `ManagedSshConnectionController`. The native Dart adapter
 forwards to an already-configured Agent and uses no subprocess or remote shell.
 It requires explicit host-key verification and attempt-scoped authentication.
@@ -727,7 +749,7 @@ Agent configuration are not migrated or deleted. Generic Agent catalog entries
 remain visible without enabling the removed setup operation.
 The [installer dependency review](quality/omniroute-install-review.md) records
 historical failures, not a current embedded dependency closure. The remaining
-[security follow-up](../TODO.md#now--next) must check retirement and retained dependencies
+[security follow-up](tasks/work-queue.md#current-work-queue) must check retirement and retained dependencies
 on the exact candidate, rather than recreate or audit deleted installer inputs.
 
 ## Verification and evolution

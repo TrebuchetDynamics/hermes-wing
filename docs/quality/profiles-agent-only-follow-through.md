@@ -107,7 +107,7 @@ this consumer repair is not an official parity certification.
 
 ## Existing-owner continuation
 
-[CONNECTION-LINK-REMOVAL](../../TODO.md#now--next) stays in progress under its
+[CONNECTION-LINK-REMOVAL](../tasks/work-queue.md#current-work-queue) stays in progress under its
 existing owner. Do not add another broad removal task or take its lease.
 Integrate the four owned candidate paths into a frozen combined source only
 through that owner. Preserve unrelated enrollment, SSH, discovery, generated

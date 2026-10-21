@@ -1655,8 +1655,8 @@ matches, nine citation ranges and three links. It preserves the worker's receipt
 Only offline Python/Git checks ran on Linux; Dart, native storage, device, live
 Agent, API-runtime and release checks did not run.
 
-Root [TODO](../../TODO.md) now records the completed proposal slice and adds
-DOC-M2-COORDINATOR-ADMISSION-TRACE to [goals](../../goals.json). This source-only
+Root [work queue](../tasks/work-queue.md#current-work-queue) now records the completed proposal slice and adds
+DOC-M2-COORDINATOR-ADMISSION-TRACE to [goals](../tasks/work-queue.md#goals). This source-only
 next task identifies independent admission and write-ordering seams before any
 separate implementation review. It does not approve or activate the proposal.
 The helper selects this task next; tracker/continuation ownership still needs
@@ -1780,11 +1780,11 @@ relevant sections were inspected. It does not mean runtime conformance passed.
 | Change history | [Changelog](../../CHANGELOG.md) | unchanged_verified; retain implemented Unreleased entries and existing history. This pass adds no product or release entry. |
 
 The [docs index](../README.md) now links machine-readable goal status and this
-record. Root [TODO](../../TODO.md) remains the discoverable task handoff.
+record. Root [work queue](../tasks/work-queue.md#current-work-queue) remains the discoverable task handoff.
 
 ## Goal coverage and task ownership
 
-[`goals.json`](../../goals.json) owns machine-readable outcome status.
+[goal records](../tasks/work-queue.md#goals) owns machine-readable outcome status.
 The [Desktop continuation ledger](../plans/2026-10-03-desktop-port-goal.md)
 continues to own leases. Neither file changes tracker or scheduler authority.
 The generated TODO block uses the skill's `goals.py` formatter and renderer.
@@ -1819,7 +1819,7 @@ but Android M2 remains unverified. Closing its only task left no open next slice
 The baseline receipt preserves that failure as historical evidence.
 
 This maintenance pass adds `DOC-M2-DEATH-COMPLETE-ORACLE` to
-[root TODO](../../TODO.md) and [goals](../../goals.json). It preserves the completed
+[work queue](../tasks/work-queue.md#current-work-queue) and [goals](../tasks/work-queue.md#goals). It preserves the completed
 baseline task and all recorded passes. The new task covers an isolated app-level
 fixture oracle, not live-target provisioning or Android qualification. The
 [test plan](../test-plan.md#acceptance-records-and-gaps) now links the baseline and

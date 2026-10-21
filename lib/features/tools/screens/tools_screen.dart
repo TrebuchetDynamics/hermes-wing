@@ -161,12 +161,18 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
       _refreshing = false;
       _actionError = null;
     });
+    final channel = ref.read(hermesChannelProvider);
     await completeWingGatewaySwitch(
       context: context,
       directory: directory,
+      channel: channel,
+      isCurrentOwner: () =>
+          identical(ref.read(hermesChannelProvider), channel) &&
+          identical(ref.read(hermesGatewayDirectoryProvider), directory),
       gatewayId: gatewayId,
-      onFailure: () =>
-          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFailure: (kind) => setState(() {
+        _actionError = wingGatewayConnectionFailureMessage(strings, kind);
+      }),
       onFinished: () => setState(() => _switchingGatewayId = null),
     );
   }

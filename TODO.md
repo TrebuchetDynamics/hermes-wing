@@ -118,46 +118,6 @@ needs its own exact capability, ownership and qualification evidence.
 
 ### **P0** — Android SSH, multi-session chat and touch polish
 
-- [ ] **ANDROID-CANONICAL-BOT-CHAT** — Android canonical bot chat
-  Goal: PARITY-TABS
-Section: Next.
-  Status: open
-  Owner decision (2026-10-20, /blockers): Not a rescope. Both attempts finished: attempt 2
-  committed 87938f2f01b2d4c7d2ad6caec8c5302fc54782ab and reported every listed check passing,
-  then its session never exited and the 5400 s timeout discarded the commit (attempt 1 the same,
-  at 90b2c7b4747eed6eaf80e21539dfc97e683526ee).
-  Next action: Restore 87938f2f01b2d4c7d2ad6caec8c5302fc54782ab instead of reimplementing,
-  merge current main, rerun the listed checks on the result and report; do not redo the work.
-  Payoff: each bot opens its ongoing Bot Chat without stealing or forking an ordinary conversation.
-  Sources: [accepted Android priority](docs/plans/2026-10-03-desktop-port-goal.md#android-ssh-multi-session-priority),
-  [official Bot Chat source](https://github.com/NousResearch/hermes-agent/blob/158fd638da1629c8e62caf9ade1515d162def8ab/apps/desktop/src/plugins/hermes-bots/canonical-chat.ts),
-  [bounded Bot source trace](docs/quality/office-contact-session-reference.md#official-action-and-deliberate-limits).
-  Scope: add canonical Bot Chat discovery/open/adopt to the existing owner-scoped
-  profile/session channel and compact navigation. Reuse the predecessor's workspace
-  and qualified direct Agent operation seam. No Office, messaging-platform bridge,
-  new backend, direct Agent database/files, cached canonical-ID registry or upstream edits.
-  Acceptance: use exact owner/profile and title `Bot Chat`, including hidden registry
-  rows and current lineage; ordinary sessions remain ordinary and never win by recency.
-  Opening an existing bot resumes its canonical history. Confirmed absence may use
-  only the exact qualified Agent create/adopt operation; concurrent/repeated opens
-  resolve one canonical chat. Lookup failure or contradictory empty results fail
-  closed, create nothing and preserve the current conversation. Late roster/open
-  results cannot retarget another profile, draft, stream, approval or Stop.
-  Missing operations show an explicit capability gap and do not count as positive
-  Bot acceptance. Preserve ordinary multi-session behavior and refresh in place
-  without unsolicited navigation. No permission for live inference is implied.
-  Checks: planned new tests under `test/features/hermes_chat/bots/`, including
-  canonical versus side-thread choice, hidden/lineage resolution, failed lookup,
-  concurrent adoption, stale-owner open, background completion and denied capability;
-  run `flutter test --no-pub test/features/hermes_chat/bots`; `flutter analyze`;
-  rebuilt deterministic UI and isolated Android fixture journeys. Tests are to be
-  implemented, not existing passing results; live Agent proof remains separately gated.
-  Dependencies: DOC-PARITY-TAB-CONTRACT.
-  Ownership: wing; open/unclaimed, verify live ownership before implementation.
-  Next action: port the pinned canonical lookup/adopt behavior into the existing
-  qualified session seam and add its failure-first regressions, never an Office substitute.
-  Touches: lib/core/hermes/, lib/features/hermes_chat/, test/core/hermes/, test/features/hermes_chat/, integration_test/, docs/quality/
-
 ### **P4** — Extended experiences and physical qualification
 
 - [ ] **VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY** — Goal: DIAGNOSTICS-RECOVERY. Section: Needs decision.
@@ -1398,4 +1358,14 @@ does not mark any check passed or authorize live actions.
   - Native/live Agent authentication and provider execution, OS suspension/process death and platform secure-store survival remain unqualified. Browser viewports do not qualify Android or a background service; full connection replacement does not promise automatic reattachment of all sibling streams.
   Checks: Live qualification by an authorized person; offline evidence does not count.
   Dependencies: DOC-PARITY-TAB-RECONNECT-CONTRACT.
+  Status: open
+
+- [ ] ANDROID-CANONICAL-BOT-CHAT-LIVE — Live checks for ANDROID-CANONICAL-BOT-CHAT
+  Scope: Run the live checks the offline work for ANDROID-CANONICAL-BOT-CHAT left pending.
+  Acceptance: Each check passes on the real target:
+  - Isolated Android .qa device/emulator journeys; adb devices -l returned no attached targets. Android-target widget fixtures are not device execution.
+  - Live unmodified Agent authentication, canonical lookup/create/title-conflict/concurrent-client adoption and actual managed SSH. No live inference used or authorized by this task.
+  - Native accessibility/screen reader, IME and process-death qualification; long forever-chat/frame-bound qualification remains pending.
+  Checks: Live qualification by an authorized person; offline evidence does not count.
+  Dependencies: ANDROID-CANONICAL-BOT-CHAT.
   Status: open

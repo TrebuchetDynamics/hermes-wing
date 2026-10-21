@@ -5283,6 +5283,7 @@
       "status": "unmet",
       "tasks": [
         "ANDROID-CANONICAL-BOT-CHAT",
+        "ANDROID-CANONICAL-BOT-CHAT-LIVE",
         "DOC-PARITY-TAB-CONTRACT",
         "DOC-PARITY-TAB-CONTRACT-LIVE",
         "DOC-PARITY-TAB-RECONNECT-CONTRACT",
@@ -6913,7 +6914,6 @@
   "priority_order": {
     "schema": 1,
     "tasks": [
-      "ANDROID-CANONICAL-BOT-CHAT",
       "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY",
       "CONNECTION-LINK-RETIREMENT",
       "FILES-TERMINAL-DOWNLOAD",
@@ -6991,19 +6991,20 @@
       "WING-001-b3-LIVE",
       "PARITYGAP-002-76-LIVE",
       "PARITYGAP-001-3f-LIVE",
-      "DOC-PARITY-TAB-RECONNECT-CONTRACT-LIVE"
+      "DOC-PARITY-TAB-RECONNECT-CONTRACT-LIVE",
+      "ANDROID-CANONICAL-BOT-CHAT-LIVE"
     ]
   },
   "tasks": [
     {
       "depends_on": [
-        "DOC-PARITY-TAB-CONTRACT"
+        "ANDROID-CANONICAL-BOT-CHAT"
       ],
       "goal": "PARITY-TABS",
-      "id": "ANDROID-CANONICAL-BOT-CHAT",
-      "section": "Next",
+      "id": "ANDROID-CANONICAL-BOT-CHAT-LIVE",
+      "section": "Needs decision",
       "status": "open",
-      "title": "Android canonical bot chat"
+      "title": "Live checks for ANDROID-CANONICAL-BOT-CHAT"
     },
     {
       "depends_on": [
@@ -7778,6 +7779,16 @@
       "section": "Needs decision",
       "status": "open",
       "title": "Live checks for WING-TASK-408"
+    },
+    {
+      "depends_on": [
+        "DOC-PARITY-TAB-CONTRACT"
+      ],
+      "goal": "PARITY-TABS",
+      "id": "ANDROID-CANONICAL-BOT-CHAT",
+      "section": "Done",
+      "status": "done",
+      "title": "Android canonical bot chat"
     },
     {
       "depends_on": [

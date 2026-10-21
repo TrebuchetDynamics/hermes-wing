@@ -16,6 +16,50 @@ import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 void main() {
+  testWidgets(
+    'category intent updates mounted Settings and rejects unknown categories',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final category = ValueNotifier<String?>('voice');
+      addTearDown(category.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ValueListenableBuilder<String?>(
+              valueListenable: category,
+              builder: (_, value, _) => SettingsScreen(initialCategory: value),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-voice')),
+        findsOneWidget,
+      );
+      category.value = 'connections';
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-connections')),
+        findsOneWidget,
+      );
+      category.value = 'not-a-category';
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-appearance')),
+        findsOneWidget,
+      );
+      category.value = 'chat';
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-appearance')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('voice command editor fits a narrow phone above the keyboard', (
     tester,
   ) async {
@@ -555,7 +599,7 @@ void main() {
     expect(find.byType(Card), findsNothing);
     expect(find.byKey(const ValueKey('settings-theme-mode')), findsOneWidget);
     expect(find.byKey(const ValueKey('settings-voice-link')), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('settings-category-chat')));
+    await tester.tap(find.byKey(const ValueKey('settings-category-voice')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
     await tester.tap(
@@ -627,7 +671,7 @@ void main() {
         (await SharedPreferences.getInstance()).getString('wing.theme.palette'),
         'forest',
       );
-      for (final category in ['Chat', 'Connections', 'Appearance']) {
+      for (final category in ['Chat', 'Voice', 'Connections', 'Appearance']) {
         await tester.tap(
           find.byKey(const ValueKey('settings-category-picker')),
         );
@@ -636,13 +680,22 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         if (category == 'Chat') {
+          expect(
+            find.byKey(const ValueKey('settings-voice-link')),
+            findsNothing,
+          );
+          expect(
+            find.byKey(const ValueKey('chat-spellcheck-enabled')),
+            findsOneWidget,
+          );
+        } else if (category == 'Voice') {
           final voice = find.byKey(const ValueKey('settings-voice-link'));
           await tester.ensureVisible(voice);
           await tester.pumpAndSettle();
           expect(voice.hitTestable(), findsOneWidget);
           expect(
             find.byKey(const ValueKey('chat-spellcheck-enabled')),
-            findsOneWidget,
+            findsNothing,
           );
         } else if (category == 'Connections') {
           final diagnostics = find.byKey(
@@ -727,7 +780,7 @@ void main() {
     }
 
     await activateWithKeyboard(
-      find.byKey(const ValueKey('settings-category-chat')),
+      find.byKey(const ValueKey('settings-category-voice')),
     );
     expect(find.byKey(const ValueKey('settings-voice-link')), findsOneWidget);
     await activateWithKeyboard(

@@ -588,6 +588,25 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 
 ## Resoluciones del builder-check
 
+### Primer cambio implementado de CLONE-03
+
+Seguimiento: `/settings?tab=voice|appearance|chat|connections` abre la categoría
+local correspondiente. Un cambio de intent sobre la misma pantalla actualiza
+contenido y selector; valores desconocidos o Chat sin spellcheck caen a Appearance
+sin categoría vacía. Se conserva la navegación manual y no hay llamadas Agent al
+abrir el deep link. Pasaron 46 pruebas Settings/router y análisis con Flutter
+3.44.9. Esto no implementa búsqueda global, todo el árbol ni deep links de campos.
+
+Voice tiene categoría propia en Settings, separada de Chat como en el árbol
+oficial. Reutiliza la pantalla y preferencias de voz existentes; Chat conserva
+spellcheck solo donde el sistema lo soporta y no ofrece una categoría vacía en
+plataformas sin ese control. El selector compacto y navegación por teclado usan
+la misma lista; no se cambian claves, defaults, credenciales ni operaciones Agent.
+Flutter 3.44.9: 45 pruebas de Settings/router pasaron y análisis sin issues.
+Es un subconjunto de estructura, no cierre de CLONE-03 ni fidelidad visual:
+tokens, subárbol completo, deep links/búsqueda y comparación renderizada siguen
+pendientes. No se ejecutó baseline visual Desktop ni prueba física de voz.
+
 Las decisiones siguientes son del planificador; cierran ambigüedades sin afirmar
 aprobación visual ni ejecución.
 

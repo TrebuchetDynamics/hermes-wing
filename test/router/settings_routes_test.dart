@@ -36,7 +36,7 @@ void main() {
     addTearDown(container.dispose);
     final router = container.read(routerProvider);
     addTearDown(router.dispose);
-    router.go(AppRoutes.settings);
+    router.go('${AppRoutes.settings}?tab=voice');
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -50,6 +50,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(
+      find.byKey(const ValueKey('settings-content-voice')),
+      findsOneWidget,
+    );
+    expect(channel.connectCalls, isEmpty);
+
     Future<void> selectCategory(String label) async {
       final picker = find.byKey(const ValueKey('settings-category-picker'));
       if (picker.evaluate().isNotEmpty) {
@@ -62,7 +68,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await selectCategory('Chat');
+    await selectCategory('Voice');
     final voice = find.byKey(const ValueKey('settings-voice-link'));
     await Scrollable.ensureVisible(tester.element(voice), alignment: 0.5);
     await tester.pumpAndSettle();

@@ -20,10 +20,12 @@ import '../providers/voice_settings_provider.dart';
 part 'settings_diagnostics_screen.dart';
 part 'settings_voice_screen.dart';
 
-enum _SettingsCategory { appearance, chat, connections }
+enum _SettingsCategory { appearance, chat, voice, connections }
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({this.initialCategory, super.key});
+
+  final String? initialCategory;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -32,23 +34,52 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   _SettingsCategory _category = _SettingsCategory.appearance;
 
+  _SettingsCategory _resolveCategory(String? name) =>
+      _SettingsCategory.values
+          .where((category) => category.name == name)
+          .firstOrNull ??
+      _SettingsCategory.appearance;
+
+  @override
+  void initState() {
+    super.initState();
+    _category = _resolveCategory(widget.initialCategory);
+  }
+
+  @override
+  void didUpdateWidget(covariant SettingsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategory != widget.initialCategory) {
+      _category = _resolveCategory(widget.initialCategory);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final labels = {
       _SettingsCategory.appearance: strings.settingsAppearanceSection,
       _SettingsCategory.chat: strings.settingsChatSection,
+      _SettingsCategory.voice: strings.settingsVoiceSection,
       _SettingsCategory.connections: strings.gatewayDestination,
     };
     const icons = {
       _SettingsCategory.appearance: Icons.palette_outlined,
       _SettingsCategory.chat: Icons.chat_bubble_outline,
+      _SettingsCategory.voice: Icons.mic_none_outlined,
       _SettingsCategory.connections: Icons.dns_outlined,
     };
     final hasSpellcheck = WidgetsBinding
         .instance
         .platformDispatcher
         .nativeSpellCheckServiceDefined;
+    final categories = [
+      for (final category in _SettingsCategory.values)
+        if (category != _SettingsCategory.chat || hasSpellcheck) category,
+    ];
+    final selectedCategory = categories.contains(_category)
+        ? _category
+        : _SettingsCategory.appearance;
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.settingsDestination),
@@ -62,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             final wide = constraints.maxWidth >= 820 * textScale.clamp(1, 1.5);
             final content = FocusTraversalGroup(
               child: ListView(
-                key: ValueKey('settings-content-${_category.name}'),
+                key: ValueKey('settings-content-${selectedCategory.name}'),
                 padding: EdgeInsets.fromLTRB(
                   wide ? 32 : 16,
                   24,
@@ -75,13 +106,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 840),
                       child: _SettingsCategoryContent(
-                        title: wide ? labels[_category]! : null,
-                        children: switch (_category) {
+                        title: wide ? labels[selectedCategory]! : null,
+                        children: switch (selectedCategory) {
                           _SettingsCategory.appearance => [
                             const _AppearanceSettingsSection(),
                           ],
                           _SettingsCategory.chat => [
                             if (hasSpellcheck) const _ChatSettingsSection(),
+                          ],
+                          _SettingsCategory.voice => [
                             const _VoiceSettingsSection(),
                           ],
                           _SettingsCategory.connections => [
@@ -108,17 +141,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
+                    key: ValueKey((
+                      'settings-category-selection',
+                      selectedCategory,
+                    )),
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                     child: DropdownButtonFormField<_SettingsCategory>(
                       key: const ValueKey('settings-category-picker'),
-                      initialValue: _category,
+                      initialValue: selectedCategory,
                       isExpanded: true,
                       itemHeight: null,
                       decoration: InputDecoration(
                         labelText: strings.settingsDestination,
                       ),
                       items: [
-                        for (final category in _SettingsCategory.values)
+                        for (final category in categories)
                           DropdownMenuItem(
                             value: category,
                             child: Text(labels[category]!),
@@ -147,14 +184,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: ListView(
                         padding: const EdgeInsets.all(12),
                         children: [
-                          for (final category in _SettingsCategory.values)
+                          for (final category in categories)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: ListTile(
                                 key: ValueKey(
                                   'settings-category-${category.name}',
                                 ),
-                                selected: _category == category,
+                                selected: selectedCategory == category,
                                 selectedTileColor: Theme.of(
                                   context,
                                 ).colorScheme.secondaryContainer,

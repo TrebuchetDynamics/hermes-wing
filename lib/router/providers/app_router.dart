@@ -142,7 +142,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _chatOverlayPage(
           context,
           key: state.pageKey,
-          child: const SettingsScreen(),
+          child: SettingsScreen(
+            initialCategory: state.uri.queryParameters['tab'],
+          ),
         ),
       ),
       GoRoute(

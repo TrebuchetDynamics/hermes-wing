@@ -404,7 +404,7 @@ five-field records still load. Invalid owner extensions remain untouched. Run
 these with the SSH/channel/form union and analyzer. This is deterministic Linux
 host execution with Android platform selection, not native process-death, keyring,
 real SSH or live Agent proof. The
-[contract](security/managed-ssh-forward-contract.md#saved-conversation-pointer)
+[contract](security/managed-ssh-forward-contract.md#forwarding-and-lifecycle)
 retains those qualification gaps.
 
 Forwarded serve-read selection has six production-channel/controller fixture cases
@@ -966,6 +966,17 @@ This pass inspects executor evidence;
 it reruns no product test and infers no independent approval. Remaining gaps are
 live authentication/generation, enforceable provider-call admission, authoritative
 model-pair readback, other platforms and protected-main delivery.
+
+## Full-feature Linux campaign
+
+The [Linux qualification plan](plans/2026-10-21-linux-feature-qualification.md)
+maps all 50 retained feature-family IDs plus current routes/actions and newer
+Bot Chat, workspace, timestamp and paged-JSON subsets to seven bounded tasks.
+It separates shared regressions, synthetic GTK, real isolated plugins/input,
+live-Agent operations, physical audio/accessibility and packaged-artifact proof.
+All campaign commands are planned/unrun; existing live tasks retain their original
+acceptance and authority. Missing current pkg-config metadata and Node 22 selection
+are explicit preflight inputs, not evidence that any native test passed.
 
 ## Developer gate
 

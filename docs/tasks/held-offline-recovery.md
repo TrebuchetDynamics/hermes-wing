@@ -166,6 +166,16 @@ only generated coverage refreshes and removal of the already-done
 `VERIFY-CHAT-TRANSCRIPT-NATIVE` from priority order. Those changes are already
 represented in the current ledger/order; drop the proposal rather than replay it,
 reopen either task or undo later closures. Render coverage from the current ledger.
+
+Reinspection at `a6a560b6ec761b8e7fd543303ce56075335998e6` confirms that
+`PARITYUPDATE-005-11` and `VERIFY-CHAT-TRANSCRIPT-NATIVE` remain done in `tasks/items/`.
+The patch targets only retired `TODO.md`/`goals.json` generated rows and priority
+order; retain the drop decision without replaying it into the migrated store.
+The old three-file byte-match statement above is historical: the current layout
+regression now seeds two sessions, so replaying that candidate would overwrite
+newer coverage. This inspection does not reopen either task, alter goal evidence
+or qualify its separately open live work.
+
 Paths to these retained inputs are relative to the task's Git-common
 `autowork-execution/slot-data/PARITYUPDATE-005-11/` directory.
 

@@ -43,3 +43,25 @@ outcomes are not satisfied by the offline follow-up or the reported local login.
   then repeat connection and exact-session restart recovery. Do not repeat the
   delivered failure-guidance implementation. Generation, approvals/Stop, Android,
   screen-reader and acoustic acceptance remain unverified.
+
+## Native credential restart follow-up
+
+- Reauthenticated the saved endpoint through the production native UI: connected
+  status, exact selected profile and model inventory were visible. After normal
+  process termination and relaunch, explicit Connect chat again displayed an
+  authentication rejection. The personal saved-connection restart criterion is
+  therefore still failing, not completed.
+- Completed a narrower isolated Linux keyring check: the actual Flutter secure
+  storage plugin and `SecureHermesEndpointStore.save` replace a synthetic token,
+  retain exact endpoint ID/URL and inert legacy fields, and read the replacement
+  in a second native process. Both write and verify phases passed on Linux/Wayland
+  with Flutter 3.44.9 and GNOME Keyring. No real Agent credential or inference was
+  used in that check.
+- `scripts/run_linux_secure_storage_regression.sh` now supports an existing
+  Wayland display as well as Xvfb, uses private TMPDIR, and preserves the lockfile.
+  The integration regression now exercises replacement through the production
+  store rather than only seeding a raw secure record.
+- Do not repeat this isolated persistence implementation/check as a substitute
+  for repairing the personal native save/restart path. Next: isolate the saved
+  production connection update and its secure-storage behavior on the failing
+  target. Whole-task native/Android/live acceptance remains open.

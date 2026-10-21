@@ -660,12 +660,10 @@ void main() {
         (await SharedPreferences.getInstance()).getString('wing.theme.mode'),
         'dark',
       );
-      final palette = find.byKey(const ValueKey('settings-palette-picker'));
+      final palette = find.byKey(const ValueKey('settings-theme-forest'));
       await tester.ensureVisible(palette);
-      await tester.tap(palette);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Forest').last);
-      await tester.tap(find.text('Forest').last);
+      await tester.tap(palette);
       await tester.pumpAndSettle();
       expect(
         (await SharedPreferences.getInstance()).getString('wing.theme.palette'),

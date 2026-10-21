@@ -590,6 +590,24 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 
 ### Primer cambio implementado de CLONE-03
 
+Galería visual de Appearance: el selector de paleta es ahora una cuadrícula de
+miniaturas seleccionables, siguiendo el patrón `ThemeGallery` de
+`apps/desktop/src/app/settings/appearance-settings.tsx` del pin `47b23fa048`.
+Se conservan las cinco paletas Wing y sus claves/defaults existentes; no se
+presentan como el catálogo completo de temas Desktop. La selección tiene nombre,
+estado semántico y check visible. La cuadrícula adapta columnas al ancho del panel
+y texto grande; las miniaturas decorativas no entran en el árbol accesible.
+
+Verificación local: 46 pruebas Settings/router; análisis sin issues; formato de
+los tres Dart modificados y `git diff --check`; build web E2E release. Chromium:
+2 casos a 390/1280 px verifican selección, recarga persistida y desplazamiento a
+la última paleta sin errores de render. Se inspeccionaron ambas capturas. Un
+intento de teclado mediante foco DOM no activó el control; no se declara
+calificación de teclado nativo. La prueba final usa click semántico. No se ejecutó
+la suite E2E completa ni comparación renderizada con Desktop.
+Se usó Flutter 3.44.9 instalado: evidencia fuera del pin 3.44.2 de CONTRIBUTING,
+cuyo SDK no está disponible localmente. No equivale a aceptación con ese pin.
+
 Seguimiento: `/settings?tab=voice|appearance|chat|connections` abre la categoría
 local correspondiente; también se admiten los IDs oficiales `config:voice`,
 `config:appearance`, `config:chat` y `gateway`. La selección manual actualiza

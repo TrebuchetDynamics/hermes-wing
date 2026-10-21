@@ -20,3 +20,11 @@ exclusions = []
 
 - Sources: [existing goal authority](docs/product/prd.md#connection-path-requirements), [retained offline task history](todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository
+
+## Completed offline work — do not repeat
+
+The saved-connection failure-guidance follow-up is implemented and published in
+`4f397c46` and `8e0b86a4`, with clean analysis and 461 passing focused tests.
+See `tasks/items/CONNECTION-SAVED-WORKFLOWS.md` for the exact checks and scope.
+This task remains open for its original native/device/live acceptance; those
+outcomes are not satisfied by the offline follow-up or the reported local login.

@@ -162,9 +162,11 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
     await completeWingGatewaySwitch(
       context: context,
       directory: directory,
+      channel: ref.read(hermesChannelProvider),
       gatewayId: gatewayId,
-      onFailure: () =>
-          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFailure: (kind) => setState(() {
+        _actionError = wingGatewayConnectionFailureMessage(strings, kind);
+      }),
       onFinished: () => setState(() => _switchingGatewayId = null),
     );
   }

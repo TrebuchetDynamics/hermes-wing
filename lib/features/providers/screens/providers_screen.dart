@@ -226,9 +226,11 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     await completeWingGatewaySwitch(
       context: context,
       directory: directory,
+      channel: ref.read(hermesChannelProvider),
       gatewayId: gatewayId,
-      onFailure: () =>
-          setState(() => _actionError = strings.gatewayConnectFailed),
+      onFailure: (kind) => setState(() {
+        _actionError = wingGatewayConnectionFailureMessage(strings, kind);
+      }),
       onFinished: () => setState(() => _switchingGatewayId = null),
     );
   }

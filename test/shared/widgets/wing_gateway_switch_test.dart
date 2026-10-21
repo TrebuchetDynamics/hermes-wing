@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/shared/widgets/wing_gateway_switch.dart';
 
@@ -10,6 +12,51 @@ import '../../features/hermes_chat/support/fake_hermes_endpoint_store.dart';
 import '../../features/hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 void main() {
+  for (final kind in HermesConnectionFailureKind.values) {
+    testWidgets('reports settled connection rejection: $kind', (tester) async {
+      late BuildContext screenContext;
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            screenContext = context;
+            return const SizedBox();
+          },
+        ),
+      );
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.disconnected,
+        connectErrorMessage: 'private response must not be displayed',
+        connectFailureKind: kind,
+      );
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(id: 'host', baseUrl: 'https://agent.example'),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'host': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(channel.dispose);
+      addTearDown(directory.dispose);
+      await directory.refresh();
+      final failures = <HermesConnectionFailureKind?>[];
+      var finished = false;
+      await completeWingGatewaySwitch(
+        context: screenContext,
+        directory: directory,
+        channel: channel,
+        gatewayId: 'host',
+        onFailure: failures.add,
+        onFinished: () => finished = true,
+      );
+      expect(failures, [kind]);
+      expect(finished, isTrue);
+      expect(channel.connectCalls, hasLength(1));
+      expect(directory.activeContactId, isNull);
+      expect(tester.takeException(), isNull);
+    });
+  }
   for (final fails in [false, true]) {
     for (final disposeBeforeCompletion in [false, true]) {
       testWidgets('switch failure=$fails disposed=$disposeBeforeCompletion', (
@@ -32,8 +79,9 @@ void main() {
         final switching = completeWingGatewaySwitch(
           context: screenContext,
           directory: directory,
+          channel: channel,
           gatewayId: 'selected-host',
-          onFailure: () => events.add('failure'),
+          onFailure: (_) => events.add('failure'),
           onFinished: () => events.add('finished'),
         );
         expect(directory.requestedId, 'selected-host');

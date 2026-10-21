@@ -240,15 +240,12 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
     await completeWingGatewaySwitch(
       context: context,
       directory: directory,
+      channel: ref.read(hermesChannelProvider),
       gatewayId: gatewayId,
-      onFailure: () =>
-          setState(() => _actionError = strings.gatewayConnectFailed),
-      onFinished: () => setState(() {
-        _switchingGatewayId = null;
-        if (directory.activeContactId?.gatewayId != gatewayId) {
-          _actionError = strings.gatewayConnectFailed;
-        }
+      onFailure: (kind) => setState(() {
+        _actionError = wingGatewayConnectionFailureMessage(strings, kind);
       }),
+      onFinished: () => setState(() => _switchingGatewayId = null),
     );
   }
 

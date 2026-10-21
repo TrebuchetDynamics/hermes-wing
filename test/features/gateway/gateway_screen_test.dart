@@ -156,6 +156,65 @@ Future<HermesGatewayDirectory> _activeTrustDirectory(
 }
 
 void main() {
+  for (final kind in HermesConnectionFailureKind.values) {
+    testWidgets('connection failure gives safe recovery guidance: $kind', (
+      tester,
+    ) async {
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.disconnected,
+        connectErrorMessage: 'private-server-response-sentinel',
+        connectFailureKind: kind,
+      );
+      final directory = directoryFor(
+        configs: const [
+          HermesEndpointConfig(
+            id: 'alpha',
+            label: 'Alpha',
+            baseUrl: 'https://alpha.example',
+          ),
+        ],
+        loader: FakeGatewaySummaryLoader({
+          'alpha': gatewaySummary(['default']),
+        }),
+        activeChannel: channel,
+      );
+      addTearDown(channel.dispose);
+      await directory.refresh();
+      await tester.pumpWidget(_testApp(channel, directory: directory));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('gateway-connect-chat-button')),
+      );
+      await tester.pumpAndSettle();
+      final strings = AppLocalizations.of(
+        tester.element(find.byType(GatewayScreen)),
+      );
+      final expected = switch (kind) {
+        HermesConnectionFailureKind.authentication =>
+          strings.connectionCheckDenied,
+        HermesConnectionFailureKind.invalidEndpoint =>
+          strings.chatErrorConnectInvalidEndpointBody,
+        HermesConnectionFailureKind.incompatibleResponse =>
+          strings.chatErrorConnectIncompatibleBody,
+        HermesConnectionFailureKind.network =>
+          strings.chatErrorConnectUnreachableBody,
+        HermesConnectionFailureKind.tls => strings.chatErrorConnectTlsBody,
+        HermesConnectionFailureKind.timeout =>
+          strings.chatErrorConnectTimeoutBody,
+        HermesConnectionFailureKind.unknown => strings.gatewayConnectFailed,
+      };
+      expect(find.text(expected), findsOneWidget);
+      expect(
+        find.textContaining('private-server-response-sentinel'),
+        findsNothing,
+      );
+      expect(channel.connectCalls, hasLength(1));
+      expect(channel.sentVoiceTranscripts, isEmpty);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(directory.activeContactId, isNull);
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets(
     'legacy shared metadata keeps direct endpoint controls independent',
     (tester) async {

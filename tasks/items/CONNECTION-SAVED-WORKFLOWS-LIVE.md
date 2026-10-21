@@ -28,3 +28,18 @@ The saved-connection failure-guidance follow-up is implemented and published in
 See `tasks/items/CONNECTION-SAVED-WORKFLOWS.md` for the exact checks and scope.
 This task remains open for its original native/device/live acceptance; those
 outcomes are not satisfied by the offline follow-up or the reported local login.
+
+## Native Linux attempt after delivery
+
+- Completed: production `lib/main.dart` Linux debug build from `4b1c0a94`,
+  using Flutter 3.44.9 and CMake 3.22.1 after offline lockfile-enforced dependency
+  resolution. This differs from the documented Flutter 3.44.2 pin.
+- Completed: launched the rebuilt native application and verified its mapped
+  compositor window. No Agent service was restarted or modified.
+- Executed: Connections → Connect chat using the existing saved connection.
+  The native application displayed the typed authentication-rejected guidance;
+  profile/model inventory remained unloaded. Window launch is not connection proof.
+- Next: reauthenticate the saved exact endpoint/profile in the native application,
+  then repeat connection and exact-session restart recovery. Do not repeat the
+  delivered failure-guidance implementation. Generation, approvals/Stop, Android,
+  screen-reader and acoustic acceptance remain unverified.

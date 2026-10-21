@@ -591,7 +591,13 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 ### Primer cambio implementado de CLONE-03
 
 Seguimiento: `/settings?tab=voice|appearance|chat|connections` abre la categoría
-local correspondiente. Un cambio de intent sobre la misma pantalla actualiza
+local correspondiente; también se admiten los IDs oficiales `config:voice`,
+`config:appearance`, `config:chat` y `gateway`. La selección manual actualiza
+la URL con replace (sin apilar una ruta por categoría) y preserva otros parámetros.
+Los aliases cortos existentes siguen admitidos para no romper enlaces guardados.
+Pasaron las mismas 46 pruebas Settings/router y análisis tras esta extensión.
+
+Un cambio de intent sobre la misma pantalla actualiza
 contenido y selector; valores desconocidos o Chat sin spellcheck caen a Appearance
 sin categoría vacía. Se conserva la navegación manual y no hay llamadas Agent al
 abrir el deep link. Pasaron 46 pruebas Settings/router y análisis con Flutter

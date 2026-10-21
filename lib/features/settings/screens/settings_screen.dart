@@ -23,9 +23,14 @@ part 'settings_voice_screen.dart';
 enum _SettingsCategory { appearance, chat, voice, connections }
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({this.initialCategory, super.key});
+  const SettingsScreen({
+    this.initialCategory,
+    this.onCategoryChanged,
+    super.key,
+  });
 
   final String? initialCategory;
+  final ValueChanged<String>? onCategoryChanged;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -36,9 +41,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   _SettingsCategory _resolveCategory(String? name) =>
       _SettingsCategory.values
-          .where((category) => category.name == name)
+          .where(
+            (category) =>
+                category.name ==
+                switch (name) {
+                  'config:appearance' => 'appearance',
+                  'config:chat' => 'chat',
+                  'config:voice' => 'voice',
+                  'gateway' => 'connections',
+                  _ => name,
+                },
+          )
           .firstOrNull ??
       _SettingsCategory.appearance;
+
+  void _selectCategory(_SettingsCategory category) {
+    setState(() => _category = category);
+    widget.onCategoryChanged?.call(switch (category) {
+      _SettingsCategory.appearance => 'config:appearance',
+      _SettingsCategory.chat => 'config:chat',
+      _SettingsCategory.voice => 'config:voice',
+      _SettingsCategory.connections => 'gateway',
+    });
+  }
 
   @override
   void initState() {
@@ -163,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                       onChanged: (category) {
                         if (category != null) {
-                          setState(() => _category = category);
+                          _selectCategory(category);
                         }
                       },
                     ),
@@ -200,8 +225,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                                 leading: Icon(icons[category], size: 20),
                                 title: Text(labels[category]!),
-                                onTap: () =>
-                                    setState(() => _category = category),
+                                onTap: () => _selectCategory(category),
                               ),
                             ),
                         ],

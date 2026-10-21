@@ -16,6 +16,50 @@ import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
 import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 void main() {
+  testWidgets(
+    'category intent updates mounted Settings and rejects unknown categories',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final category = ValueNotifier<String?>('voice');
+      addTearDown(category.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ValueListenableBuilder<String?>(
+              valueListenable: category,
+              builder: (_, value, _) => SettingsScreen(initialCategory: value),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-voice')),
+        findsOneWidget,
+      );
+      category.value = 'connections';
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-connections')),
+        findsOneWidget,
+      );
+      category.value = 'not-a-category';
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-appearance')),
+        findsOneWidget,
+      );
+      category.value = 'chat';
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('settings-content-appearance')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('voice command editor fits a narrow phone above the keyboard', (
     tester,
   ) async {

@@ -23,7 +23,9 @@ part 'settings_voice_screen.dart';
 enum _SettingsCategory { appearance, chat, voice, connections }
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({this.initialCategory, super.key});
+
+  final String? initialCategory;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -31,6 +33,26 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   _SettingsCategory _category = _SettingsCategory.appearance;
+
+  _SettingsCategory _resolveCategory(String? name) =>
+      _SettingsCategory.values
+          .where((category) => category.name == name)
+          .firstOrNull ??
+      _SettingsCategory.appearance;
+
+  @override
+  void initState() {
+    super.initState();
+    _category = _resolveCategory(widget.initialCategory);
+  }
+
+  @override
+  void didUpdateWidget(covariant SettingsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategory != widget.initialCategory) {
+      _category = _resolveCategory(widget.initialCategory);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +77,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       for (final category in _SettingsCategory.values)
         if (category != _SettingsCategory.chat || hasSpellcheck) category,
     ];
+    final selectedCategory = categories.contains(_category)
+        ? _category
+        : _SettingsCategory.appearance;
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.settingsDestination),
@@ -68,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             final wide = constraints.maxWidth >= 820 * textScale.clamp(1, 1.5);
             final content = FocusTraversalGroup(
               child: ListView(
-                key: ValueKey('settings-content-${_category.name}'),
+                key: ValueKey('settings-content-${selectedCategory.name}'),
                 padding: EdgeInsets.fromLTRB(
                   wide ? 32 : 16,
                   24,
@@ -81,8 +106,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 840),
                       child: _SettingsCategoryContent(
-                        title: wide ? labels[_category]! : null,
-                        children: switch (_category) {
+                        title: wide ? labels[selectedCategory]! : null,
+                        children: switch (selectedCategory) {
                           _SettingsCategory.appearance => [
                             const _AppearanceSettingsSection(),
                           ],
@@ -116,10 +141,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
+                    key: ValueKey((
+                      'settings-category-selection',
+                      selectedCategory,
+                    )),
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                     child: DropdownButtonFormField<_SettingsCategory>(
                       key: const ValueKey('settings-category-picker'),
-                      initialValue: _category,
+                      initialValue: selectedCategory,
                       isExpanded: true,
                       itemHeight: null,
                       decoration: InputDecoration(
@@ -162,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 key: ValueKey(
                                   'settings-category-${category.name}',
                                 ),
-                                selected: _category == category,
+                                selected: selectedCategory == category,
                                 selectedTileColor: Theme.of(
                                   context,
                                 ).colorScheme.secondaryContainer,

@@ -18,5 +18,5 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary), [retained offline task history](todo.archive.md).
+- Sources: [existing goal authority](../../docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary), [retained offline task history](../../todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository

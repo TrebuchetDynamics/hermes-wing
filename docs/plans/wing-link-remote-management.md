@@ -5,7 +5,7 @@
 Disposition: Superseded. Retirement and Agent-contract successors only; no Link expansion.
 
 Canonical owners: `CONNECTION-LINK-REMOVAL`, `CONNECTION-LINK-RETIREMENT`, `DOC-M3-PROVIDER-CONTRACT`, `DOC-M3-PROJECT-CONTRACT`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

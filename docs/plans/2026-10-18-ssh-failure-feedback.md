@@ -86,7 +86,7 @@ repair is not a claim that the reported phone now connects.
 
 ## Backlog connection
 
-`WING-001-b3` in [TODO.md](../../TODO.md) owns this implementation under
+`WING-001-b3` in [work queue](../tasks/work-queue.md#current-work-queue) owns this implementation under
 `REMOTE-BACKENDS`, dependent on completed `BACKEND-SSH-CONNECT`. Existing
 `BACKEND-SSH-CONNECT-LIVE` and `BACKEND-SSH-KEY-NATIVE-LIVE` retain external proof;
 no duplicate device tasks or new live authorization. The

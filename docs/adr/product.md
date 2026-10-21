@@ -120,7 +120,7 @@ Raw legacy records and secure slots remain inert and preserved. Do not erase pai
 runtimes or weaken checks to hide this dependency. Missing advertised Agent APIs
 leave an operation unavailable with an explanation; do not replace Wing Link with
 an unrestricted shell or shadow domain backend. See the removal tasks in
-[root TODO](../../TODO.md#now--next).
+[work queue](../tasks/work-queue.md#current-work-queue).
 
 This accepted direction is not evidence of removal, native discovery integration
 or phone setup qualification.

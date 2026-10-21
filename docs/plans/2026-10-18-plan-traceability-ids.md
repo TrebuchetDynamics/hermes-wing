@@ -65,7 +65,7 @@ source-tooling test or certify any product/runtime capability.
 
 ## Backlog connection
 
-`PLANGAP-001-2f` in [TODO.md](../../TODO.md) owns this small tooling regression under
+`PLANGAP-001-2f` in [work queue](../tasks/work-queue.md#current-work-queue) owns this small tooling regression under
 `INTEGRATION`; no product/device task is its prerequisite. The
 [plan-to-task coverage](README.md#plan-to-task-coverage) indexes it. Sources must
 include the exact accepted section and a bare full-plan link. Preserve the current

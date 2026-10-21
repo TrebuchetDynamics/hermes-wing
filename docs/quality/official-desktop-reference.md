@@ -43,7 +43,7 @@ Existing Agent authority, profile isolation, secret handling and strict host-key
 `CONNECTION-OFFICIAL-DESKTOP-PORT` and `PARITY-OFFICIAL-MATRIX` retain their
 completed historical scopes in the [task archive](../../todo.archive.md); this
 refresh does not reopen them. The [current refresh](official-desktop-parity-refresh-2026-10-18.md#follow-up-decisions)
-and its four source-only contract tasks in [TODO](../../TODO.md) own the newly
+and its four source-only contract tasks in [work queue](../tasks/work-queue.md#current-work-queue) own the newly
 identified contract frontier, not product implementation or runtime acceptance.
 `PARITY-NATIVE-LINUX` and `PARITY-MAESTRO-ANDROID-DEVICE` own separate named-target
 qualification. Preserve active ownership, existing task IDs and historical test

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -19,14 +18,7 @@ void main() {
     ).firstMatch(index);
     expect(map, isNotNull, reason: 'Plans need one explicit backlog mapping.');
     if (map == null) return;
-    final ledger =
-        jsonDecode(File('goals.json').readAsStringSync())
-            as Map<String, dynamic>;
-    final tasks = {
-      for (final task in ledger['tasks'] as List)
-        (task as Map<String, dynamic>)['id'] as String: task,
-    };
-    final todo = File('TODO.md').readAsStringSync();
+    final tasks = readPlanTaskRecords(Directory.current);
     final archive = File('todo.archive.md').readAsStringSync();
     final entries = <String>{};
     for (final line in map.group(1)!.split('\n')) {
@@ -58,17 +50,14 @@ void main() {
           isTrue,
           reason: '$path names unknown $id',
         );
-        bodies[id] = planTaskBody(
-          id: id,
-          status: tasks[id]!['status'] as String,
-          todo: todo,
-          archive: archive,
-        );
+        bodies[id] = tasks[id]!['status'] == 'done'
+            ? planTaskBody(id: id, status: 'done', todo: '', archive: archive)
+            : tasks[id]!['body'] as String;
       }
       if (ids.isNotEmpty && disposition != 'Policy') {
         expect(
           bodies[ids.first],
-          contains(']($path)'),
+          anyOf(contains(']($path)'), contains('](../../$path)')),
           reason: '$path needs a direct link from its primary task body.',
         );
       }
@@ -79,7 +68,7 @@ void main() {
       if (path != 'docs/plans/README.md') {
         final content = File(path).readAsStringSync();
         expect(content, contains('## Backlog connection'), reason: path);
-        expect(content, contains('TODO.md'), reason: path);
+        expect(content, contains('tasks/'), reason: path);
         expect(content, contains('#plan-to-task-coverage'), reason: path);
       }
     }

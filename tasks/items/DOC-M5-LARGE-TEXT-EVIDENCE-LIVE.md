@@ -18,5 +18,5 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction), [retained offline task history](todo.archive.md).
+- Sources: [existing goal authority](../../ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction), [retained offline task history](../../todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository

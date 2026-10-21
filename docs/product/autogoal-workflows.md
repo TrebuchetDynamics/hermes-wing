@@ -2,25 +2,28 @@
 
 ## Main-only execution policy
 
-The owner's latest instruction supersedes the earlier branch/PR workflow:
-work only on `main` in the canonical checkout. Do not create development branches,
-branch-based worktrees or pull requests. Keep one writer and use parallel agents
-only for read-only investigation or review. Use immutable filesystem snapshots
-for qualification; preserve existing detached QA work rather than deleting it.
+The former blanket main-only restriction is superseded for authorized offline
+work by [the repository Autowork policy](../../AGENTS.md#autowork-autonomous-local-progress).
+Use supported isolated task branches/worktrees with one writer per workspace.
+The current coordinator may integrate verified local work into protected canonical
+`main` after required checks, serialized with other writers and preserving dirty
+work. Read-only investigation/review may run in parallel. This grants no push, PR,
+release, deployment or live-operation authority; preserve retained candidates.
 
 Commit coherent usable outcomes with their tests and necessary docs. Shipping
 requires relevant passing checks and a normal fast-forward push to `main`, never
 force-push or a remote-protection bypass. Retain a verified private archive before
 deleting legacy refs; unmerged archived work is not delivered functionality.
 
-## Faster development plan
+## Faster development plan — historical planning interview
 
 ### Accepted delivery cadence
 
 The owner selected **small usable improvements, delivered individually** during
 this planning interview. This accepts the delivery cadence, not implementation,
 commit, push, installation or release actions for this session. Keep the existing
-CONNECTION-PATHS focus, main-only policy, task IDs and safety gates.
+then-current CONNECTION-PATHS focus and task IDs. Current execution policy above
+and current task records supersede the old selection/progress descriptions below.
 
 ### Proposed next execution cycle
 
@@ -51,12 +54,13 @@ Use the existing tasks. Do not create another backlog or automation layer.
 
 This sequence is proposed engineering guidance. It does not claim that the
 Profiles candidate is dependency-ready or supersede a live task owner. The next
-open focused entry is CONNECTION-OFFICIAL-DESKTOP-PORT. Reconcile partial
+open focused entry at that interview was CONNECTION-OFFICIAL-DESKTOP-PORT. Reconcile retained
 CONNECTION-LINK-REMOVAL and CONNECTION-SAVED-WORKFLOWS work before dispatching it.
 
 ### Work and verification limits
 
-- Keep one implementation writer in canonical main. Read-only helpers can trace
+- Keep one implementation writer per workspace and serialize canonical integration.
+  Read-only helpers can trace
   the official reference, diagnose failing tests and identify integration risks
   in parallel. The parent owns edits, integration and the final result.
 - During edits, use focused regressions and analysis. Avoid concurrent duplicate
@@ -100,12 +104,12 @@ or registering the smallest missing implementation slice.
 
 ## Primary milestone
 
-Current owner-requested order: **P0 Desktop welcome and connection fidelity**, then
-**P1 the integrated daily-use journey**. `TODO.md` owns the P0–P4 task grouping.
-`goals.json` now focuses CONNECTION-PATHS so the welcome repair can be selected
-before unrelated work. Restore M1 focus after that entry/connection outcome is
-qualified and delivered. Existing leases and completed evidence are unchanged.
-This sequencing correction supersedes the earlier M1-first selection rule below.
+The accepted Android SSH → profiles/multi-session → canonical Bot Chat → touch-polish
+order remains ahead of later parity gaps, preserving Desktop fidelity. Reconcile
+completed offline work rather than reopening it; live successors retain their gates.
+The [work store](../tasks/work-queue.md) owns current goal focus/priority and task
+section/rank/dependencies. Migration changes storage, not intent or selection order.
+Earlier Desktop-welcome-first descriptions are historical, not a new reprioritization.
 
 M1 remains the substantive daily-use milestone:
 
@@ -113,8 +117,8 @@ connect → select profile/model → generate → approve → Stop → relaunch 
 
 The daily-use milestone follows the [leading acceptance outcome](prd.md#leading-acceptance-outcome)
 and [daily workflow plan](../plans/2026-10-03-desktop-daily-workflow.md).
-`goals.json` records the primary focus. Maintain it through `goals.py focus`,
-not by editing JSON or making the picker reinterpret competing priorities.
+`tasks/goals/` records primary focus. Maintain task and goal records through
+`autowork tasks`, not handwritten files or a second picker interpretation.
 
 Pick the next task that removes a demonstrated gap in the current ledger focus.
 During P0, choose reference-guided welcome and connection work before unrelated
@@ -123,7 +127,7 @@ linked to M1. Select unrelated work only after documenting why focused slices ca
 safely proceed: exact live ownership, missing authority or an unavailable required
 environment. Respect existing leases. Do not restart a healthy worker to change order.
 
-Current open M1 slices include `PARITY-LIVE-WORKFLOW`, its ordered recovery
+The retained M1 sequence named `PARITY-LIVE-WORKFLOW`, its ordered recovery
 successor `VERIFY-LIVE-WORKFLOW-RECOVERY`.
 `PARITY-NATIVE-NO-INFERENCE-SMOKE`, `PARITY-NATIVE-AUTH-RESTART` and
 `PARITY-NATIVE-BOOTSTRAP-RESTART` are completed synthetic qualification slices,
@@ -171,9 +175,9 @@ Each worker contract includes the existing native handoff fields and these facts
 - **Remaining:** which M1 steps and platform/backend combinations still lack
   qualification or delivery. A finished slice must state this even when its checks pass.
 
-Keep the native 50-turn budget and three attempts. Do not enlarge a card into an
-unbounded milestone. If a slice exceeds the budget, retain useful verified work and
-register its concrete successor in the same milestone through `goals.py add-task`.
+Keep applicable caller limits and recorded attempt bounds. Do not enlarge a task
+into an unbounded milestone. Retain useful verified work when a limit is reached
+and record its concrete successor through `autowork tasks add` in the same goal.
 Never weaken acceptance to obtain a pass.
 
 ## Three separate outcomes
@@ -213,11 +217,13 @@ The local [merge-train configuration](../../.hermes/merge-train.json) disables
 branch-based automatic delivery (`enabled: false`, `branches: false`). Its retained
 `delivery: protected-pr` value describes the disabled legacy helper, not permission
 to open a PR or an invented direct-main helper mode. External workers must respect
-the main-only instructions before making changes; no Agent runtime or scheduler
+the current isolated-work and serialized-integration instructions before changes;
+no Agent runtime or scheduler
 is modified by this policy.
 
-One integration owner writes in the canonical checkout on `main`. Other agents
-investigate or review read-only. A qualification snapshot is immutable and is not
+One integration owner writes in the canonical checkout on `main`. Authorized
+offline tasks use isolated workspaces; other helpers may investigate or review
+read-only. A qualification snapshot is immutable and is not
 permission to edit another worker's files. Keep related code, tests and necessary
 docs together; do not sweep unowned dirty files into a delivery commit.
 

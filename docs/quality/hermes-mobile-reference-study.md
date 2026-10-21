@@ -33,7 +33,7 @@ Wing's current seams include
 and the [chat screen lifecycle](../../lib/features/hermes_chat/screens/hermes_chat_screen.dart).
 These are extension points, not proof that every candidate is implemented.
 The [test plan](../test-plan.md#mobile-reference-scenarios) owns expected outcomes.
-The [root backlog](../../TODO.md) retains task identities, dependencies and ownership.
+The [root backlog](../tasks/work-queue.md#current-work-queue) retains task identities, dependencies and ownership.
 
 ## Boundaries that must remain
 

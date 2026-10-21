@@ -5,7 +5,7 @@
 Disposition: Historical. Current continuation owns re-baselining; original lanes are not redispatched.
 
 Canonical owners: `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-OFFICIAL-MATRIX`, `DOC-PARITY-TAB-CONTRACT`, `DOC-PARITY-TAB-RECONNECT-CONTRACT`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

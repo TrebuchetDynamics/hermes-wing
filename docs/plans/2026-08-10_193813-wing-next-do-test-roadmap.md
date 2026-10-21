@@ -5,7 +5,7 @@
 Disposition: Historical. Old priorities are superseded; current connection and device owners retain bounded outcomes.
 
 Canonical owners: `CONNECTION-LINK-REMOVAL`, `CONNECTION-SETUP-AUTH-MATRIX`, `PARITY-MAESTRO-ANDROID-DEVICE`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

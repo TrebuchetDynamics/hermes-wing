@@ -5,7 +5,7 @@
 Disposition: Historical. Foundation receipts remain historical; successors own current saved-host recovery.
 
 Canonical owners: `CONNECTION-SAVED-WORKFLOWS`, `CONNECTION-OWNER-RECONNECT`, `CONNECTION-LINK-REMOVAL`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

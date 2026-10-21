@@ -45,7 +45,7 @@ Docs map:
 
 Ownership: the coordinator assigned this task/branch/worktree. The local execution
 slot records it running and its worker process was present. The baseline
-[task index](../../TODO.md) lists this task and a dependent capacity/provider
+[task index](../tasks/work-queue.md#current-work-queue) lists this task and a dependent capacity/provider
 follow-up; the inspected [continuation ledger](../plans/2026-10-03-desktop-port-goal.md)
 has no matching memory-task claim. This is local admission evidence, **not** a
 fresh live tracker lease check, ownership release or authority to start other work.

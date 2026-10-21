@@ -51,7 +51,7 @@ not prove zero live mutations.
 
 The [custody requirements](2026-10-06-m2-custody-proof-review.md) require a complete
 runtime caller/import/export/constructor closure before enforcement can be proposed.
-[DOC-M2-RUNTIME-CALLER-CLOSURE](../../TODO.md#now--next) prepares that bounded proof
+[DOC-M2-RUNTIME-CALLER-CLOSURE](../tasks/work-queue.md#current-work-queue) prepares that bounded proof
 and identifies the smallest missing executable check. It does not activate an
 issuer, migrate constructors or authorize real storage, packaging or transport.
 

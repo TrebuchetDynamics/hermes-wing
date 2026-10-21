@@ -29,4 +29,4 @@ has a full-app managed-key qualification result.
 
 Native Linux/Android generated-key secure storage, process-relaunch persistence, native chooser, public clipboard and actual managed SSH authentication remain **NOT_CHECKED** for this increment. Terminal OpenSSH, fake transports and widget captures do not establish them. Full repository, compiled-browser and release gates did not run in this parent check. No APK was built or uploaded here; no commit or merge is claimed.
 
-Broad Wing Link removal remains open: retained catalog, routes, pairing and packaging are not removed by the Local entry change. See [connection requirements](../product/desktop-connection-paths.md), [verification](../test-plan.md#ssh-private-key-qualification) and [backlog](../../TODO.md).
+Broad Wing Link removal remains open: retained catalog, routes, pairing and packaging are not removed by the Local entry change. See [connection requirements](../product/desktop-connection-paths.md), [verification](../test-plan.md#ssh-private-key-qualification) and [backlog](../tasks/work-queue.md#current-work-queue).

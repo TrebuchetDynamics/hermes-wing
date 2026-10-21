@@ -59,11 +59,11 @@ or treat a source map as release evidence.
 | Operations | [Getting started](getting-started.md), [qualification](runbooks/desktop-feature-qualification.md), [release](runbooks/release-alpha.md) and focused runbooks below | Direct Agent use and bounded qualification; retained packaging is not proof of production deployment. |
 | Change history | [Changelog](../CHANGELOG.md) | Implemented Unreleased changes and recorded baseline, not invented publication. |
 
-[Goal status](../goals.json) is the machine-readable outcome ledger.
-[TODO goal coverage](../TODO.md#goal-coverage) maps incomplete outcomes to bounded
-next tasks. The [maintenance record](quality/repo-docs-goal-bootstrap.md) records
+[Goal records](../tasks/goals/) own outcome status and evidence;
+[task records](../tasks/items/) link incomplete outcomes to bounded next work.
+The [work-queue guide](tasks/work-queue.md) explains the supported CLI and frozen history. The [maintenance record](quality/repo-docs-goal-bootstrap.md) records
 core-role coverage and verification limits. [BLOCKERS](../BLOCKERS.md) contains only owner questions; engineering
-and verification work remain in TODO and the existing tracker.
+and verification work remain in `tasks/`, not a second tracker.
 
 ## Evidence availability
 
@@ -78,10 +78,10 @@ these intentional references; it does not exempt unrelated broken links.
 ## Product and architecture
 
 - [Delivery roadmap](../ROADMAP.md) — outcome milestones, current evidence and unblock choices
-- [Root task handoff](../TODO.md) — bounded parity follow-ups and blockers; the goal ledger retains ownership authority
+- [Root task handoff](tasks/work-queue.md#current-work-queue) — bounded parity follow-ups and blockers; the goal ledger retains ownership authority
 - [User-action blockers](../BLOCKERS.md) — canonical user-input, sudo and user-decision dependencies, separate from engineering work
 - [Architecture decision records](adr/README.md)
-- [Four-repository study](analysis/understand-anything/README.md) — curated Agent/Desktop/Conduit/Wing source evidence informing delivery; Desktop-first roadmap priority supersedes the study’s proposed ordering, not its evidence boundaries or runtime limits
+- [Four-repository study](analysis/understand-anything/README.md) — curated Agent/Desktop/Conduit/Wing source evidence informing delivery; Accepted Android delivery priority supersedes the study’s proposed ordering, not its evidence boundaries or runtime limits
 - [Hermes Mobile study](quality/hermes-mobile-reference-study.md) — secondary mobile lifecycle and UX evidence; source-only proposals, not a new parity target or notification approval
 - [Study follow-through plan](plans/2026-10-03-study-follow-through.md) — scoped readiness correction and restoration/Chat/mobile/native/setup/release acceptance gates
 - [Product requirements](product/prd.md)
@@ -101,8 +101,9 @@ these intentional references; it does not exempt unrelated broken links.
 - [Saved Agent connection editing](quality/saved-endpoint-edit.md) — exact-ID Save, masked credential repair and direct read-only Test; passing widget/Chromium and [native GTK fixture journeys](quality/saved-endpoint-edit-native.md)
 - [Saved connection secure persistence](quality/saved-endpoint-storage-native.md) — isolated Linux libsecret/GNOME Keyring repair, denied-save retry and two-process persistence; frozen-candidate evidence, not later editor changes or live authentication
 - [Saved connection readable feedback](quality/saved-endpoint-feedback-accessibility.md) — complete guidance and Test/Save outcomes with keyboard focus and paging; widget/Linux GTK fixture evidence at 100/200% text, not screen readers or later real-storage qualification
-- [Optional Local setup recovery](quality/local-setup-recovery.md) — disposed-operation fencing, consent, Stop and inspection-only retry in compiled fixtures; this isolated-screen result does not qualify production enrollment or actual installation
-- [Native production Local enrollment](quality/local-setup-enrollment-native.md) — four Linux GTK keyboard journeys through the real app/router, separate pairing and direct Agent selection without management requests; synthetic host operations, not actual installation, live authentication, Android or main delivery
+- [Canonical Bot Chat](quality/android-canonical-bot-chat.md) — native registry/hidden-state/history adoption and owner fencing; offline implementation, not Android/live acceptance
+- [Android Chat touch switchers](quality/mobile-chat-simplification.md#android-chat-touch-polish--task-local-candidate) — compact profile/session sheet and inset checks; physical keyboard/device qualification remains separate
+- [Android SSH serve selection](quality/android-ssh-serve-offline.md) — original backend/token/read/chat offline boundary; later saved selections require their own current-storage qualification
 - [Two-host selection and recovery](quality/two-host-recovery-native.md) — Linux GTK fixture keyboard selection, colliding identities and explicit read-only retry; frozen-source evidence, not live authentication or main delivery
 - [Production connection browser matrix](quality/connection-production-browser-matrix.md) — real welcome/router, legacy Local setup, Remote retry and saved-owner recovery in one compiled candidate; retained Flutter/Chromium passes, not current-tree, replacement Local, native/live or main-delivery qualification
 - [Desktop connection paths](product/desktop-connection-paths.md) — Local / SSH / Remote source comparison, implemented ephemeral native SSH forwarding and remaining native/live qualification limits
@@ -221,6 +222,11 @@ these intentional references; it does not exempt unrelated broken links.
 - [Android live microphone smoke](runbooks/android/live-mic-smoke.md)
 
 ## Historical plans and comparison studies
+
+- [Retired Local setup recovery](quality/local-setup-recovery.md) and
+  [retired Local enrollment](quality/local-setup-enrollment-native.md) record
+  pre-retirement synthetic setup/pairing behavior. Those controls are no longer
+  offered; their original receipts do not qualify the direct-Agent replacement.
 
 These documents preserve decision history. They are not current setup guides or
 authority for Hermes Agent behavior; current ADRs and implementation win when a

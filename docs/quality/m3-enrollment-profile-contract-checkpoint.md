@@ -15,7 +15,7 @@ Inspected with `git rev-parse HEAD` (and `git -C <reference> rev-parse HEAD`):
 | Unmodified Agent reference | `158fd638da1629c8e62caf9ade1515d162def8ab` | Read-only source/test evidence, not the identity of an installed or connected runtime. |
 | Official Desktop, `apps/desktop/` | `158fd638da1629c8e62caf9ade1515d162def8ab` | Same Git repository/revision, not an independent release or parity qualification. |
 
-The coordinator assigned this isolated task branch. The local [task index](../../TODO.md)
+The coordinator assigned this isolated task branch. The local [task index](../tasks/work-queue.md#current-work-queue)
 at the Wing baseline places it in Next and leaves later implementation ownership
 unclaimed; no live tracker lease or implementation ownership is asserted here.
 No credentials were acquired, Agent operations activated, upstream tests executed,

@@ -191,7 +191,7 @@ proposal's source-review gate, not implementation authorization or runtime
 acceptance. Exact-pair reads, passive resume semantics and private native
 authentication remain qualification gates.
 These are historical executed receipts, not new test results from this update.
-See [root TODO](../../TODO.md) for the bounded blocked-work index; the goal ledger
+See [work queue](../tasks/work-queue.md#current-work-queue) for the bounded blocked-work index; the goal ledger
 remains the authority for continuation ownership. The [technical design](../spec.md)
 maps current components and trust boundaries. The [test plan](../test-plan.md)
 owns verification methods; neither document establishes workflow acceptance.
@@ -267,7 +267,7 @@ bounded native-contract review. Remote bootstrap remains separate. Browser OAuth
 native SSH and live authentication cannot be inferred from Desktop source or a
 fixture pass. See [requirements](prd.md#connection-path-requirements),
 [verification](../test-plan.md#connection-path-verification) and
-[root TODO](../../TODO.md#now--next).
+[work queue](../tasks/work-queue.md#current-work-queue).
 
 ## Supporting Chat repairs
 

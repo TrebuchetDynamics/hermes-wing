@@ -246,7 +246,7 @@ selection order is superseded by Current delivery order above.
   has a recorded 10-minute cadence and local output, but the
   [latest recorded preflight](docs/quality/2026-10-04-desktop-cron-0322-auth-preflight.md)
   paused it for missing provisioning; no automatic resume is authorized. This is
-  documented status, not a live scheduler check. The [root handoff](TODO.md)
+  documented status, not a live scheduler check. The [work queue](docs/tasks/work-queue.md#current-work-queue)
   indexes blocked next gates, not newly authorized implementation work.
 - **Existing open work (status preserved):** finish exact-session restoration acceptance on `t_f098a32e` without
   reimplementation or waived review, then real production Chat qualification and

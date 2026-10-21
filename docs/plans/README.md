@@ -26,7 +26,7 @@ be reassigned to the official app without a fresh source comparison.
 
 Use [the current product decision](../adr/product.md),
 [PRD](../product/prd.md), [roadmap](../../ROADMAP.md) and
-[root backlog](../../TODO.md) for accepted scope and ordering.
+[root backlog](../tasks/work-queue.md#current-work-queue) for accepted scope and ordering.
 Wing Link is deprecated and is not a port prerequisite.
 Conduit and Hermes Mobile can inform techniques, not replace the product reference.
 Deferred proposals and superseded Agent contracts remain deferred or superseded.
@@ -81,8 +81,8 @@ backlog; unchecked boxes in historical plans do not dispatch work.
 ## Plan-to-task coverage
 
 Every plan in both collections has an explicit disposition and canonical task
-connection below. Current accepted work uses `goals.json` and the full bodies in
-[root TODO](../../TODO.md#now--next). The plan is context, not another queue.
+connection below. Current accepted work uses `tasks/goals/` and `tasks/items/` through
+[work queue](../tasks/work-queue.md#current-work-queue). The plan is context, not another queue.
 Historical and superseded rows identify current successor owners only. They do
 not certify completion of the original plan or reopen old unchecked steps.
 Proposal rows identify assessment owners, not approved implementation. The

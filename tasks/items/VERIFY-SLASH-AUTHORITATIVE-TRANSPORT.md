@@ -1,8 +1,8 @@
 +++
 schema = 1
 id = "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT"
-title = "Qualify supported authoritative slash execution and unavailable-action recovery."
-short = "Qualify supported authoritative slash execution and unavailable-action recovery."
+title = "Qualify supported authoritative slash execution and unavailable-action recovery"
+short = "Qualify supported authoritative slash execution and unavailable-action recovery"
 status = "open"
 goal = "SLASH-CATALOG"
 section = "Needs decision"
@@ -20,7 +20,7 @@ exclusions = []
 
 - Section: Needs decision.
 - Payoff: match official Desktop command outcomes without treating ordinary chat fallback as command execution.
-- Sources: [accepted port roadmap](ROADMAP.md#flutter-port-execution-roadmap), [catalog contract](docs/quality/slash-catalog-contract.md), [denial and recovery evidence](docs/quality/slash-denial-evidence.md).
+- Sources: [accepted port roadmap](../../ROADMAP.md#flutter-port-execution-roadmap), [catalog contract](../../docs/quality/slash-catalog-contract.md), [denial and recovery evidence](../../docs/quality/slash-denial-evidence.md).
 - Ownership: unclaimed; blocked by absent advertised authoritative command transport. No shell bridge, invented routes, upstream edits or repeated contract audit may substitute.
 - Readiness: CONTRACT-UNREADY: the latest attempt confirms no authoritative catalog/completion/dispatch contract on Wing's consumed transport. No changed inputs justify another unchanged audit or refusal-only implementation.
 - Planner decision: skip command execution qualification until the exact advertised unmodified Agent operation, grants and owner identity contract exists. Preserve original acceptance, dependencies and unavailable behavior; no ordinary-chat success substitution, shell bridge, invented routes or upstream changes.

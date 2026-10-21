@@ -18,6 +18,6 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary), [retained offline task history](todo.archive.md).
+- Sources: [existing goal authority](../../docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary), [retained offline task history](../../todo.archive.md).
 - Owner order: leave these checks until after the other pending work. Existing target, authentication and authorization requirements still apply; deferral does not mark any check passed or authorize live actions.
 - Touches: none before conversion; ** stands for the whole repository

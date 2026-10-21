@@ -6,4 +6,4 @@ status = "done"
 goal = "M4-MEMORY"
 +++
 
-- Archived: TODO.archive.md
+- Archived: [frozen task history](../../todo.archive.md)

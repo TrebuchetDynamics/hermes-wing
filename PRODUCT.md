@@ -8,7 +8,7 @@ adaptive
 
 ## Users
 
-Hermes users completing daily agent work. The owner confirmed Desktop and wide-web fidelity first, with compact and mobile usability preserved.
+Hermes users completing daily agent work. Desktop and wide-web fidelity remain the reference baseline. Current delivery priority is Android SSH, profiles/multi-session, canonical Bot Chat and touch polish, with separate native/live qualification.
 
 ## Product Purpose
 
@@ -20,7 +20,7 @@ The existing Flutter application targets desktop, web and mobile. The current en
 
 ## Capabilities and Constraints
 
-Hermes Agent owns domain state. Wing Link is deprecated legacy host-management code awaiting retirement, not a supported product prerequisite. Reuse existing Riverpod, channel and adaptive routing contracts. Never patch upstream references, create shadow domain state, expose unsupported mutations, or weaken identity, authorization, containment or credential handling.
+Hermes Agent owns domain state. Wing Link client/service and delivery dependencies are removed; inert legacy records and secure slots remain preserved, not a supported product prerequisite. Reuse existing Riverpod, channel and adaptive routing contracts. Never patch upstream references, create shadow domain state, expose unsupported mutations, or weaken identity, authorization, containment or credential handling.
 
 ## Brand Commitments
 

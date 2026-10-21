@@ -57,5 +57,5 @@ No post-repair full-suite result is established by these focused checks.
 Browser 200% text, native desktop runtime, Android, physical screen reader,
 live Agent/provider, full daily-use workflow and release remain unchecked here.
 The [parity ledger](../product/hermes-desktop-parity.md) and
-[root handoff](../../TODO.md) preserve the independent restoration and native/live
+[work queue](../tasks/work-queue.md#current-work-queue) preserve the independent restoration and native/live
 admission gates. This record does not authorize another suite, repair or card change.

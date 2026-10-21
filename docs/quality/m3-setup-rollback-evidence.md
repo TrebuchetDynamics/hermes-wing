@@ -14,7 +14,7 @@ This page attributes one reported failure; it does not qualify M3 or enable setu
 | Archived Wing Link implementation/tests and original provider receipt (`git show <revision>:<path>`) | `95fa98eb4ac91f123c0163c84fdd42d545cd7826` | Retired Go management path, not current Wing support. |
 | Historical physical APK, as recorded by the receipt | SHA-256 `d8baa2be39fe209d1686ead4dec0ec6011c729e6d7c97057c99664bc45825d3a`; worktree base `92a3d418b425d6ef095eb304e1f2ba18cfcd0392` **plus uncommitted concurrent work** | Artifact attribution reported in history, not an exact source-to-failed-attempt binding. |
 
-The coordinator assigned this isolated branch. The local [task index](../../TODO.md)
+The coordinator assigned this isolated branch. The local [task index](../tasks/work-queue.md#current-work-queue)
 and `goals.json` at the baseline mark this task open/Next and its dependency
 `DOC-M3-CONTRACT-CHECKPOINT` done; checkpoint commit
 `1a3a7fe0716bfec88123c8fff03e9d41e4a0b033` is an ancestor. Local execution-slot

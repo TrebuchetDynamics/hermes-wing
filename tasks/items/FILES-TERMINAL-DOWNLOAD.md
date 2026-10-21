@@ -1,8 +1,8 @@
 +++
 schema = 1
 id = "FILES-TERMINAL-DOWNLOAD"
-title = "Goal: PARITY. Download an individual selected workspace file to the device running Wing."
-short = "Goal: PARITY. Download an individual selected workspace file to the device running Wing."
+title = "Download a selected terminal working-directory file to the Wing device with verified bytes"
+short = "Download a selected terminal working-directory file to the Wing device with verified bytes"
 status = "open"
 goal = "PARITY"
 section = "Needs decision"
@@ -17,7 +17,7 @@ acceptance = ["read back saved bytes against the selected source; cancellation/d
 exclusions = []
 +++
 
-- Sources: [FILES-3 and FILES-4](docs/product/prd.md#terminal-working-directory-files) and [existing raw-download contract](docs/analysis/terminal-files-feasibility.md#existing-contracts-and-official-consumers). Use the qualified owning `serve` connection and authenticated headers, not preview text or a token-bearing URL. Save-picker and byte-readback qualification remain open on both platforms.
+- Sources: [FILES-3 and FILES-4](../../docs/product/prd.md#terminal-working-directory-files) and [existing raw-download contract](../../docs/analysis/terminal-files-feasibility.md#existing-contracts-and-official-consumers). Use the qualified owning `serve` connection and authenticated headers, not preview text or a token-bearing URL. Save-picker and byte-readback qualification remain open on both platforms.
 - Ownership: unassigned.
 - Section: Needs decision.
 - Owner decision: 2026-10-18 — Apply the existing deferral of FILES-TERMINAL-BROWSE to this dependent task. Preserve its dependency and original acceptance; no approval question, dispatch or completion is implied. Resume only when the prerequisite's stated qualification/contract gate is satisfied.

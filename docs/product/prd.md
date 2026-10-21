@@ -64,7 +64,7 @@ Desired acceptance, not current support claims:
 Existing M1 recovery tasks and M2 Android qualification own related work.
 M1-MOBILE-AWAY-STATUS is the bounded Android return/status successor;
 M1-NOTIFICATION-CONTRACT is its notification assessment successor. Their full
-scope, acceptance and dependencies are in [TODO.md](../../TODO.md).
+scope, acceptance and dependencies are in [work queue](../tasks/work-queue.md#current-work-queue).
 Reuse completed fixture evidence only for matching inputs and do not repeat receipt-only
 proofs. Live and physical-device qualification remain separate. The
 [notification contract](notification-contract-proposal.md) remains proposed:
@@ -237,11 +237,12 @@ from Wing's implemented three-primary-path grouping over four transport modes.
 Owner correction, 2026-10-07: Wing Link installation, pairing and credentials
 must not be prerequisites for any of these paths. The current enrollment chooser
 offers direct Agent actions. The current implementation
-adds primary **Add Hermes** access and separates optional setup/pairing. The
+offers direct Agent entry, metadata-only Linux Local discovery and manual
+Android/Termux preparation. No pairing flow is offered. The historical
 [first-run receipt](../quality/direct-first-run.md) records bounded widget/Chromium
 qualification on Linux. The [native first-run receipt](../quality/direct-first-run-native.md)
-also records four passing Linux GTK fixture journeys. Neither receipt establishes
-main delivery, Android or live authentication.
+also records four passing Linux GTK fixture journeys. These qualify their original
+snapshots, not replacement Local behavior, Android or live authentication.
 The acceptance requirements below remain unchanged.
 
 - **CONN-1 — Entry:** expose three clear primary paths. Retain VPN / NetBird /
@@ -281,7 +282,7 @@ These requirements do not authorize arbitrary SSH commands, Agent patches,
 credential copying or expanded Wing Link compatibility operations. The
 [connection verification matrix](../test-plan.md#connection-path-verification)
 defines acceptance checks. CONNECTION-PATHS and REMOTE-BACKENDS in
-[root TODO](../../TODO.md#now--next) separate entry/workflow delivery from the
+[work queue](../tasks/work-queue.md#current-work-queue) separate entry/workflow delivery from the
 managed native backend.
 
 ## Product rules

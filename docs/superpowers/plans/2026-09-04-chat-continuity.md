@@ -5,7 +5,7 @@
 Disposition: Historical. Retained exact-owner recovery; durable drafts and provisional migration are not accepted implementation.
 
 Canonical owners: `CONNECTION-OWNER-RECONNECT`, `M1-MOBILE-AWAY-STATUS`, `WING-TASK-407`, `VERIFY-CHAT-TRANSCRIPT-NATIVE-RESTART`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

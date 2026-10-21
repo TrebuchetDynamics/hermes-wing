@@ -1,8 +1,8 @@
 +++
 schema = 1
 id = "FILES-TERMINAL-BROWSE"
-title = "Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android."
-short = "Browse and read files under the selected Agent's effective `terminal.cwd` from Linux and Android."
+title = "Browse and read the selected Agent terminal working-directory files on Linux and Android"
+short = "Browse and read the selected Agent terminal working-directory files on Linux and Android"
 status = "open"
 goal = "PARITY"
 section = "Needs decision"
@@ -19,7 +19,7 @@ exclusions = []
 +++
 
 - Section: Needs decision.
-- Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap), [FILES-1, FILES-2 and FILES-4](docs/product/prd.md#terminal-working-directory-files), owner-confirmed terminal working directory.
+- Sources: [accepted port scope](../../ROADMAP.md#flutter-port-execution-roadmap), [FILES-1, FILES-2 and FILES-4](../../docs/product/prd.md#terminal-working-directory-files), owner-confirmed terminal working directory.
 - Evidence: `autowork-execution/slot-data/FILES-TERMINAL-BROWSE/attempt-1/report.json` under the Git common directory names exactly these three localization paths for the already-required accessible labels, empty/denied/unsupported states, bounded preview and root-ownership explanations. No new product behavior or live access is admitted. The worker stopped before edits; resume the existing implementation contract with localized copy and unchanged authentication/containment gates.
 - Readiness: CONTRACT-UNREADY: the latest source-bound attempt established no safe positive enablement rule for exact session/profile/backend root and canonical server confinement. Localization scope is already repaired; do not repeat that repair or submit an always-disabled feature as completed Files support.
 - Planner decision: skip positive Files implementation until an existing unmodified Agent contract establishes all FILES-4 guarantees. Keep the original acceptance and FILES-TERMINAL-DOWNLOAD dependency; missing API authority is not a question the owner can waive. No shell/SFTP substitute, Agent edits, incidental-write probe or speculative qualification flag. Reconsider only with new source-bound contract evidence and independent review.

@@ -5,7 +5,7 @@
 Disposition: Historical. Current gates and audit owners only; speculative refactors are not accepted debt.
 
 Canonical owners: `MT-RERUN-TRAIN`, `MT-VERIFY-BROWSER-GATES`, `SECURITY-RETAINED-RELEASE-AUDIT`.
-Use the [task bodies](../../../TODO.md#now--next) and
+Use the [task bodies](../../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](../../plans/README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

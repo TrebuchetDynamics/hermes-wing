@@ -58,13 +58,17 @@ page, or same-origin HTTP errors.
 
 ## Where help is useful
 
-Follow the [autogoal workflow policy](docs/product/autogoal-workflows.md) for
-milestone-first selection, vertical slices, qualification and main-only delivery.
+The [repository work queue](docs/tasks/work-queue.md) uses `tasks/` through
+`autowork tasks`. Do not recreate `TODO.md` or `goals.json`; the archive is frozen
+history. Task/plan tooling tests require Python 3.11+ for standard-library TOML.
 
-Current priorities follow the accepted Desktop-first workflow: direct connection,
-explicit profile/model selection, Chat generation, approval/Stop, and exact-session
-restoration without duplicate sends. Preserve mobile usability and accessibility;
-Android-specific adaptations follow matched Desktop flows. See the
+Follow the [autogoal workflow policy](docs/product/autogoal-workflows.md) for
+goal-focused selection, bounded slices, qualification and protected-main integration.
+
+Follow the accepted Android SSH → profiles/multi-session → canonical Bot Chat →
+touch-polish priority, preserving Desktop fidelity and existing qualification gates.
+Reconcile completed offline work rather than starting duplicate implementations.
+Preserve generation, approval/Stop and exact-session restoration without replay. See the
 [current goal and qualification boundaries](docs/plans/2026-10-03-desktop-port-goal.md).
 Check the
 [issue tracker](https://github.com/TrebuchetDynamics/hermes-wing/issues) before

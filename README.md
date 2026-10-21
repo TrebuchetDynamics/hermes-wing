@@ -31,7 +31,7 @@ Ask about a demo repository, follow file activity, then review access **if Agent
 </p>
 
 *DEMO DATA · SIMULATED SESSION. Not live-provider testing, cross-device synchronization,
-Desktop parity proof or the planned Bot Chat experience. [View the full illustration](assets/readme/showcase.png).*
+Desktop parity proof or Bot Chat qualification. [View the full illustration](assets/readme/showcase.png).*
 
 <a id="what-can-i-do-with-it"></a>
 <a id="features"></a>
@@ -172,7 +172,7 @@ Contributors also need Node.js 22 for browser E2E; see [contributor setup](CONTR
 - **Report a bug:** [open an issue](https://github.com/TrebuchetDynamics/hermes-wing/issues) with platform, steps and expected/actual behavior.
   Never include credentials, private endpoints or conversations; use the security policy for sensitive reports.
 - **Explore:** [documentation](docs/README.md), [technical design](docs/spec.md), [architecture decisions](docs/adr/README.md),
-  [changelog](CHANGELOG.md), [roadmap](ROADMAP.md), [work queue](TODO.md) and [contribution guide](CONTRIBUTING.md).
+  [changelog](CHANGELOG.md), [roadmap](ROADMAP.md), [work queue](docs/tasks/work-queue.md#current-work-queue) and [contribution guide](CONTRIBUTING.md).
 
 ## License
 

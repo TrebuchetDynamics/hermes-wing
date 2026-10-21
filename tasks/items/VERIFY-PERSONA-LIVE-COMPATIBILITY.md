@@ -1,8 +1,8 @@
 +++
 schema = 1
 id = "VERIFY-PERSONA-LIVE-COMPATIBILITY"
-title = "Goal: PERSONA. Section: Needs decision. Qualify Persona revision-aware saves and conflict recovery against an authorized deployed Agent."
-short = "Goal: PERSONA. Section: Needs decision. Qualify Persona revision-aware saves and conflict recovery against an authorized deployed Agent."
+title = "Qualify Persona revision-aware saves and conflict recovery against an authorized deployed Agent"
+short = "Qualify Persona revision-aware saves and conflict recovery against an authorized deployed Agent"
 status = "open"
 goal = "PERSONA"
 section = "Needs decision"
@@ -19,7 +19,7 @@ exclusions = []
 +++
 
 - Payoff: distinguish the passing synthetic GTK recovery from actual server revision/concurrency enforcement.
-- Sources: [native qualification boundary](docs/quality/persona-native-conflict.md#retained-failures-and-qualification-boundary), [PERSONA](docs/product/hermes-desktop-parity.md#statuses).
+- Sources: [native qualification boundary](../../docs/quality/persona-native-conflict.md#retained-failures-and-qualification-boundary), [PERSONA](../../docs/product/hermes-desktop-parity.md#statuses).
 - Ownership: unclaimed. Required external input: an authorized disposable deployed Agent target with supported private authentication and exact revision-aware SOUL read/write grants. No such live access was supplied by the synthetic native run.
 - Planner decision: skip deployed mutation qualification until the owner supplies an authorized disposable Agent/profile and private authentication permitting bounded SOUL read/write plus a controlled concurrent revision change. Read-only access is insufficient for this task. Preserve the already-passing synthetic native predecessor; do not repeat it as a substitute or touch a personal profile. Never request tokens in chat or infer mutation consent from successful login.
 - Touches: none before conversion; ** stands for the whole repository

@@ -18,5 +18,5 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [accepted port scope](ROADMAP.md#flutter-port-execution-roadmap), [retained PARITYUPDATE-005-11 parent and qualifications](todo.archive.md).
+- Sources: [accepted port scope](../../ROADMAP.md#flutter-port-execution-roadmap), [retained PARITYUPDATE-005-11 parent and qualifications](../../todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository

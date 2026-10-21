@@ -6,7 +6,7 @@ The committed retirement removes this installer, its embedded npm inputs and
 special setup/discovery operations. The sections below retain their original
 commands and outcomes. They are not current installation guidance or proof that
 remaining dependencies pass. See the [current design](../spec.md#security-compatibility-and-delivery)
-and [security successor](../../TODO.md#now--next). Do not recreate these deleted inputs
+and [security successor](../tasks/work-queue.md#current-work-queue). Do not recreate these deleted inputs
 to repeat the old audit.
 
 The [Node.js 22 offline verification](omniroute-node22-verification.md) records

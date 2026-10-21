@@ -5,7 +5,7 @@
 Disposition: Superseded. Project contract-assessment successors only; no legacy adapter expansion.
 
 Canonical owners: `DOC-M3-PROJECT-CONTRACT`, `DOC-M3-PROJECT-ASSIGNMENT-CONTRACT`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

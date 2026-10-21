@@ -1,8 +1,8 @@
 +++
 schema = 1
 id = "CONNECTION-CRON-CANARY"
-title = "Goal: CONNECTION-PATHS. Section: Needs decision."
-short = "Goal: CONNECTION-PATHS. Section: Needs decision."
+title = "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
+short = "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
 status = "open"
 goal = "CONNECTION-PATHS"
 section = "Needs decision"
@@ -21,7 +21,7 @@ exclusions = []
 - Readiness: CANCELLED by owner; retired without completion. Never dispatch.
 - Owner decision: retire this canary task without claiming completion. The historical acceptance below is not an active continuation or restart instruction. No canary, runner, schedule change or automatic resumption is authorized. Qualify one implementation canary before restarting the existing cron.
 - Payoff: recurring work produces checked port commits, not status-only success.
-- Sources: [accepted restart plan](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview) and [connection frontier](docs/plans/2026-10-03-desktop-port-goal.md#current-connection-frontier).
+- Sources: [accepted restart plan](../../docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview) and [connection frontier](../../docs/plans/2026-10-03-desktop-port-goal.md#current-connection-frontier).
 - Graph evidence: partial; source-bound job inspection establishes a paused 15-minute job, not installed admission, live ownership or an executed canary.
 - Ownership: unclaimed coordination task; use the existing job and native task graph. No substitute cron writer, Agent changes, push, release or paid inference.
 - Current product direction: Wing Link is deprecated, not merely optional. Retained legacy tasks and receipts describe existing code, not permission to expand it. Implement direct/native replacements or explicit unavailable-capability behavior. Do not erase paired state or label removal as feature qualification. Preserve active workers and coordinate exact source ownership before dispatch.

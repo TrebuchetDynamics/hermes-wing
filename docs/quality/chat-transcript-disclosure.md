@@ -8,7 +8,7 @@ This receipt compares one reasoning disclosure in Desktop and Wing. It records s
 ## Scope and source identity
 
 Task: `DOC-CHAT-TRANSCRIPT-DISCLOSURE`, card `t_0de1df01`, goal `CHAT-FIDELITY`.
-The [task acceptance](../../TODO.md) requires disclosure, focus and recovery evidence.
+The [task acceptance](../tasks/work-queue.md#current-work-queue) requires disclosure, focus and recovery evidence.
 The [parity boundary](../product/hermes-desktop-parity.md#reference-and-evidence-boundary)
 is the product reference. The [earlier receipt](chat-fidelity-reference.md#executed-checks-and-coverage-limits)
 completed the prerequisite, not this comparison.

@@ -5,7 +5,7 @@
 Disposition: Current. Accepted daily-use outcome remains incomplete; native/live acceptance stays separate.
 
 Canonical owners: `CONNECTION-OFFICIAL-DESKTOP-PORT`, `PARITY-LIVE-WORKFLOW`, `VERIFY-LIVE-WORKFLOW-RECOVERY`, `WING-TASK-405`, `WING-TASK-406`, `WING-TASK-407`, `WING-TASK-408`.
-Use the [task bodies](../../TODO.md#now--next) and
+Use the [task bodies](../tasks/work-queue.md#current-work-queue) and
 [plan-to-task coverage](README.md#plan-to-task-coverage) for current scope and ordering.
 These connections are not implementation, qualification or dispatch evidence.
 

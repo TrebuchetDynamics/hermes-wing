@@ -18,6 +18,6 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](todo.archive.md).
+- Sources: [existing goal authority](../../docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](../../todo.archive.md).
 - Only after an eligible unmodified advertised operation and separately authorized disposable target exist: qualify bounded initial/continued reads, authoritative empty/partial/exhausted and denied outcomes, in-flight revocation, connection/profile/board/Project replacement including same-name recreation, and an accessible target-native journey. No platform or live Agent was exercised; current board inspection remains unavailable.
 - Touches: none before conversion; ** stands for the whole repository

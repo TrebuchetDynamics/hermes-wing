@@ -18,7 +18,7 @@ exclusions = []
 +++
 
 - Payoff: extend discovery-only conformance to one exact authorization boundary.
-- Sources: [2026-08-24-wing-link-hardening](../../docs/superpowers/plans/2026-08-24-wing-link-hardening.md) (historical planning context); [OpenAPI snapshot](../../docs/api/wing-link.openapi.yaml), [retirement boundary](../../docs/adr/product.md#complete-removal-including-legacy).
+- Sources: [2026-08-24-wing-link-hardening](docs/superpowers/plans/2026-08-24-wing-link-hardening.md) (historical planning context); [OpenAPI snapshot](docs/api/wing-link.openapi.yaml), [retirement boundary](docs/adr/product.md#complete-removal-including-legacy).
 - Historical inputs: `wing_link/internal/app/serve.go` and `wing_link/internal/app/serve_test.go` were removed at 963b9b5b; use immutable Git history for the archived contract, not nonexistent current handlers.
 - Source status: this acceptance targets the retired Wing Link service, not a current Wing-owned API. Original criteria and dependencies are retained as unresolved historical intent, not authorization to recreate management.
 - Default: retain deferred historical proof; no new API or acceptance.

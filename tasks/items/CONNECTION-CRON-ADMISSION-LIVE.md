@@ -18,6 +18,6 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](../../docs/product/prd.md#connection-path-requirements), [retained offline task history](../../todo.archive.md).
+- Sources: [existing goal authority](docs/product/prd.md#connection-path-requirements), [retained offline task history](todo.archive.md).
 - Owner decision: The cron canary was retired without completion. Its legacy mention below grants no canary execution or schedule resumption; independent admission obligations remain unverified.
 - Touches: none before conversion; ** stands for the whole repository

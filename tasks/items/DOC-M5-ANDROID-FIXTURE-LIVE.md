@@ -18,6 +18,6 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](../../ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction), [retained offline task history](../../todo.archive.md).
+- Sources: [existing goal authority](ROADMAP.md#m5--safely-take-away-output-with-native-accessible-interaction), [retained offline task history](todo.archive.md).
 - Acceptance reconciliation: Coordinator/human acceptance reconciliation is required: the current production Termux route no longer exposes Copy setup command or a native share sheet. The fixture now follows its existing manual guide; original share-sheet dismissal acceptance remains unmet, not waived or satisfied. Do not restore retired product behavior merely to produce that receipt. - TalkBack, native keyboard/IME and physical-device qualification remain unverified. Independent review and canonical integration are separate from this local task commit.
 - Touches: none before conversion; ** stands for the whole repository

@@ -19,7 +19,7 @@ exclusions = []
 +++
 
 - Payoff: prove installed daily use and retained-state recovery, not just APK launch.
-- Sources: [M6](../../ROADMAP.md#m6--deliver-an-integrated-qualified-alpha), [first missing binding](../../docs/quality/m6-android-integrated-receipt-gap.md#first-missing-binding).
+- Sources: [M6](ROADMAP.md#m6--deliver-an-integrated-qualified-alpha), [first missing binding](docs/quality/m6-android-integrated-receipt-gap.md#first-missing-binding).
 - External gates: admitted signed candidate and distinct trusted predecessor, disposable target/package and bounded failure/recovery authority; approved QA authentication, exact grants and authoritative provider-call ceiling for live work. No candidate acquisition, install or live action occurred in the predecessor.
 - Ownership: coordinator wing; not dispatched. Default: keep M6 unverified and continue independent offline work until those inputs are available.
 - Planner decision: skip the live installed-target gate, not independent build and artifact work. Required owner input is disposable Android target/package authority for bounded install/upgrade/failure/recovery and, where needed, secret-safe QA authentication with the existing provider-use ceiling. Candidate, predecessor, signature/source binding and same-artifact receipt preparation are engineering prerequisites, not a request for the owner to build the release. Preserve physical-device and live-authentication distinctions; no spending waiver.

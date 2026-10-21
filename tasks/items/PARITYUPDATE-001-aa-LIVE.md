@@ -18,5 +18,5 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](../../docs/product/prd.md#connection-path-requirements), [retained parent and qualifications](../../todo.archive.md).
+- Sources: [existing goal authority](docs/product/prd.md#connection-path-requirements), [retained parent and qualifications](todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository

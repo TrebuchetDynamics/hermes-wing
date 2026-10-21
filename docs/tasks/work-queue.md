@@ -25,7 +25,10 @@ autowork tasks validate --worktree .
 Replace `TASK-ID` with an existing exact ID. `list` reads committed intent;
 `--worktree` on supported inspection commands includes pending edits.
 Change task/goal records through `autowork tasks`, not handwritten TOML or a
-second queue. Use `autowork tasks --help` and the relevant subcommand's help
+second queue. The native CLI resolves references inside task notes from the
+repository root (for example `docs/plans/example.md#heading`), not from
+`tasks/items/`; preserve that convention when maintaining `Sources:`.
+Use `autowork tasks --help` and the relevant subcommand's help
 for the installed interface. Planning records intent; it does not start workers,
 resume schedules, authorize live access or certify product acceptance.
 
@@ -43,6 +46,12 @@ The supported `autowork migrate` transaction preserved all 281 task IDs and
 36 goals, task statuses and goal assignments, open sections, priority and selection
 order. All 79 open tasks were in Needs decision. This is migration evidence, not
 new implementation, runnable-work admission or live qualification.
+
+Seven migrated tasks retain missing-check drafts; no commands were invented to
+make them executable. `M2-DEVICE-QUALIFICATION` also retains its original
+owner-provided-device/admission prerequisite as an unresolved dependency. Keep
+these records in Needs decision until accepted evidence supplies the missing
+contract; migration does not remove that gate.
 
 The [frozen archive](../../todo.archive.md) retains completed task bodies and
 original receipts unchanged. Its original links and old command transcripts are

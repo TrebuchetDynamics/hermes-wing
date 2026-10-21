@@ -6,4 +6,4 @@ status = "done"
 goal = "CHAT-FIDELITY"
 +++
 
-- Archived: [frozen task history](../../todo.archive.md)
+- Archived: [frozen task history](todo.archive.md)

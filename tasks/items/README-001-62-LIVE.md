@@ -18,5 +18,5 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](../../docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome), [retained parent and qualifications](../../todo.archive.md).
+- Sources: [existing goal authority](docs/plans/2026-10-12-wing-landing-onboarding.md#existing-agent-onboarding-outcome), [retained parent and qualifications](todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository

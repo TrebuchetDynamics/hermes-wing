@@ -18,6 +18,6 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](../../docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](../../todo.archive.md).
+- Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](todo.archive.md).
 - Messaging-platform administration remains unavailable: the pinned upstream PUT lacks an eligible exactly advertised, operation/resource-authorized, locally approved, stable-identity/revision/replay contract for Wing. Do not implement or activate a fallback. - After a suitable unmodified contract and separately admitted disposable target exist, qualify authenticated read/denial, local approval binding, stale-resource/conflict/replay rejection, persistence versus activation receipts, and accessible target-native recovery. No native/device/live Agent or Telegram qualification was performed.
 - Touches: none before conversion; ** stands for the whole repository

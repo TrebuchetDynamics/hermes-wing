@@ -18,6 +18,6 @@ checks = ["Live qualification by an authorized person; offline evidence does not
 exclusions = []
 +++
 
-- Sources: [existing goal authority](../../docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](../../todo.archive.md).
+- Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](todo.archive.md).
 - After an eligible unmodified Agent discovery contract is available: target-specific authenticated catalog/read-denial, profile isolation and accessible native journeys. No platform, browser, native UI or live Agent was exercised by this documentation task.
 - Touches: none before conversion; ** stands for the whole repository

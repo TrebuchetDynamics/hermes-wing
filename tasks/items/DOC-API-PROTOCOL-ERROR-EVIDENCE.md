@@ -18,7 +18,7 @@ exclusions = []
 +++
 
 - Payoff: preserve a distinct remaining proof slice after the current task.
-- Sources: [API-CONFORMANCE](../../docs/api/wing-link.openapi.yaml), [retirement boundary](../../docs/adr/product.md#complete-removal-including-legacy).
+- Sources: [API-CONFORMANCE](docs/api/wing-link.openapi.yaml), [retirement boundary](docs/adr/product.md#complete-removal-including-legacy).
 - Ownership: unclaimed in this index; verify tracker and continuation leases first.
 - Source status: this acceptance targets the retired Wing Link service, not a current Wing-owned API. Original criteria and dependencies are retained as unresolved historical intent, not authorization to recreate management.
 - Default: retain deferred historical proof; no new API or acceptance.

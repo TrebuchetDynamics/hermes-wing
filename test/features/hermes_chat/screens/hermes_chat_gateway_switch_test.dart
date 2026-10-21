@@ -1787,6 +1787,25 @@ void main() {
     );
   });
 
+  testWidgets('system back dismisses composer focus before leaving chat', (
+    tester,
+  ) async {
+    final harness = await _pumpGatewayChat(tester);
+    final field = find.byKey(const ValueKey('hermes-composer-field'));
+    await tester.enterText(field, 'Retained keyboard draft');
+    await tester.pumpAndSettle();
+    final owner = harness.directory.activeContactId;
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(harness.directory.activeContactId, owner);
+    expect(
+      tester.widget<TextField>(field).controller!.text,
+      'Retained keyboard draft',
+    );
+    expect(tester.widget<TextField>(field).focusNode!.hasFocus, isFalse);
+    expect(harness.store.deleteProfileCalls, isEmpty);
+  });
+
   testWidgets('system back returns to contacts without deleting gateway', (
     tester,
   ) async {

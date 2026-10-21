@@ -4298,6 +4298,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themePaletteLabel => 'Accent color';
 
   @override
+  String get settingsThemeHeading => 'Theme';
+
+  @override
+  String get settingsTypographyHeading => 'Typography';
+
+  @override
   String get chatTextScaleTitle => 'Chat text size';
 
   @override

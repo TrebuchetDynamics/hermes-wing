@@ -35,6 +35,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Theme'), findsOneWidget);
+    expect(find.text('Typography'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Typography')).dy,
+      greaterThan(
+        tester
+            .getBottomRight(
+              find.byKey(const ValueKey('settings-theme-gallery')),
+            )
+            .dy,
+      ),
+    );
     for (final palette in WingThemePalette.values) {
       expect(
         find.byKey(ValueKey('settings-theme-${palette.name}')),

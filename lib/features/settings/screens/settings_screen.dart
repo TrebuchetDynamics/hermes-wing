@@ -291,16 +291,23 @@ class _AppearanceSettingsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(
+          strings.settingsThemeHeading,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: LayoutBuilder(
             builder: (context, constraints) {
               // Vertical native segments preserve full labels at 200% text.
               final stacked =
-                  constraints.maxWidth < 360 ||
+                  constraints.maxWidth < 240 ||
                   MediaQuery.textScalerOf(context).scale(14) > 18;
               return SegmentedButton<ThemeMode>(
                 key: const ValueKey('settings-theme-mode'),
+                style: const ButtonStyle(
+                  minimumSize: WidgetStatePropertyAll(Size(48, 48)),
+                ),
                 direction: stacked ? Axis.vertical : Axis.horizontal,
                 showSelectedIcon: false,
                 segments: modes,
@@ -311,9 +318,6 @@ class _AppearanceSettingsSection extends ConsumerWidget {
             },
           ),
         ),
-        const Divider(height: 1),
-        const _ChatTextScaleSetting(),
-        const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Text(
@@ -350,6 +354,14 @@ class _AppearanceSettingsSection extends ConsumerWidget {
             );
           },
         ),
+        const SizedBox(height: 32),
+        const Divider(height: 1),
+        const SizedBox(height: 24),
+        Text(
+          strings.settingsTypographyHeading,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const _ChatTextScaleSetting(),
       ],
     );
   }
@@ -444,7 +456,7 @@ class _ThemePreviewChoice extends StatelessWidget {
               children: [
                 ExcludeSemantics(
                   child: Container(
-                    height: 88,
+                    height: MediaQuery.sizeOf(context).width < 600 ? 64 : 88,
                     decoration: BoxDecoration(
                       color: preview.surface,
                       border: Border.all(color: preview.outlineVariant),

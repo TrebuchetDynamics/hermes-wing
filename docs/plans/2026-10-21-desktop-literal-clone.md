@@ -590,6 +590,15 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 
 ### Primer cambio implementado de CLONE-03
 
+Refinamiento visual: Appearance agrupa modo y galería bajo Theme y separa
+Typography después de la galería, conforme al orden de secciones del pin oficial.
+En móvil el control de modo usa una fila cuando cabe y las miniaturas son más
+bajas; texto grande mantiene distribución vertical y área mínima de 48 px.
+Verificación con Flutter 3.44.9: 48 pruebas Settings/router, análisis, formato,
+build web E2E y 2 recorridos Chromium sin retries a 390/1280 px. Capturas
+inspeccionadas durante el refinamiento; no equivalen a comparación 1:1 Desktop.
+El árbol completo de subpáginas sigue pendiente.
+
 Tamaño de conversación: Appearance expone la preferencia de escala de transcript
 ya existente, antes accesible por pinch. Reutiliza el provider y clave actuales;
 preserva el default Wing y los valores intermedios guardados. Los presets

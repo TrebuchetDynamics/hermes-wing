@@ -2213,6 +2213,8 @@
   "themeModeLight": "Light",
   "themeModeDark": "Dark",
   "themePaletteLabel": "Accent color",
+  "chatTextScaleTitle": "Chat text size",
+  "chatTextScaleDescription": "Adjust conversation text without changing the rest of the interface.",
   "themePaletteWing": "Wing",
   "themePaletteIndigo": "Indigo",
   "themePaletteForest": "Forest",

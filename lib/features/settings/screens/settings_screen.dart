@@ -312,6 +312,8 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           ),
         ),
         const Divider(height: 1),
+        const _ChatTextScaleSetting(),
+        const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Text(
@@ -349,6 +351,53 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _ChatTextScaleSetting extends ConsumerWidget {
+  const _ChatTextScaleSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final scale = ref.watch(wingChatPreferencesProvider).transcriptTextScale;
+    final percent = (scale * 100).round();
+    // Pinch zoom can retain intermediate values; displaying Settings must not
+    // silently round or overwrite that saved presentation preference.
+    final percentages = {90, 100, 110, 125, 150, 175, percent}.toList()..sort();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            strings.chatTextScaleTitle,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            strings.chatTextScaleDescription,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final value in percentages)
+                ChoiceChip(
+                  key: ValueKey('settings-chat-text-scale-$value'),
+                  label: Text('$value%'),
+                  selected: value == percent,
+                  onSelected: (_) => ref
+                      .read(wingChatPreferencesProvider.notifier)
+                      .setTranscriptTextScale(value / 100),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

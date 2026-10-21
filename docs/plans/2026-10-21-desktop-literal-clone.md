@@ -590,6 +590,17 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 
 ### Primer cambio implementado de CLONE-03
 
+Tamaño de conversación: Appearance expone la preferencia de escala de transcript
+ya existente, antes accesible por pinch. Reutiliza el provider y clave actuales;
+preserva el default Wing y los valores intermedios guardados. Los presets
+90/100/110/125/150/175 siguen `appearance-settings.tsx:689-703` y
+`store/chat-text-scale.ts` del pin oficial. No es escala global ni selector de
+fuentes, y no completa el subárbol Typography. Dos regresiones a 390/1280 px con
+texto 200% verifican selección, persistencia y recarga sin alterar el modo de tema.
+Pasaron 48 pruebas Settings/router, análisis, formato y build Linux debug con
+Flutter 3.44.9 (fuera del pin documental 3.44.2). No se ejecutó E2E web ni se
+declara comparación visual Desktop o calificación física por ese build.
+
 Galería visual de Appearance: el selector de paleta es ahora una cuadrícula de
 miniaturas seleccionables, siguiendo el patrón `ThemeGallery` de
 `apps/desktop/src/app/settings/appearance-settings.tsx` del pin `47b23fa048`.

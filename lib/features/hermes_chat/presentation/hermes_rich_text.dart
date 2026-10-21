@@ -94,8 +94,8 @@ class _HermesRichTextState extends State<HermesRichText> {
     final strings = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final markdownStyle = MarkdownStyleSheet.fromTheme(theme).copyWith(
-      p: theme.textTheme.bodyMedium?.copyWith(height: 1.38),
-      listBullet: theme.textTheme.bodyMedium?.copyWith(height: 1.38),
+      p: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+      listBullet: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
       h1: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
       h2: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
       h3: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),

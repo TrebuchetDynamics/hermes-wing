@@ -2683,7 +2683,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       ),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(3),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       padding: const EdgeInsets.fromLTRB(12, 8, 8, 6),
@@ -2708,7 +2708,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                 _composerContentInsertionConfiguration,
             enabled: canSendTurns,
             minLines: 1,
-            maxLines: 4,
+            maxLines: 6,
             decoration: InputDecoration(
               hintText: _composerTextFieldHint(strings, state, canSendTurns),
               border: InputBorder.none,

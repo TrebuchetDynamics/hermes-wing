@@ -439,7 +439,7 @@ class _DesktopShell extends StatelessWidget {
                     policy: WidgetOrderTraversalPolicy(),
                     child: SizedBox(
                       key: const ValueKey('desktop-sidebar'),
-                      width: expanded ? 250 : 64,
+                      width: expanded ? 237 : 64,
                       child: Theme(
                         data: style.sidebarTheme(theme),
                         child: Builder(

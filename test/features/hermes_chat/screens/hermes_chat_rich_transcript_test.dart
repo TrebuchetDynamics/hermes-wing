@@ -1191,7 +1191,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     },
   );
 
-  testWidgets('message bubbles keep Telegram-style bottom tails', (
+  testWidgets('message surfaces use the compact Desktop corner treatment', (
     tester,
   ) async {
     final channel = FakeHermesChannel();
@@ -1216,10 +1216,8 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     final userRadius = decoration(userId).borderRadius! as BorderRadius;
     final assistantRadius =
         decoration(assistantId).borderRadius! as BorderRadius;
-    expect(userRadius.bottomRight, const Radius.circular(5));
-    expect(userRadius.topRight, const Radius.circular(16));
-    expect(assistantRadius.bottomLeft, const Radius.circular(5));
-    expect(assistantRadius.topLeft, const Radius.circular(16));
+    expect(userRadius, BorderRadius.circular(3));
+    expect(assistantRadius, BorderRadius.circular(3));
   });
 
   testWidgets('message timestamps expose their full local date and time', (
@@ -1565,8 +1563,13 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
       find.byKey(ValueKey('hermes-copy-message-$assistantId')),
       findsNothing,
     );
+    await tester.ensureVisible(
+      find.byKey(ValueKey('hermes-turn-$assistantId')),
+    );
+    await tester.pump();
     await tester.tapAt(
-      tester.getCenter(find.byKey(ValueKey('hermes-turn-$assistantId'))),
+      tester.getTopLeft(find.byKey(ValueKey('hermes-turn-$assistantId'))) +
+          const Offset(12, 16),
       kind: PointerDeviceKind.mouse,
       buttons: kSecondaryMouseButton,
     );

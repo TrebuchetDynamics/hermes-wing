@@ -606,6 +606,20 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
                             key: ValueKey('shell-open-session-${session.id}'),
                             style: TextButton.styleFrom(
                               alignment: Alignment.centerLeft,
+                              foregroundColor:
+                                  state.activeSessionId == session.id
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.onSurface,
+                              textStyle: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    fontWeight:
+                                        state.activeSessionId == session.id
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                               backgroundColor:
                                   state.activeSessionId == session.id
                                   ? Theme.of(context).colorScheme.primary

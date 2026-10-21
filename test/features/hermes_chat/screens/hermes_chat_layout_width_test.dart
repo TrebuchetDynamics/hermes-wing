@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -58,7 +59,12 @@ void main() {
   testWidgets(
     'wide chat shows the session rail and suppresses the active session bar',
     (tester) async {
-      final channel = FakeHermesChannel();
+      final channel = FakeHermesChannel(
+        sessions: const [
+          HermesSession(id: 'sess_1', source: 'test'),
+          HermesSession(id: 'sess_2', source: 'test'),
+        ],
+      );
       addTearDown(channel.dispose);
       tester.view.physicalSize = const Size(1440.0, 1000.0);
       tester.view.devicePixelRatio = 1;

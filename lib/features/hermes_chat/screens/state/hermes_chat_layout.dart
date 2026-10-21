@@ -1041,6 +1041,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           hasChatTransport: hasChatTransport,
           canSendTurns: canSendTurns,
           isTurnActive: isTurnActive,
+          showSessionRail: showSessionRail,
         );
 
         if (!showSessionRail) return chatPane;
@@ -1091,6 +1092,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     required bool hasChatTransport,
     required bool canSendTurns,
     required bool isTurnActive,
+    required bool showSessionRail,
   }) {
     final errorRetry =
         state.errorMessage != null &&
@@ -1113,6 +1115,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   retainedSessionIds: _unreadCompletedSessionIds,
                 ).length >
                 1 &&
+            !showSessionRail &&
             !AppShellSessionNavigation.of(context);
         final switchableSessions = _switchableHermesSessions(
           state,

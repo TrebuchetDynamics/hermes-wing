@@ -12,6 +12,48 @@ import '../../features/hermes_chat/support/fake_hermes_endpoint_store.dart';
 import '../../features/hermes_chat/support/fake_hermes_gateway_directory.dart';
 
 void main() {
+  for (final replacement in ['owner', 'activation', 'exception']) {
+    testWidgets('does not misattribute failure after $replacement', (
+      tester,
+    ) async {
+      late BuildContext screenContext;
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) {
+            screenContext = context;
+            return const SizedBox();
+          },
+        ),
+      );
+      final channel = FakeHermesChannel(
+        status: HermesConnectionStatus.error,
+        connectionFailureKind: HermesConnectionFailureKind.authentication,
+      );
+      final directory = _PendingGatewayDirectory(channel);
+      addTearDown(channel.dispose);
+      addTearDown(directory.dispose);
+      var ownerCurrent = true;
+      final failures = <HermesConnectionFailureKind?>[];
+      final switching = completeWingGatewaySwitch(
+        context: screenContext,
+        directory: directory,
+        channel: channel,
+        isCurrentOwner: () => ownerCurrent,
+        gatewayId: 'host',
+        onFailure: failures.add,
+        onFinished: () {},
+      );
+      if (replacement == 'owner') ownerCurrent = false;
+      if (replacement == 'activation') await directory.showDirectory();
+      if (replacement == 'exception') {
+        directory.activation.completeError(StateError('no profiles'));
+      } else {
+        directory.activation.complete();
+      }
+      await switching;
+      expect(failures, replacement == 'exception' ? [null] : isEmpty);
+    });
+  }
   for (final kind in HermesConnectionFailureKind.values) {
     testWidgets('reports settled connection rejection: $kind', (tester) async {
       late BuildContext screenContext;
@@ -46,6 +88,7 @@ void main() {
         context: screenContext,
         directory: directory,
         channel: channel,
+        isCurrentOwner: () => true,
         gatewayId: 'host',
         onFailure: failures.add,
         onFinished: () => finished = true,
@@ -80,6 +123,7 @@ void main() {
           context: screenContext,
           directory: directory,
           channel: channel,
+          isCurrentOwner: () => true,
           gatewayId: 'selected-host',
           onFailure: (_) => events.add('failure'),
           onFinished: () => events.add('finished'),

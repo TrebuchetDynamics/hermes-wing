@@ -237,10 +237,14 @@ class _GatewayScreenState extends ConsumerState<GatewayScreen> {
       _actionError = null;
       _refreshFailed = false;
     });
+    final channel = ref.read(hermesChannelProvider);
     await completeWingGatewaySwitch(
       context: context,
       directory: directory,
-      channel: ref.read(hermesChannelProvider),
+      channel: channel,
+      isCurrentOwner: () =>
+          identical(ref.read(hermesChannelProvider), channel) &&
+          identical(ref.read(hermesGatewayDirectoryProvider), directory),
       gatewayId: gatewayId,
       onFailure: (kind) => setState(() {
         _actionError = wingGatewayConnectionFailureMessage(strings, kind);

@@ -180,6 +180,7 @@ class HermesGatewayDirectory extends ChangeNotifier
 
   GatewayContactId? get activeContactId => _activeContactId;
   bool get isActivating => _isActivating;
+  int get activationGeneration => _activationGeneration;
   String? get restoringSessionId => _restoringSessionId;
   GatewaySessionRestorationFailure? get restorationFailure =>
       _restorationFailure;

@@ -10,21 +10,29 @@ Future<void> completeWingGatewaySwitch({
   required BuildContext context,
   required HermesGatewayDirectory directory,
   required HermesChannel channel,
+  required bool Function() isCurrentOwner,
   required String gatewayId,
   required ValueChanged<HermesConnectionFailureKind?> onFailure,
   required VoidCallback onFinished,
 }) async {
+  int? generation;
+  bool isCurrent() =>
+      context.mounted &&
+      isCurrentOwner() &&
+      (generation == null || directory.activationGeneration == generation);
   try {
-    await directory.activateGateway(gatewayId);
-    if (context.mounted &&
+    final activation = directory.activateGateway(gatewayId);
+    generation = directory.activationGeneration;
+    await activation;
+    if (isCurrent() &&
         channel.state.status == HermesConnectionStatus.error &&
         directory.activeContactId?.gatewayId != gatewayId) {
       onFailure(channel.state.connectionFailureKind);
     }
   } catch (_) {
-    if (context.mounted) onFailure(channel.state.connectionFailureKind);
+    if (isCurrent()) onFailure(null);
   } finally {
-    if (context.mounted) onFinished();
+    if (isCurrent()) onFinished();
   }
 }
 

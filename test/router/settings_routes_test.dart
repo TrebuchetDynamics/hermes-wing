@@ -62,7 +62,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await selectCategory('Chat');
+    await selectCategory('Voice');
     final voice = find.byKey(const ValueKey('settings-voice-link'));
     await Scrollable.ensureVisible(tester.element(voice), alignment: 0.5);
     await tester.pumpAndSettle();

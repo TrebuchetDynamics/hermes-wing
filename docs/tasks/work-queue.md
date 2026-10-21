@@ -7,6 +7,10 @@ Those two files are retired, not compatibility views or editable fallbacks.
 
 ## Current work queue
 
+- [Complete pending-work checklist](pending-complete.md): owner-requested execution
+  order, delivered subsets and all 86 open task contracts. Existing task records
+  remain authoritative; the checklist is a consolidated view, not another queue.
+
 - [Task records](../../tasks/items/): one TOML-frontmatter Markdown file per stable ID.
 - [Goal records](../../tasks/goals/): accepted outcomes, priority, focus and evidence.
 - `tasks/evidence/` contains source-bound close receipts when the engine creates them.

@@ -20,3 +20,19 @@ exclusions = []
 
 - Sources: [existing goal authority](docs/adr/api-and-state.md#required-agent-owned-mutation-contract), [retained offline task history](todo.archive.md).
 - Touches: none before conversion; ** stands for the whole repository
+
+## Completed bounded per-operation UI correction
+
+- The credential sheet now checks Set, Remove and Validate independently against
+  each exact advertised endpoint/grant, both before dispatch and after completion.
+  Missing capability documents fail closed instead of bypassing checks. Set
+  permission no longer implies Remove or Validate permission.
+- Added explicit single-operation and missing-capability regressions; positive
+  synthetic sheet fixtures now declare their actual operation grants rather than
+  relying on absent capabilities. All 98 provider tests and analysis passed using
+  Flutter 3.44.9. No live credential mutation or validation was executed.
+- This is only the route/grant presentation correction. It does NOT qualify the
+  legacy request shapes as meeting the ADR's opaque credential identity, revision,
+  idempotency and effect-consent requirements. The broader contract-admission
+  correction at both channel and UI boundaries remains pending; do not mark this
+  task or provider credential lifecycle complete from these fixtures.

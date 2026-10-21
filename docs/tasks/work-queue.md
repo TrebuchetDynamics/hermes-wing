@@ -7,6 +7,11 @@ Those two files are retired, not compatibility views or editable fallbacks.
 
 ## Current work queue
 
+- [Master plan: literal Desktop clone](../plans/2026-10-21-desktop-literal-clone.md):
+  official-source comparison, 50 feature families and 16 implementation packages.
+  This is the current owner-requested product direction, not a runtime parity
+  verdict or task-admission receipt. Existing task contracts remain authoritative.
+
 - [Complete pending-work checklist](pending-complete.md): owner-requested execution
   order, delivered subsets and all 86 open task contracts. Existing task records
   remain authoritative; the checklist is a consolidated view, not another queue.

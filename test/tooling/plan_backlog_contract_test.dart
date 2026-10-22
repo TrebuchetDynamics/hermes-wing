@@ -93,6 +93,7 @@ void main() {
       test('absent, duplicate and unchecked done bodies fail closed', () {
         for (final sources in [
           (todo: '', archive: ''),
+          (todo: '- Sources: [Plan](docs/plans/example.md)\n', archive: ''),
           (todo: '- [x] **$id-OTHER** — Other task\n', archive: ''),
           (todo: done, archive: done),
           (todo: '$done$done', archive: ''),
@@ -138,62 +139,87 @@ void main() {
     });
   }
 
-  test('manual closure resolves the record body instead of an archive entry', () {
-    const id = 'PARITY-LIVE-WORKFLOW-LIVE';
-    const body =
-        '- Sources: [owner decision](docs/product/prd.md#leading-acceptance-outcome)\n';
-    expect(
-      planTaskBody(
-        id: id,
-        status: 'done',
-        todo: body,
-        archive: '',
-        manualClosure: true,
-      ),
-      body,
-    );
-    // Manual closure is only a done disposition and still needs a record body.
-    expect(
-      () => planTaskBody(
-        id: id,
-        status: 'open',
-        todo: body,
-        archive: '',
-        manualClosure: true,
-      ),
-      throwsFormatException,
-    );
-    expect(
-      () => planTaskBody(
-        id: id,
-        status: 'done',
-        todo: '',
-        archive: '',
-        manualClosure: true,
-      ),
-      throwsFormatException,
-    );
-    // A leftover checkbox body still fails closed for a manual closure,
-    // whether it sits in the archived entry or the record body itself.
-    expect(
-      () => planTaskBody(
-        id: id,
-        status: 'done',
-        todo: body,
-        archive: '- [x] **$id** — [Plan](docs/plans/example.md)\n',
-        manualClosure: true,
-      ),
-      throwsFormatException,
-    );
-    expect(
-      () => planTaskBody(
-        id: id,
-        status: 'done',
-        todo: '- [x] **$id** — [Plan](docs/plans/example.md)\n$body',
-        archive: '',
-        manualClosure: true,
-      ),
-      throwsFormatException,
-    );
+  test(
+    'native closures require a done record body without checkbox conflicts',
+    () {
+      for (final id in ['TASK-ONE', 'DEV-001-c7']) {
+        const body = '- Sources: [Plan](docs/plans/example.md)\n';
+        final checkbox = '- [x] **$id** — Archived task\n';
+        final neighbor = '- [x] **$id-OTHER** — Neighbor task\n';
+        for (final closure in ['manual', 'coordinator_verified']) {
+          expect(
+            planTaskBody(
+              id: id,
+              status: 'done',
+              todo: body,
+              archive: neighbor,
+              closure: closure,
+            ),
+            body,
+          );
+          for (final invalid in [
+            (status: 'open', todo: body, archive: ''),
+            (status: 'unknown', todo: body, archive: ''),
+            (status: 'done', todo: '  \n', archive: ''),
+            (status: 'done', todo: body, archive: checkbox),
+            (status: 'done', todo: checkbox, archive: ''),
+            (status: 'done', todo: '$checkbox$checkbox', archive: ''),
+          ]) {
+            expect(
+              () => planTaskBody(
+                id: id,
+                status: invalid.status,
+                todo: invalid.todo,
+                archive: invalid.archive,
+                closure: closure,
+              ),
+              throwsFormatException,
+            );
+          }
+        }
+      }
+    },
+  );
+
+  test(
+    'unsupported closure provenance cannot use record or archive bodies',
+    () {
+      for (final closure in ['', 'verified', 'coordinator_verified_extra']) {
+        for (final archive in ['', '- [x] **TASK-ONE** — Archived task\n']) {
+          expect(
+            () => planTaskBody(
+              id: 'TASK-ONE',
+              status: 'done',
+              todo: '- Sources: [Plan](docs/plans/example.md)\n',
+              archive: archive,
+              closure: closure,
+            ),
+            throwsFormatException,
+          );
+        }
+      }
+    },
+  );
+
+  test('primary plan backlinks must be direct and in the selected body', () {
+    const path = 'docs/plans/example.md';
+    for (final closure in ['manual', 'coordinator_verified']) {
+      for (final body in ['- Sources: Other plan\n', '[Plan]($path#section)']) {
+        final selected = planTaskBody(
+          id: 'DEV-001-c7',
+          status: 'done',
+          todo: body,
+          archive: '- [x] **DEV-001-c7-OTHER** — [Plan]($path)\n',
+          closure: closure,
+        );
+        expect(
+          () => requirePrimaryPlanBacklink(selected, path),
+          throwsFormatException,
+        );
+      }
+    }
+    for (final body in ['[Plan]($path)', '[Plan](../../$path)']) {
+      expect(() => requirePrimaryPlanBacklink(body, path), returnsNormally);
+    }
   });
 }

@@ -33,12 +33,20 @@ print(json.dumps(records))
   return jsonDecode(result.stdout as String) as Map<String, dynamic>;
 }
 
+void requirePrimaryPlanBacklink(String body, String path) {
+  if (!body.contains(']($path)') && !body.contains('](../../$path)')) {
+    throw FormatException(
+      '$path needs a direct link from its primary task body.',
+    );
+  }
+}
+
 String planTaskBody({
   required String id,
   required String status,
   required String todo,
   required String archive,
-  bool manualClosure = false,
+  String? closure,
 }) {
   final bodies = <({bool archived, bool checked, String text})>[];
   final marker = RegExp(
@@ -62,21 +70,22 @@ String planTaskBody({
       ));
     }
   }
-  // A native/manual closure records its outcome in the task body; it never
-  // gains or replaces a frozen archive checkbox. Accept that record body
-  // instead of requiring an archive entry the close cannot have, while a
-  // leftover or duplicate checkbox body still fails closed.
-  if (manualClosure) {
+  // Native closures use their canonical record body, not a frozen archive
+  // checkbox. Provenance selects the body; Autowork still verifies receipts.
+  if (closure != null) {
+    if (!['manual', 'coordinator_verified'].contains(closure)) {
+      throw FormatException('$id has unsupported closure provenance: $closure');
+    }
     if (status != 'done') {
-      throw FormatException('$id manual closure requires done status');
+      throw FormatException('$id native closure requires done status');
     }
     if (bodies.isNotEmpty) {
       throw FormatException(
-        '$id manual closure conflicts with a checkbox body',
+        '$id native closure conflicts with a checkbox body',
       );
     }
     if (todo.trim().isEmpty) {
-      throw FormatException('$id manual closure needs a record body');
+      throw FormatException('$id native closure needs a record body');
     }
     return todo;
   }

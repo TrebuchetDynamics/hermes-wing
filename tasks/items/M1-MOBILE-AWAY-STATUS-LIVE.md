@@ -3,7 +3,7 @@ schema = 1
 id = "M1-MOBILE-AWAY-STATUS-LIVE"
 title = "Live checks for M1-MOBILE-AWAY-STATUS"
 short = "Live checks for M1-MOBILE-AWAY-STATUS"
-status = "open"
+status = "done"
 goal = "M1"
 section = "Needs decision"
 rank = 21000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for M1-MOBILE-AWAY-STATUS left pen
 acceptance = ["Each check passes on the real target: - Android acceptance remains NOT_CHECKED. Reestablish authenticated access to the selected isolated Waydroid QA target; verify Android release/API/ABI and existing QA APK/source/entrypoint digest, installed package equality and storage separation without replacing the paired app. - Run this task's full compact/enlarged-text Android away/return matrix: deterministic running-to-completed and running-to-failed while backgrounded, exact host/profile/session/run and canonical history, disconnect unknown then deliberate Retry, current exact approval grants and rejected late old-owner results. Record per-phase send/create/approval/Stop attempt counts; unobserved counts are not zero. Repair only reproduced Wing defects with focused regressions. Existing broad feature/YAML entries do not alone qualify this matrix."]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:20:10.364291+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - Sources: [existing goal authority](docs/product/prd.md#leading-acceptance-outcome), [retained offline task history](todo.archive.md).

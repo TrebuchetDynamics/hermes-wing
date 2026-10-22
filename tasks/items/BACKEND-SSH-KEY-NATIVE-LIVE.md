@@ -3,7 +3,7 @@ schema = 1
 id = "BACKEND-SSH-KEY-NATIVE-LIVE"
 title = "Live checks for BACKEND-SSH-KEY-NATIVE"
 short = "Live checks for BACKEND-SSH-KEY-NATIVE"
-status = "open"
+status = "done"
 goal = "REMOTE-BACKENDS"
 section = "Needs decision"
 rank = 46000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for BACKEND-SSH-KEY-NATIVE left pe
 acceptance = ["Each check passes on the real target: - Full-app qualification remains open. Provide the approved host, independently reviewed fingerprint, permitted SSH authentication and separate Agent credential through an approved secret channel; none was supplied with this invocation. Do not infer authorization for provider spending or personal-runtime changes."]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:19:29.035993+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained offline task history](todo.archive.md).

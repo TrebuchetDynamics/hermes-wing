@@ -3,7 +3,7 @@ schema = 1
 id = "ANDROID-CANONICAL-BOT-CHAT-LIVE"
 title = "Live checks for ANDROID-CANONICAL-BOT-CHAT"
 short = "Live checks for ANDROID-CANONICAL-BOT-CHAT"
-status = "open"
+status = "done"
 goal = "PARITY-TABS"
 section = "Needs decision"
 rank = 79000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for ANDROID-CANONICAL-BOT-CHAT lef
 acceptance = ["Each check passes on the real target: - Isolated Android .qa device/emulator journeys; adb devices -l returned no attached targets. Android-target widget fixtures are not device execution. - Live unmodified Agent authentication, canonical lookup/create/title-conflict/concurrent-client adoption and actual managed SSH. No live inference used or authorized by this task. - Native accessibility/screen reader, IME and process-death qualification; long forever-chat/frame-bound qualification remains pending."]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:19:25.989338+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - Touches: none before conversion; ** stands for the whole repository

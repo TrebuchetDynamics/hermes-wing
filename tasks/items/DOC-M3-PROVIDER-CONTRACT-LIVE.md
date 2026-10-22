@@ -3,7 +3,7 @@ schema = 1
 id = "DOC-M3-PROVIDER-CONTRACT-LIVE"
 title = "Live checks for DOC-M3-PROVIDER-CONTRACT"
 short = "Live checks for DOC-M3-PROVIDER-CONTRACT"
-status = "open"
+status = "done"
 goal = "M3-PROVIDER"
 section = "Needs decision"
 rank = 33000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for DOC-M3-PROVIDER-CONTRACT left 
 acceptance = ["Each check passes on the real target: - No live support is qualified. Future isolated Linux UI/provider validation, deployed capability advertisement, secret transport/storage, concurrent-writer/replay and activation checks require an eligible unmodified Agent contract plus separately scoped target/authority/effects consent; current inspected contracts do not establish the ADR guarantees. - Android/device and native UI qualification remain NOT_CHECKED; source and fixture test inspection does not qualify those platforms."]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:19:44.380577+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - Sources: [existing goal authority](docs/adr/api-and-state.md#required-agent-owned-mutation-contract), [retained offline task history](todo.archive.md).

@@ -3,7 +3,7 @@ schema = 1
 id = "DOC-NATIVE-DESIGN-REVIEW-LIVE"
 title = "Live checks for DOC-NATIVE-DESIGN-REVIEW"
 short = "Live checks for DOC-NATIVE-DESIGN-REVIEW"
-status = "open"
+status = "done"
 goal = "NATIVE-INTEGRATION"
 section = "Needs decision"
 rank = 43000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for DOC-NATIVE-DESIGN-REVIEW left 
 acceptance = ["Each check passes on the real target:"]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:20:02.403835+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - Sources: [existing goal authority](docs/adr/client.md#decision), [retained offline task history](todo.archive.md).

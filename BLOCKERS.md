@@ -6,14 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-LINUXQA-001-dbb6605f — USER_DECISION — effort investigate — unblocks 2
-
-- Task: LINUXQA-001-dbb6605f — Qualify current-source shared regressions and Linux native adapter coverage
-- Needs: report.json does not match worker commit/files or reports failure: a check did not pass
-- Since: 2026-10-22T21:52:07Z
-- Answer: Read the evidence (the worker's report and validation log under .git/autowork-execution/slot-data/LINUXQA-001-dbb6605f/), then rescope or split LINUXQA-001-dbb6605f in tasks/items/LINUXQA-001-dbb6605f.md. The runner reruns it when the record changes.
-- Kind: held
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

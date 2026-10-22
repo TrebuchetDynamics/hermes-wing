@@ -3,7 +3,7 @@ schema = 1
 id = "DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE"
 title = "Live checks for DOC-ACCOUNT-REVOCATION-EVIDENCE"
 short = "Live checks for DOC-ACCOUNT-REVOCATION-EVIDENCE"
-status = "open"
+status = "done"
 goal = "ACCOUNT"
 section = "Needs decision"
 rank = 59000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for DOC-ACCOUNT-REVOCATION-EVIDENC
 acceptance = ["Each check passes on the real target: - Separately authorized isolated-provider qualification of actual access-token expiry, rejected refresh and provider-side invalidation scope/acknowledgement; none executed here. - Separately authorized logout followed by authoritative root/pool/CLI resolution checks, in-flight login/refresh and cross-process races, and other-profile/device effects; source findings do not establish post-logout closure. - Current deployed Agent exact lifecycle capabilities/grants and named-platform secure-storage/end-to-end behavior remain unverified; no Wing account lifecycle operation is admitted by this study."]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:19:35.725613+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#statuses), [retained parent and qualifications](todo.archive.md).

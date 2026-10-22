@@ -3,7 +3,7 @@ schema = 1
 id = "PARITY-OFFICIAL-MATRIX-LIVE"
 title = "Live checks for PARITY-OFFICIAL-MATRIX"
 short = "Live checks for PARITY-OFFICIAL-MATRIX"
-status = "open"
+status = "done"
 goal = "PARITY"
 section = "Needs decision"
 rank = 26000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for PARITY-OFFICIAL-MATRIX left pe
 acceptance = ["Each check passes on the real target:"]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:20:15.703621+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - Sources: [existing goal authority](docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary), [retained offline task history](todo.archive.md).

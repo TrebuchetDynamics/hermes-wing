@@ -3,7 +3,7 @@ schema = 1
 id = "WING-001-b3-LIVE"
 title = "Live checks for WING-001-b3"
 short = "Live checks for WING-001-b3"
-status = "open"
+status = "done"
 goal = "REMOTE-BACKENDS"
 section = "Needs decision"
 rank = 75000
@@ -16,6 +16,10 @@ scope = "Run the live checks the offline work for WING-001-b3 left pending."
 acceptance = ["Each check passes on the real target:"]
 checks = ["Live qualification by an authorized person; offline evidence does not count."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:20:28.484705+00:00"
+closure_reason = "2026-10-22 owner decision: waived this auto-generated live follow-up to clear the owner queue. The parent task's offline acceptance remains; live evidence was not produced and is not claimed. Reopen if an authorized live window becomes available."
 +++
 
 - BACKEND-SSH-CONNECT-LIVE: actual reported installed-phone/APK failure and target Agent reachability/connectivity remain unreproduced/unverified; feedback repair does not prove connectivity.

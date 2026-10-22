@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact_cache.dart';
 
@@ -363,6 +364,36 @@ void main() {
         }
         await _frames(tester);
         if (transition == 'system back') {
+          final composer = find.byKey(const ValueKey('hermes-composer-field'));
+          final editor = tester.widget<TextField>(composer);
+          final owner = h.directory.activeContactId;
+          final session = h.channel.state.activeSessionId;
+          expect(editor.focusNode!.hasFocus, isTrue);
+          // Focused Back dismisses the composer; only the next Back departs.
+          await tester.binding.handlePopRoute();
+          await _frames(tester);
+          expect(editor.focusNode!.hasFocus, isFalse);
+          expect(h.directory.activeContactId, owner);
+          expect(h.channel.state.activeSessionId, session);
+          expect(
+            tester.widget<TextField>(composer).controller,
+            editor.controller,
+          );
+          expect(editor.controller!.text, 'Retained draft');
+          expect(
+            h.channel.state.activeMessages.last.status,
+            HermesTurnStatus.streaming,
+          );
+          expect(
+            find.byKey(const ValueKey('hermes-gateway-switch-confirm-dialog')),
+            findsNothing,
+          );
+          expect(h.directory.shows, 0);
+          expect(h.channel.disconnectCalls, 0);
+          expect(h.channel.stopActiveTurnCalls, 0);
+          expect(h.cache.clears, 0);
+          expect(h.cache.selectionWrites, 0);
+          _noOtherMutations(h.channel, h.store);
           await tester.binding.handlePopRoute();
           await _frames(tester);
           expect(

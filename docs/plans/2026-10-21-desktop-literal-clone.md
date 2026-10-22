@@ -738,6 +738,19 @@ Agent/Portal autorizado y UI oficial; usar DOC-ACCOUNT-CONTRACT-LIVE y
 DOC-ACCOUNT-REVOCATION-EVIDENCE-LIVE. No efectuar compras, pagos, sign-out o
 revocación para verificar presentación. Cloud/OAuth de conexión sigue CLONE-05.
 
+## Backlog connection
+
+Disposición: **Proposal** en la [cobertura plan→tarea](README.md#plan-to-task-coverage).
+El mandato de producto no admite por sí solo tareas nuevas: CLONE-* sigue siendo
+clave de plan, no tarea ejecutable. Los dueños existentes citados arriba conservan
+su alcance, estado y gates; este enlace no los reabre ni amplía.
+
+[MAIN-REPAIR-001](../../tasks/items/MAIN-REPAIR-001.md) enlaza este plan como fuente
+para reparar su trazabilidad y los fallos offline registrados. No es dueño de
+implementar el clon ni un recibo de admisión, paridad o calificación native/live.
+`tasks/` sigue siendo la única cola; el coordinador conserva la admisión pendiente
+para el trabajo nuevo de este plan.
+
 ## Handoff y limitación del gestor de tareas
 
 `tasks/` sigue siendo la autoridad. La lista completa vigente es

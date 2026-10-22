@@ -608,24 +608,34 @@ void main() {
               if (categoryPicker.evaluate().isNotEmpty) {
                 await tester.tap(categoryPicker);
                 await settleRoutes(tester);
-                await tester.tap(find.text('Chat').last);
+                await tester.tap(find.text('Voice').last);
               } else {
                 await tester.tap(
-                  find.byKey(const ValueKey('settings-category-chat')),
+                  find.byKey(const ValueKey('settings-category-voice')),
                 );
               }
               await settleRoutes(tester);
+              final settingsLocation = router.state.uri;
+              expect(settingsLocation.path, AppRoutes.settings);
+              expect(settingsLocation.queryParameters['tab'], 'config:voice');
               final voiceLink = find.byKey(
                 const ValueKey('settings-voice-link'),
               );
               await tester.ensureVisible(voiceLink);
               await tester.tap(voiceLink);
               await settleRoutes(tester);
+              expect(router.state.uri.path, AppRoutes.settingsVoice);
               expect(chat.mounted, isTrue);
               await tester.binding.handlePopRoute();
               await settleRoutes(tester);
+              expect(router.state.uri, settingsLocation);
+              expect(
+                find.byKey(const ValueKey('settings-content-voice')),
+                findsOneWidget,
+              );
               expect(find.text('Settings'), findsWidgets);
               expect(chat.mounted, isTrue);
+              expect(editor.focusNode!.hasFocus, isFalse);
               expect(channel.stopActiveTurnCalls, 0);
             }
             expect(find.byType(ModalBarrier), findsWidgets);
@@ -654,12 +664,14 @@ void main() {
               same(controller),
             );
             expect(controller!.text, 'unsent synthetic draft');
+            expect(tester.widget<TextField>(field).focusNode!.hasFocus, isTrue);
             expect(channel.state.activeSessionId, session);
             for (var i = 0; i < positions.length; i++) {
               expect(positions[i].hasPixels, isTrue);
               expect(positions[i].pixels, offsets[i]);
             }
             expect(channel.connectCalls, isEmpty);
+            expect(channel.sentTextAttachments, isEmpty);
             expect(channel.sentVoiceTranscripts, isEmpty);
             expect(channel.disconnectCalls, 0);
             expect(channel.stopActiveTurnCalls, 0);
@@ -669,6 +681,11 @@ void main() {
             );
             expect(channel.createSessionCalls, isEmpty);
             expect(channel.selectSessionCalls, isEmpty);
+            expect(channel.selectProfileCalls, isEmpty);
+            expect(channel.renameSessionCalls, isEmpty);
+            expect(channel.deleteSessionCalls, isEmpty);
+            expect(channel.forkSessionCalls, isEmpty);
+            expect(channel.respondToApprovalCalls, isEmpty);
             expect(store.saveCalls, isEmpty);
             expect(tester.takeException(), isNull);
             semantics.dispose();

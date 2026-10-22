@@ -137,4 +137,63 @@ void main() {
       });
     });
   }
+
+  test('manual closure resolves the record body instead of an archive entry', () {
+    const id = 'PARITY-LIVE-WORKFLOW-LIVE';
+    const body =
+        '- Sources: [owner decision](docs/product/prd.md#leading-acceptance-outcome)\n';
+    expect(
+      planTaskBody(
+        id: id,
+        status: 'done',
+        todo: body,
+        archive: '',
+        manualClosure: true,
+      ),
+      body,
+    );
+    // Manual closure is only a done disposition and still needs a record body.
+    expect(
+      () => planTaskBody(
+        id: id,
+        status: 'open',
+        todo: body,
+        archive: '',
+        manualClosure: true,
+      ),
+      throwsFormatException,
+    );
+    expect(
+      () => planTaskBody(
+        id: id,
+        status: 'done',
+        todo: '',
+        archive: '',
+        manualClosure: true,
+      ),
+      throwsFormatException,
+    );
+    // A leftover checkbox body still fails closed for a manual closure,
+    // whether it sits in the archived entry or the record body itself.
+    expect(
+      () => planTaskBody(
+        id: id,
+        status: 'done',
+        todo: body,
+        archive: '- [x] **$id** — [Plan](docs/plans/example.md)\n',
+        manualClosure: true,
+      ),
+      throwsFormatException,
+    );
+    expect(
+      () => planTaskBody(
+        id: id,
+        status: 'done',
+        todo: '- [x] **$id** — [Plan](docs/plans/example.md)\n$body',
+        archive: '',
+        manualClosure: true,
+      ),
+      throwsFormatException,
+    );
+  });
 }

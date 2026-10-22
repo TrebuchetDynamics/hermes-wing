@@ -50,9 +50,17 @@ void main() {
           isTrue,
           reason: '$path names unknown $id',
         );
-        bodies[id] = tasks[id]!['status'] == 'done'
-            ? planTaskBody(id: id, status: 'done', todo: '', archive: archive)
-            : tasks[id]!['body'] as String;
+        final record = tasks[id]!;
+        final manuallyClosed = record['closure'] == 'manual';
+        bodies[id] = record['status'] == 'done'
+            ? planTaskBody(
+                id: id,
+                status: 'done',
+                todo: manuallyClosed ? record['body'] as String : '',
+                archive: archive,
+                manualClosure: manuallyClosed,
+              )
+            : record['body'] as String;
       }
       if (ids.isNotEmpty && disposition != 'Policy') {
         expect(

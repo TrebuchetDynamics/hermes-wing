@@ -53,9 +53,10 @@ at helper line 84 / caller line 56. This is a fresh focused reproduction, not an
 isolated rerun in the saved bundle or proof that the full suite has only one
 remaining failure.
 
-The [caller](../../test/tooling/plan_backlog_traceability_test.dart) lines 54–62
-uses the canonical record body only for `closure == 'manual'`. Every other done
-record is sent to the historical checkbox lookup with an empty live body. But
+At baseline, the [caller](../../test/tooling/plan_backlog_traceability_test.dart)
+lines 54–62 used the canonical record body only for `closure == 'manual'`. Every
+other done record was sent to the historical checkbox lookup with an empty live
+body. But
 [CONNECTION-LINK-REMOVAL](../../tasks/items/CONNECTION-LINK-REMOVAL.md) has
 `closure = 'coordinator_verified'`, a canonical body with direct plan backlinks,
 and an existing [native receipt](../../tasks/evidence/CONNECTION-LINK-REMOVAL.toml),
@@ -88,8 +89,10 @@ historical, not fresh failures or permission to redo product work.
   plan dispositions or product behavior to make the test pass. The two closed
   connection tasks are read-only source evidence, not mutation targets.
 - Update this handoff with the actual repair, source/toolchain and check results.
-  Run the focused pair, changed-Dart formatting, analysis, native task validation
-  and the unchanged [full offline check](../../AGENTS.md#validation):
+  Run the focused pair, changed-Dart formatting, analysis and native task
+  validation. The dispatch assigns the unchanged
+  [full offline check](../../AGENTS.md#validation) to the runner on the merged
+  tree before review, not to this worker:
 
   ```sh
   flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1
@@ -98,6 +101,53 @@ historical, not fresh failures or permission to redo product work.
   Retain actual exits and remaining inventory. Do not report main green from
   focused passes, hide failures, skip cases, filter the full suite or invent
   coordinator/device/live acceptance. No SDK/runtime/Agent changes are authorized.
+
+## Worker repair and focused evidence
+
+On task baseline `1a296d27872d9d094f3ca23e3c3433e00353c068`, the focused pair
+reproduced the same `CONNECTION-LINK-REMOVAL` missing-body failure: exit 1,
+15 helper passes and one inventory failure. The repair in the commit containing
+this handoff changes only the three traceability Dart files and this document:
+
+- The caller passes the canonical body and explicit closure provenance to the
+  existing helper. Only `manual` and `coordinator_verified` select the record
+  body; both require `done`, a nonempty body and no same-ID checkbox conflict.
+  An unsupported provenance fails even if a checked archive entry exists.
+- Unmarked legacy records still need exactly one matching checked body. A plain
+  record body and `done` alone cannot authorize native closure. Existing parser,
+  filename/status, exact hashed-ID, prefix-neighbor, duplicate and archive guards
+  remain. The primary-plan direct-backlink check is shared with its focused
+  negative regression; a neighbor's link or section-only link cannot satisfy it.
+- The native regression extends the existing manual case with coordinator
+  provenance, ordinary/hash-suffixed IDs and positive/negative body cases. The
+  new coordinator and unsupported-provenance cases were observed failing before
+  the fix. No task record, receipt, disposition or frozen archive was changed.
+  This is body traceability, not receipt validation or verified acceptance;
+  Autowork retains authoritative receipt and contract verification.
+
+Final worker checks on Linux, Flutter 3.44.2 (`c9a6c48423`), Dart 3.12.2:
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `flutter pub get --offline --enforce-lockfile` | 0 | Offline resolution passed; lockfile unchanged. |
+| `flutter test --no-pub --concurrency=1 --reporter expanded test/tooling/plan_backlog_contract_test.dart test/tooling/plan_backlog_traceability_test.dart` | 0 | 18 passed: 17 helper cases and the real retained-plan inventory; no skips or retries. |
+| `dart format --output=none --set-exit-if-changed test/tooling/plan_backlog_traceability_test.dart test/tooling/support/plan_backlog_contract.dart test/tooling/plan_backlog_contract_test.dart` | 0 | Three changed Dart files checked; no formatting changes. |
+| `autowork-run timeout 900 flutter analyze --no-pub` | 0 | No issues found. |
+| `autowork tasks validate --worktree .` | 0 | 293 tasks, 36 goals, no pending entries; existing `FILES-TERMINAL-DOWNLOAD` draft unchanged. |
+| `python3 "$TMPDIR/check_repair_docs.py"` | 0 | Scoped local links/anchors and protected-path preservation verified; repeated readback byte-stable. |
+| `git diff --check` | 0 | Attributable diff is whitespace-clean. |
+
+Remaining focused failure inventory: none. The unchanged full offline gate has
+**not been run by this worker**; the coordinator/runner must retain its actual
+merged-tree exit and failure inventory. The saved main verdict remains red;
+these focused passes do not establish main green. No browser, native application,
+Android/device, live Agent, provider, goal or delivery qualification was exercised
+or advanced. Integration and full-suite acceptance remain with the coordinator.
+
+Scoped Docs Sync Maintain updates this evidence owner only. Plan coverage policy
+and CONTRIBUTING already describe the separate traceability/ledger checks, so
+no policy, product, route or qualification documentation change is needed. The
+CHANGELOG proposal is returned in the worker report for coordinator ownership.
 
 ## Queue and maintenance disposition
 
@@ -120,8 +170,8 @@ Maintenance checklist:
 - [x] Preserve the landed frontmatter repair and existing verified/manual closures.
 - [x] Reproduce the residual failure on the documented SDK; record exact scope.
 - [x] Add one bounded first-in-Now repair through the native task CLI.
-- [ ] Worker repairs and regression-tests coordinator-closure traceability.
-- [ ] Full unchanged offline check records the resulting candidate's verdict.
+- [x] Worker repairs and regression-tests coordinator-closure traceability.
+- [ ] Runner's full unchanged offline check records the merged candidate's verdict.
 
 Only Linux-host tooling tests were exercised in this maintenance pass. No browser,
 Android/native app, device, live Agent, provider or delivery qualification follows.

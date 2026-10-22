@@ -51,23 +51,18 @@ void main() {
           reason: '$path names unknown $id',
         );
         final record = tasks[id]!;
-        final manuallyClosed = record['closure'] == 'manual';
         bodies[id] = record['status'] == 'done'
             ? planTaskBody(
                 id: id,
                 status: 'done',
-                todo: manuallyClosed ? record['body'] as String : '',
+                todo: record['body'] as String,
                 archive: archive,
-                manualClosure: manuallyClosed,
+                closure: record['closure'] as String?,
               )
             : record['body'] as String;
       }
       if (ids.isNotEmpty && disposition != 'Policy') {
-        expect(
-          bodies[ids.first],
-          anyOf(contains(']($path)'), contains('](../../$path)')),
-          reason: '$path needs a direct link from its primary task body.',
-        );
+        requirePrimaryPlanBacklink(bodies[ids.first]!, path);
       }
       if (disposition == 'Deferred') {
         expect(ids, isEmpty, reason: 'Deferred work is not executable: $path');

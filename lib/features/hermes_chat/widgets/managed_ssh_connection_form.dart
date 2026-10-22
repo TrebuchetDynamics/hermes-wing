@@ -9,6 +9,8 @@ import '../../../core/hermes/ssh/secure_managed_ssh_target_store.dart';
 import '../../../core/hermes/ssh/ssh_types.dart';
 import '../ssh_keys/managed_ssh_generated_key_store.dart';
 import '../ssh_keys/managed_ssh_key_selection.dart';
+import '../../../l10n/app_localizations.dart';
+import 'connection_access_help.dart';
 
 /// All visible copy is supplied by the localized parent.
 @immutable
@@ -840,6 +842,22 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
                 _agentToken,
                 secret: true,
               ),
+              if (!_serveReads &&
+                  Localizations.of<AppLocalizations>(
+                        context,
+                        AppLocalizations,
+                      ) !=
+                      null)
+                TextButton.icon(
+                  key: const ValueKey('connection-access-help'),
+                  onPressed: _busy
+                      ? null
+                      : () => showConnectionAccessHelp(context),
+                  icon: const Icon(Icons.help_outline),
+                  label: Text(
+                    AppLocalizations.of(context).connectionAccessTitle,
+                  ),
+                ),
               Column(
                 key: _feedbackActions,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

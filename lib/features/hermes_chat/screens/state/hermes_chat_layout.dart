@@ -80,6 +80,15 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       confirmCleartext: _confirmCleartextCredentialUse,
       browserOrigin: kIsWeb ? Uri.base.origin : null,
     );
+    Widget accessHelp() => Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        key: const ValueKey('connection-access-help'),
+        onPressed: connecting ? null : () => showConnectionAccessHelp(context),
+        icon: const Icon(Icons.help_outline),
+        label: Text(strings.connectionAccessTitle),
+      ),
+    );
 
     Future<void> connectLocal() async {
       // The phone guide must never submit a saved/late-hydrated Remote origin
@@ -395,6 +404,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                                 ),
                               ),
                             ),
+                            if (!_localServeReads) accessHelp(),
                             const SizedBox(height: 16),
                             TextField(
                               key: const ValueKey('hermes-profile-label-field'),
@@ -678,6 +688,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                               ),
                             ),
                           ),
+                          accessHelp(),
                           const SizedBox(height: 16),
                           TextField(
                             key: const ValueKey('hermes-profile-label-field'),

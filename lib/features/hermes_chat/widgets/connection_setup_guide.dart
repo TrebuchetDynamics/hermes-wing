@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
+import 'connection_access_help.dart';
 
 /// Preparation guidance has no credential, channel or host-management authority.
 class ConnectionSetupGuide extends StatefulWidget {
@@ -70,10 +71,7 @@ class _ConnectionSetupGuideState extends State<ConnectionSetupGuide> {
               SelectableText(steps[index].$2),
               if (index == 2) ...[
                 const SizedBox(height: 12),
-                OutlinedButton(
-                  onPressed: null,
-                  child: Text(s.connectionGuideGenerateToken),
-                ),
+                const ConnectionAccessHelp(),
                 Text(s.connectionGuideGenerateTokenBody),
               ],
               if (widget.browserOrigin != null && index == 3) ...[

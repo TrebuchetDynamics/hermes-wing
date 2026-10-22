@@ -9,6 +9,7 @@ import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../l10n/app_localizations.dart';
 import 'connection_setup_guide.dart';
+import 'connection_access_help.dart';
 
 /// Explicit read-only discovery, independent of Chat and secure persistence.
 class ConnectionCheckPanel extends StatefulWidget {
@@ -229,6 +230,13 @@ class _ConnectionCheckPanelState extends State<ConnectionCheckPanel> {
               _notice!,
               key: const ValueKey('connection-check-result'),
             ),
+          ),
+        if (_notice == strings.connectionCheckDenied && widget.ownsIntent())
+          TextButton.icon(
+            key: const ValueKey('connection-check-access-help'),
+            onPressed: () => showConnectionAccessHelp(context),
+            icon: const Icon(Icons.help_outline),
+            label: Text(strings.connectionAccessTitle),
           ),
       ],
     );

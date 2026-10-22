@@ -147,5 +147,13 @@ void main() {
     await tester.tap(button);
     await tester.pumpAndSettle();
     expect(find.textContaining('Authentication rejected'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('connection-check-access-help')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('connection-access-copy')),
+      findsOneWidget,
+    );
   });
 }

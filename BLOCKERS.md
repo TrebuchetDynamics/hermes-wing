@@ -6,14 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-LEDGER — USER_DECISION — effort investigate — unblocks 0
-
-- Task: LEDGER — task store validation
-- Needs: invalid task store: tasks/items/CONNECTION-ACCESS-ASSISTANCE.md:1: expected opening +++ frontmatter delimiter
-- Since: 2026-10-22T16:32:56Z
-- Answer: DOCS-MAINTAINER could not repair the task store. Read the errors above (each names a file and line) and its run record under the runner state directory (maintainer.json); fix those task or goal files, then run `autowork tasks validate --worktree`.
-- Kind: ledger
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

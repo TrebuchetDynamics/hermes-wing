@@ -6,8 +6,6 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-import tempfile
-import time
 
 from run_linux_shell_persistence import module, preferences
 
@@ -31,38 +29,31 @@ def validate(receipt):
 def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.dart',
         receipt_name='shell-compact-return.json', validate_receipt=validate,
         artifact_name='compact-return-receipt.json', inspect_preferences=preferences):
+    qa = module('compact_qualification_inputs', SOURCE / 'scripts/support/linux_qualification_support.py')
+    qa.reject_live(os.environ)
+    prefix = qa.dependency_prefix(os.environ)
     live = module('compact_process_helpers', SOURCE / 'scripts/support/desktop_live_workflow.py')
     freeze = module('compact_snapshot_helpers', SOURCE / 'scripts/support/desktop_no_inference_smoke.py')
-    local = module('compact_isolation_helpers', SOURCE / 'scripts/support/local_setup_enrollment_native.py')
-    evidence = SOURCE / '.task-evidence' / card
-    evidence.mkdir(parents=True, exist_ok=True)
-    # Flutter compares canonical project roots against absolute package URIs.
-    attempt = Path(tempfile.mkdtemp(prefix='native-', dir=evidence)).resolve()
+    attempt = qa.runner_output(os.environ, 'compact-return-').resolve()
     result = dict(status='FAIL', live_agent='NOT_CHECKED', os_keyring='NOT_CHECKED',
                   android='NOT_CHECKED', physical_os_resize='NOT_CHECKED', physical_keyboard='NOT_CHECKED')
-    started = time.monotonic()
-    try:
+    with qa.record_attempt(attempt, result):
         with live.owned_workspace(attempt) as root:
             app, sdk = root / 'app', root / 'flutter'
-            freeze.CARD, freeze.OWNED, freeze.OVERLAYS = card, (), ()
-            freeze.ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux', 'scripts', 'playwright/support')
-            identity = freeze.freeze(SOURCE, app)
+            inputs = qa.source_inputs(SOURCE)
+            qa.snapshot(SOURCE, app, inputs)
+            identity = {'inputs': {name: {'sha256': checksum} for name, checksum in inputs.items()},
+                        'reviewed_overlays': {}}
             (attempt / 'source.json').write_text(json.dumps(identity, indent=2))
             result['source_manifest_sha256'] = freeze.digest(attempt / 'source.json')
             result['source_archive'] = freeze.retain_candidate(app, attempt, identity)
             executable = shutil.which('flutter')
             assert executable is not None
-            live.prepare_packages(SOURCE, app, Path(executable).resolve().parents[1], sdk)
-            local.freeze_packages(app, root, sdk)
-            env = local.isolated_environment(root)
-            deps_source = Path('/home/xel/git/gormes/hermes-wing/.task-evidence/t_636ced72/deps/root')
-            deps = root / 'deps'
-            shutil.copytree(deps_source, deps, symlinks=True)
-            for pc in deps.rglob('*.pc'):
-                pc.write_text(pc.read_text().replace(str(deps_source), str(deps)))
-            env.update(PKG_CONFIG_PATH=str(deps / 'usr/lib/x86_64-linux-gnu/pkgconfig'),
-                       CMAKE_PREFIX_PATH=str(deps / 'usr'), LIBRARY_PATH=str(deps / 'usr/lib/x86_64-linux-gnu'),
-                       LD_LIBRARY_PATH=str(deps / 'usr/lib/x86_64-linux-gnu'), CPATH=str(deps / 'usr/include'))
+            deps = qa.stage_dependencies(prefix, root / 'deps')
+            env = qa.isolated_environment(root, prefix=deps, sdk=sdk, node=shutil.which('node'))
+            env['WING_LOCAL_ROOT'] = str(root)
+            pub_cache = Path(os.environ['PUB_CACHE']).resolve() if os.environ.get('PUB_CACHE') else None
+            qa.prepare(SOURCE, app, Path(executable).resolve().parents[1], sdk, env, pub_cache)
             dependencies = {str(p.relative_to(root)): freeze.digest(p)
                             for base in (root / 'packages', deps)
                             for p in sorted(base.rglob('*')) if p.is_file() and not p.is_symlink()}
@@ -79,8 +70,10 @@ def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.d
             assert not list((root / 'data').rglob('shared_preferences.json'))
             path = root / 'cache' / receipt_name
             observed = {}
+            result['process'] = observed
 
             def observe(driver):
+                result['driver_pid'] = driver
                 if not path.exists() or observed:
                     return
                 assert not path.is_symlink() and path.stat().st_size < 32768
@@ -112,10 +105,7 @@ def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.d
             assert all(freeze.digest(root / p) == expected for p, expected in dependencies.items())
             result['status'] = 'PASS'
         result['isolated_state_removed'] = True
-    finally:
-        result['duration_seconds'] = round(time.monotonic() - started, 3)
-        (attempt / 'verification.json').write_text(json.dumps(result, indent=2))
-        print(json.dumps({'evidence': str(attempt), **result}))
+    print(json.dumps({'evidence': str(attempt), **result}))
 
 
 def self_check():

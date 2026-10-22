@@ -34,11 +34,15 @@ or a claim that drafts survive a process relaunch.
 
 ## Isolation and proof
 
-The runner reuses `run_linux_shell_persistence.py`'s module loader and preference
-oracle, and the existing snapshot, package relocation, HOME/XDG isolation and
-owned-process helpers. It uses cached Flutter/packages and the same user-space
-native prerequisites at `t_636ced72/deps/root` as the predecessor runner. No
-system installation or network fallback is offered; missing prerequisites fail.
+The current runner reuses `run_linux_shell_persistence.py`'s module loader and
+preference oracle, the current owned-process helper, and the shared
+[qualification input/environment seam](linux-qualification-driver.md). Set
+`WING_LINUX_DEPENDENCY_PREFIX` to a reviewed disposable **usr directory**, put
+Flutter 3.44.2 on PATH and provide `PUB_CACHE` for non-SDK package roots. There is
+no historical private-prefix or Git-object fallback. Current source, SDK and
+packages are copied into owned isolation; no system install or network fallback
+is offered. This portability change is offline-tested, not a rerun of the native
+result recorded below.
 
 Xvfb uses private authentication with TCP listening disabled. The native test
 rejects non-Linux execution, nonisolated HOME/XDG paths and inherited session
@@ -69,11 +73,13 @@ python3 -B integration_test/run_linux_shell_compact_return.py
 git diff --check
 ```
 
-The mandatory pinned `finish_task.py` gate repeats all commands against the final
-owned files before its scoped local commit. Its exact commit and final check
-receipt belong in the native review handoff; pending review is not approval.
+The historical handoff used a pinned `finish_task.py` gate; its exact candidate
+and receipt remain the bounds of those results. Current checks and any new native
+run require fresh evidence; pending review is not approval.
 
-Each `.task-evidence/t_0246c28c/native-*/` retains:
+Current standalone evidence is under `$TMPDIR/compact-return-*`; campaign runs
+retain artifacts under their private output directory. Historical
+`.task-evidence/t_0246c28c/native-*/` attempts retained:
 
 - `verification.json`: exact native argv/exit, journey receipt, observed process,
   cleanup verdict, source/dependency pins, toolchain/platform identities and time.

@@ -7099,6 +7099,30 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get settingsThemeHeading;
 
+  /// No description provided for @avatarGalleryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wing avatars'**
+  String get avatarGalleryTitle;
+
+  /// No description provided for @avatarGalleryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Winged characters generated on this device. Choose a family for this installation; Agent profile avatars stay unchanged.'**
+  String get avatarGalleryDescription;
+
+  /// No description provided for @avatarVariationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar family {number}'**
+  String avatarVariationLabel(int number);
+
+  /// No description provided for @avatarSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The avatar family is applied for now, but could not be saved on this device.'**
+  String get avatarSaveFailed;
+
   /// No description provided for @settingsTypographyHeading.
   ///
   /// In en, this message translates to:

@@ -1,6 +1,8 @@
 import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wing/shared/widgets/wing_avatar.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -10,6 +12,7 @@ import 'package:wing/features/hermes_chat/gateways/gateway_contacts_view.dart';
 import 'package:wing/features/hermes_chat/groups/chat_group_controller.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   testWidgets('renders contacts ordered across gateways and opens one', (
     tester,
   ) async {
@@ -23,7 +26,7 @@ void main() {
     GatewayContactId? opened;
 
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -38,13 +41,12 @@ void main() {
     );
 
     expect(find.byKey(const ValueKey('gateway-contact-row')), findsNWidgets(5));
-    final avatarColors = find
-        .byType(CircleAvatar)
-        .evaluate()
-        .map((element) => (element.widget as CircleAvatar).backgroundColor)
-        .whereType<Color>()
+    expect(find.byType(WingAvatar), findsNWidgets(5));
+    final identities = tester
+        .widgetList<WingAvatar>(find.byType(WingAvatar))
+        .map((avatar) => avatar.identity.join('/'))
         .toSet();
-    expect(avatarColors.length, greaterThan(1));
+    expect(identities.length, 5);
     expect(find.text('Agent A1'), findsOneWidget);
     expect(find.text('Agent B2'), findsOneWidget);
     expect(find.text('Alpha'), findsNWidgets(3));
@@ -69,7 +71,7 @@ void main() {
     await controller.moveContact(architect, 'wing');
 
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -135,7 +137,7 @@ void main() {
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -174,7 +176,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -208,7 +210,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -246,7 +248,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -279,7 +281,7 @@ void main() {
   testWidgets('pull to refresh invokes the refresh callback', (tester) async {
     var refreshCalls = 0;
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -305,7 +307,7 @@ void main() {
     tester,
   ) async {
     var connectCalls = 0;
-    Widget view([VoidCallback? onConnect]) => MaterialApp(
+    Widget view([VoidCallback? onConnect]) => _app(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
@@ -345,7 +347,7 @@ void main() {
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -368,7 +370,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -398,11 +400,11 @@ void main() {
     expect(find.text('refreshing'), findsNothing);
   });
 
-  testWidgets('avatar uses the first trimmed grapheme or question fallback', (
+  testWidgets('generated avatars preserve readable contact names', (
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -425,9 +427,9 @@ void main() {
       ),
     );
 
-    expect(find.text('👩🏽‍💻'), findsOneWidget);
+    expect(find.byType(WingAvatar), findsNWidgets(2));
     expect(find.text('👩🏽‍💻 Agent'), findsOneWidget);
-    expect(find.text('?'), findsNWidgets(2));
+    expect(find.text('?'), findsOneWidget);
   });
 
   testWidgets('long session preview is limited to one ellipsized line', (
@@ -436,7 +438,7 @@ void main() {
     const preview =
         'This deliberately long session preview must stay on one line in the contact list.';
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -468,7 +470,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -505,7 +507,7 @@ void main() {
   ) async {
     var opened = false;
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -551,7 +553,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
+      _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -575,6 +577,18 @@ void main() {
     );
   });
 }
+
+Widget _app({
+  required Iterable<LocalizationsDelegate<dynamic>> localizationsDelegates,
+  required Iterable<Locale> supportedLocales,
+  required Widget home,
+}) => ProviderScope(
+  child: MaterialApp(
+    localizationsDelegates: localizationsDelegates,
+    supportedLocales: supportedLocales,
+    home: home,
+  ),
+);
 
 GatewayContact _contact(
   String gatewayId,

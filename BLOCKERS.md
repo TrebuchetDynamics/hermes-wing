@@ -6,7 +6,7 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-LINUXQA-001-dbb6605f — USER_DECISION — effort investigate — unblocks 1
+### Q-LINUXQA-001-dbb6605f — USER_DECISION — effort investigate — unblocks 2
 
 - Task: LINUXQA-001-dbb6605f — Qualify current-source shared regressions and Linux native adapter coverage
 - Needs: report.json does not match worker commit/files or reports failure: a check did not pass

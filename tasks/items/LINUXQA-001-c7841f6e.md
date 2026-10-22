@@ -7,7 +7,7 @@ status = "open"
 goal = "PARITY"
 section = "Next"
 rank = 4000
-depends_on = ["LINUXQA-001-e41e98e5"]
+depends_on = ["LINUXQA-001-e41e98e5", "LINUXQA-001-dbb6605f"]
 touches = ["integration_test/linux_chat_feature_qualification_test.dart", "integration_test/support/linux_chat_feature_fixture.dart", "docs/quality/linux-chat-qualification.md"]
 resources = []
 kind = "implementation"
@@ -20,7 +20,8 @@ exclusions = ["No Agent/runtime/upstream edits", "No personal services, credenti
 
 - Sources: [Full Linux qualification plan](docs/plans/2026-10-21-linux-feature-qualification.md)
 - Verification status: Planned and UNRUN. Commands naming the proposed campaign driver/checker and new tests become executable only when this task or its real prerequisite implements them. This plan ran no product test, build, listener or native/live operation.
-- Planner decision: Use current-source isolated fixture qualification and the existing PARITY goal. Preserve all prior completed work and live/physical/device/package gates; do not change goal focus or start execution from this planning request.
+- Planner decision: The campaign genuinely depends on the platform-only package validator repair now owned by LINUXQA-001-dbb6605f, not merely overlapping writes. Preserve Chat acceptance and its three-file boundary; no shared-driver bypass.
 - Consumes: Current committed campaign driver and schema-1 receipts from LINUXQA-001-e41e98e5; each task uses a fresh checkout/output directory and resolves documented compatible dependencies itself, never waits for an unpublished private handoff.
-- Next action: Start with the named focused regression or driver unit test in the contract. Future driver/checker/test paths are proposed artifacts, not evidence that a command was run. Resolve ordinary owned-checkout prerequisites without changing a personal service or silently using a different SDK/backend.
+- Next action: After LINUXQA-001-dbb6605f lands, reuse Chat candidate a6d6edcbfbdc18b952faad7f8ae44b94f9339cb1 on current source, not a reimplementation of its 24 standalone cases. Run the exact Chat campaign to terminal completion, including matching-source two-process recovery. Preserve unsupported/unrun cells, all checks and live gates. Standalone GTK passes and preflight refusal are not aggregate success.
 - Produces: Implement the exact target/fixture paths in touches. Under task 1 driver, atomically write feature-cases.json beneath the owned WING_LINUX_TEST_ROOT using the plan schema-1 case fields. Driver registration belongs to task 1; do not patch the shared driver from this lane.
+- Blocker resolution: Required Chat campaign exits 2 before dispatch: Missing or escaping package import URI. Existing shared qualification task now owns that repair; wait for its actual result and revalidate this preserved candidate without waiving the campaign check.

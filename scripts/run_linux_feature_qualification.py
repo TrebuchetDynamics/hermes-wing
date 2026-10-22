@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import signal
 import subprocess
@@ -26,6 +27,17 @@ TARGETS = {
 }
 RUNNERS = {'chat': ('run_linux_local_serve_reads', 'run_linux_transcript_keyboard'),
            'access': ('run_linux_shell_compact_return',)}
+# Live engine pumps wait wall-clock time. Keep all five six-minute cases in
+# separate bounded batches, rather than excluding them or shortening their waits.
+SHARED_TIMERS = (r'test/features/profiles/profile_editor_sheet_test\.dart '
+                 r'(?:failed delete needs fresh typed confirmation:|'
+                 r'create failure clears credential and never replays:)')
+SHARED_NATIVE_BATCHES = {
+    'core': r'^(?!test/features/hermes_chat/screens/)(?!' + SHARED_TIMERS + r')[\s\S]*$',
+    'screens': r'^test/features/hermes_chat/screens/',
+    'delete-timers': r'^test/features/profiles/profile_editor_sheet_test\.dart failed delete needs fresh typed confirmation:',
+    'create-timers': r'^test/features/profiles/profile_editor_sheet_test\.dart create failure clears credential and never replays:',
+}
 
 
 def atomic_json(path, value):
@@ -40,7 +52,7 @@ def atomic_json(path, value):
         temporary.unlink(missing_ok=True)
 
 
-def output_root(path, source, environ):
+def output_root(path, source, environ, *, inspect_contents=True):
     scratch, path = qa.plain_path(environ['TMPDIR']), qa.plain_path(path)
     forbidden = [source]
     if environ.get('WING_LINUX_DEPENDENCY_PREFIX'):
@@ -59,7 +71,7 @@ def output_root(path, source, environ):
     expected = dict(schema=1, source=str(source), uid=os.getuid())
     if any(path.iterdir()):
         if qa.identity(qa.read_json(marker)) != qa.identity(expected): raise ValueError('Unowned output directory')
-        if any(p.is_symlink() for p in path.rglob('*')): raise ValueError('Linked output artifact')
+        if inspect_contents and any(p.is_symlink() for p in path.rglob('*')): raise ValueError('Linked output artifact')
     else:
         atomic_json(marker, expected)
     (path / 'logs').mkdir(exist_ok=True)
@@ -112,7 +124,7 @@ def native_processes(group):
     return result
 
 
-def suite_result(log):
+def suite_result(log, *, require_success=True):
     starts, terminal, completed = {}, {}, False
     for line in log.read_text(errors='replace').splitlines():
         try: event = json.loads(line)
@@ -131,29 +143,38 @@ def suite_result(log):
             if type(number) is not int or number in terminal or number not in starts:
                 raise ValueError('Duplicate/unknown suite terminal identity')
             if (type(event.get('skipped')) is not bool or type(event.get('hidden', False)) is not bool or
-                    event.get('result') != 'success' or event['skipped']):
+                    event.get('result') not in ('success', 'failure', 'error') or
+                    (require_success and (event['result'] != 'success' or event['skipped']))):
                 raise ValueError('Skipped, failed or invalid suite result')
             terminal[number] = event
         else:
-            if event.get('success') is not True: raise ValueError('Suite failed')
+            if type(event.get('success')) is not bool or (require_success and event['success'] is not True):
+                raise ValueError('Suite failed')
             completed = True
     if not completed or set(starts) != set(terminal): raise ValueError('Incomplete suite inventory')
-    tests = [dict(id=number, name=starts[number], result=row['result'], skipped=False)
+    tests = [dict(id=number, name=starts[number], result=row['result'], skipped=row['skipped'])
              for number, row in sorted(terminal.items()) if not row.get('hidden', False)]
     if not tests: raise ValueError('Empty suite inventory')
     return tests
 
 
-def commands(lane, sdk, tools):
+def commands(lane, sdk, tools, *, shared_batch=None):
     if lane == 'report': return [[sys.executable, '-B', TARGETS[lane][0], '--phase', 'fixture']]
     result = []
     for target in TARGETS[lane]:
+        if lane == 'shared' and shared_batch not in (None, 'core') and target.startswith('test/'):
+            continue
         command = [str(sdk / 'bin/flutter'), 'test', '--no-pub', '--concurrency=1']
         if lane == 'shared': command.append('--machine')
         if target.startswith('integration_test/'):
             command = [tools['xvfb-run']['path'], '-a', '-s', '-screen 0 1440x1000x24 -nolisten tcp',
                        tools['dbus-run-session']['path'], '--', *command, '-d', 'linux']
-        result.append([*command, target])
+            if lane == 'shared': command.append('--no-dds')
+        if lane == 'shared' and target.startswith('integration_test/'):
+            batches = SHARED_NATIVE_BATCHES if shared_batch is None else {shared_batch: SHARED_NATIVE_BATCHES[shared_batch]}
+            result.extend([*command, target, '--name', selection] for selection in batches.values())
+        else:
+            result.append([*command, target])
     result.extend([sys.executable, '-B', 'integration_test/' + name + '.py'] for name in RUNNERS.get(lane, ()))
     return result
 
@@ -216,13 +237,13 @@ def execute(lane, source, output, state, receipt, prefix, sdk, node, environ):
     before = executed_inputs()
     receipt['executed_inputs_sha256'] = qa.identity(before)
     seen = set()
-    for index, command in enumerate(commands(lane, copied_sdk, receipt['toolchain'])):
+    for index, command in enumerate(commands(lane, copied_sdk, receipt['toolchain'], shared_batch=receipt.get('batch'))):
         case_root = Path(tempfile.mkdtemp(prefix='wing-linux-qualification-', dir=state / 'cache'))
         env = qa.isolated_environment(case_root, prefix=deps, sdk=copied_sdk, node=node)
         env.update(TMPDIR=str(case_root.parent), WING_LINUX_RUNNER_OUTPUT=str(case_root / 'runner'),
                    PUB_CACHE=str(state / 'packages'))
         if deps: env['WING_LINUX_DEPENDENCY_PREFIX'] = str(deps)
-        if lane == 'chat': env['AUTOWORK_PORT_BASE'] = str(int(environ['AUTOWORK_PORT_BASE']))
+        if lane in ('chat', 'shared'): env['AUTOWORK_PORT_BASE'] = str(int(environ['AUTOWORK_PORT_BASE']))
         (case_root / '.wing-linux-test-owner').write_text(qa.identity(receipt['source']))
         cases_file, observed = case_root / 'feature-cases.json', {}
         def observe(group):
@@ -231,7 +252,7 @@ def execute(lane, source, output, state, receipt, prefix, sdk, node, environ):
                 cases = validate_cases(qa.read_json(cases_file))
                 observed.update(sha256=qa.digest(cases_file), processes=[process_identity(c['native_pid'], group) for c in cases])
         if lane == 'report': command.extend(['--input', str(output)])
-        target = TARGETS[lane][index] if index < len(TARGETS[lane]) else None
+        target = next((target for target in TARGETS[lane] if target in command), None)
         runner = Path(command[-1]).stem if command[-1].endswith('.py') and lane != 'report' else None
         command = ['/bin/bash', '-c', 'exec "$@" 2>&1', 'qualification', *command]
         log = output / 'logs' / f'{lane}-{index}.log'
@@ -241,7 +262,8 @@ def execute(lane, source, output, state, receipt, prefix, sdk, node, environ):
         receipt['cleanup']['groups_gone'] = False
         try:
             with log.open('wb') as stream:
-                code, group = run_owned(command, app, env, timeout=900, stdout=stream, observe=observe)
+                limit = 1500 if receipt.get('batch') == 'delete-timers' else 900
+                code, group = run_owned(command, app, env, timeout=limit, stdout=stream, observe=observe)
             row.update(exit_code=code, driver_pid=group, status='pass' if code == 0 else 'fail',
                        owned_group_gone=not live_group(group))
             receipt['cleanup']['groups_gone'] = row['owned_group_gone'] and runner is None
@@ -276,15 +298,17 @@ def execute(lane, source, output, state, receipt, prefix, sdk, node, environ):
             receipt['cleanup']['groups_gone'] = True
             if code: return row.get('native_exit_code', code)
             receipt['runner_receipts'].append(dict(runner=runner, receipt=validate_runner(runner, directory)))
-        elif code:
-            return code
         elif lane == 'shared':
-            tests = suite_result(log)
+            tests = suite_result(log, require_success=code == 0)
             if target.startswith('integration_test/') and not observed.get('native'):
                 raise ValueError('Shared GTK process not observed')
             receipt['suite_runs'].append(dict(target=target, target_sha256=receipt['source']['inputs'][target],
-                command_index=index, status='pass', tests=tests, native_processes=observed.get('native', []),
-                log_sha256=row['log_sha256'], backend='deterministic-mocks', input='framework', storage='mock'))
+                command_index=index, status='pass' if code == 0 else 'fail', tests=tests,
+                native_processes=observed.get('native', []), log_sha256=row['log_sha256'],
+                backend='deterministic-mocks', input='framework', storage='mock'))
+            if code: return code
+        elif code:
+            return code
         elif lane != 'report':
             cases = validate_cases(qa.read_json(cases_file))
             if not observed or observed['sha256'] != qa.digest(cases_file): raise ValueError('Missing/changed native observation')
@@ -300,13 +324,100 @@ def execute(lane, source, output, state, receipt, prefix, sdk, node, environ):
     return 0
 
 
+def shared_batches(args, source, output, receipt, environ):
+    """Join only source/tool-bound terminal batches; keep failures and exact IDs."""
+    first_failure = 0
+    receipt['batches'] = []
+    native_names = set()
+    for batch in SHARED_NATIVE_BATCHES:
+        directory = output / ('shared-' + batch)
+        saved = directory / 'shared.json'
+        if not saved.exists():
+            child = argparse.Namespace(**(vars(args) | {'shared_batch': batch}))
+            campaign(child, source, environ)
+        value = qa.read_json(saved)
+        if (type(value.get('schema')) is not int or value['schema'] != 1 or
+                value.get('lane') != 'shared' or value.get('batch') != batch or
+                value.get('source') != receipt['source'] or value.get('toolchain') != receipt['toolchain']):
+            raise ValueError('Stale or mismatched shared batch: ' + batch)
+        if (value.get('ready') is not True or value.get('status') not in ('pass', 'fail') or
+                value.get('cleanup', {}).get('groups_gone') is not True or
+                value['cleanup'].get('state_removed') is not True):
+            raise ValueError('Incomplete shared batch/cleanup: ' + batch)
+        rows, suites = value['commands'], value['suite_runs']
+        expected = 2 if batch == 'core' else 1
+        if len(rows) != expected or len(suites) != expected:
+            raise ValueError('Incomplete shared batch inventory: ' + batch)
+        captured_state = Path(value['cleanup']['state'])
+        if captured_state.is_absolute() or len(captured_state.parts) != 1 or not captured_state.name.startswith('state-'):
+            raise ValueError('Invalid shared batch state identity')
+        expected_commands = commands('shared', directory / captured_state / 'flutter', receipt['toolchain'], shared_batch=batch)
+        offset = len(receipt['commands'])
+        for index, (row, suite) in enumerate(zip(rows, suites)):
+            expected_command = ['/bin/bash', '-c', 'exec "$@" 2>&1', 'qualification', *expected_commands[index]]
+            if row.get('command') != expected_command:
+                raise ValueError('Shared batch fixed command changed')
+            code = row.get('exit_code')
+            if (type(code) is not int or row.get('owned_group_gone') is not True or
+                    type(row.get('driver_pid')) is not int or row['driver_pid'] <= 0 or
+                    row.get('status') != ('pass' if code == 0 else 'fail')):
+                raise ValueError('Nonterminal shared command: ' + batch)
+            relative = Path(row['log'])
+            if relative.is_absolute() or '..' in relative.parts:
+                raise ValueError('Escaping batch log')
+            log = qa.plain_path(directory / relative)
+            if qa.digest(log) != row['log_sha256']:
+                raise ValueError('Shared batch log changed')
+            target = TARGETS['shared'][0 if batch == 'core' and index == 0 else 1]
+            if (target not in row['command'] or suite['target'] != target or
+                    suite['target_sha256'] != receipt['source']['inputs'][target] or
+                    suite['command_index'] != index or
+                    suite['tests'] != suite_result(log, require_success=code == 0) or
+                    suite['log_sha256'] != row['log_sha256'] or
+                    suite['status'] != ('pass' if code == 0 else 'fail') or
+                    any(suite.get(k) != v for k, v in {'backend': 'deterministic-mocks', 'input': 'framework', 'storage': 'mock'}.items())):
+                raise ValueError('Shared batch command/result mismatch')
+            if target.startswith('integration_test/'):
+                command = row['command']
+                if (command.count('--name') != 1 or command[command.index('--name') + 1] != SHARED_NATIVE_BATCHES[batch] or
+                        not suite.get('native_processes')):
+                    raise ValueError('Shared native selection/observation mismatch')
+                for process in suite['native_processes']:
+                    if (type(process.get('native_pid')) is not int or process['native_pid'] <= 0 or
+                            not isinstance(process.get('start_ticks'), str) or not process['start_ticks'].isdigit()):
+                        raise ValueError('Invalid shared native process identity')
+                names = [test['name'] for test in suite['tests'] if test['name'].startswith('test/')]
+                if not names or any(not re.search(SHARED_NATIVE_BATCHES[batch], name) or name in native_names for name in names):
+                    raise ValueError('Empty, overlapping or misselected native cases')
+                if batch in ('delete-timers', 'create-timers') and len(names) != (3 if batch == 'delete-timers' else 2):
+                    raise ValueError('Incomplete six-minute observation inventory')
+                native_names.update(names)
+            elif '--name' in row['command']:
+                raise ValueError('Filtered host inventory')
+            receipt['commands'].append(row | {'batch': batch, 'log': str(log.relative_to(output))})
+            receipt['suite_runs'].append(suite | {'batch': batch, 'command_index': offset + index})
+            if code and not first_failure: first_failure = code
+        if (value['status'] == 'pass') != all(row['exit_code'] == 0 for row in rows):
+            raise ValueError('Shared batch status mismatch')
+        receipt['batches'].append(dict(batch=batch, receipt=str(saved.relative_to(output)), sha256=qa.digest(saved)))
+    return first_failure
+
+
 def campaign(args, source, environ):
     receipt = dict(schema=1, lane=args.lane, status='not_run', commands=[], cases=[], suite_runs=[], runner_receipts=[],
                    cleanup=dict(groups_gone=True, state_removed=False))
     output = state = None
     code = 2
     try:
-        output = output_root(args.output_dir, source, environ)
+        directory = args.output_dir
+        if args.shared_batch is not None:
+            if args.lane != 'shared': raise ValueError('Batch selection is only valid for shared')
+            # Other fixed batches may still own copied SDK/dependency links.
+            # Validate the parent's root/marker here, then fully inspect this child.
+            parent = output_root(directory, source, environ, inspect_contents=False)
+            directory = parent / ('shared-' + args.shared_batch)
+            receipt['batch'] = args.shared_batch
+        output = output_root(directory, source, environ)
         state = Path(tempfile.mkdtemp(prefix='state-', dir=output))
         receipt['cleanup']['state'] = str(state.relative_to(output))
         env = qa.isolated_environment(state)
@@ -330,9 +441,12 @@ def campaign(args, source, environ):
             required = [*TARGETS[args.lane], *('integration_test/' + r + '.py' for r in RUNNERS.get(args.lane, ()))]
             missing = [name for name in required if name not in inputs]
             if missing: raise ValueError('Missing selected lane inputs: ' + ', '.join(missing))
-            if args.lane == 'chat' and not 1024 <= int(environ['AUTOWORK_PORT_BASE']) <= 65435:
+            if args.lane in ('chat', 'shared') and not 1024 <= int(environ['AUTOWORK_PORT_BASE']) <= 65435:
                 raise ValueError('Owned AUTOWORK_PORT_BASE required')
-            code = execute(args.lane, source, output, state, receipt, prefix, sdk, node, environ)
+            if args.lane == 'shared' and args.shared_batch is None:
+                code = shared_batches(args, source, output, receipt, environ)
+            else:
+                code = execute(args.lane, source, output, state, receipt, prefix, sdk, node, environ)
             if qa.source_inputs(source) != inputs: raise ValueError('Original source drift')
             if args.lane != 'report':
                 cache = Path(environ['PUB_CACHE']).resolve() if environ.get('PUB_CACHE') else None
@@ -364,6 +478,8 @@ def main(argv=None, *, source=SOURCE, environ=None):
     parser.add_argument('--lane', required=True, choices=['preflight', *TARGETS])
     parser.add_argument('--output-dir', type=Path, required=True)
     parser.add_argument('--dependency-prefix', type=Path, help='Reviewed disposable usr prefix')
+    parser.add_argument('--shared-batch', choices=tuple(SHARED_NATIVE_BATCHES),
+                        help='Prepare one fixed shared batch; the ordinary shared lane validates and joins all batches')
     args = parser.parse_args(argv)
     environ = dict(os.environ if environ is None else environ)
     if args.dependency_prefix: environ['WING_LINUX_DEPENDENCY_PREFIX'] = str(args.dependency_prefix)

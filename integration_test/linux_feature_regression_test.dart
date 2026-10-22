@@ -1,7 +1,8 @@
-// Runs the complete feature, app, routing, and shared UI regression inventory
+// Runs the selected feature, app, routing, and shared UI regression inventory
 // inside a native engine; the Android adapter reuses this inventory. Service
 // and credential seams remain deterministic. This does not qualify live Agent
 // APIs, secure-storage persistence, native IME input, or physical audio.
+// Selection and complete native batch coverage: docs/quality/linux-shared-regression.md.
 import 'dart:ui' show GestureSettings;
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:integration_test/integration_test.dart';
+// Reset native registration to the method-channel seam mocked by these suites.
+// These interfaces are already supplied by the pinned file_selector dependency.
+// ignore: depend_on_referenced_packages
+import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+// ignore: depend_on_referenced_packages
+import 'package:file_selector_platform_interface/src/method_channel/method_channel_file_selector.dart';
 
 import '../test/app/desktop_host_command_listener_test.dart' as suite_0;
 import '../test/app/wing_app_connect_intent_test.dart' as suite_1;
@@ -148,6 +155,17 @@ import '../test/shared/widgets/wing_skeleton_test.dart' as suite_84;
 import '../test/app/hermes_connect_intent_stream_test.dart' as suite_85;
 import '../test/features/profiles/profile_catalog_test.dart' as suite_87;
 
+import '../test/features/hermes_chat/bots/bot_chat_channel_test.dart'
+    as suite_88;
+import '../test/features/hermes_chat/bots/bot_chat_navigation_test.dart'
+    as suite_89;
+import '../test/features/hermes_chat/export/hermes_transcript_export_test.dart'
+    as suite_90;
+import '../test/features/hermes_chat/export/hermes_transcript_export_linux_test.dart'
+    as suite_91;
+import '../test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart'
+    as suite_92;
+
 void main({bool includeHostChecks = true}) {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   // Navigator cancels active pointers through the framework's device queue.
@@ -158,6 +176,7 @@ void main({bool includeHostChecks = true}) {
     addTearDown(binding.testTextInput.unregister);
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
+    FileSelectorPlatform.instance = MethodChannelFileSelector();
     final view = binding.platformDispatcher.implicitView!;
     view.physicalSize = const Size(800, 600);
     view.devicePixelRatio = 1;
@@ -423,4 +442,26 @@ void main({bool includeHostChecks = true}) {
   group('test/shared/widgets/wing_skeleton_test.dart', suite_84.main);
   group('test/app/hermes_connect_intent_stream_test.dart', suite_85.main);
   group('test/features/profiles/profile_catalog_test.dart', suite_87.main);
+  group(
+    'test/features/hermes_chat/bots/bot_chat_channel_test.dart',
+    suite_88.main,
+  );
+  group(
+    'test/features/hermes_chat/bots/bot_chat_navigation_test.dart',
+    suite_89.main,
+  );
+  group(
+    'test/features/hermes_chat/export/hermes_transcript_export_test.dart',
+    suite_90.main,
+  );
+  if (includeHostChecks) {
+    group(
+      'test/features/hermes_chat/export/hermes_transcript_export_linux_test.dart',
+      suite_91.main,
+    );
+  }
+  group(
+    'test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart',
+    suite_92.main,
+  );
 }

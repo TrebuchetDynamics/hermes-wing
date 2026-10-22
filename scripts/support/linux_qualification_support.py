@@ -13,9 +13,10 @@ import tempfile
 import time
 from urllib.parse import unquote, urlsplit
 
-ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux', 'scripts', 'playwright/support')
+ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux', 'macos', 'windows', 'web',
+         '.github/workflows', 'scripts', 'playwright/support', 'playwright/tests', 'playwright/scripts')
 FILES = ('pubspec.yaml', 'pubspec.lock', 'analysis_options.yaml', 'l10n.yaml', 'package.json',
-         'package-lock.json', 'serve_web.mjs', 'docs/product/routes.md',
+         'package-lock.json', 'serve_web.mjs', 'playwright.config.mjs', 'docs/product/routes.md',
          'docs/product/hermes-desktop-feature-matrix.json')
 EXCLUDED = {'.git', '.dart_tool', 'build', 'ephemeral', 'node_modules', '__pycache__',
             '.env', '.ssh', '.hermes', '.task-evidence'}
@@ -189,9 +190,19 @@ def package_inputs(source, sdk, pub_cache=None):
         library = urlsplit(row.get('packageUri', 'lib/'))
         raw_library = Path(unquote(library.path))
         effective = (path / raw_library).resolve()
+        # Stock native-only plugins receive lib/ from Pub despite having no Dart
+        # library. This exception does not admit arbitrary missing import paths.
+        manifest = path / 'pubspec.yaml'
+        text = manifest.read_text() if manifest.is_file() and not manifest.is_symlink() else ''
+        native_only = (raw_library == Path('lib') and effective == path / 'lib' and
+                       not effective.exists() and not (path / 'lib').is_symlink() and
+                       re.search(r'^  plugin:\s*$', text, re.MULTILINE) and
+                       re.search(r'^        pluginClass:\s*\w+\s*$', text, re.MULTILINE) and
+                       'dartPluginClass:' not in text and
+                       any((path / platform).is_dir() for platform in ('android', 'ios', 'linux', 'macos', 'windows', 'darwin')))
         if (library.scheme or library.netloc or library.query or library.fragment or raw_library.is_absolute() or
-                not effective.is_relative_to(path) or not effective.is_dir()):
-            raise ValueError('Missing or escaping package import URI')
+                not effective.is_relative_to(path) or (not effective.is_dir() and not native_only)):
+            raise ValueError('Invalid or escaping package import URI')
         roots[name] = path
     versions = {row['name']: row['version'] for row in graph['packages']}
     if len(versions) != len(graph['packages']) or set(versions) != set(roots):
@@ -228,7 +239,9 @@ def package_inputs(source, sdk, pub_cache=None):
         if manifest.is_symlink() or not manifest.is_file(): raise ValueError('Package pubspec required')
         text = manifest.read_text()
         version = re.search(r'^version:\s*[\"\']?([^\s\"\']+)', text, re.MULTILINE)
-        value = version[1] if version else '0.0.0' if root == sdk / 'packages' / name else None
+        bundled = ((name != 'sky_engine' and root == sdk / 'packages' / name) or
+                   (name == 'sky_engine' and root == sdk / 'bin/cache/pkg/sky_engine'))
+        value = version[1] if version else '0.0.0' if bundled else None
         if (not re.search(r'^name:\s*' + re.escape(name) + r'\s*$', text, re.MULTILINE) or
                 value != versions[name] or (root != source and value != locked[name])):
             raise ValueError('Stale package name/version/root')

@@ -229,6 +229,17 @@ in Needs decision. Drop both proposals: no justified current-store change remain
 and replay would restore obsolete planning data. No patch was applied, task
 reopened, live acceptance inferred or newer closure undone.
 
+Rechecked both complete proposals at
+`ff302befe1e2f4e4b1c9d47fd66391aca52e34e1`, comparing every changed generated
+coverage cell and priority deletion with the current task records. Adjacent
+reports, the later tab report and archived Sources/accepted scope still support
+only the existing drop disposition: both patches target retired `TODO.md` and,
+for Profiles, `goals.json`. All five named completed tasks and their slots remain
+closed; both live successors remain open in Needs decision. The Profiles candidate
+is still an ancestor of HEAD; the current tab report names later `e564642d`.
+No missing current-store edit is justified. Drop both proposals without applying
+patches, reopening tasks, changing goals or undoing newer planning/closures.
+
 These are documentation dispositions, not new closure or coordinator verification.
 `PARITYUPDATE-005-11-LIVE` and `MT-VERIFY-BROWSER-GATES-LIVE` remain open in Needs
 decision. No current goal evidence, acceptance, ordering or live authority changes.

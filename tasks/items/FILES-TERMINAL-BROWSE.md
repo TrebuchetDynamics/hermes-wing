@@ -5,8 +5,8 @@ title = "Browse and read the selected Agent terminal working-directory files on 
 short = "Browse and read the selected Agent terminal working-directory files on Linux and Android"
 status = "open"
 goal = "PARITY"
-section = "Next"
-rank = 17000
+section = "Needs decision"
+rank = 1000
 depends_on = []
 touches = ["lib/core/hermes/", "lib/features/", "lib/router/", "test/core/hermes/", "test/features/", "test/router/", "integration_test/", "playwright/tests/", "docs/quality/", "lib/l10n/app_en.arb", "lib/l10n/app_localizations.dart", "lib/l10n/app_localizations_en.dart"]
 resources = []
@@ -25,3 +25,4 @@ exclusions = []
 - Planner decision: skip positive Files implementation until an existing unmodified Agent contract establishes all FILES-4 guarantees. Keep the original acceptance and FILES-TERMINAL-DOWNLOAD dependency; missing API authority is not a question the owner can waive. No shell/SFTP substitute, Agent edits, incidental-write probe or speculative qualification flag. Reconsider only with new source-bound contract evidence and independent review.
 - Next action: retain the clean candidate at 0b9cc27d9b7df5265dedd19622b106579c385ee9 and its latest report as evidence. Resume only after the missing offline contract is supplied and reviewed; native/live cells remain separately gated.
 - Reopened: Reopened after an owner-close correction: this is offline implementation work and belongs in Next, not in the device/live waiver.
+- Owner decision: 2026-10-22: deferred under the approved CONTRACT-UNREADY planner decision: the unmodified Agent contracts give no safe positive enablement rule for terminal-root file browsing. Revisit when the Agent contract exposes the effective terminal root with server-enforced confinement.

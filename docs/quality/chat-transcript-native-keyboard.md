@@ -65,6 +65,11 @@ Existing enlarged sidebar heading wrapping/truncation remains outside this slice
 
 ## Reproduction, source and teardown
 
+For the current runner, first set `WING_LINUX_DEPENDENCY_PREFIX` to a reviewed
+user-owned **usr directory** as described in the
+[qualification prerequisites](linux-qualification-driver.md). Retain the allocated
+`AUTOWORK_PORT_BASE`; no personal endpoint or credential is accepted.
+
 ```sh
 export PATH="$AUTOWORK_CACHE/flutter-3.44.2/bin:$PATH"
 export PUB_CACHE="$AUTOWORK_CACHE/dart-pub-3.12.2"
@@ -72,11 +77,12 @@ flutter pub get --offline --enforce-lockfile
 python3 -B integration_test/run_linux_transcript_keyboard.py
 ```
 
-The runner uses this isolated task worktree directly, not a copied checkout or the
-legacy launcher's predecessor archive. SDK/packages and extracted native build
-prerequisites are reused from repository caches; no system install or missing
-prerequisite network fallback is offered. Source/configuration hashes are captured
-before execution and checked afterward. All hashes still match after validation.
+The current runner freezes present Wing source into an owned app copy and copies
+SDK/packages and the explicit native prefix. It does not load historical helper
+or application code from Git objects. No system install or missing-prerequisite
+network fallback is offered. Source/configuration inputs are captured and checked
+for drift. The retained execution and hashes below are historical evidence, not a
+native rerun of this offline-tested portability change.
 
 Final evidence is `$TMPDIR/transcript-keyboard-vlssiz96/`; native execution took
 42.047 seconds, exit 0. Source manifest SHA-256:
@@ -84,12 +90,14 @@ Final evidence is `$TMPDIR/transcript-keyboard-vlssiz96/`; native execution took
 The linked JSON retains selected source hashes, exact requests, binary hash,
 GTK PID/start ticks, driver ownership and teardown verdicts.
 
-The existing authenticated-display/process helper is loaded read-only from Git
-revision `894439b76c889fed45f3c4d57b73086f1e18d479`. Correct Xauthority succeeds;
-missing/wrong authority is rejected; Xvfb has no TCP listener. HOME/XDG are
-isolated and inherited display/DBus/credential environment is not used. Native
-and display groups are gone before temporary state deletion. The driver uses the
-allocated `AUTOWORK_PORT_BASE` for its VM service with DDS disabled.
+That historical execution loaded the authenticated-display/process helper from
+Git revision `894439b76c889fed45f3c4d57b73086f1e18d479` and checked correct versus
+missing/wrong Xauthority. The current runner instead uses the checked-in owned-
+process helper and `xvfb-run` private authentication with TCP listening disabled;
+no equivalent new native observation is inferred. HOME/XDG are isolated and
+inherited display/DBus/credentials are absent. Terminal cleanup is recorded on
+success and failure, and incomplete teardown preserves owned state. The VM
+service still uses allocated `AUTOWORK_PORT_BASE` with DDS disabled.
 
 Keys use `WidgetTester.sendKeyEvent` through Flutter focus in an actual GTK
 process, not OS keyboard injection. Adaptive sizing uses `setSurfaceSize` plus a

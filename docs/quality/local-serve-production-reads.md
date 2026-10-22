@@ -85,6 +85,18 @@ Read-only upstream checkout: `158fd638da1629c8e62caf9ade1515d162def8ab`.
   candidate evidence. It changed no Wing source; canonical's unrelated goals.json
   change was preserved. All acceptance commands thereafter use explicit task cwd.
 
+## Current runner prerequisites — not a native rerun
+
+The [qualification seam](linux-qualification-driver.md) now requires explicit
+`WING_LINUX_DEPENDENCY_PREFIX` pointing to a reviewed disposable **usr directory**,
+Flutter 3.44.2 on PATH, checkout-local package metadata and explicit `PUB_CACHE`
+for non-SDK dependencies. The runner snapshots current source and copies SDK/
+packages; it no longer selects a private historical dependency directory or uses
+Git helper overlays. Evidence is under `$TMPDIR/serve-reads-*` (or the campaign's
+private output). Inherited live opt-ins fail before native children. Terminal
+failure receipts include cleanup; incomplete native teardown preserves state.
+The historical native results above were not rerun by this portability change.
+
 ## Remaining and method choice
 
 Ponytail: reuse the existing channel, bounded web-read DTO/client, Local form,

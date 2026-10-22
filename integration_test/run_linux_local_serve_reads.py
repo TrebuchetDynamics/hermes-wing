@@ -2,11 +2,11 @@
 
 import importlib.util
 import json
+import os
 
 from pathlib import Path
 import shutil
 import sys
-import tempfile
 import time
 
 SOURCE = Path(__file__).resolve().parents[1]
@@ -21,60 +21,52 @@ def module(name, path):
 
 
 def validate(receipt):
-    assert receipt['requests'] == 6 and receipt['mutations'] == 0
-    assert receipt['credential_saves'] == 0
+    assert all(type(receipt[key]) is int and receipt[key] == expected
+               for key, expected in dict(requests=6, mutations=0, credential_saves=0).items())
     assert all(receipt[k] is True for k in ('denied', 'unsupported', 'cancelled', 'explicit_retry'))
     assert receipt['profile'] == 'default' and receipt['session'] == 'default-session'
     assert type(receipt['native_pid']) is int and receipt['native_pid'] > 0
 
 
 def run():
+    qa = module('serve_qualification_inputs', SOURCE / 'scripts/support/linux_qualification_support.py')
+    qa.reject_live(os.environ)
+    prefix = qa.dependency_prefix(os.environ)
     live = module('serve_live_helpers', SOURCE / 'scripts/support/desktop_live_workflow.py')
     freeze = module('serve_snapshot_helpers', SOURCE / 'scripts/support/desktop_no_inference_smoke.py')
-    local = module('serve_isolation_helpers', SOURCE / 'scripts/support/local_setup_enrollment_native.py')
-    evidence = SOURCE / '.task-evidence/t_1bc70278'
-    evidence.mkdir(parents=True, exist_ok=True)
-    attempt = Path(tempfile.mkdtemp(prefix='native-', dir=evidence))
+    attempt = qa.runner_output(os.environ, 'serve-reads-')
     result = {'live_agent_authentication': 'NOT_CHECKED', 'real_secret_acquisition': 'NOT_CHECKED', 'android': 'NOT_CHECKED'}
     start = time.monotonic()
-    with live.owned_workspace(attempt) as root:
+    with qa.record_attempt(attempt, result), live.owned_workspace(attempt) as root:
         app, sdk = root / 'app', root / 'flutter'
-        freeze.CARD = 't_1bc70278'
-        freeze.OWNED = ()
-        freeze.OVERLAYS = ()
-        freeze.ROOTS = ('lib', 'test', 'integration_test', 'assets', 'linux', 'scripts', 'playwright/support')
-        identity = freeze.freeze(SOURCE, app)
+        inputs = qa.source_inputs(SOURCE)
+        qa.snapshot(SOURCE, app, inputs)
+        identity = {'inputs': {name: {'sha256': checksum} for name, checksum in inputs.items()}}
         (attempt / 'source.json').write_text(json.dumps(identity, indent=2))
         executable = shutil.which('flutter')
         assert executable is not None
         sdk_source = Path(executable).resolve().parents[1]
-        live.prepare_packages(SOURCE, app, sdk_source, sdk)
-        local.freeze_packages(app, root, sdk)
-        env = local.isolated_environment(root)
-        # Reuse extracted development dependencies; never install system packages.
-        deps_source = Path('/home/xel/git/gormes/hermes-wing/.task-evidence/t_636ced72/deps/root')
-        deps = root / 'deps'
-        shutil.copytree(deps_source, deps, symlinks=True)
-        for pc in deps.rglob('*.pc'):
-            pc.write_text(pc.read_text().replace(str(deps_source), str(deps)))
-        env.update(PKG_CONFIG_PATH=str(deps / 'usr/lib/x86_64-linux-gnu/pkgconfig'),
-                   CMAKE_PREFIX_PATH=str(deps / 'usr'), LIBRARY_PATH=str(deps / 'usr/lib/x86_64-linux-gnu'),
-                   LD_LIBRARY_PATH=str(deps / 'usr/lib/x86_64-linux-gnu'), CPATH=str(deps / 'usr/include'))
+        deps = qa.stage_dependencies(prefix, root / 'deps')
+        env = qa.isolated_environment(root, prefix=deps, sdk=sdk, node=shutil.which('node'))
+        env['WING_LOCAL_ROOT'] = str(root)
+        pub_cache = Path(os.environ['PUB_CACHE']).resolve() if os.environ.get('PUB_CACHE') else None
+        qa.prepare(SOURCE, app, sdk_source, sdk, env, pub_cache)
         command = ['xvfb-run', '-a', '-s', '-screen 0 1440x1000x24 -nolisten tcp',
                    str(sdk / 'bin/flutter'), 'test', '--no-pub', '--concurrency=1', '-d', 'linux',
                    'integration_test/linux_local_serve_reads_test.dart']
         with (attempt / 'native.log').open('wb') as log:
-            code, driver = live.run_owned(command, app, env, timeout=600, stdout=log)
+            code, driver = live.run_owned(['bash', '-c', 'exec "$@" 2>&1', 'serve', *command],
+                                          app, env, timeout=600, stdout=log,
+                                          observe=lambda driver: result.update(driver_pid=driver))
         result.update(command=command, exit_code=code, driver_pid=driver, source_manifest_sha256=freeze.digest(attempt / 'source.json'))
         if code:
-            (attempt / 'verification.json').write_text(json.dumps(result, indent=2))
             raise RuntimeError(f'Native journey failed; inspect {attempt}/native.log')
         receipt = json.loads((root / 'cache/serve-read-receipt.json').read_text())
         validate(receipt)
         assert all(freeze.digest(app / p) == row['sha256'] for p, row in identity['inputs'].items()), 'Executed source changed'
-        result.update(receipt=receipt, status='PASS', duration_seconds=round(time.monotonic() - start, 3))
-    result['isolated_state_removed'] = True
-    (attempt / 'verification.json').write_text(json.dumps(result, indent=2))
+        assert not live.live_group(driver), 'Owned process group survived'
+        result.update(receipt=receipt, status='PASS', owned_group_gone=True,
+                      duration_seconds=round(time.monotonic() - start, 3))
     print(json.dumps(result))
 
 
@@ -83,7 +75,9 @@ if __name__ == '__main__':
         receipt = dict(requests=6, mutations=0, credential_saves=0, denied=True, unsupported=True,
                        cancelled=True, explicit_retry=True, profile='default', session='default-session', native_pid=1)
         validate(receipt)
-        for key, value in [('requests', 7), ('mutations', 1), ('credential_saves', 1), ('denied', False)]:
+        for key, value in [('requests', 7), ('requests', 6.0), ('mutations', 1),
+                           ('mutations', False), ('credential_saves', 1),
+                           ('credential_saves', False), ('denied', False)]:
             try:
                 validate(receipt | {key: value})
             except AssertionError:

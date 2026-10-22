@@ -118,6 +118,30 @@ remains unresolved. Keep the existing task in Needs decision with every accepted
 boundary intact; do not create another recovery or named-test repair task, retry
 the unchanged full suite, or claim a blocker resolution or main verdict.
 
+### Latest bundle (1c94fc1b)
+
+Read all five files in place under Git-common
+`autowork-execution/main-evidence/1c94fc1bf6bedb15d87795e61f3ff6ba885ed3bb/`.
+Metadata records that checked revision, the same previous green
+`66c8a28e02863bc49f0c83d284e9cce712cdc04f`, state `broken` and crash
+`Bad state: No element`. The log places the exception inside the Flutter test
+framework at line 3628, then reaches
+`17:28 +4137 ~9 -5: Some tests failed.` at line 4765. Exit is `1`, reruns are
+empty and flaky history is `{}`. This is one retained final log, not two
+independently evidenced attempts; its output contradicts the no-results label.
+
+A read-only probe of requested release `390ec0844e589625b6dd4a460545ef2d5749acfe`,
+`pi_autowork/main_check.py`, against this log and the unchanged repository Full
+check returns `failures(...) == []`, `complete_results(...) == False` and the
+recorded crash string. Its `worker.py:_run_gate` still passes the candidate
+command to `base_result` and compares recognized failure IDs. Both archived
+worker reports and the retained `04c174ec` review finding were reread; neither
+wrapper file exists in this checkout. The supported baseline-preserving
+command/result-format transition remains unavailable. Retain `CHECK-RESULTS-001`
+in Needs decision with its contract unchanged; no duplicate, named-test repair,
+restart, Blocker resolution, new suite run or qualification follows from this
+inspection.
+
 ## Result-consumption boundary
 
 Read-only inspection of installed Autowork release

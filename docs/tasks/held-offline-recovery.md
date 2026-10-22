@@ -200,6 +200,14 @@ patch or changing a closed task:
   `DOC-PARITY-TAB-CONTRACT`, `MT-VERIFY-BROWSER-GATES` and `PLANGAP-001-2f` are
   already done in `tasks/items/`. Drop this superseded generated refresh too.
 
+Rechecked the first proposal at
+`b7abbd4d25c6f36f936bdc9873e85c2de91cb77c`: its complete diff and adjacent report
+still justify no migrated-store edit. The named repair candidate is an ancestor
+of HEAD; `PARITYUPDATE-005-11`, `VERIFY-CHAT-TRANSCRIPT-NATIVE`,
+`MT-VERIFY-BROWSER-GATES` and `PLANGAP-001-2f` remain done, while both named live
+successors remain open in Needs decision. Retain the existing drop disposition;
+no patch was applied and no current task or goal status was changed.
+
 These are documentation dispositions, not new closure or coordinator verification.
 `PARITYUPDATE-005-11-LIVE` and `MT-VERIFY-BROWSER-GATES-LIVE` remain open in Needs
 decision. No current goal evidence, acceptance, ordering or live authority changes.

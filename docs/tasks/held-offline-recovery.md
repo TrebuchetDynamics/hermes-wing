@@ -218,6 +218,17 @@ slots are closed; the later tab slot names `e564642df5f0273b915a2fde153ab4cd0ff7
 not the older proposal candidate. Drop both obsolete proposals without applying
 patches, changing current task/goal status or undoing newer planning.
 
+Rechecked both complete proposals at
+`f71f14d55f771dc03c358e801f0e7efe956838e8`, including the long generated rows,
+adjacent reports, current tab report and both archived task bodies' Sources and
+accepted scope. Their only deltas remain retired generated coverage and priority
+order, not missing implementation or acceptance. The Profiles candidate remains
+an ancestor of HEAD; the later tab report still names `e564642df5f0273b915a2fde153ab4cd0ff786e3`.
+All five named completed tasks remain done, and both live successors remain open
+in Needs decision. Drop both proposals: no justified current-store change remains,
+and replay would restore obsolete planning data. No patch was applied, task
+reopened, live acceptance inferred or newer closure undone.
+
 These are documentation dispositions, not new closure or coordinator verification.
 `PARITYUPDATE-005-11-LIVE` and `MT-VERIFY-BROWSER-GATES-LIVE` remain open in Needs
 decision. No current goal evidence, acceptance, ordering or live authority changes.

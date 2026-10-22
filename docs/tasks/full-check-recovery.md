@@ -219,6 +219,31 @@ Keep `CHECK-RESULTS-001` in Needs decision with all acceptance and write boundar
 unchanged. This evidence refresh is not a repair, restart, Blocker resolution,
 new task, named-test repair, suite run, isolated rerun or qualification.
 
+### Latest bundle (8efb05f4)
+
+Read all five files in place under Git-common
+`autowork-execution/main-evidence/8efb05f473c522a6d9b03e0755e061cec7ecc443/`.
+Metadata names that checked revision, previous green
+`66c8a28e02863bc49f0c83d284e9cce712cdc04f`, state `broken` and crash
+`Bad state: No element`. The string occurs inside a Flutter framework exception
+at line 3628; line 4765 reaches `15:58 +4137 ~9 -5: Some tests failed.`. Exit is
+`1`, reruns are empty and flaky history is `{}`. This final log contradicts
+"before any test result"; it does not independently retain both reported attempts
+or establish a missing SDK, flakiness or a new main verdict.
+
+A read-only probe of requested release `390ec0844e589625b6dd4a460545ef2d5749acfe`
+against the entire in-place log and unchanged Full check returns `failures == []`,
+`complete_results == False` and the recorded crash string. Its
+`worker.py:_run_gate` (lines 528–617) still supplies the candidate command to
+`base_result` and compares recognized failure IDs. Both archived worker reports,
+the retained `04c174ec` review finding and baseline JSON/log were reread; neither
+wrapper file exists in this checkout. The existing
+[admission blocker](#review-finding-and-admission-blocker) remains outside the
+allowed Wing documentation changes. Keep `CHECK-RESULTS-001` in Needs decision
+with all acceptance and write boundaries unchanged. No duplicate or named-test
+repair, task restart, Blocker resolution, new suite run, isolated rerun or
+qualification is justified by this evidence refresh.
+
 ## Result-consumption boundary
 
 Read-only inspection of installed Autowork release

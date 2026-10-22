@@ -3,7 +3,7 @@ schema = 1
 id = "VERIFY-SLASH-AUTHORITATIVE-TRANSPORT"
 title = "Qualify supported authoritative slash execution and unavailable-action recovery"
 short = "Qualify supported authoritative slash execution and unavailable-action recovery"
-status = "open"
+status = "done"
 goal = "SLASH-CATALOG"
 section = "Needs decision"
 rank = 5000
@@ -16,6 +16,10 @@ scope = "implement only exact advertised unmodified Agent command contracts and 
 acceptance = ["catalog/completion/dispatch identity and grants match the selected Agent; unavailable-action disclosure and zero specialized I/O have production-path oracles; ordinary chat fallback is explicit. Record separate native/live proof before parity."]
 checks = ["For changed inputs, `flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`; `flutter analyze --no-pub`; `git diff --check`. Reuse unchanged source-bound receipts. Trace exact advertised operation/grant ownership and add production-path catalog/dispatch/denial oracles; rebuild the deterministic E2E target before browser checks. Preserve the absent-authoritative-transport hold and explicit ordinary-chat fallback; no invented command route, live execution or refusal-only parity claim."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:45:57.302247+00:00"
+closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Section: Needs decision.

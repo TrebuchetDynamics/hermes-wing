@@ -3,7 +3,7 @@ schema = 1
 id = "VERIFY-M6-ANDROID-INTEGRATED"
 title = "Qualify same-artifact Android workflow, upgrade and recovery on an admitted target"
 short = "Qualify same-artifact Android workflow, upgrade and recovery on an admitted target"
-status = "open"
+status = "done"
 goal = "M6"
 section = "Needs decision"
 rank = 20000
@@ -16,6 +16,10 @@ scope = "separately admitted candidate and disposable named Android target; bind
 acceptance = ["exact source/tag/certificate/artifact and installed-byte readback; named target/OS/ABI/package/process generations; applicable workflow receipts and exact-owner canonical restoration with zero replay. Upgrade and recovery must retain expected state, restore trusted bytes/health and verify canonical owner. Unsupported operations remain explicit gaps; fixtures never qualify M6."]
 checks = ["source/artifact-bound admitted Android journeys, sanitized operation counts and readbacks; relevant regression and integration gates for any fixes."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:45:54.440885+00:00"
+closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Payoff: prove installed daily use and retained-state recovery, not just APK launch.

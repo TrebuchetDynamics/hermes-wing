@@ -3,7 +3,7 @@ schema = 1
 id = "VERIFY-M4-LIVE-INVENTORY"
 title = "Qualify scheduled-job inventory on an authenticated native Agent target"
 short = "Qualify scheduled-job inventory on an authenticated native Agent target"
-status = "open"
+status = "done"
 goal = "M4"
 section = "Needs decision"
 rank = 17000
@@ -15,6 +15,10 @@ ownership = "worker"
 scope = "installed Linux Wing against an existing approved isolated authenticated, unmodified Agent target. No Agent changes, service changes, inference or mutations."
 acceptance = ["verify exact advertised jobs/grants/profile contract, real denial, pending A-to-B read isolation and explicit B recovery with owner-scoped request receipts and zero mutations; keyboard recovery remains operable. If the contract is absent, verify unavailable/no dispatch and retain successful inventory unqualified."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:45:53.393908+00:00"
+closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Payoff: close the native/live inventory gap without treating fixtures as support.

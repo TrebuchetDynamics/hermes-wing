@@ -3,7 +3,7 @@ schema = 1
 id = "VERIFY-PERSONA-LIVE-COMPATIBILITY"
 title = "Qualify Persona revision-aware saves and conflict recovery against an authorized deployed Agent"
 short = "Qualify Persona revision-aware saves and conflict recovery against an authorized deployed Agent"
-status = "open"
+status = "done"
 goal = "PERSONA"
 section = "Needs decision"
 rank = 16000
@@ -16,6 +16,10 @@ scope = "production standalone Persona and Profiles modal on a named disposable 
 acceptance = ["verify the deployed operation/path/grants and profile context; deliberate ordinary save persists exact text; a real concurrent revision change rejects the stale save, loads authoritative newer text and permits only a deliberate retry at the new revision. Prove exact owner and write counts with sanitized server readback; native fixtures alone do not qualify this task. Android, physical IME and screen-reader coverage remain separately unqualified."]
 checks = ["current five-target Persona regressions plus an explicitly authorized bounded native/live journey with source, toolchain, target and operation receipts."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:45:55.471537+00:00"
+closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Payoff: distinguish the passing synthetic GTK recovery from actual server revision/concurrency enforcement.

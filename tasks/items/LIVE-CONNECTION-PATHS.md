@@ -3,7 +3,7 @@ schema = 1
 id = "LIVE-CONNECTION-PATHS"
 title = "Live qualifications for CONNECTION-PATHS"
 short = "Live qualifications"
-status = "open"
+status = "done"
 goal = "CONNECTION-PATHS"
 section = "Needs decision"
 rank = 18001
@@ -16,4 +16,8 @@ scope = "Owner-authorized live checks accumulated from offline task closures in 
 acceptance = ["CONNECTION-LINK-REMOVAL: Named Android device/emulator cold/warm intent classification, FlutterActivity/plugin lifecycle, actual Termux preparation/migration, physical keystore and assistive-technology output remain unqualified. Standalone Kotlin compilation and platform-overridden widget tests do not establish these outcomes.", "CONNECTION-LINK-REMOVAL: Existing CONNECTION-SETUP-AUTH-MATRIX/native owners retain actual Linux OS chooser, platform secure storage and approved live Local/SSH/Remote authentication/reconnect qualification with exact host/profile/session preservation and zero mutation replay. No live service, credential discovery, provider inference or personal installation operation was performed.", "CONNECTION-LINK-REMOVAL: Coordinator integration and merged-tree qualification remain separate from this local commit; the aggregate CONNECTION-PATHS/native/live acceptance is not claimed complete.", "CONNECTION-LINK-RETIREMENT: Existing CONNECTION-SETUP-AUTH-MATRIX/native-device owners retain named Linux chooser/direct authentication and Android/Termux direct setup/migration qualification. No live authentication, provider inference, physical secure storage, lost-device revocation or upgrade-in-place was exercised. Offline artifact/build evidence does not close those criteria.", "CONNECTION-LINK-RETIREMENT: Coordinator acceptance, canonical integration and exact reviewed origin/main delivery remain separate. This is one local task-branch commit only; no push, merge, cherry-pick or external publication was performed."]
 checks = ["Live qualification by an authorized person"]
 exclusions = ["Offline evidence does not count"]
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T21:41:25.520307+00:00"
+closure_reason = "2026-10-22 owner decision: retire the aggregated live-qualification queue row. The underlying checks remain recorded in task history/notes and are not claimed as qualified; reopen or add a note if a live window is authorized."
 +++

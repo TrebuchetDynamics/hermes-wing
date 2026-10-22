@@ -16,9 +16,8 @@ abstract final class AppRoutes {
   static const settingsVoice = '/settings/voice';
   static const settingsDiagnostics = '/settings/diagnostics';
 
-  /// One-time pairing enrollment screen reached via an Android connect
-  /// intent (`wing://connect?...`); deliberately outside the
-  /// authenticated shell since no endpoint is configured yet.
+  /// Direct Agent welcome, outside the authenticated shell. Retired external
+  /// inputs open reconnection guidance only, without carrying a handoff.
   static const enroll = '/enroll';
 
   /// Platform-specific local Hermes setup flow for Linux or Android/Termux.

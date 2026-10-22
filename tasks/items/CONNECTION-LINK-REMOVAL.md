@@ -3,7 +3,7 @@ schema = 1
 id = "CONNECTION-LINK-REMOVAL"
 title = "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
 short = "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
-status = "open"
+status = "done"
 goal = "CONNECTION-PATHS"
 section = "Next"
 rank = 18000
@@ -16,6 +16,8 @@ scope = "enrollment, Local platform flow, profile/catalog callers, Connections a
 acceptance = ["fresh/saved Local, SSH and Remote use zero Link requests or setup prerequisites. Profile/model choice does not fetch the Link catalog. Cancelling replacement setup and reconnect preserve exact host/profile/session and no replay. Old pairing input fails safely with direct reconnection guidance; missing Agent credentials require explicit reauthentication, not legacy Link recovery. Preserve stored Agent access and raw user records. No Link construction/process/fallback remains, even for previously paired installations. Linux offers default Hermes-home inspection and a folder chooser; Android offers guided same-phone Agent setup, with installation and auth readiness distinguished."]
 checks = ["public-control enrollment/router/local-setup/saved-connection regressions, retained Agent security tests, analysis and affected integrated web/native guards."]
 exclusions = []
+closure = "coordinator_verified"
+closure_evidence = "tasks/evidence/CONNECTION-LINK-REMOVAL.toml"
 +++
 
 - Payoff: connect directly without a second service, pairing, wing-cli or Link token.

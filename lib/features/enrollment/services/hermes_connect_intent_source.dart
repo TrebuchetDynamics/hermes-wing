@@ -1,39 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-/// Surfaces the raw Hermes Wing connect pairing payload string carried by the
-/// Android activity's intent (an `ACTION_VIEW` deep link or `ACTION_SEND`
-/// shared text). Production consumers discard deprecated handoffs without parsing
-/// or exchanging them and show direct Agent reconnection guidance.
-/// Implementations must never throw: an inbound intent is untrusted input,
-/// and platforms without a native implementation simply have nothing to
-/// report.
+/// Content-free notifications for retired Android connection inputs.
+///
+/// Native ingress discards URI/shared-text contents before notifying Flutter.
+/// Consumers can only open direct Agent reconnection guidance, never inspect or
+/// exchange a handoff. Unsupported platforms and channel failures report no input.
 abstract interface class HermesConnectIntentSource {
-  /// The payload the app was launched or resumed with, if any. Returns
-  /// `null` on unsupported platforms or when no pairing intent is pending.
-  Future<String?> initialPayload();
+  /// Returns and clears the pending notification so a later enrollment visit
+  /// cannot replay it.
+  Future<bool> consumeInitialInput();
 
-  /// Returns and clears the launch payload after the app has routed to
-  /// enrollment. This prevents a one-time pairing link from being replayed by
-  /// a later manual enrollment visit.
-  Future<String?> consumeInitialPayload();
-
-  /// Opens the native Android QR scanner and returns its raw payload.
-  /// Returns `null` when canceled, unavailable, or unsupported.
-  Future<String?> scanQrCode();
-
-  /// Lets the operator choose a local QR image and returns its decoded payload.
-  /// The image remains local; returns `null` when canceled or unsupported.
-  Future<String?> importQrImage();
-
-  /// Payloads delivered to an already-running activity (`onNewIntent`).
-  /// Empty on unsupported platforms; never throws or emits an error.
-  Stream<String> payloadEvents();
+  /// Notifications delivered to an already-running activity. Only `true` is
+  /// emitted; contents of external inputs never cross this interface.
+  Stream<bool> inputEvents();
 }
 
-/// [HermesConnectIntentSource] backed by the existing Android method/event
-/// channels registered in `MainActivity.kt`. Other platforms have no native
-/// counterpart, so both members return empty results rather than throwing.
+/// Uses the native rejection-notification channels registered in MainActivity.
 class MethodChannelHermesConnectIntentSource
     implements HermesConnectIntentSource {
   MethodChannelHermesConnectIntentSource({
@@ -57,86 +40,33 @@ class MethodChannelHermesConnectIntentSource
   final EventChannel _eventChannel;
 
   // Reuse the native stream: another EventChannel stream replaces its handler.
-  late final Stream<String> _payloadEvents = _createPayloadEvents();
+  late final Stream<bool> _inputEvents = _createInputEvents();
 
   bool get _supportsNativeChannel =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
-  Future<String?> initialPayload() async {
-    if (!_supportsNativeChannel) return null;
+  Future<bool> consumeInitialInput() async {
+    if (!_supportsNativeChannel) return false;
     try {
-      final result = await _methodChannel.invokeMethod<Object?>(
-        'initialConnectIntent',
-      );
-      return _payloadFrom(result);
+      return await _methodChannel.invokeMethod<bool>(
+            'consumeInitialConnectIntent',
+          ) ??
+          false;
     } catch (_) {
-      // An inbound intent is untrusted input surfaced across a platform
-      // channel; a missing plugin, malformed payload, or transport error
-      // must never crash enrollment. Treat every failure as "no payload".
-      return null;
+      return false;
     }
   }
 
   @override
-  Future<String?> consumeInitialPayload() async {
-    if (!_supportsNativeChannel) return null;
-    try {
-      final result = await _methodChannel.invokeMethod<Object?>(
-        'consumeInitialConnectIntent',
-      );
-      return _payloadFrom(result);
-    } catch (_) {
-      return null;
-    }
-  }
+  Stream<bool> inputEvents() => _inputEvents;
 
-  @override
-  Future<String?> scanQrCode() async {
-    if (!_supportsNativeChannel) return null;
-    try {
-      final result = await _methodChannel.invokeMethod<Object?>('scanQrCode');
-      if (result is! String) return null;
-      final trimmed = result.trim();
-      return trimmed.isEmpty ? null : trimmed;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  @override
-  Future<String?> importQrImage() async {
-    if (!_supportsNativeChannel) return null;
-    try {
-      final result = await _methodChannel.invokeMethod<Object?>(
-        'importQrImage',
-      );
-      if (result is! String) return null;
-      final trimmed = result.trim();
-      return trimmed.isEmpty ? null : trimmed;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  @override
-  Stream<String> payloadEvents() => _payloadEvents;
-
-  Stream<String> _createPayloadEvents() {
-    if (!_supportsNativeChannel) return const Stream<String>.empty();
+  Stream<bool> _createInputEvents() {
+    if (!_supportsNativeChannel) return const Stream<bool>.empty();
     return _eventChannel
         .receiveBroadcastStream()
-        .map(_payloadFrom)
-        .where((payload) => payload != null)
-        .cast<String>()
+        .where((event) => event is bool && event)
+        .cast<bool>()
         .handleError((Object _) {});
-  }
-
-  String? _payloadFrom(Object? raw) {
-    if (raw is! Map) return null;
-    final payload = raw['payload'];
-    if (payload is! String) return null;
-    final trimmed = payload.trim();
-    return trimmed.isEmpty ? null : trimmed;
   }
 }

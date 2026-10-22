@@ -565,6 +565,12 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   @override
   void didUpdateWidget(covariant ManagedSshConnectionForm oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.labels.serveReads != null &&
+        widget.labels.serveReads == null &&
+        _serveReads) {
+      _serveReads = false;
+      _clearSecrets();
+    }
     if (_targetBusy && widget.busy && !oldWidget.busy) {
       ++_targetGeneration;
       _targetBusy = false;

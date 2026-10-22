@@ -6,6 +6,15 @@ export '../models/hermes_web_reads.dart';
 
 /// Local serve reads have no browser authentication/transport qualification.
 final class HermesWebReadClient {
+  HermesWebReadClient.forRemoteGateway({
+    required Uri origin,
+    required String credential,
+    required String profile,
+    Duration timeout = const Duration(seconds: 10),
+  }) {
+    throw UnsupportedError('Gateway login requires native transport.');
+  }
+
   HermesWebReadClient.forLocalReads({
     required Uri origin,
     required String credential,

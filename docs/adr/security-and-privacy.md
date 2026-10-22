@@ -40,4 +40,51 @@ Diagnostics remain bounded and redact credentials, transcripts, private origins,
 host paths and content. No arbitrary shell, config key, executable or host path
 bridge may replace an unavailable Agent operation.
 
+## Gateway sign-in and metadata QR
+
+The owner approved a new direct native-gateway path: an explicitly scanned QR
+carries only an HTTPS origin and literal profile ID. It is not an enrollment
+credential, legacy pairing code or authorization grant. Unknown fields, embedded
+keys, userinfo, paths, queries and fragments are rejected without displaying raw
+input. Existing external intent/share rejection remains unchanged.
+
+Wing initiates the gateway's advertised `native_pkce` flow in the phone's system
+browser, with its own random S256 verifier/state and an ephemeral loopback callback
+on that phone. The gateway alone verifies the login and issues access/refresh
+tokens. Tokens stay bound to the exact HTTPS origin in platform secure storage;
+they are never exchanged for an API-server key or transferred from Desktop.
+Remote native REST and WSS use normal certificate validation and a fresh one-use
+WebSocket ticket per dial. No mutation is retried on token refresh or reconnect.
+
+This path does not start or publish a gateway, configure a VPN, open ports, read
+Agent credential files, modify Agent, or introduce a management backend. A reachable
+HTTPS gateway advertising compatible login remains a prerequisite. A QR can reveal
+a private hostname/profile and should not be posted publicly even without tokens.
+Camera permission is requested only by the explicit scanner; manual address entry
+is the accessible equivalent. Runtime qualification must distinguish metadata scan,
+login, socket negotiation, exact-session recovery and real generation.
+
+## Opt-in Android SSH quick access
+
+Android may retain one explicitly opted-in, successfully authenticated SSH/API
+connection in a dedicated platform-secure slot. It includes the exact SSH
+host/port/user, Agent port/profile and protocol, verified host fingerprint, SSH
+password or private key/unlock phrase, and Agent token. Never persist a forwarded
+loopback port as a reusable destination. Do not copy secrets to preferences,
+clipboard, diagnostics, URLs or another connection's form.
+
+Opening the connection screen reads the secure entry but never dials. A deliberate
+**Connect to my Hermes** uses the existing forward, host-pin validation, Agent
+authentication and recovery fences. A changed host fingerprint or failed Agent
+authentication must not fall back to root or another credential. **Forget saved
+access** deletes only this new slot; it does not revoke Agent credentials, remove
+existing host pins or touch inert legacy records. Configuration editing starts
+without prefilled secrets. Save completion and connection success are separate.
+Reads, saves and forgetting serialize across store instances. A save rechecks
+its current owner before and after writing; cancellation restores the previous
+slot before another operation proceeds. The lock exists only while work is pending.
+This is client-side credential reuse, not new Agent state or unattended host setup.
+Initial secure entry and host approval remain required; real-device and live
+network qualification are separate gates.
+
 See [SECURITY.md](../../SECURITY.md) and the [threat model](../security/threat-model.md).

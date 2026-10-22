@@ -99,6 +99,8 @@ extension _ServeRecoveryExtension on HermesApiChannel {
         profile: c.profile,
         storedSession: c.storedSessionId,
         transient: _serveTransient,
+        remoteGateway: _serveRemoteGateway,
+        persistRecovery: _persistForwardedRecovery,
         canAccept: _serveTransient
             ? _serveCanAccept
             : () => identical(selection, _serveRecovery),

@@ -280,6 +280,156 @@ abstract class AppLocalizations {
   /// **'Connect step by step'**
   String get connectionGuideTitle;
 
+  /// No description provided for @gatewayLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Hermes Desktop'**
+  String get gatewayLoginTitle;
+
+  /// No description provided for @gatewayAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes gateway HTTPS address'**
+  String get gatewayAddress;
+
+  /// No description provided for @gatewayProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes profile'**
+  String get gatewayProfile;
+
+  /// No description provided for @gatewaySignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorize this phone'**
+  String get gatewaySignIn;
+
+  /// No description provided for @gatewayScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan computer QR'**
+  String get gatewayScan;
+
+  /// No description provided for @gatewayQrCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Show connection QR'**
+  String get gatewayQrCreate;
+
+  /// No description provided for @gatewayQrSafe.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR contains only the gateway address and profile. It does not contain a token or authorize access. Both devices need a reachable private network; sign in on the phone to authorize it.'**
+  String get gatewayQrSafe;
+
+  /// No description provided for @gatewayInvalidQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported connection QR or address. Use an HTTPS gateway address with no key, query or fragment. Legacy pairing codes are not accepted.'**
+  String get gatewayInvalidQr;
+
+  /// No description provided for @gatewayCameraFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera is unavailable or permission was denied. Go back and enter the gateway address instead.'**
+  String get gatewayCameraFailed;
+
+  /// No description provided for @gatewayLoginBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the address shown on your computer, or enter its existing HTTPS gateway address. Sign in in this phone\'s browser. Wing will never ask you to copy the computer\'s API key. This does not start Hermes, create a VPN or change firewall settings.'**
+  String get gatewayLoginBody;
+
+  /// No description provided for @gatewayLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway sign-in or connection could not be completed. Check the address, trusted HTTPS certificate and native sign-in support. No message was sent. Retry explicitly.'**
+  String get gatewayLoginFailed;
+
+  /// No description provided for @gatewayLoginPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for authorization in your browser…'**
+  String get gatewayLoginPending;
+
+  /// No description provided for @gatewayReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to my Hermes'**
+  String get gatewayReconnect;
+
+  /// No description provided for @gatewayForget.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget gateway sign-in'**
+  String get gatewayForget;
+
+  /// No description provided for @gatewayStorageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure sign-in storage is unavailable. Access was not confirmed as remembered.'**
+  String get gatewayStorageFailed;
+
+  /// No description provided for @managedSshQuickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved Hermes'**
+  String get managedSshQuickTitle;
+
+  /// No description provided for @managedSshQuickConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to my Hermes'**
+  String get managedSshQuickConnect;
+
+  /// No description provided for @managedSshQuickBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect using this phone\'s secure saved access. Host identity and Agent authorization are checked again. No messages are resent.'**
+  String get managedSshQuickBody;
+
+  /// No description provided for @managedSshQuickRemember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember access on this phone'**
+  String get managedSshQuickRemember;
+
+  /// No description provided for @managedSshQuickConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'After a successful connection, store this SSH password or private key, its unlock phrase and the Agent token in platform secure storage. Only enable this on your own protected phone. No automatic connection. API connections only.'**
+  String get managedSshQuickConsent;
+
+  /// No description provided for @managedSshQuickEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Use different connection details'**
+  String get managedSshQuickEdit;
+
+  /// No description provided for @managedSshQuickForget.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget saved access'**
+  String get managedSshQuickForget;
+
+  /// No description provided for @managedSshQuickStorageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved access could not be read or removed. Your credentials were not displayed. Retry or enter connection details manually.'**
+  String get managedSshQuickStorageFailed;
+
+  /// No description provided for @managedSshQuickSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected, but remembering access was not confirmed. Continue without saving, or reconnect later to try again.'**
+  String get managedSshQuickSaveFailed;
+
+  /// No description provided for @managedSshQuickContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with this connection'**
+  String get managedSshQuickContinue;
+
   /// No description provided for @connectionAccessTitle.
   ///
   /// In en, this message translates to:

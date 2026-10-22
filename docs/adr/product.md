@@ -52,6 +52,17 @@ connection prerequisite, not welcome fidelity or the delivered APK's parity.
 
 ## Official Desktop features only
 
+### Owner-approved mobile gateway entry
+
+The owner approved adapting Desktop's native PKCE gateway sign-in for Android,
+with a metadata-only QR to avoid typing the origin/profile. This is distinct
+from retired pairing: no credential or authorization code is exported by Desktop,
+no Agent backend extension or management inventory is introduced, and legacy
+external intents remain rejected. A standalone Desktop UI plugin may generate the
+metadata via the official SDK without reading credentials or controlling services.
+The phone initiates its own sign-in and talks directly to an existing HTTPS native
+gateway. This does not qualify unimplemented native RPCs or Desktop parity.
+
 ### Explicit presentation exception: conversational chat and local avatars
 
 The owner approved a softer chat presentation inspired by Muse and Claude Duet

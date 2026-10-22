@@ -11,6 +11,7 @@ extension _ServeReadsExtension on HermesApiChannel {
     bool deferSessionSelection = false,
     void Function(bool Function() isCurrent)? onAcquire,
     bool uncertain = false,
+    bool remoteGateway = false,
     Future<void> Function(HermesWebRecovery)? persistRecovery,
   }) async {
     if (!(canAccept?.call() ?? true)) return;
@@ -29,6 +30,7 @@ extension _ServeReadsExtension on HermesApiChannel {
       return;
     }
     _serveTransient = transient;
+    _serveRemoteGateway = remoteGateway;
     _serveCanAccept = transient ? canAccept : null;
     _persistForwardedRecovery = transient ? persistRecovery : null;
     _setState(
@@ -47,11 +49,17 @@ extension _ServeReadsExtension on HermesApiChannel {
         (canAccept?.call() ?? true);
     try {
       if (generation != _connectionGeneration || !_serveOwnerIsCurrent) return;
-      reader = HermesWebReadClient.forLocalReads(
-        origin: Uri.parse(baseUrl),
-        credential: credential,
-        profile: profile,
-      );
+      reader = remoteGateway
+          ? HermesWebReadClient.forRemoteGateway(
+              origin: Uri.parse(baseUrl),
+              credential: credential,
+              profile: profile,
+            )
+          : HermesWebReadClient.forLocalReads(
+              origin: Uri.parse(baseUrl),
+              credential: credential,
+              profile: profile,
+            );
       _serveReader = reader;
       _serveCredential = credential;
       final profiles = await reader.profiles();
@@ -102,7 +110,9 @@ extension _ServeReadsExtension on HermesApiChannel {
           status: HermesConnectionStatus.error,
           isServeReadOnly: true,
           connectedBaseUrl: reader == null ? null : baseUrl,
-          errorMessage: 'Local serve read connection failed.',
+          errorMessage: remoteGateway
+              ? 'Remote gateway connection failed.'
+              : 'Local serve read connection failed.',
           connectionFailureKind: _serveFailure(error),
         ),
       );

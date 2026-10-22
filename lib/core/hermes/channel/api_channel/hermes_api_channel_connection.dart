@@ -42,6 +42,7 @@ extension _ConnectionExtension on HermesApiChannel {
     _serveCanAccept = null;
     _persistForwardedRecovery = null;
     _serveTransient = false;
+    _serveRemoteGateway = false;
     _forwardedOrigin = forwardedRunOwner == null ? null : baseUrl;
     _forwardedRunOwner = forwardedRunOwner;
     _forwardedUncertainSessions

@@ -119,6 +119,92 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectionGuideTitle => 'Connect step by step';
 
   @override
+  String get gatewayLoginTitle => 'Connect to Hermes Desktop';
+
+  @override
+  String get gatewayAddress => 'Hermes gateway HTTPS address';
+
+  @override
+  String get gatewayProfile => 'Hermes profile';
+
+  @override
+  String get gatewaySignIn => 'Authorize this phone';
+
+  @override
+  String get gatewayScan => 'Scan computer QR';
+
+  @override
+  String get gatewayQrCreate => 'Show connection QR';
+
+  @override
+  String get gatewayQrSafe =>
+      'This QR contains only the gateway address and profile. It does not contain a token or authorize access. Both devices need a reachable private network; sign in on the phone to authorize it.';
+
+  @override
+  String get gatewayInvalidQr =>
+      'Unsupported connection QR or address. Use an HTTPS gateway address with no key, query or fragment. Legacy pairing codes are not accepted.';
+
+  @override
+  String get gatewayCameraFailed =>
+      'The camera is unavailable or permission was denied. Go back and enter the gateway address instead.';
+
+  @override
+  String get gatewayLoginBody =>
+      'Scan the address shown on your computer, or enter its existing HTTPS gateway address. Sign in in this phone\'s browser. Wing will never ask you to copy the computer\'s API key. This does not start Hermes, create a VPN or change firewall settings.';
+
+  @override
+  String get gatewayLoginFailed =>
+      'Gateway sign-in or connection could not be completed. Check the address, trusted HTTPS certificate and native sign-in support. No message was sent. Retry explicitly.';
+
+  @override
+  String get gatewayLoginPending =>
+      'Waiting for authorization in your browser…';
+
+  @override
+  String get gatewayReconnect => 'Connect to my Hermes';
+
+  @override
+  String get gatewayForget => 'Forget gateway sign-in';
+
+  @override
+  String get gatewayStorageFailed =>
+      'Secure sign-in storage is unavailable. Access was not confirmed as remembered.';
+
+  @override
+  String get managedSshQuickTitle => 'Your saved Hermes';
+
+  @override
+  String get managedSshQuickConnect => 'Connect to my Hermes';
+
+  @override
+  String get managedSshQuickBody =>
+      'Reconnect using this phone\'s secure saved access. Host identity and Agent authorization are checked again. No messages are resent.';
+
+  @override
+  String get managedSshQuickRemember => 'Remember access on this phone';
+
+  @override
+  String get managedSshQuickConsent =>
+      'After a successful connection, store this SSH password or private key, its unlock phrase and the Agent token in platform secure storage. Only enable this on your own protected phone. No automatic connection. API connections only.';
+
+  @override
+  String get managedSshQuickEdit => 'Use different connection details';
+
+  @override
+  String get managedSshQuickForget => 'Forget saved access';
+
+  @override
+  String get managedSshQuickStorageFailed =>
+      'Saved access could not be read or removed. Your credentials were not displayed. Retry or enter connection details manually.';
+
+  @override
+  String get managedSshQuickSaveFailed =>
+      'Connected, but remembering access was not confirmed. Continue without saving, or reconnect later to try again.';
+
+  @override
+  String get managedSshQuickContinue => 'Continue with this connection';
+
+  @override
   String get connectionAccessTitle => 'I need access to Hermes';
 
   @override

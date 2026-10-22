@@ -3,7 +3,7 @@ schema = 1
 id = "LINUXQA-001-e41e98e5"
 title = "Build safe Linux qualification entrypoint and portable preflight"
 short = "Safe Linux qualification preflight"
-status = "open"
+status = "done"
 goal = "PARITY"
 section = "Next"
 rank = 1000
@@ -16,6 +16,8 @@ scope = "Implement only the developer-test campaign driver and portability/envir
 acceptance = ["Given missing or stale dependencies, wrong SDK/Node major, unsafe output roots or inherited live opt-ins, preflight and linux_feature_qualification_runner_test.py reject before any GTK/SSH/provider/installer child starts.", "Given synthetic subprocess results, the fixed-lane driver preserves exact exits and schema-1 source/tool/case/cleanup identities; empty, interrupted or stale records cannot pass.", "Given an explicit compatible owned prefix, reusable launchers resolve it without private absolute paths; existing self-checks and new environment-isolation tests pass without changing production or Agent source."]
 checks = ["python3 -m unittest discover -s test/tooling -p linux_feature_qualification_runner_test.py -v", "python3 -B integration_test/run_linux_shell_compact_return.py --self-check", "python3 scripts/run_linux_feature_qualification.py --lane preflight --output-dir \"$TMPDIR/linux-qualification\""]
 exclusions = ["No Agent/runtime/upstream edits", "No personal services, credentials, production data or live provider operations", "No installation, publication, schedule change or missing-feature implementation"]
+closure = "coordinator_verified"
+closure_evidence = "tasks/evidence/LINUXQA-001-e41e98e5.toml"
 +++
 
 - Sources: [Full Linux qualification plan](docs/plans/2026-10-21-linux-feature-qualification.md)

@@ -3,7 +3,7 @@ schema = 1
 id = "DOC-API-DEVICE-SELF-CONFORMANCE"
 title = "Verify device-self read/revoke schema and authorization against handlers"
 short = "Verify device-self read/revoke schema and authorization against handlers"
-status = "open"
+status = "done"
 goal = "API-CONFORMANCE"
 section = "Next"
 rank = 19000
@@ -15,6 +15,10 @@ ownership = "worker"
 scope = "one management-route family, existing tooling, in-process disposable recorder fixtures and documentation corrections. Exclude live listeners, personal credentials, peer administration, API redesign and new dependencies."
 acceptance = ["execute schema-to-handler checks for self-read/revoke, exact grants, pending/revoked authority and method/protocol errors. Reject an isolated incorrect schema copy; keep generated credentials and fixture bodies out of receipts. Record exact commands, source hashes and limits. Other families, full OpenAPI standards validation, TLS and live transport remain unverified."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:47:05.931534+00:00"
+closure_reason = "2026-10-22 engineering/owner review: this proof targets the retired Wing Link service and the accepted planner decision is to skip it. Close the historical/unverified record; do not recreate handlers and do not claim conformance."
 +++
 
 - Payoff: extend discovery-only conformance to one exact authorization boundary.

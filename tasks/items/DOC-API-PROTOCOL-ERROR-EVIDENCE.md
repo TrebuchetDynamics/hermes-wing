@@ -3,7 +3,7 @@ schema = 1
 id = "DOC-API-PROTOCOL-ERROR-EVIDENCE"
 title = "Map profile-list protocol error precedence"
 short = "Map profile-list protocol error precedence"
-status = "open"
+status = "done"
 goal = "API-CONFORMANCE"
 section = "Next"
 rank = 20000
@@ -15,6 +15,10 @@ ownership = "worker"
 scope = "read-only source, nearest tests and sanitized receipt inspection for this outcome. Exclude implementation, upstream edits, secrets, installs and live actions."
 acceptance = ["Compare code-first schema and existing dispatch tests for omitted, supported and unsupported generations with method/auth errors. Record conformance proof or the exact unexecuted check; no sockets."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:47:06.677166+00:00"
+closure_reason = "2026-10-22 engineering/owner review: this proof targets the retired Wing Link service and the accepted planner decision is to skip it. Close the historical/unverified record; do not recreate handlers and do not claim conformance."
 +++
 
 - Payoff: preserve a distinct remaining proof slice after the current task.

@@ -142,6 +142,33 @@ in Needs decision with its contract unchanged; no duplicate, named-test repair,
 restart, Blocker resolution, new suite run or qualification follows from this
 inspection.
 
+### Latest bundle (da81ad13)
+
+Read all five files in place under Git-common
+`autowork-execution/main-evidence/da81ad1352068bef6f3b5d9bd4ea159523ac9b82/`.
+Metadata records that checked revision, previous green
+`66c8a28e02863bc49f0c83d284e9cce712cdc04f`, state `broken` and crash
+`Bad state: No element`. The log places the string inside a Flutter test framework
+exception at line 3628, then reaches
+`16:53 +4137 ~9 -5: Some tests failed.` at line 4765. Exit is `1`, reruns are empty
+and flaky history is `{}`. This bundle retains one final log, not two independent
+attempt logs. Its terminal output contradicts the no-results classification;
+it does not establish a missing SDK or flakiness.
+
+A read-only probe of requested release `390ec0844e589625b6dd4a460545ef2d5749acfe`,
+`pi_autowork/main_check.py`, against the entire in-place log and the unchanged
+repository Full check returns `failures(...) == []`,
+`complete_results(...) == False` and the recorded crash string.
+`worker.py:_run_gate` (lines 528–617) still supplies the candidate command to
+`base_result` and compares recognized failure IDs. Both archived worker reports,
+the retained `04c174ec` review finding and the `base-e611aa9c` JSON/log were reread;
+neither wrapper file exists in this checkout. The missing input remains a
+supported baseline-preserving command/result-format transition outside this
+task's write boundary. Preserve `CHECK-RESULTS-001` in Needs decision and all
+accepted scope, acceptance, checks and exclusions. This evidence update does not
+restart the task, resolve the blocker, create a duplicate or named-test repair,
+run a suite, or qualify main or any goal.
+
 ## Result-consumption boundary
 
 Read-only inspection of installed Autowork release

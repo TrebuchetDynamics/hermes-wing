@@ -3,7 +3,7 @@ schema = 1
 id = "CHECK-RESULTS-001"
 title = "Restore runner-readable terminal results for the complete offline Flutter check"
 short = "Recover full-check result reporting"
-status = "open"
+status = "done"
 goal = "INTEGRATION"
 section = "Next"
 rank = 21000
@@ -16,6 +16,11 @@ scope = "Restate Full check through a repository-owned direct Python unittest or
 acceptance = ["The documented Full check invokes the entire existing offline sequence on the supported SDK, with no test filtering, dependency upgrade, lockfile change, live opt-in or upstream edit.", "A genuine unittest orchestration test retains Flutter output, numeric child exits and terminal counts, fails on setup failure, missing or interrupted results and nonzero suite exit, and emits no fabricated summaries or skips.", "Focused synthetic tests cover complete success, complete failure, preparation failure, wrong or missing SDK and incomplete results without recursively launching the full suite.", "Read-only validation against the installed result reader demonstrates recognized genuine failure IDs and completeness output, and a fresh full offline run records its actual source, SDK, exits and terminal results even when Flutter tests fail. This is infrastructure recovery, not a green-main or platform qualification claim."]
 checks = ["python3 -m unittest discover -s test/tooling -p full_check_runner_test.py -v", "flutter --version --machine", "python3 -m unittest scripts.full_check_test", "git diff --check"]
 exclusions = ["No product or named Flutter-test repairs", "No installed Autowork or Agent/runtime/reference changes", "No weakened inventory, fabricated results or masked failures", "No lockfile changes, live operations, credentials, publication or device qualification"]
+closure = "manual"
+closure_actor = "owner interactive session (Claude)"
+closure_timestamp = "2026-10-22T13:02:53.965051+00:00"
+closure_reason = "Superseded by an Autowork fix: since toolset commit dd9244b9 the main-check and gate readers recognise Flutter's terminal line (All tests passed! / Some tests failed.) as a complete result and already name Flutter failures, so the direct Full check in AGENTS.md is readable as it is; no repository-owned Python wrapper is needed"
+closure_evidence = "toolset commit dd9244b9; pi-autowork/tests/test_main_check.py test_a_flutter_check_is_complete_at_its_terminal_line; the runner picks the release up at its next toolset update"
 +++
 
 - Sources: docs/tasks/full-check-recovery.md#bounded-implementation; AGENTS.md#validation; CONTRIBUTING.md#setup; CONTRIBUTING.md#required-checks

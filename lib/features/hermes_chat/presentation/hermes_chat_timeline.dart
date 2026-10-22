@@ -1039,14 +1039,14 @@ class _TurnBubble extends ConsumerWidget {
         width: isUser ? null : double.infinity,
         decoration: BoxDecoration(
           color: isUser
-              ? colors.surfaceContainerHigh
+              ? colors.primaryContainer
               : structuredError != null
               ? colors.error.withValues(alpha: 0.1)
-              : Colors.transparent,
+              : colors.surfaceContainerLow,
           border: structuredError != null
               ? Border.all(color: colors.error.withValues(alpha: 0.35))
               : null,
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

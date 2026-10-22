@@ -1216,8 +1216,8 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     final userRadius = decoration(userId).borderRadius! as BorderRadius;
     final assistantRadius =
         decoration(assistantId).borderRadius! as BorderRadius;
-    expect(userRadius, BorderRadius.circular(3));
-    expect(assistantRadius, BorderRadius.circular(3));
+    expect(userRadius, BorderRadius.circular(20));
+    expect(assistantRadius, BorderRadius.circular(20));
   });
 
   testWidgets('message timestamps expose their full local date and time', (
@@ -2590,6 +2590,7 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
                 completion.complete();
               }
               await tester.pumpAndSettle();
+
               expect(tester.takeException(), isNull);
               expect(writes, [code]);
               expect(find.textContaining('private-'), findsNothing);

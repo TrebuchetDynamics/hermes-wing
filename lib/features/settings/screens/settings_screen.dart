@@ -10,6 +10,7 @@ import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
+import '../../../shared/widgets/wing_avatar.dart';
 import '../../hermes_chat/diagnostics/hermes_diagnostics_export.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../theme/wing_theme.dart';
@@ -362,6 +363,74 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const _ChatTextScaleSetting(),
+        const SizedBox(height: 24),
+        const _AvatarGallery(),
+      ],
+    );
+  }
+}
+
+class _AvatarGallery extends ConsumerWidget {
+  const _AvatarGallery();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final selected = ref.watch(wingAvatarVariationProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          strings.avatarGalleryTitle,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        Text(strings.avatarGalleryDescription),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (var index = 0; index < 12; index++)
+              Semantics(
+                selected: selected == index,
+                child: OutlinedButton(
+                  key: ValueKey('wing-avatar-family-$index'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.all(10),
+                    backgroundColor: selected == index
+                        ? Theme.of(context).colorScheme.primaryContainer
+                        : null,
+                  ),
+                  onPressed: () async {
+                    final saved = await ref
+                        .read(wingAvatarVariationProvider.notifier)
+                        .select(index);
+                    if (!saved && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(strings.avatarSaveFailed)),
+                      );
+                    }
+                  },
+                  child: Semantics(
+                    label: strings.avatarVariationLabel(index + 1),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        WingAvatar(
+                          identity: const ['preview', 'hermes'],
+                          variation: index,
+                          size: 56,
+                        ),
+                        const SizedBox(height: 6),
+                        Text('${index + 1}${selected == index ? ' ✓' : ''}'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ],
     );
   }

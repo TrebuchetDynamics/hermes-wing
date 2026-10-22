@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../groups/chat_group_controller.dart';
-import '../widgets/hermes_profile_identity.dart';
+import '../../../shared/widgets/wing_avatar.dart';
 import 'gateway_contact.dart';
 
 class GatewayContactsView extends StatelessWidget {
@@ -424,17 +424,9 @@ class _ContactAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = hermesProfileColor(
-      '${contact.id.gatewayId}:${contact.id.profileId}',
-    );
-    return CircleAvatar(
-      backgroundColor: color,
-      foregroundColor: hermesProfileForeground(color),
-      child: Text(
-        contact.profileName.trim().isEmpty
-            ? '?'
-            : contact.profileName.trim().characters.first.toUpperCase(),
-      ),
+    return WingAvatar(
+      identity: [contact.id.gatewayId, contact.id.profileId],
+      size: 40,
     );
   }
 }

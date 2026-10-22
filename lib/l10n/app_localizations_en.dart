@@ -4301,6 +4301,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeHeading => 'Theme';
 
   @override
+  String get avatarGalleryTitle => 'Wing avatars';
+
+  @override
+  String get avatarGalleryDescription =>
+      'Winged characters generated on this device. Choose a family for this installation; Agent profile avatars stay unchanged.';
+
+  @override
+  String avatarVariationLabel(int number) {
+    return 'Avatar family $number';
+  }
+
+  @override
+  String get avatarSaveFailed =>
+      'The avatar family is applied for now, but could not be saved on this device.';
+
+  @override
   String get settingsTypographyHeading => 'Typography';
 
   @override

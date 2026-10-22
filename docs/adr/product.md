@@ -52,6 +52,15 @@ connection prerequisite, not welcome fidelity or the delivered APK's parity.
 
 ## Official Desktop features only
 
+### Explicit presentation exception: conversational chat and local avatars
+
+The owner approved a softer chat presentation inspired by Muse and Claude Duet
+and explicitly authorized a local deterministic avatar generator. This is an
+exception for Wing presentation, not new Agent administration. Avatar variations
+are installation-local appearance preferences; they do not assign or overwrite
+Agent profile avatars. No external image service, identity upload or Agent
+mutation is permitted. Hermes Desktop remains the functional reference.
+
 Status: Accepted
 
 The owner explicitly requires a **1:1 Flutter port**, implementing only product

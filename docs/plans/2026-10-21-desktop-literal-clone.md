@@ -588,6 +588,25 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 
 ## Resoluciones del builder-check
 
+### Nueva dirección visual y avatares locales autorizados
+
+El propietario aprobó inspiración visual Muse/Duet y una excepción explícita
+para avatares locales deterministas (ver ADR product). Chat usa burbujas de
+20 px y compositor de 22 px, conservando funciones, claves y autorización.
+Settings Appearance ofrece doce familias de criaturas aladas; la elección es
+local a la instalación. Contacts dibuja cada criatura a partir de la identidad
+exacta gateway/perfil con SHA-256 y JSON delimitado, sin red, imágenes externas,
+escrituras Agent ni asignación de avatar al perfil. No es un generador por IA.
+La cabecera conserva su layout para no recortar títulos estrechos.
+
+Verificación Flutter 3.44.9 (fuera del pin documental): 146 pruebas de avatar,
+Settings/composición/transcript y 144 de compositor/gateways; análisis limpio,
+build web E2E. Chromium: 4 escenas Chat claro/oscuro móvil/escritorio, 2 de
+paletas y 2 de selección/recarga de familias. Galería renderizada inspeccionada.
+Esto es una primera implementación, no aprobación de marca ni paridad visual
+con los productos de referencia. El botón antiguo de generación Agent en
+Profiles permanece no disponible: no se simula esa API.
+
 ### Lote visual de Chat y navegación
 
 Implementado: sidebar de 237 px según `styles.css --sidebar-width` del pin

@@ -3,7 +3,7 @@ schema = 1
 id = "CONNECTION-CRON-CANARY"
 title = "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
 short = "Qualify one reviewed implementation canary before resuming the existing 15-minute cron"
-status = "open"
+status = "done"
 goal = "CONNECTION-PATHS"
 section = "Needs decision"
 rank = 7000
@@ -16,6 +16,10 @@ scope = "preserve and finish the current Wing candidate; reconcile existing conn
 acceptance = ["observe safe admission, relevant passing checks, independent review, a scoped implementation commit on canonical main and worker release. Existing chat work, documentation-only commits and job status `ok` do not count. Resume only after all canary evidence passes; read back enabled state and cadence and inspect the first scheduled occurrence. A hard refusal pauses and notifies."]
 checks = ["retain exact job/task/run/commit and check receipts; inspect the implementation diff, release proof, scheduler readback and first scheduled result. No fresh worker or scheduler mutation is authorized by this task's creation."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:45:42.878949+00:00"
+closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Readiness: CANCELLED by owner; retired without completion. Never dispatch.

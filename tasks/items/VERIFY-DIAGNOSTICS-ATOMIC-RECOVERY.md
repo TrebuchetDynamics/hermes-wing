@@ -3,7 +3,7 @@ schema = 1
 id = "VERIFY-DIAGNOSTICS-ATOMIC-RECOVERY"
 title = "Qualify exact advertised atomic restore authority before native recovery"
 short = "Qualify exact advertised atomic restore authority before native recovery"
-status = "open"
+status = "done"
 goal = "DIAGNOSTICS-RECOVERY"
 section = "Needs decision"
 rank = 1000
@@ -15,6 +15,10 @@ ownership = "worker"
 scope = "validate an exact advertised Agent recovery operation and its profile, archive, revision, rollback and activation boundaries before implementing a Wing caller."
 acceptance = ["authenticated secret-safe operation identity and all-resource rollback must be established; separately approved native target checks must prove recovery."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:45:52.454822+00:00"
+closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Sources: [accepted continuation](docs/plans/2026-10-03-desktop-port-goal.md#cron-restart-interview), [contract trace](docs/quality/diagnostics-backup-contract.md).

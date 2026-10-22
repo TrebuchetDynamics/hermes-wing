@@ -3,7 +3,7 @@ schema = 1
 id = "M2-DEVICE-QUALIFICATION"
 title = "Owner: run the named-device Android death-to-completion qualification (physical device); agents prepare nothing further until then"
 short = "Owner: run the named-device Android death-to-completion qualification (physical device); agents prepare nothing further until then"
-status = "open"
+status = "done"
 goal = "M2"
 section = "Needs decision"
 rank = 19000
@@ -15,6 +15,10 @@ ownership = "worker"
 scope = "only the admitted isolated device scenario and sanitized receipt; exclude personal credentials, unadmitted QA runtime and synthetic qualification claims."
 acceptance = ["named-device receipt proves completion while absent, exact restoration and authoritative no-replay counts. A device alone does not supply missing admission."]
 exclusions = []
+closure = "manual"
+closure_actor = "xel"
+closure_timestamp = "2026-10-22T12:45:50.480917+00:00"
+closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Sources: [M2 baseline and exact scenario](docs/quality/2026-10-06-m2-continuity-baseline.md#exactly-one-future-scenario-android-m2-death-complete-01) and [BLK-20261006-W02](BLOCKERS.md#blk-20261006-w02--physical-device-run-for-m2-android-recovery).

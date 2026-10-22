@@ -119,6 +119,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectionGuideTitle => 'Connect step by step';
 
   @override
+  String get managedSshQuickTitle => 'Your saved Hermes';
+
+  @override
+  String get managedSshQuickConnect => 'Connect to my Hermes';
+
+  @override
+  String get managedSshQuickBody =>
+      'Reconnect using this phone\'s secure saved access. Host identity and Agent authorization are checked again. No messages are resent.';
+
+  @override
+  String get managedSshQuickRemember => 'Remember access on this phone';
+
+  @override
+  String get managedSshQuickConsent =>
+      'After a successful connection, store this SSH password or private key, its unlock phrase and the Agent token in platform secure storage. Only enable this on your own protected phone. No automatic connection. API connections only.';
+
+  @override
+  String get managedSshQuickEdit => 'Use different connection details';
+
+  @override
+  String get managedSshQuickForget => 'Forget saved access';
+
+  @override
+  String get managedSshQuickStorageFailed =>
+      'Saved access could not be read or removed. Your credentials were not displayed. Retry or enter connection details manually.';
+
+  @override
+  String get managedSshQuickSaveFailed =>
+      'Connected, but remembering access was not confirmed. Continue without saving, or reconnect later to try again.';
+
+  @override
+  String get managedSshQuickContinue => 'Continue with this connection';
+
+  @override
   String get connectionAccessTitle => 'I need access to Hermes';
 
   @override

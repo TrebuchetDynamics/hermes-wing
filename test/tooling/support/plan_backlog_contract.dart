@@ -38,6 +38,7 @@ String planTaskBody({
   required String status,
   required String todo,
   required String archive,
+  bool manualClosure = false,
 }) {
   final bodies = <({bool archived, bool checked, String text})>[];
   final marker = RegExp(
@@ -60,6 +61,24 @@ String planTaskBody({
         ),
       ));
     }
+  }
+  // A native/manual closure records its outcome in the task body; it never
+  // gains or replaces a frozen archive checkbox. Accept that record body
+  // instead of requiring an archive entry the close cannot have, while a
+  // leftover or duplicate checkbox body still fails closed.
+  if (manualClosure) {
+    if (status != 'done') {
+      throw FormatException('$id manual closure requires done status');
+    }
+    if (bodies.isNotEmpty) {
+      throw FormatException(
+        '$id manual closure conflicts with a checkbox body',
+      );
+    }
+    if (todo.trim().isEmpty) {
+      throw FormatException('$id manual closure needs a record body');
+    }
+    return todo;
   }
   if (bodies.length != 1) {
     throw FormatException(

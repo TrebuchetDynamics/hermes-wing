@@ -21,31 +21,16 @@ import '../hermes_chat/support/fake_hermes_gateway_directory.dart';
 class _Ingress implements HermesConnectIntentSource {
   _Ingress(this.pending);
   String? pending;
-  final events = StreamController<String>.broadcast();
-  int scans = 0;
-  int imports = 0;
+  final events = StreamController<bool>.broadcast();
   @override
-  Future<String?> initialPayload() async => pending;
-  @override
-  Future<String?> consumeInitialPayload() async {
-    final value = pending;
+  Future<bool> consumeInitialInput() async {
+    final present = pending != null;
     pending = null;
-    return value;
+    return present;
   }
 
   @override
-  Stream<String> payloadEvents() => events.stream;
-  @override
-  Future<String?> scanQrCode() async {
-    scans++;
-    return null;
-  }
-
-  @override
-  Future<String?> importQrImage() async {
-    imports++;
-    return null;
-  }
+  Stream<bool> inputEvents() => events.stream;
 }
 
 void main() {
@@ -104,7 +89,7 @@ void main() {
         }
         for (final platformBack in [false, true]) {
           source.pending = 'malformed fixture-warm-share';
-          source.events.add(source.pending!);
+          source.events.add(true);
           await tester.pumpAndSettle();
           expect(rejected, findsOneWidget);
           if (platformBack) {
@@ -141,8 +126,6 @@ void main() {
       expect(channel.connectCalls, isEmpty);
       expect(channel.state.messages, isEmpty);
 
-      expect(source.scans, 0);
-      expect(source.imports, 0);
       expect(tester.takeException(), isNull);
     },
     variant: TargetPlatformVariant({
@@ -261,7 +244,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byKey(const ValueKey('hermes-welcome')), findsOneWidget);
         source.pending = 'wing://connect?code=fixture-warm';
-        source.events.add(source.pending!);
+        source.events.add(true);
         await tester.pumpAndSettle();
         expect(rejected, findsOneWidget);
         await tester.binding.handlePopRoute();
@@ -293,7 +276,7 @@ void main() {
         await tester.enterText(composer, 'unsent fixture draft');
         final draft = tester.widget<TextField>(composer).controller!;
         source.pending = 'malformed fixture-warm-share';
-        source.events.add(source.pending!);
+        source.events.add(true);
         await tester.pumpAndSettle();
         expect(rejected, findsOneWidget);
         await tester.ensureVisible(
@@ -320,8 +303,7 @@ void main() {
         );
 
         expect(clipboard, 0);
-        expect(source.scans, 0);
-        expect(source.imports, 0);
+
         expect(tester.takeException(), isNull);
         semantics.dispose();
       },

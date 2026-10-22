@@ -25,7 +25,7 @@ void main() {
     }
   });
 
-  test('Android launch pairing payload has a one-shot consume path', () {
+  test('Android retired input signals are content-free and consumed once', () {
     final source = File(
       'android/app/src/main/kotlin/com/trebuchetdynamics/hermes/wing/MainActivity.kt',
     ).readAsStringSync();
@@ -33,15 +33,18 @@ void main() {
     expect(source, contains('consumeInitialConnectIntent'));
     expect(
       source,
-      contains('initialConnectIntent.also { initialConnectIntent = null }'),
+      contains('initialConnectInput.also { initialConnectInput = false }'),
     );
-    expect(source, contains('initialConnectIntent = payload'));
-    expect(
-      source,
-      contains('intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()'),
-    );
-    expect(source, isNot(contains('intent.getStringExtra(Intent.EXTRA_TEXT)')));
-    expect(source, contains('override fun onDestroy()'));
-    expect(source, contains('qr_image_cancelled'));
+    expect(source, contains('connectIntentEvents?.success(true)'));
+    for (final retired in [
+      'PairingHandoffIntentParser',
+      'EXTRA_TEXT',
+      'data?.toString()',
+      'scanQrCode',
+      'importQrImage',
+      'mlkit',
+    ]) {
+      expect(source, isNot(contains(retired)), reason: retired);
+    }
   });
 }

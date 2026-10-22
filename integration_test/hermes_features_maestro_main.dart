@@ -41,15 +41,9 @@ String _randomFixtureValue() => base64Url.encode(
 
 class _FixtureIntents implements HermesConnectIntentSource {
   @override
-  Future<String?> initialPayload() async => null;
+  Future<bool> consumeInitialInput() async => false;
   @override
-  Future<String?> consumeInitialPayload() async => null;
-  @override
-  Future<String?> scanQrCode() async => null;
-  @override
-  Future<String?> importQrImage() async => null;
-  @override
-  Stream<String> payloadEvents() => const Stream.empty();
+  Stream<bool> inputEvents() => const Stream.empty();
 }
 
 int _layoutOverflows = 0;

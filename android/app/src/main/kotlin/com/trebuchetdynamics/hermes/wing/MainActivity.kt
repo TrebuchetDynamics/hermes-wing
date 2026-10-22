@@ -3,37 +3,25 @@ package com.trebuchetdynamics.hermes.wing
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionService
 import android.speech.SpeechRecognizer
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.mlkit.vision.common.InputImage
 import com.trebuchetdynamics.hermes.wing.devicespeech.DeviceSpeechDiagnostics
 import com.trebuchetdynamics.hermes.wing.durablekeys.DurableKeyStoreChannel
-import com.trebuchetdynamics.hermes.wing.pairing.PairingHandoffIntentParser
-import com.trebuchetdynamics.hermes.wing.pairing.PairingQrImagePolicy
-import com.trebuchetdynamics.hermes.wing.pairing.PairingQrOperationGate
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
-import java.io.File
 
 class MainActivity : FlutterActivity() {
-    private var initialConnectIntent: Map<String, String>? = null
+    private var initialConnectInput = false
     private var connectIntentEvents: EventChannel.EventSink? = null
-    private val qrOperationGate = PairingQrOperationGate()
-    private var qrImageResult: MethodChannel.Result? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        initialConnectIntent = connectPayloadFrom(intent)
+        initialConnectInput = hasLegacyInput(intent)
+        // Flutter and plugins receive no retired URI, shared text or ClipData.
+        if (initialConnectInput) setIntent(Intent(Intent.ACTION_MAIN))
         super.onCreate(savedInstanceState)
     }
 
@@ -44,12 +32,9 @@ class MainActivity : FlutterActivity() {
             CONNECT_INTENTS_METHOD_CHANNEL,
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "initialConnectIntent" -> result.success(initialConnectIntent)
                 "consumeInitialConnectIntent" -> result.success(
-                    initialConnectIntent.also { initialConnectIntent = null },
+                    initialConnectInput.also { initialConnectInput = false },
                 )
-                "scanQrCode" -> scanQrCode(result)
-                "importQrImage" -> importQrImage(result)
                 else -> result.notImplemented()
             }
         }
@@ -82,220 +67,21 @@ class MainActivity : FlutterActivity() {
         )
     }
 
-    override fun onDestroy() {
-        qrImageResult?.let { result ->
-            qrImageResult = null
-            qrOperationGate.finish()
-            result.error(
-                "qr_image_cancelled",
-                "The image picker was closed before the QR code was read.",
-                null,
-            )
-        }
-        super.onDestroy()
-    }
-
     override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        val payload = connectPayloadFrom(intent)
-        initialConnectIntent = payload
-        if (payload == null) return
-        connectIntentEvents?.success(payload)
+        val input = hasLegacyInput(intent)
+        val safeIntent = if (input) Intent(Intent.ACTION_MAIN) else intent
+        super.onNewIntent(safeIntent)
+        setIntent(safeIntent)
+        initialConnectInput = input
+        if (input) connectIntentEvents?.success(true)
     }
 
-    @Deprecated("Deprecated in Android; retained for FlutterActivity compatibility")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != QR_IMAGE_REQUEST_CODE) return
-        val result = qrImageResult ?: return
-        val uri = data?.data
-        if (resultCode != android.app.Activity.RESULT_OK || uri == null) {
-            finishQrImage(result, null)
-        } else {
-            decodeQrImage(uri, result)
-        }
-    }
-
-    private fun scanQrCode(result: MethodChannel.Result) {
-        val started = qrOperationGate.tryStart(
-            launch = {
-                val options = GmsBarcodeScannerOptions.Builder()
-                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-                    .enableAutoZoom()
-                    .build()
-                GmsBarcodeScanning.getClient(this, options).startScan()
-                    .addOnSuccessListener { barcode ->
-                        qrOperationGate.finish()
-                        val payload = barcode.rawValue?.trim()
-                        if (payload.isNullOrEmpty()) {
-                            result.error("qr_scan_empty", "The QR code contained no text.", null)
-                        } else {
-                            result.success(payload)
-                        }
-                    }
-                    .addOnCanceledListener {
-                        qrOperationGate.finish()
-                        result.success(null)
-                    }
-                    .addOnFailureListener { error ->
-                        qrOperationGate.finish()
-                        result.error(
-                            "qr_scan_failed",
-                            error.message ?: "Could not open the QR scanner.",
-                            null,
-                        )
-                    }
-            },
-            onLaunchFailure = { error ->
-                result.error(
-                    "qr_scan_failed",
-                    error.message ?: "Could not open the QR scanner.",
-                    null,
-                )
-            },
+    private fun hasLegacyInput(intent: Intent?): Boolean =
+        intent != null && LegacyIntentSignal.isLegacyInput(
+            action = intent.action,
+            hasData = intent.data != null,
+            type = intent.type,
         )
-        if (!started) {
-            result.error("qr_scan_pending", "A QR scan is already open.", null)
-        }
-    }
-
-    private fun importQrImage(result: MethodChannel.Result) {
-        val started = qrOperationGate.tryStart(
-            launch = {
-                qrImageResult = result
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "image/*"
-                }
-                @Suppress("DEPRECATION")
-                startActivityForResult(intent, QR_IMAGE_REQUEST_CODE)
-            },
-            onLaunchFailure = { error ->
-                finishQrImageError(
-                    result,
-                    "qr_image_picker_failed",
-                    error.message ?: "Could not open the image picker.",
-                )
-            },
-        )
-        if (!started) {
-            result.error("qr_scan_pending", "A QR operation is already open.", null)
-        }
-    }
-
-    private fun decodeQrImage(uri: Uri, result: MethodChannel.Result) {
-        val mimeType = try {
-            contentResolver.getType(uri)
-        } catch (_: Exception) {
-            null
-        }
-        val localImage = try {
-            copyQrImageToBoundedCache(uri)
-        } catch (_: Exception) {
-            finishQrImageError(result, "qr_image_unreadable", "Could not read the selected image.")
-            return
-        }
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(localImage.path, bounds)
-        if (!PairingQrImagePolicy.accepts(
-                mimeType,
-                localImage.length(),
-                bounds.outWidth,
-                bounds.outHeight,
-            )
-        ) {
-            localImage.delete()
-            finishQrImageError(
-                result,
-                "qr_image_rejected",
-                "Choose a bounded image containing a QR code.",
-            )
-            return
-        }
-        val image = try {
-            InputImage.fromFilePath(this, Uri.fromFile(localImage))
-        } catch (_: Exception) {
-            localImage.delete()
-            finishQrImageError(result, "qr_image_unreadable", "Could not read the selected image.")
-            return
-        }
-        val options = BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-            .build()
-        val scanner = BarcodeScanning.getClient(options)
-        scanner.process(image)
-            .addOnSuccessListener { barcodes ->
-                val payload = barcodes.firstNotNullOfOrNull { barcode ->
-                    barcode.rawValue?.trim()?.takeIf { it.isNotEmpty() }
-                }
-                if (payload == null) {
-                    finishQrImageError(
-                        result,
-                        "qr_image_empty",
-                        "The selected image did not contain a readable QR code.",
-                    )
-                } else {
-                    finishQrImage(result, payload)
-                }
-            }
-            .addOnFailureListener { error ->
-                finishQrImageError(
-                    result,
-                    "qr_image_decode_failed",
-                    error.message ?: "Could not decode the selected image.",
-                )
-            }
-            .addOnCompleteListener {
-                scanner.close()
-                localImage.delete()
-            }
-    }
-
-    private fun copyQrImageToBoundedCache(uri: Uri): File {
-        val target = File.createTempFile("pairing-qr-", ".image", cacheDir)
-        try {
-            val input = contentResolver.openInputStream(uri)
-                ?: throw IllegalArgumentException("Selected image is unavailable")
-            input.use { source ->
-                target.outputStream().use { destination ->
-                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                    var copied = 0L
-                    while (true) {
-                        val count = source.read(buffer)
-                        if (count < 0) break
-                        copied += count
-                        if (copied > PairingQrImagePolicy.MAX_ENCODED_BYTES) {
-                            throw IllegalArgumentException("Selected image is too large")
-                        }
-                        destination.write(buffer, 0, count)
-                    }
-                }
-            }
-            return target
-        } catch (error: Exception) {
-            target.delete()
-            throw error
-        }
-    }
-
-    private fun finishQrImage(result: MethodChannel.Result, payload: String?) {
-        if (qrImageResult !== result) return
-        qrImageResult = null
-        qrOperationGate.finish()
-        result.success(payload)
-    }
-
-    private fun finishQrImageError(
-        result: MethodChannel.Result,
-        code: String,
-        message: String,
-    ) {
-        if (qrImageResult !== result) return
-        qrImageResult = null
-        qrOperationGate.finish()
-        result.error(code, message, null)
-    }
 
     private fun deviceSpeechDiagnostics(): Map<String, Any?> {
         val services = querySpeechRecognitionServices()
@@ -335,18 +121,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun connectPayloadFrom(intent: Intent?): Map<String, String>? {
-        if (intent == null) return null
-        return PairingHandoffIntentParser.parse(
-            action = intent.action,
-            type = intent.type,
-            data = intent.data?.toString(),
-            text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString(),
-        )?.toMethodChannelMap()
-    }
-
     companion object {
-        private const val QR_IMAGE_REQUEST_CODE = 41027
         private const val CONNECT_INTENTS_METHOD_CHANNEL =
             "com.trebuchetdynamics.hermes.wing/connect_intents"
         private const val CONNECT_INTENTS_EVENT_CHANNEL =

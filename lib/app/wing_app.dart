@@ -31,25 +31,25 @@ class _WingMaterialApp extends ConsumerStatefulWidget {
 }
 
 class _WingMaterialAppState extends ConsumerState<_WingMaterialApp> {
-  StreamSubscription<String>? _connectIntentSubscription;
+  StreamSubscription<bool>? _connectIntentSubscription;
 
   @override
   void initState() {
     super.initState();
     final source = ref.read(hermesConnectIntentSourceProvider);
-    _connectIntentSubscription = source.payloadEvents().listen(
-      (_) => unawaited(_consumeHandoff(source, incoming: true)),
+    _connectIntentSubscription = source.inputEvents().listen(
+      (_) => unawaited(_consumeInput(source, incoming: true)),
       onError: (_) => _openEnrollment(incoming: true),
     );
-    unawaited(_consumeHandoff(source));
+    unawaited(_consumeInput(source));
   }
 
-  Future<void> _consumeHandoff(
+  Future<void> _consumeInput(
     HermesConnectIntentSource source, {
     bool incoming = false,
   }) async {
     try {
-      final present = await source.consumeInitialPayload() != null;
+      final present = await source.consumeInitialInput();
       if (present || incoming) _openEnrollment(incoming: incoming);
     } catch (_) {
       _openEnrollment(incoming: incoming);

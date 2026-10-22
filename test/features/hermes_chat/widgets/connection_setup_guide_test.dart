@@ -35,10 +35,10 @@ void main() {
         await next();
         expect(find.textContaining('API_SERVER_KEY'), findsOneWidget);
         expect(find.textContaining('would not grant access'), findsOneWidget);
-        final disabled = tester.widget<OutlinedButton>(
-          find.byType(OutlinedButton),
+        expect(
+          find.byKey(const ValueKey('connection-access-copy')),
+          findsOneWidget,
         );
-        expect(disabled.onPressed, isNull);
         await next();
         if (browser) {
           expect(find.text('4. Allow this browser'), findsOneWidget);

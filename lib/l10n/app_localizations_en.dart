@@ -119,6 +119,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectionGuideTitle => 'Connect step by step';
 
   @override
+  String get connectionAccessTitle => 'I need access to Hermes';
+
+  @override
+  String get connectionAccessBody =>
+      'Already chatting with Hermes on your computer? Copy the request below and send it there. Hermes can help prepare access on its own host. No address or token from this form is copied. If someone else manages your server, send the request to them instead. Return here with the exact API address and enter the credential only in the masked token field.';
+
+  @override
+  String get connectionAccessCopy => 'Copy request for Hermes';
+
+  @override
+  String get connectionAccessPreview => 'Read the request before sending';
+
+  @override
+  String get connectionAccessCopied =>
+      'Request copied. Paste it in your existing Hermes chat. No connection values or secrets were included.';
+
+  @override
+  String get connectionAccessRequest =>
+      'Help me connect Hermes Wing to this Hermes installation using its supported authenticated Agent API. First inspect the existing setup without changing it. Confirm the intended profile and whether Wing will run on this same device or another one. Give me the exact reachable API base address, preserving any /p/<profile> prefix and omitting the final /v1. Do not assume localhost on my phone reaches this computer. Explain how to enter the existing API_SERVER_KEY securely in Wing\'s masked field without displaying it in chat, logs, URLs, clipboard or command arguments. Do not rotate existing credentials. If the API is not enabled, explain the required supported setup and ask before any configuration change or shared gateway restart. Keep loopback private; do not open firewall ports or expose the server. For another device, explain supported SSH forwarding or an already-approved HTTPS/VPN route. Do not install Wing Link or another management service, modify Hermes source, or claim a dashboard/OAuth credential is an API-server key. Finish by separating what was actually verified from any remaining manual step. Do not send a test message or run model inference automatically.';
+
+  @override
   String get connectionGuidePrepare => '1. Prepare Hermes Agent';
 
   @override

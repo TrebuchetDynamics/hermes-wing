@@ -66,6 +66,20 @@ Back returns to welcome. Neither changes saved endpoints, credentials or active
 profile/session ownership. An explicit direct-auth retry remains in the existing
 connection owner and never replays an Agent mutation.
 
+### Access preparation assistance
+
+Direct Local/Remote token entry and localized native SSH API-token entry offer
+**I need access to Hermes**. The token step of the guide and discovery denial
+also expose this help. Users can preview and explicitly copy a fixed public
+request for their existing Hermes chat/operator, or open official API-server
+documentation. No form values or credentials enter the request; nothing is sent
+automatically and the connection draft remains unchanged on close.
+
+This is preparation guidance, not automatic enrollment or credential acquisition.
+The host operator still controls setup and authorization; users enter credentials
+only in the masked field. Browser OAuth remains unsupported. See
+[bounded delivery evidence](../../tasks/items/CONNECTION-ACCESS-ASSISTANCE.md).
+
 ### Deprecated handoff rejection
 
 Cold and warm Android intent/share ingress is recognized from action, data

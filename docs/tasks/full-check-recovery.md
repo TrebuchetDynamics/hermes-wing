@@ -269,6 +269,33 @@ boundary. Keep `CHECK-RESULTS-001` in Needs decision with its accepted contract
 unchanged. No duplicate or named-test repair, restart, Blocker resolution, new
 suite run, isolated rerun, main verdict or qualification is justified.
 
+### Current bundle (e2955ede)
+
+Read all five files in place under Git-common
+`autowork-execution/main-evidence/e2955eded3a7318c23690a9452402e534b4274c5/`.
+Metadata names that checked revision, previous green
+`66c8a28e02863bc49f0c83d284e9cce712cdc04f`, state `broken` and crash
+`Bad state: No element`. In the 4,772-line log, line 3628 contains that string
+inside a Flutter framework exception; line 4765 reaches
+`19:34 +4137 ~9 -5: Some tests failed.`. Exit is `1`, reruns are empty and flaky
+history is `{}`. The retained log contradicts “before any test result”; it does
+not independently evidence both reported attempts, a missing SDK or flakiness.
+
+A read-only probe of requested release `390ec0844e589625b6dd4a460545ef2d5749acfe`
+against the entire in-place log and unchanged Full check returns `failures == []`,
+`complete_results == False` and the recorded crash string. Its
+`worker.py:_run_gate` (lines 528–617) still supplies the candidate command to
+`base_result` and compares recognized failure IDs. Both archived worker reports,
+the retained `04c174ec` review finding and baseline JSON were reread; neither
+wrapper file exists in this checkout. The missing external input remains the
+[supported baseline-preserving command/result-format transition](#review-finding-and-admission-blocker),
+not an owner product decision or a receipt a Wing worker can manufacture.
+Keep `CHECK-RESULTS-001` in Needs decision with all acceptance, checks and write
+boundaries unchanged. The task Evidence note now points here for historical
+inspections instead of repeating them in one growing line. No task restart,
+Blocker resolution, duplicate or named-test repair, new suite run, isolated rerun,
+main verdict or goal/platform qualification is established.
+
 ## Result-consumption boundary
 
 Read-only inspection of installed Autowork release

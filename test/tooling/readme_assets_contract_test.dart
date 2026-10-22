@@ -264,7 +264,10 @@ void main() {
     expect(readme, isNot(contains('Wing Link')));
     expect(generatorSource, contains('approveOnce.scrollIntoViewIfNeeded()'));
     expect(gettingStarted, contains('Wing connects directly to Hermes Agent.'));
-    expect(gettingStarted, contains('Wing Link is not required.'));
+    expect(
+      gettingStarted,
+      contains('Wing Link is retired, with no legacy compatibility mode.'),
+    );
     expect(gettingStarted, isNot(contains('./install-wing-link.sh')));
     expect(readme, isNot(contains('--provider')));
     expect(gettingStarted, isNot(contains('--provider')));

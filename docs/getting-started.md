@@ -79,7 +79,8 @@ Use the endpoint and Agent token from [Agent preparation](#prepare-your-agent).
 Enter the Agent token in Wing, not your provider key.
 Never copy credentials into URLs or the clipboard. Do not open a public port to
 bypass setup. Prefer HTTPS; non-local native HTTP requires explicit consent on an
-authenticated encrypted VPN or isolated trusted LAN. The network is not authentication.
+authenticated encrypted VPN or isolated trusted LAN. A VPN is optional connectivity,
+not a substitute for transport security or Agent authentication.
 Browsers need trusted HTTPS and permission from Agent to access it (CORS).
 
 On Android, the fresh welcome offers these choices in order:
@@ -123,7 +124,8 @@ The native form offers **Private key** and **Password**. Share only **Copy publi
 never a private key. [SSH key guidance](product/desktop-connection-paths.md#private-key-ux-desktop-reference-and-wing-adaptations)
 covers imported/generated keys and secure storage; there is no plaintext fallback.
 Browser OAuth is unsupported; an OAuth-only server cannot use the Agent-token flow.
-**Wing Link is not required.** Missing Agent features do not justify a fallback.
+**Wing Link is retired, with no legacy compatibility mode.** Missing Agent features
+remain unavailable; there is no replacement management service or shell bridge.
 
 **Connection success:** your chosen Agent/profile and conversation are available.
 Continue below to get a reply. For a shared gateway, keep the supplied `/p/<profile>`
@@ -221,8 +223,8 @@ conversations out of reports.
 
 ## Repair a saved direct connection
 
-Open **Add Hermes**, then choose **Edit saved Agent connection** on the saved row.
-This does not switch Chat.
+Open **Add Hermes**, choose **Remote** to show saved connections, then choose
+**Edit saved Agent connection** on the saved row. This does not switch Chat.
 
 1. Edit the Agent endpoint or enter a masked replacement credential. Saved credentials
    are not prefilled. A blank replacement retains the credential only for an unchanged
@@ -235,12 +237,49 @@ This does not switch Chat.
 
 Use Tab to reach guidance and actions, and Page Down for text beyond the dialog viewport.
 
+### Remove saved access from this device
+
+1. Open **Add Hermes**, then choose **Remote** to see saved connections,
+   including saved loopback endpoints. Local and SSH have separate setup panels.
+2. Use the close control on the saved connection you want to remove.
+3. Review **Remove saved Hermes profile?** and choose **Remove**, or **Cancel**
+   to keep it. This is a saved connection, not deletion of an Agent-owned profile.
+
+Successful removal drops that saved entry and its Agent credential from Wing's
+current endpoint store. It does not delete Agent conversations, revoke a token
+on the server, stop Agent or uninstall an existing personal service. Inert legacy
+records and management credential slots are not a credential-erasure guarantee.
+If removal reports an error, retry explicitly; do not assume access was removed.
+
+For a lost device or suspected token exposure, ask the Agent administrator to
+revoke or rotate the affected credential through the supported Agent procedure.
+Removing an entry on another device cannot revoke the lost device's access.
+Update other clients that share the credential after rotation. Do not assume
+Agent issues separate per-device tokens or offers a remote device-wipe operation.
+
+### Upgrading an older installation
+
+Existing saved Agent endpoints, profile/session identities and retained Agent
+credentials are preserved. If an old connection lacks a usable Agent credential,
+use the [direct connection steps](#direct-agent-connection) to authenticate explicitly;
+Wing does not recover access through the retired service. Old links and shared
+setup input are discarded, not imported. Do not uninstall a personal runtime or
+clear app storage as an upgrade step. Packaging removal does not erase raw legacy
+records, revoke their credentials or stop installed services.
+
 ## Your data and permissions
 
 Agent remains the source of truth for assistant state. Your chosen provider may
 process conversation data. Wing connects directly to Agent and stores credentials
-through platform secure storage. Secure-storage qualification varies by platform.
-Inert legacy records and secure slots are preserved, not reused or deleted.
+through platform secure storage. Native keychain/keystore protection and hardware
+backing depend on the operating system; not every backend has been qualified.
+A save error is not confirmed persistence, and there is no plaintext credential
+fallback. Inert legacy records and secure slots are preserved, not reused or deleted.
+
+Agent configuration determines the credential's grants and available operations;
+Wing cannot narrow server-side permissions just by hiding a control. Ask the
+administrator which profile, tools and data the supplied access permits. Do not
+assume least-privilege scopes or per-device revocation that Agent has not advertised.
 
 Server state wins after reconnect. Wing must not silently resend prompts,
 approvals or configuration changes. Confirm destructive or sensitive actions

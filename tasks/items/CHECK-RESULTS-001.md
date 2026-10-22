@@ -3,10 +3,10 @@ schema = 1
 id = "CHECK-RESULTS-001"
 title = "Restore runner-readable terminal results for the complete offline Flutter check"
 short = "Recover full-check result reporting"
-status = "done"
+status = "open"
 goal = "INTEGRATION"
 section = "Next"
-rank = 14000
+rank = 21000
 depends_on = []
 touches = ["AGENTS.md", "CONTRIBUTING.md", "scripts/full_check_test.py", "test/tooling/full_check_runner_test.py", "docs/tasks/full-check-recovery.md"]
 resources = []
@@ -16,10 +16,6 @@ scope = "Restate Full check through a repository-owned direct Python unittest or
 acceptance = ["The documented Full check invokes the entire existing offline sequence on the supported SDK, with no test filtering, dependency upgrade, lockfile change, live opt-in or upstream edit.", "A genuine unittest orchestration test retains Flutter output, numeric child exits and terminal counts, fails on setup failure, missing or interrupted results and nonzero suite exit, and emits no fabricated summaries or skips.", "Focused synthetic tests cover complete success, complete failure, preparation failure, wrong or missing SDK and incomplete results without recursively launching the full suite.", "Read-only validation against the installed result reader demonstrates recognized genuine failure IDs and completeness output, and a fresh full offline run records its actual source, SDK, exits and terminal results even when Flutter tests fail. This is infrastructure recovery, not a green-main or platform qualification claim."]
 checks = ["python3 -m unittest discover -s test/tooling -p full_check_runner_test.py -v", "flutter --version --machine", "python3 -m unittest scripts.full_check_test", "git diff --check"]
 exclusions = ["No product or named Flutter-test repairs", "No installed Autowork or Agent/runtime/reference changes", "No weakened inventory, fabricated results or masked failures", "No lockfile changes, live operations, credentials, publication or device qualification"]
-closure = "manual"
-closure_actor = "xel"
-closure_timestamp = "2026-10-22T12:45:41.940895+00:00"
-closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Sources: docs/tasks/full-check-recovery.md#bounded-implementation; AGENTS.md#validation; CONTRIBUTING.md#setup; CONTRIBUTING.md#required-checks
@@ -31,3 +27,4 @@ closure_reason = "2026-10-22 owner decision: defer this device/live qualificatio
 - Next action: Do not repeat either unchanged candidate or the full suite merely to seek green. First establish a supported result-format/command-transition path outside this task write boundary; then reassess the retained candidate under the unchanged contract. Use the runner-owned merged-tree full check and its actual terminal evidence, not an additional worker full run. Keep every child failure visible and record source, SDK, exits and results; no full-check inventory reduction, failure-ID relabeling or fabricated summary. The missing external path is not resolved by this docs edit, and no Blocker resolution is claimed.
 - Review findings: Unresolved: the full check has new failures the base does not: scripts.full_check_test.FullOfflineFlutterCheck.test_full_offline_suite. Installed gate uses the candidate command on the baseline, where scripts.full_check_test is absent and only unittest.loader._FailedTest.full_check_test fails. Synthetic reader recognition and complete Flutter output do not establish baseline-equivalent IDs. Candidate 8e7ca0a and integration 04c174ec are retained evidence, not landed implementation or task completion; current HEAD has neither wrapper file. Preserve all four typed acceptance items, Checks, Touches and exclusions.
 - Blocker: External runner capability: a supported command/result-format transition that preserves genuine failure comparison with the baseline. Requested release 390ec0844e589625b6dd4a460545ef2d5749acfe still lacks direct Flutter failure/completeness recognition and compares the wrapper failure with a baseline import error. No repository-only split demonstrated a way through this guard. Needs decision prevents another identical retry; no product approval, invented coordinator receipt, runner edit, gate bypass or excluded test repair is authorized.
+- Reopened: Reopened after an owner-close correction: this is offline implementation work and belongs in Next, not in the device/live waiver.

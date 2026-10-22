@@ -3,10 +3,10 @@ schema = 1
 id = "DOC-API-DEVICE-SELF-CONFORMANCE"
 title = "Verify device-self read/revoke schema and authorization against handlers"
 short = "Verify device-self read/revoke schema and authorization against handlers"
-status = "done"
+status = "open"
 goal = "API-CONFORMANCE"
 section = "Next"
-rank = 12000
+rank = 19000
 depends_on = ["DOC-API-CONFORMANCE"]
 touches = ["**"]
 resources = []
@@ -15,10 +15,6 @@ ownership = "worker"
 scope = "one management-route family, existing tooling, in-process disposable recorder fixtures and documentation corrections. Exclude live listeners, personal credentials, peer administration, API redesign and new dependencies."
 acceptance = ["execute schema-to-handler checks for self-read/revoke, exact grants, pending/revoked authority and method/protocol errors. Reject an isolated incorrect schema copy; keep generated credentials and fixture bodies out of receipts. Record exact commands, source hashes and limits. Other families, full OpenAPI standards validation, TLS and live transport remain unverified."]
 exclusions = []
-closure = "manual"
-closure_actor = "xel"
-closure_timestamp = "2026-10-22T12:45:46.268987+00:00"
-closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Payoff: extend discovery-only conformance to one exact authorization boundary.
@@ -29,3 +25,4 @@ closure_reason = "2026-10-22 owner decision: defer this device/live qualificatio
 - Planner decision: skip retired-service proof; keep the original acceptance as historical/unverified, not current implementation work. Accepted complete Link retirement already forbids recreating these handlers. No new user decision is needed to avoid that work; only an explicitly accepted surviving contract could reopen it. Do not mark conformance passed or invent a replacement API.
 - Dependencies: DOC-API-CONFORMANCE (done). Ownership: unclaimed in this index; verify tracker ownership before execution.
 - Touches: none before conversion; ** stands for the whole repository
+- Reopened: Reopened after an owner-close correction: this is offline implementation work and belongs in Next, not in the device/live waiver.

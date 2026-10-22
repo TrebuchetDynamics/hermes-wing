@@ -244,6 +244,31 @@ with all acceptance and write boundaries unchanged. No duplicate or named-test
 repair, task restart, Blocker resolution, new suite run, isolated rerun or
 qualification is justified by this evidence refresh.
 
+### Latest bundle (9887fcd6)
+
+Read all five files in place under Git-common
+`autowork-execution/main-evidence/9887fcd620e6e3dcbd4b8a3ead59f555d84ae34a/`.
+Metadata names that checked revision, previous green
+`66c8a28e02863bc49f0c83d284e9cce712cdc04f`, state `broken` and crash
+`Bad state: No element`. The complete log has 4,772 lines: the string occurs
+inside a Flutter framework exception at line 3628, and line 4765 reaches
+`16:00 +4137 ~9 -5: Some tests failed.`. Exit is `1`, reruns are empty and flaky
+history is `{}`. This retained final log does not establish a crash before test
+results, both reported attempts independently, a missing SDK or flakiness.
+
+A read-only probe of requested release `390ec0844e589625b6dd4a460545ef2d5749acfe`
+against the entire in-place log and unchanged Full check returns `failures == []`,
+`complete_results == False` and the recorded crash string. Its
+`worker.py:_run_gate` still supplies the candidate command to `base_result` and
+compares recognized failure IDs. Both archived worker reports, the retained
+`04c174ec` review finding and the baseline JSON/log were reread; the retained
+merged log still records genuine unittest failure, while neither wrapper file
+exists in this checkout. The missing input remains a supported command/result-format
+transition preserving genuine baseline comparison, outside this task's write
+boundary. Keep `CHECK-RESULTS-001` in Needs decision with its accepted contract
+unchanged. No duplicate or named-test repair, restart, Blocker resolution, new
+suite run, isolated rerun, main verdict or qualification is justified.
+
 ## Result-consumption boundary
 
 Read-only inspection of installed Autowork release

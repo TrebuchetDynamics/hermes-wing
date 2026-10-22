@@ -1,7 +1,9 @@
 # Full offline check result recovery
 
 This is a bounded infrastructure repair contract, not a product-test repair or a
-new qualification claim. The owning task is `CHECK-RESULTS-001`. Keep the complete
+new qualification claim. The owning task is `CHECK-RESULTS-001`, now in Needs
+decision for the [unresolved admission boundary](#review-finding-and-admission-blocker).
+Its acceptance, scope, checks and exclusions are unchanged. Keep the complete
 offline Flutter inventory and the [required checks](../../CONTRIBUTING.md#required-checks).
 
 ## Inspected evidence
@@ -25,6 +27,21 @@ and log disagree: do not describe this log as containing no test results, infer
 flakiness, or create product/test-name repair tasks from the crash label. No test
 was rerun by this documentation pass, and main is not declared green or red here.
 Do not copy the bundle into a worktree or commit.
+
+### Current main bundle
+
+The later bundle was also read in place:
+`autowork-execution/main-evidence/e611aa9c750fb1231628236f723c25872bb825e0/`.
+Its `main_check.json` records checked revision
+`e611aa9c750fb1231628236f723c25872bb825e0`, the same previous green revision,
+state `broken` and crash `Bad state: No element`. In `main-check.log`, the crash
+string is at line 3628, but line 4765 reports
+`30:56 +4137 ~9 -5: Some tests failed.`. `main-check.exit` is `1`,
+`main-check-reruns.log` is empty and `flaky_history.json` is `{}`.
+The log does not identify the SDK version. This is another classification/output
+mismatch, not evidence that no tests ran or that the SDK needs replacement.
+Keep this existing recovery task; do not open duplicate MAIN, named-test repair
+or flaky-test tasks from the crash label. No new main verdict is asserted here.
 
 ## Result-consumption boundary
 
@@ -81,9 +98,64 @@ making every product test pass. No private coordinator handoff is a prerequisite
 No Agent/runtime/upstream changes, live operations, publication or platform
 qualification are authorized.
 
+## Review finding and admission blocker
+
+Both implementation attempts remain retained, not integrated into the inspected
+main revision. Their reports are under Git-common
+`autowork-execution/slot-data/CHECK-RESULTS-001/`:
+
+- `attempt-1/report.json`: candidate
+  `2e76623a925e7093e39e27a2310721c957932ddd`.
+- `attempt-2/report.json`: candidate
+  `8e7ca0a51d1a3b75d7f79dfb9fb7d59f87295305`.
+
+The second report records six synthetic passes and read-only reader probes, but
+explicitly leaves the new-command/baseline-import mismatch unresolved. These
+reported checks are historical evidence, not tests executed by this docs pass.
+Current main has neither `scripts/full_check_test.py` nor its synthetic test file;
+do not close the task on the strength of an unlanded candidate.
+
+Read the retained gate evidence in place under the runner's state directory
+`full-check/` (not a repository path):
+
+| Evidence | Observed result |
+| --- | --- |
+| `CHECK-RESULTS-001-merged.log` | Integration source `04c174ec11314264922f817c51c0076b3480aa4a`, clean working tree; Flutter 3.44.2/Dart 3.12.2; SDK and offline locked preparation exits 0; serial Flutter suite exit 1, terminal `+4137 ~9 -5: Some tests failed.`; genuine unittest `Ran 1 test in 1357.156s`, `FAILED (failures=1)`. |
+| `base-e611aa9c750fb1231628236f723c25872bb825e0.json` and `.log` | The same new command, `python3 -m unittest scripts.full_check_test`, runs on a baseline without that module. Exit 1, `ModuleNotFoundError`, ID `unittest.loader._FailedTest.full_check_test`. It does not run Flutter. |
+
+The review record in the runner's `review-findings/CHECK-RESULTS-001.json`
+names integration `04c174ec11314264922f817c51c0076b3480aa4a` and the unresolved
+finding: **the full check has new failures the base does not:**
+`scripts.full_check_test.FullOfflineFlutterCheck.test_full_offline_suite`.
+The merged log's failure is the real orchestration assertion on the nonzero
+Flutter exit, not a fabricated test result. It is nevertheless a different ID
+from the baseline import error.
+
+Read-only inspection of installed release
+`e95ed78b907a6d2f782768e4307d35b095ac7ad2` confirms that
+`pi_autowork/worker.py:_run_gate` uses the candidate command for the base and
+compares recognized failure IDs. Its `main_check.py` still does not recognize
+direct Flutter failure IDs or completeness. Reader recognition of synthetic
+unittest output therefore does not establish baseline equivalence or admission.
+Staging only the helper first leaves the old direct-Flutter reporting boundary;
+no verified repository-only split resolves both problems.
+
+The missing external input is a **supported command/result-format transition that
+preserves genuine baseline failure comparison**. It is not another owner product
+decision or a private coordinator receipt. No such path was established by these
+attempts. Keep `CHECK-RESULTS-001` in Needs decision rather than retrying the same
+candidate or unchanged full suite. Do not alter installed Autowork, bypass its
+guards, relabel failures, mask the nonzero exit, reduce the inventory or repair
+excluded product/tests to force this task through. No blocker-resolution note or
+acceptance waiver is justified. Reassess the retained candidate only after a
+supported transition path is available; retain all four acceptance items and use
+the runner-owned merged-tree gate, not a duplicate worker full run.
+
 ## Verification boundary
 
-This docs pass inspects evidence and validates task metadata, links and whitespace
-only. All implementation and runtime checks above remain planned and unrun. The
-new task has disjoint Touches from the existing Linux qualification chain; it does
-not replace, release or close that chain or any live/device gate.
+This docs pass inspects retained evidence and validates task metadata, links and
+whitespace only; it runs no Flutter, synthetic harness or full-suite check. The
+merged-run results above belong to the named retained integration, not current
+main or a fresh docs-maintainer execution. The task remains open and blocked,
+with disjoint Touches from the existing Linux qualification chain. No goal,
+product, platform or live/device qualification is advanced.

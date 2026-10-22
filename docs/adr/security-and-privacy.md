@@ -64,4 +64,27 @@ Camera permission is requested only by the explicit scanner; manual address entr
 is the accessible equivalent. Runtime qualification must distinguish metadata scan,
 login, socket negotiation, exact-session recovery and real generation.
 
+## Opt-in Android SSH quick access
+
+Android may retain one explicitly opted-in, successfully authenticated SSH/API
+connection in a dedicated platform-secure slot. It includes the exact SSH
+host/port/user, Agent port/profile and protocol, verified host fingerprint, SSH
+password or private key/unlock phrase, and Agent token. Never persist a forwarded
+loopback port as a reusable destination. Do not copy secrets to preferences,
+clipboard, diagnostics, URLs or another connection's form.
+
+Opening the connection screen reads the secure entry but never dials. A deliberate
+**Connect to my Hermes** uses the existing forward, host-pin validation, Agent
+authentication and recovery fences. A changed host fingerprint or failed Agent
+authentication must not fall back to root or another credential. **Forget saved
+access** deletes only this new slot; it does not revoke Agent credentials, remove
+existing host pins or touch inert legacy records. Configuration editing starts
+without prefilled secrets. Save completion and connection success are separate.
+Reads, saves and forgetting serialize across store instances. A save rechecks
+its current owner before and after writing; cancellation restores the previous
+slot before another operation proceeds. The lock exists only while work is pending.
+This is client-side credential reuse, not new Agent state or unattended host setup.
+Initial secure entry and host approval remain required; real-device and live
+network qualification are separate gates.
+
 See [SECURITY.md](../../SECURITY.md) and the [threat model](../security/threat-model.md).

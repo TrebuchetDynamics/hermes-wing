@@ -370,6 +370,66 @@ abstract class AppLocalizations {
   /// **'Secure sign-in storage is unavailable. Access was not confirmed as remembered.'**
   String get gatewayStorageFailed;
 
+  /// No description provided for @managedSshQuickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved Hermes'**
+  String get managedSshQuickTitle;
+
+  /// No description provided for @managedSshQuickConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to my Hermes'**
+  String get managedSshQuickConnect;
+
+  /// No description provided for @managedSshQuickBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect using this phone\'s secure saved access. Host identity and Agent authorization are checked again. No messages are resent.'**
+  String get managedSshQuickBody;
+
+  /// No description provided for @managedSshQuickRemember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember access on this phone'**
+  String get managedSshQuickRemember;
+
+  /// No description provided for @managedSshQuickConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'After a successful connection, store this SSH password or private key, its unlock phrase and the Agent token in platform secure storage. Only enable this on your own protected phone. No automatic connection. API connections only.'**
+  String get managedSshQuickConsent;
+
+  /// No description provided for @managedSshQuickEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Use different connection details'**
+  String get managedSshQuickEdit;
+
+  /// No description provided for @managedSshQuickForget.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget saved access'**
+  String get managedSshQuickForget;
+
+  /// No description provided for @managedSshQuickStorageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved access could not be read or removed. Your credentials were not displayed. Retry or enter connection details manually.'**
+  String get managedSshQuickStorageFailed;
+
+  /// No description provided for @managedSshQuickSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected, but remembering access was not confirmed. Continue without saving, or reconnect later to try again.'**
+  String get managedSshQuickSaveFailed;
+
+  /// No description provided for @managedSshQuickContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with this connection'**
+  String get managedSshQuickContinue;
+
   /// No description provided for @connectionAccessTitle.
   ///
   /// In en, this message translates to:

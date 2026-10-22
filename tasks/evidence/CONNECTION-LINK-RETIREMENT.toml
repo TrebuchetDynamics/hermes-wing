@@ -1,0 +1,9 @@
+schema = 1
+task = "CONNECTION-LINK-RETIREMENT"
+candidate = "13b5afe073d29565db6ad6a4818d10ba63bad861"
+integration = "548a3c0ebf0513fe3b86cd7a082e1d5249c28488"
+tree = "6827f222060f0d0b2261b4d039c183e3e1b88d41"
+contract_hash = "cac481d1ed242dcb1bd748cc535df43e399a6a8129664dc265a5749e75479f04"
+checks = ["<path>", "<path>", "--verify", "<path>", "CONNECTION-LINK-RETIREMENT"]
+result = "pass"
+review = "passed"

@@ -6,6 +6,14 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
+### Q-FILES-TERMINAL-BROWSE — USER_INPUT — effort input — unblocks 1
+
+- Task: FILES-TERMINAL-BROWSE — Browse and read the selected Agent terminal working-directory files on Linux and Android
+- Needs: worker reported a blocker: Third-party contract limitation: the approved task retains CONTRACT-UNREADY and the 2026-10-22 owner decision explicitly defers implementation until an unmodified Agent contract exposes the effective selected session/profile/backend terminal root with matching server-enforced canonical confinement and file authorization. The retained source evidence establishes no safe positive enablement rule; ch…
+- Since: 2026-10-22T21:55:10Z
+- Answer: Answer in tasks/items/FILES-TERMINAL-BROWSE.md: widen `touches`, supply the input, narrow the acceptance, or add a dated `Owner decision:` note. The runner reruns it when the record changes.
+- Kind: held
+
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

@@ -115,6 +115,12 @@ class DriverTest(unittest.TestCase):
     def child(self, command, cwd, env, **kwargs):
         self.calls.append((command, cwd, env))
         self.assertEqual((cwd / 'lib/main.dart').read_text(), 'current source')
+        if (self.source / 'macos').exists():
+            for name in ('macos/Runner/AppDelegate.swift', 'windows/runner/main.cpp'):
+                self.assertEqual((cwd / name).read_text(), 'synthetic host contract')
+            self.assertEqual((cwd / '.github/workflows/fixture.yml').read_text(), 'synthetic workflow contract')
+            self.assertEqual((cwd / 'playwright/tests/fixture.spec.mjs').read_text(), 'synthetic browser contract')
+            self.assertEqual((cwd / 'web/index.html').read_text(), 'synthetic web entry')
         path = Path(env['WING_LINUX_TEST_ROOT']) / 'feature-cases.json'
         path.write_text(json.dumps({'schema': 1, 'cases': [self.case()]}))
         kwargs['observe'](123)
@@ -127,10 +133,11 @@ class DriverTest(unittest.TestCase):
                  'access': 'linux_access_feature_qualification_test.dart'}
         self.put(self.source, 'integration_test/' + names[lane], 'synthetic target')
 
-    def invoke(self, lane='preflight'):
+    def invoke(self, lane='preflight', *, shared_batch=None):
         self.put(self.sdk, 'bin/cache/flutter.version.json', json.dumps(self.sdk_version))
+        extra = ['--shared-batch', shared_batch] if shared_batch else []
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            return self.driver.main(['--lane', lane, '--output-dir', str(self.out)],
+            return self.driver.main(['--lane', lane, '--output-dir', str(self.out), *extra],
                                     source=self.source, environ=self.env)
 
     def receipt(self, lane):
@@ -188,6 +195,11 @@ class DriverTest(unittest.TestCase):
 
     def test_dispatch_binds_current_source_and_owned_environment(self):
         self.target('management')
+        self.put(self.source, 'macos/Runner/AppDelegate.swift', 'synthetic host contract')
+        self.put(self.source, 'windows/runner/main.cpp', 'synthetic host contract')
+        self.put(self.source, '.github/workflows/fixture.yml', 'synthetic workflow contract')
+        self.put(self.source, 'playwright/tests/fixture.spec.mjs', 'synthetic browser contract')
+        self.put(self.source, 'web/index.html', 'synthetic web entry')
         self.env.update(HOME='/personal', DISPLAY=':99', DBUS_SESSION_BUS_ADDRESS='private',
                         OPENAI_API_KEY='discard', HTTP_PROXY='discard', LD_PRELOAD='discard')
         self.assertEqual(self.invoke('management'), 0)
@@ -295,6 +307,60 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(self.invoke(), 0)
         self.assertFalse(self.receipt('preflight')['ready'])
 
+    def test_native_only_plugin_without_dart_library_is_a_valid_package_input(self):
+        native = self.root / 'packages/native_plugin'
+        self.put(native, 'pubspec.yaml', 'name: native_plugin\nversion: 1.0.0\nflutter:\n'
+                 '  plugin:\n    platforms:\n      linux:\n        pluginClass: NativePlugin\n')
+        self.put(native, 'linux/native_plugin.cc', 'synthetic native implementation')
+        self.put(self.source, 'pubspec.lock', 'packages:\n  native_plugin:\n    version: "1.0.0"\n')
+        config = json.loads((self.source / '.dart_tool/package_config.json').read_text())
+        config['packages'].append({'name': 'native_plugin', 'rootUri': native.as_uri(), 'packageUri': 'lib/'})
+        (self.source / '.dart_tool/package_config.json').write_text(json.dumps(config))
+        self.put(self.source, '.dart_tool/package_graph.json', json.dumps({'roots': ['wing'],
+            'packages': [{'name': 'wing', 'version': '0.1.0'}, {'name': 'native_plugin', 'version': '1.0.0'}]}))
+        self.env['PUB_CACHE'] = str(native.parent)
+        self.assertEqual(self.invoke(), 0)
+        self.assertTrue(self.receipt('preflight')['ready'], self.receipt('preflight')['errors'])
+        for uri in ('missing/', '../outside/', 'lib/../../outside/', 'file:///outside/'):
+            with self.subTest(uri=uri):
+                config['packages'][-1]['packageUri'] = uri
+                (self.source / '.dart_tool/package_config.json').write_text(json.dumps(config))
+                self.out = self.root / ('invalid-native-' + str(len(self.probes)))
+                self.assertEqual(self.invoke(), 0)
+                self.assertFalse(self.receipt('preflight')['ready'])
+        config['packages'][-1]['packageUri'] = 'lib/'
+        (self.source / '.dart_tool/package_config.json').write_text(json.dumps(config))
+        (native / 'pubspec.yaml').write_text((native / 'pubspec.yaml').read_text().replace('1.0.0', '2.0.0'))
+        self.out = self.root / 'stale-native'
+        self.assertEqual(self.invoke(), 0)
+        self.assertFalse(self.receipt('preflight')['ready'])
+
+    def test_bundled_sky_engine_uses_the_sdk_zero_version(self):
+        engine = self.sdk / 'bin/cache/pkg/sky_engine'
+        self.put(engine, 'pubspec.yaml', 'name: sky_engine\n')
+        self.put(engine, 'lib/ui.dart', 'synthetic engine library')
+        self.put(self.source, 'pubspec.lock', 'packages:\n  sky_engine:\n    version: "0.0.0"\n')
+        config = json.loads((self.source / '.dart_tool/package_config.json').read_text())
+        config['packages'].append({'name': 'sky_engine', 'rootUri': engine.as_uri(), 'packageUri': 'lib/'})
+        (self.source / '.dart_tool/package_config.json').write_text(json.dumps(config))
+        self.put(self.source, '.dart_tool/package_graph.json', json.dumps({'roots': ['wing'],
+            'packages': [{'name': 'wing', 'version': '0.1.0'}, {'name': 'sky_engine', 'version': '0.0.0'}]}))
+        self.assertEqual(self.invoke(), 0)
+        self.assertTrue(self.receipt('preflight')['ready'], self.receipt('preflight')['errors'])
+
+        (engine / 'pubspec.yaml').write_text('name: sky_engine\nversion: 1.0.0\n')
+        self.out = self.root / 'stale-engine'
+        self.assertEqual(self.invoke(), 0)
+        self.assertFalse(self.receipt('preflight')['ready'])
+        other = self.sdk / 'packages/sky_engine'
+        self.put(other, 'pubspec.yaml', 'name: sky_engine\n')
+        self.put(other, 'lib/ui.dart', 'wrong engine location')
+        config['packages'][-1]['rootUri'] = other.as_uri()
+        (self.source / '.dart_tool/package_config.json').write_text(json.dumps(config))
+        self.out = self.root / 'wrong-engine-root'
+        self.assertEqual(self.invoke(), 0)
+        self.assertFalse(self.receipt('preflight')['ready'])
+
     def test_nested_failure_keeps_native_exit_and_logs(self):
         self.target('access')
         self.put(self.source, 'integration_test/run_linux_shell_compact_return.py', 'synthetic runner')
@@ -346,30 +412,88 @@ class DriverTest(unittest.TestCase):
         self.put(self.source, 'integration_test/linux_feature_regression_test.dart', 'adapter')
         def child(command, cwd, env, **kwargs):
             self.calls.append((command, cwd, env))
-            kwargs['stdout'].write(b'{"type":"testStart","test":{"id":1,"name":"synthetic suite"}}\n'
-                                   b'{"type":"testDone","testID":1,"skipped":false,"result":"success"}\n'
-                                   b'{"type":"done","success":true}\n')
+            self.assertEqual(env.get('AUTOWORK_PORT_BASE'), '20500')
+            name = 'synthetic suite'
+            if '--name' in command:
+                import re
+                selection = re.compile(command[command.index('--name') + 1])
+                name = next(n for n in (
+                    'test/features/hermes_chat/bots/bot_chat_channel_test.dart synthetic suite',
+                    'test/features/hermes_chat/screens/synthetic suite',
+                    'test/features/profiles/profile_editor_sheet_test.dart failed delete needs fresh typed confirmation: synthetic',
+                    'test/features/profiles/profile_editor_sheet_test.dart create failure clears credential and never replays: synthetic')
+                    if selection.search(n))
+            count = 3 if 'failed delete' in name else 2 if 'create failure' in name else 1
+            events = []
+            for number in range(1, count + 1):
+                events.extend(({'type': 'testStart', 'test': {'id': number, 'name': name + str(number)}},
+                               {'type': 'testDone', 'testID': number, 'skipped': False, 'result': 'success'}))
+            events.append({'type': 'done', 'success': True})
+            kwargs['stdout'].write(('\n'.join(json.dumps(e) for e in events) + '\n').encode())
             kwargs['observe'](123)
             return 0, 123
         with patch.object(self.driver, 'run_owned', side_effect=child):
+            for batch in self.driver.SHARED_NATIVE_BATCHES:
+                self.assertEqual(self.invoke('shared', shared_batch=batch), 0)
+            self.assertTrue((self.out / '.wing-linux-qualification.json').exists())
             self.assertEqual(self.invoke('shared'), 0)
         receipt = self.receipt('shared')
-        self.assertEqual(len(receipt['suite_runs']), 2)
+        self.assertEqual(len(receipt['suite_runs']), 5)
         self.assertEqual(receipt['cases'], [])
-        self.assertEqual(receipt['suite_runs'][1]['tests'][0]['name'], 'synthetic suite')
+        self.assertEqual(receipt['suite_runs'][1]['tests'][0]['name'],
+                         'test/features/hermes_chat/bots/bot_chat_channel_test.dart synthetic suite1')
+        calls = len(self.calls)
+        self.assertEqual(self.invoke('shared'), 0)
+        self.assertEqual(len(self.calls), calls, 'Matching terminal batches should be verified, not rerun')
+        core = self.out / 'shared-core/shared.json'
+        terminal = json.loads(core.read_text())
+        for command in (['/bin/echo', 'test/tooling/linux_feature_adapter_inventory_test.dart'],
+                        terminal['commands'][0]['command'] + ['--plain-name', 'narrowed']):
+            changed = json.loads(json.dumps(terminal))
+            changed['commands'][0]['command'] = command
+            core.write_text(json.dumps(changed))
+            self.assertEqual(self.invoke('shared'), 2)
+        core.write_text(json.dumps(terminal | {'source': {}}))
+        self.assertEqual(self.invoke('shared'), 2)
+        core.write_text(json.dumps(terminal))
+        log = self.out / 'shared-core' / terminal['commands'][0]['log']
+        log.write_bytes(log.read_bytes() + b'changed')
+        self.assertEqual(self.invoke('shared'), 2)
+        self.assertNotIn('--name', self.calls[0][0])
+        import re
+        selections = [re.compile(c[c.index('--name') + 1]) for c, _, _ in self.calls[1:]]
+        for title, count in (
+                ('test/features/profiles/profile_editor_sheet_test.dart failed delete needs fresh typed confirmation: synthetic', 1),
+                ('test/features/profiles/profile_editor_sheet_test.dart create failure clears credential and never replays: synthetic', 1),
+                ('test/features/hermes_chat/bots/bot_chat_channel_test.dart synthetic Bot Chat', 1),
+                ('test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart timestamp aliases are local', 1)):
+            self.assertEqual(sum(bool(s.search(title)) for s in selections), count)
         start = {'type': 'testStart', 'test': {'id': 1, 'name': 'synthetic suite'}}
         end = {'type': 'testDone', 'testID': 1, 'skipped': False, 'result': 'success'}
         done = {'type': 'done', 'success': True}
         invalid = ([start, end, {'type': 'testStart', 'test': {'id': 2, 'name': 'unfinished'}}, done],
                    [start, start, end, done], [start, end | {'testID': 2}, done],
                    [start, end | {'hidden': True}, done])
-        for events in invalid:
+        for index, events in enumerate(invalid):
+            self.out = self.root / ('incomplete-' + str(index))
             def incomplete(command, cwd, env, **kwargs):
                 kwargs['stdout'].write(('\n'.join(json.dumps(e) for e in events) + '\n').encode())
                 kwargs['observe'](123)
                 return 0, 123
             with self.subTest(events=events), patch.object(self.driver, 'run_owned', side_effect=incomplete):
                 self.assertEqual(self.invoke('shared'), 2)
+
+        def failed(command, cwd, env, **kwargs):
+            kwargs['stdout'].write(('\n'.join(json.dumps(e) for e in
+                (start, end | {'result': 'failure'}, done | {'success': False})) + '\n').encode())
+            kwargs['observe'](123)
+            return 37, 123
+        self.out = self.root / 'failed-shared'
+        with patch.object(self.driver, 'run_owned', side_effect=failed):
+            self.assertEqual(self.invoke('shared', shared_batch='core'), 37)
+        failed_suite = json.loads((self.out / 'shared-core/shared.json').read_text())['suite_runs'][0]
+        self.assertEqual(failed_suite['status'], 'fail')
+        self.assertEqual(failed_suite['tests'][0]['result'], 'failure')
 
     def test_report_delegation_does_not_need_a_native_runtime(self):
         self.put(self.source, 'scripts/check_linux_feature_qualification.py', 'synthetic checker')

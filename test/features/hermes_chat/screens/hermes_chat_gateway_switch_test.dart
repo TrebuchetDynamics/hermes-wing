@@ -1810,6 +1810,7 @@ void main() {
     tester,
   ) async {
     final harness = await _pumpGatewayChat(tester);
+    await _unfocusComposer(tester);
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
@@ -1828,6 +1829,7 @@ void main() {
     final harness = await _pumpGatewayChat(tester);
     harness.channel.beginStreamingTurn('work');
     await tester.pump();
+    await _unfocusComposer(tester);
 
     await tester.binding.handlePopRoute();
     await tester.pump();
@@ -2356,6 +2358,16 @@ _pumpGatewayChat(
   );
   await tester.pumpAndSettle();
   return (directory: directory, channel: channel, store: store, loader: loader);
+}
+
+Future<void> _unfocusComposer(WidgetTester tester) async {
+  // Desktop deliberately autofocuses: the first Back would only dismiss focus.
+  final field = tester.widget<TextField>(
+    find.byKey(const ValueKey('hermes-composer-field')),
+  );
+  field.focusNode!.unfocus();
+  await tester.pump();
+  expect(field.focusNode!.hasFocus, isFalse);
 }
 
 class _ResumeSelectionCache extends FakeGatewayContactCache {

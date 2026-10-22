@@ -28,8 +28,15 @@ Requirements:
   lockfile changes. Provide `PUB_CACHE` explicitly for non-SDK roots. Names,
   versions and the graph/lock must agree. Direct constraints use Wing's current
   block-mapping exact/caret syntax; other formats fail closed, not a guessed
-  general YAML resolver. Effective package import URIs must exist inside their
-  attributed roots. Unrelated directories and escaping links are rejected.
+  general YAML resolver. Effective package import URIs must stay inside their
+  attributed roots; existing targets must be directories. Only Pub's default
+  `lib/` may be absent for a native-only plugin with a native implementation
+  directory and `pluginClass` manifest registration, without `dartPluginClass`.
+  Other missing import paths and dangling or escaping `lib` links are rejected.
+  Package roots, manifests and source hashes
+  remain required. The bundled SDK's versionless `sky_engine` manifest uses Pub's
+  `0.0.0` version only at its exact `bin/cache/pkg/sky_engine` root. Unrelated
+  directories and escaping links are rejected.
 - A reviewed, user-owned, non-publicly-writable **usr directory**, provided with
   `--dependency-prefix` or `WING_LINUX_DEPENDENCY_PREFIX`. There is no private
   absolute-path fallback. Its GStreamer/libsecret metadata must reference that
@@ -50,7 +57,7 @@ No system installation, dependency download or shared SDK mutation is offered.
 | Lane | Dispatch |
 | --- | --- |
 | `preflight` | Inspection only |
-| `shared` | `test/tooling/linux_feature_adapter_inventory_test.dart`, then `integration_test/linux_feature_regression_test.dart` |
+| `shared` | Inventory regression plus four complete native adapter batches; see [shared regression](linux-shared-regression.md) |
 | `connections` | `integration_test/linux_connection_feature_qualification_test.dart` |
 | `chat` | `integration_test/linux_chat_feature_qualification_test.dart`, then the local-serve-read and transcript-keyboard Python runners |
 | `management` | `integration_test/linux_management_feature_qualification_test.dart` |
@@ -64,6 +71,20 @@ mode is accepted. Historical live/installer wrappers are never implicit children
 The runner's whole-suite gate and separately admitted browser/native/live checks
 remain separate; this registry is not a claim that every planned check has run.
 
+`--shared-batch core|screens|delete-timers|create-timers` prepares one fixed batch
+under the same private campaign output. The parent marker/root is validated before
+creating its batch child; each selected child receives the full output validation.
+Different active batches may contain their own copied dependency links, so a batch
+entry checks the parent marker without scanning another active batch's contents.
+The ordinary final shared lane fully checks output contents after child cleanup.
+Each batch owns a separate snapshot/build/SDK/Xvfb/D-Bus/state; do not concurrently
+write the same batch. Run independent batch commands through the task's resource
+wrapper, then invoke the ordinary shared command to validate and join all results.
+Missing batches are executed when joining; a batch-only pass is not full shared
+success. All five six-minute no-replay observations remain included unchanged.
+The three-delete batch has a 1500-second child bound; other shared children use
+900 seconds. No arbitrary target/filter/batch name is accepted.
+
 Children receive a current-source snapshot, copied SDK/packages, relocated native
 prefix and private HOME/XDG/cache. New Dart native targets use an owned Xvfb
 and D-Bus session; the older Python runners create their own Xvfb display and
@@ -72,6 +93,7 @@ display and D-Bus are absent.
 Nonempty `LIVE`/`PRODUCTION` opt-ins are rejected without opening their values.
 This is process/state isolation, **not a network sandbox or live authorization**.
 The transcript runner uses the task-owned `AUTOWORK_PORT_BASE` with DDS disabled.
+The shared adapter also receives and validates that base for its loopback fixtures.
 
 ## Receipts and cleanup
 
@@ -104,8 +126,22 @@ The existing shared adapter does not need to invent feature-case rows. Its
 `suite_runs` records contain actual machine-reporter test identities/results,
 target/source/log digests and observed native PID/start ticks. Starts and terminal
 IDs must match exactly; duplicate, interrupted, hidden-loader-only, skipped or
-failed inventories cannot pass. These deterministic mocked suites are execution
-evidence, not an automatic feature/route completeness verdict.
+failed inventories cannot pass. Completed failed commands retain failure rows
+and their exact exit instead of dropping the suite inventory. Framework teardown
+rows remain distinguishable from product cases.
+
+A shared join validates every batch's source/toolchain, terminal exit, original
+fixed executable/wrappers/device/flags/filter, source target digest, log digest and
+parsed test rows, process identity and owned cleanup. Native batches must contain
+product cases matching their fixed selector, without cross-batch overlap. Changed
+logs, stale source/tools, altered commands, extra filters or incomplete batches
+fail closed. Separate snapshots' test numbers are scoped by command index, not
+summed as globally unique IDs. Receipts retain the joined batch paths/digests and
+log paths. Completed failed batches remain visible when joining later completed
+batches. An incomplete batch fails the join before later aggregation; its child
+receipt/logs preserve the actual exits, and unrun work is not counted as passing.
+These deterministic mocked suites are execution evidence, not an automatic
+feature/route completeness verdict.
 
 The three existing runners retain their validators and publish terminal cleanup
 on failures as well as success. Their verification JSON, native logs and other

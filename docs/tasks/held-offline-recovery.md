@@ -179,6 +179,31 @@ or qualify its separately open live work.
 Paths to these retained inputs are relative to the task's Git-common
 `autowork-execution/slot-data/PARITYUPDATE-005-11/` directory.
 
+#### Saved ledger proposals after migration
+
+Rechecked at `3b009e155c802fccf44ae79691534932ca483796`, without applying either
+patch or changing a closed task:
+
+- `autowork-execution/slot-data/PARITYUPDATE-005-11/attempt-1/ledger-edit.patch`
+  refreshes retired generated coverage from `MT-VERIFY-BROWSER-GATES` to its
+  `-LIVE` successor, removes done `PLANGAP-001-2f` from that coverage, and removes
+  done `VERIFY-CHAT-TRANSCRIPT-NATIVE` from coverage/priority order. Its adjacent
+  report names candidate `7f5c64c9793be0e8783302521a5e1f06f27131f6` and retains
+  native/device/live limits. The current task records already retain these done
+  tasks and the open `MT-VERIFY-BROWSER-GATES-LIVE` successor. Drop the proposal;
+  do not replay its obsolete TODO/goals snapshot or reopen the integrated repair.
+- `autowork-execution/slot-history/DOC-PARITY-TAB-CONTRACT/8/slot-data/attempt-1/ledger-edit.patch`
+  proposes only the same browser-successor/plan-task generated coverage refresh.
+  Its adjacent report names historical candidate `187cdc8c4725103a16f3e34a3416b10950b7f6e8`;
+  the current task's report names later candidate
+  `e564642df5f0273b915a2fde153ab4cd0ff786e3` and preserves Android/native/live gaps.
+  `DOC-PARITY-TAB-CONTRACT`, `MT-VERIFY-BROWSER-GATES` and `PLANGAP-001-2f` are
+  already done in `tasks/items/`. Drop this superseded generated refresh too.
+
+These are documentation dispositions, not new closure or coordinator verification.
+`PARITYUPDATE-005-11-LIVE` and `MT-VERIFY-BROWSER-GATES-LIVE` remain open in Needs
+decision. No current goal evidence, acceptance, ordering or live authority changes.
+
 The eight preserved transcript-native files are `lib/features/hermes_chat/screens/widgets/hermes_chat_status.dart`,
 `integration_test/support/transcript_recovery_native_fixture.dart`,
 `integration_test/linux_transcript_keyboard_test.dart`,

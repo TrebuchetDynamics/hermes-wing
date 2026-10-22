@@ -28,7 +28,7 @@ flakiness, or create product/test-name repair tasks from the crash label. No tes
 was rerun by this documentation pass, and main is not declared green or red here.
 Do not copy the bundle into a worktree or commit.
 
-### Current main bundle
+### Previous main bundle
 
 The later bundle was also read in place:
 `autowork-execution/main-evidence/e611aa9c750fb1231628236f723c25872bb825e0/`.
@@ -42,6 +42,29 @@ The log does not identify the SDK version. This is another classification/output
 mismatch, not evidence that no tests ran or that the SDK needs replacement.
 Keep this existing recovery task; do not open duplicate MAIN, named-test repair
 or flaky-test tasks from the crash label. No new main verdict is asserted here.
+
+### Latest main bundle and reader recheck
+
+Read in place:
+`autowork-execution/main-evidence/3b009e155c802fccf44ae79691534932ca483796/`.
+`main_check.json` records that checked revision, the same previous green revision,
+state `broken` and crash `Bad state: No element`. The log contains the string at
+line 3628 and terminal `21:03 +4137 ~9 -5: Some tests failed.` at line 4765.
+`main-check.exit` is `1`, `main-check-reruns.log` is empty and
+`flaky_history.json` is `{}`. The request reports two crashes; this retained
+bundle alone does not supply two independent attempt logs or isolated reruns.
+
+A read-only Python probe of installed release
+`075f01eda4b1b1074ededb099ed654ab1f70c005`, `pi_autowork/main_check.py`, consumed
+this log without running a suite or changing runner state. For the unchanged
+repository `Full check:` command it returned `failures(...) == []`,
+`complete_results(...) == False` and `crash_line(...) == 'Bad state: No element'`.
+Inspection of that release's `worker.py:_run_gate` (lines 527–617) still shows
+`base_result` receiving the candidate command and comparison by recognized failure
+IDs. The reporting and baseline-transition boundaries remain unresolved; this is
+not evidence of a missing or faulty SDK, flakiness or newly qualified main.
+Keep the same task in Needs decision, with all acceptance and write boundaries
+unchanged. No duplicate task, named-test repair or blocker-resolution note is added.
 
 ## Result-consumption boundary
 
@@ -101,8 +124,9 @@ qualification are authorized.
 ## Review finding and admission blocker
 
 Both implementation attempts remain retained, not integrated into the inspected
-main revision. Their reports are under Git-common
-`autowork-execution/slot-data/CHECK-RESULTS-001/`:
+main revision. Their reports, reread for the latest bundle, are now archived under
+Git-common `autowork-execution/slot-history/CHECK-RESULTS-001/1/slot-data/`
+(the former location was `autowork-execution/slot-data/CHECK-RESULTS-001/`):
 
 - `attempt-1/report.json`: candidate
   `2e76623a925e7093e39e27a2310721c957932ddd`.

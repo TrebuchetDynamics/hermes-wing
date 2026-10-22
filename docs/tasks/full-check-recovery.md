@@ -269,7 +269,7 @@ boundary. Keep `CHECK-RESULTS-001` in Needs decision with its accepted contract
 unchanged. No duplicate or named-test repair, restart, Blocker resolution, new
 suite run, isolated rerun, main verdict or qualification is justified.
 
-### Current bundle (e2955ede)
+### Previous bundle (e2955ede)
 
 Read all five files in place under Git-common
 `autowork-execution/main-evidence/e2955eded3a7318c23690a9452402e534b4274c5/`.
@@ -295,6 +295,33 @@ boundaries unchanged. The task Evidence note now points here for historical
 inspections instead of repeating them in one growing line. No task restart,
 Blocker resolution, duplicate or named-test repair, new suite run, isolated rerun,
 main verdict or goal/platform qualification is established.
+
+### Current bundle (2b72c232)
+
+Read all five files in place under Git-common
+`autowork-execution/main-evidence/2b72c232d6cd1bb18020bdcef1c3af9a7b9d1910/`.
+Metadata names that checked revision, previous green
+`66c8a28e02863bc49f0c83d284e9cce712cdc04f`, state `broken` and crash
+`Bad state: No element`. The 4,772-line log contains that string inside a Flutter
+framework exception at line 3628, then reaches
+`27:00 +4137 ~9 -5: Some tests failed.` at line 4765. Exit is `1`, reruns are
+empty and flaky history is `{}`. This retained final log contradicts the
+before-any-results classification; it does not independently retain both reported
+attempts, identify the SDK version or establish flakiness.
+
+A read-only probe of requested release `020aeb087993b649afbb1993bf12a7fc281f2572`
+against the entire in-place log and unchanged Full check returns `failures == []`,
+`complete_results == False` and the recorded crash string. Its
+`pi_autowork/main_check.py:366–409` still lacks direct Flutter failure/completeness
+recognition; `worker.py:_run_gate` (lines 528–617) still supplies the candidate
+command to `base_result` and compares recognized failure IDs. Both archived worker
+reports, the retained `04c174ec` review finding and baseline JSON/log were reread;
+neither wrapper file exists in this checkout. The missing external input remains
+a supported command/result-format transition preserving genuine baseline failure
+comparison, not SDK provisioning or a receipt a Wing worker can manufacture.
+Keep `CHECK-RESULTS-001` in Needs decision with its accepted contract unchanged.
+No duplicate or named-test repair, restart, Blocker resolution, new suite run,
+isolated rerun, main verdict or goal/platform qualification is justified.
 
 ## Result-consumption boundary
 

@@ -7,7 +7,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test(
-    'closing enrollment keeps the app shell subscribed to native handoffs',
+    'content-free native input events survive enrollment cancellation',
     () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -20,42 +20,52 @@ void main() {
       messenger.setMockMethodCallHandler(control, (call) async {
         if (call.method == 'listen') listens++;
         if (call.method == 'cancel') cancels++;
+        if (call.method == 'consumeInitialConnectIntent') return true;
         return null;
       });
       addTearDown(() => messenger.setMockMethodCallHandler(control, null));
       final source = MethodChannelHermesConnectIntentSource(
+        methodChannel: control,
         eventChannel: const EventChannel(name),
       );
-      final shellEvents = <String>[];
-      final screenEvents = <String>[];
-      final shell = source.payloadEvents().listen(shellEvents.add);
-      final screen = source.payloadEvents().listen(screenEvents.add);
+      expect(await source.consumeInitialInput(), isTrue);
+      final shellEvents = <Object?>[];
+      final screenEvents = <Object?>[];
+      final shell = source.inputEvents().listen(shellEvents.add);
+      final screen = source.inputEvents().listen(screenEvents.add);
       addTearDown(shell.cancel);
       addTearDown(screen.cancel);
       await Future<void>.delayed(Duration.zero);
       expect(listens, 1);
       await messenger.handlePlatformMessage(
         name,
-        const StandardMethodCodec().encodeSuccessEnvelope({
-          'payload': 'first handoff',
-        }),
+        const StandardMethodCodec().encodeSuccessEnvelope(true),
         (_) {},
       );
       await Future<void>.delayed(Duration.zero);
-      expect(shellEvents, ['first handoff']);
-      expect(screenEvents, ['first handoff']);
+      expect(shellEvents, [true]);
+      expect(screenEvents, [true]);
       await screen.cancel();
       expect(cancels, 0);
+      for (final invalid in [
+        false,
+        null,
+        {'payload': 'fixture-retired-input'},
+      ]) {
+        await messenger.handlePlatformMessage(
+          name,
+          const StandardMethodCodec().encodeSuccessEnvelope(invalid),
+          (_) {},
+        );
+      }
       await messenger.handlePlatformMessage(
         name,
-        const StandardMethodCodec().encodeSuccessEnvelope({
-          'payload': 'second handoff',
-        }),
+        const StandardMethodCodec().encodeSuccessEnvelope(true),
         (_) {},
       );
       await Future<void>.delayed(Duration.zero);
-      expect(shellEvents, ['first handoff', 'second handoff']);
-      expect(screenEvents, ['first handoff']);
+      expect(shellEvents, [true, true]);
+      expect(screenEvents, [true]);
       await shell.cancel();
       expect(cancels, 1);
     },

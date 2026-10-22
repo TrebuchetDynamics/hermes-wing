@@ -68,13 +68,19 @@ connection owner and never replays an Agent mutation.
 
 ### Deprecated handoff rejection
 
-Cold and warm Android intent/share payloads are consumed and discarded. The UI
-never parses them, displays their contents or origins, reads the clipboard, opens
-QR scanning/import, or contacts Link. Malformed and expired inputs receive the
-same bounded guidance. Choose connection options to reconnect through Local,
-SSH or Remote (Android: SSH, Remote, then Termux).
+Cold and warm Android intent/share ingress is recognized from action, data
+presence and MIME-type metadata only. Native code discards the external intent
+before forwarding an ordinary launch to Flutter or plugins; it never reads URI
+contents or shared text. Only a one-shot boolean notification crosses the native
+bridge. The parser, QR scanner/image importer and their Dart/native APIs are
+removed, not dormant connection methods.
 
-WingApp alone consumes incoming handoffs; mounted enrollment screens do not
+The UI never displays incoming contents or origins, reads the clipboard or
+contacts Link. Malformed and expired inputs receive the same bounded guidance.
+Choose connection options to reconnect through Local, SSH or Remote (Android:
+SSH, Remote, then Termux).
+
+WingApp alone consumes incoming notifications; mounted enrollment screens do not
 subscribe or mutate their caller state. Warm handoffs are pushed above the current
 route so cancellation preserves its welcome, direct form or mounted Chat draft.
 Back/Cancel returns to that caller; a standalone legacy route

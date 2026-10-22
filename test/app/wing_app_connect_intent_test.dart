@@ -16,7 +16,7 @@ void main() {
   );
 
   testWidgets(
-    'an initial Android pairing intent opens enrollment',
+    'an initial Android legacy-input signal opens reconnection guidance',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       final messenger = tester.binding.defaultBinaryMessenger;
@@ -27,10 +27,7 @@ void main() {
       addTearDown(() => messenger.setMockMethodCallHandler(events, null));
       messenger.setMockMethodCallHandler(channel, (call) async {
         if (call.method != 'consumeInitialConnectIntent') return null;
-        return {
-          'payload':
-              'wing://connect?origin=https%3A%2F%2Fhermes.example&code=once',
-        };
+        return true;
       });
       addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
 

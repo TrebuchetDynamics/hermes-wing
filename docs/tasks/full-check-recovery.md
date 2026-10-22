@@ -43,7 +43,7 @@ mismatch, not evidence that no tests ran or that the SDK needs replacement.
 Keep this existing recovery task; do not open duplicate MAIN, named-test repair
 or flaky-test tasks from the crash label. No new main verdict is asserted here.
 
-### Latest main bundle and reader recheck
+### Previous reader recheck (3b009e15)
 
 Read in place:
 `autowork-execution/main-evidence/3b009e155c802fccf44ae79691534932ca483796/`.
@@ -65,6 +65,33 @@ IDs. The reporting and baseline-transition boundaries remain unresolved; this is
 not evidence of a missing or faulty SDK, flakiness or newly qualified main.
 Keep the same task in Needs decision, with all acceptance and write boundaries
 unchanged. No duplicate task, named-test repair or blocker-resolution note is added.
+
+### Current main bundle and reader recheck (de97a6d6)
+
+Read all five bundle files in place:
+`autowork-execution/main-evidence/de97a6d6b02efe0d9d1ac31d91acf28e9bdf5cf9/`.
+`main_check.json` records that checked revision, the same previous green revision,
+state `broken` and crash `Bad state: No element`. The log contains the string at
+line 3628 inside a Flutter framework exception, then reaches
+`18:36 +4137 ~9 -5: Some tests failed.` at line 4765.
+`main-check.exit` is `1`, `main-check-reruns.log` is empty and
+`flaky_history.json` is `{}`. The request reports two crashes; this bundle retains
+one final log, not two independent attempt logs or isolated rerun evidence.
+Do not infer that no tests ran, a faulty SDK or flakiness from its classification.
+
+A read-only probe of requested release
+`dd0602e8328e532f805c10a69412adef87d139f6`, `pi_autowork/main_check.py`, against
+this log and the unchanged repository `Full check:` command returns
+`failures(...) == []`, `complete_results(...) == False` and
+`crash_line(...) == 'Bad state: No element'`. Its `worker.py:_run_gate`
+(lines 527–617) still passes the candidate command to `base_result` and compares
+recognized failure IDs. Both archived worker reports, the retained review finding
+for integration `04c174ec` and the `base-e611aa9c` receipt were reread; they do not
+supply a supported command/result-format transition. The current tree still has
+neither wrapper file. Keep the existing `CHECK-RESULTS-001` in Needs decision and
+all its acceptance, checks, exclusions and write boundaries unchanged. This is an
+evidence refresh, not a blocker repair or task restart. No duplicate or named-test
+repair task, new suite run, qualification or Blocker resolution is claimed.
 
 ## Result-consumption boundary
 

@@ -3,10 +3,10 @@ schema = 1
 id = "CONNECTION-LINK-REMOVAL"
 title = "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
 short = "Remove deprecated Wing Link product entry and catalog dependencies while preserving direct Agent ownership"
-status = "done"
+status = "open"
 goal = "CONNECTION-PATHS"
 section = "Next"
-rank = 11000
+rank = 18000
 depends_on = []
 touches = ["lib/router/", "lib/features/enrollment/", "lib/features/local_setup/", "lib/features/profiles/", "lib/features/providers/", "lib/features/gateway/", "lib/core/hermes/", "android/app/src/", "test/router/", "test/features/enrollment/", "test/features/local_setup/", "test/features/profiles/", "test/features/providers/", "test/features/gateway/", "test/core/", "test/fixtures/", "integration_test/", "lib/l10n/app_en.arb", "lib/l10n/app_localizations*.dart", "docs/product/enrollment.md", "docs/product/desktop-connection-paths.md", "docs/product/routes.md", "docs/adr/product.md"]
 resources = []
@@ -16,10 +16,6 @@ scope = "enrollment, Local platform flow, profile/catalog callers, Connections a
 acceptance = ["fresh/saved Local, SSH and Remote use zero Link requests or setup prerequisites. Profile/model choice does not fetch the Link catalog. Cancelling replacement setup and reconnect preserve exact host/profile/session and no replay. Old pairing input fails safely with direct reconnection guidance; missing Agent credentials require explicit reauthentication, not legacy Link recovery. Preserve stored Agent access and raw user records. No Link construction/process/fallback remains, even for previously paired installations. Linux offers default Hermes-home inspection and a folder chooser; Android offers guided same-phone Agent setup, with installation and auth readiness distinguished."]
 checks = ["public-control enrollment/router/local-setup/saved-connection regressions, retained Agent security tests, analysis and affected integrated web/native guards."]
 exclusions = []
-closure = "manual"
-closure_actor = "xel"
-closure_timestamp = "2026-10-22T12:45:44.076981+00:00"
-closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Payoff: connect directly without a second service, pairing, wing-cli or Link token.
@@ -35,3 +31,4 @@ closure_reason = "2026-10-22 owner decision: defer this device/live qualificatio
 - Planner repair: release only the idle ownership claim; every original acceptance criterion, delivered subset and native/live gate remains. Continue remaining acceptance from the existing evidence; do not repeat source removal or treat this release as completion.
 - Readiness: DEFERRED native/live aggregate acceptance, not an unresolved product choice. The latest attempts reported no commit or changed files and only pending named-target qualification. Preserve those reports and original delivered evidence; there is no new offline removal batch to retry.
 - Next action: existing CONNECTION-SETUP-AUTH-MATRIX and native/device owners supply the remaining qualified receipts under unchanged access/budget gates. Keep this parent open; do not resubmit an empty worker or infer acceptance from fixture counts. This records established owner deferrals, not new execution or service authority.
+- Reopened: Reopened after an owner-close correction: this is offline implementation work and belongs in Next, not in the device/live waiver.

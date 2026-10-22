@@ -3,10 +3,10 @@ schema = 1
 id = "DOC-API-PROTOCOL-ERROR-EVIDENCE"
 title = "Map profile-list protocol error precedence"
 short = "Map profile-list protocol error precedence"
-status = "done"
+status = "open"
 goal = "API-CONFORMANCE"
 section = "Next"
-rank = 13000
+rank = 20000
 depends_on = ["DOC-API-DEVICE-SELF-CONFORMANCE"]
 touches = ["**"]
 resources = []
@@ -15,10 +15,6 @@ ownership = "worker"
 scope = "read-only source, nearest tests and sanitized receipt inspection for this outcome. Exclude implementation, upstream edits, secrets, installs and live actions."
 acceptance = ["Compare code-first schema and existing dispatch tests for omitted, supported and unsupported generations with method/auth errors. Record conformance proof or the exact unexecuted check; no sockets."]
 exclusions = []
-closure = "manual"
-closure_actor = "xel"
-closure_timestamp = "2026-10-22T12:45:47.365755+00:00"
-closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Payoff: preserve a distinct remaining proof slice after the current task.
@@ -29,3 +25,4 @@ closure_reason = "2026-10-22 owner decision: defer this device/live qualificatio
 - Planner decision: skip this retired-contract successor with its predecessor; retain its original criteria and dependency as historical/unverified. No new endpoint or management fallback is authorized. A surviving contract, not a generic approval to continue, is the only valid reason to reconsider this proof.
 - Dependencies: DOC-API-DEVICE-SELF-CONFORMANCE; not eligible until that task is done.
 - Touches: none before conversion; ** stands for the whole repository
+- Reopened: Reopened after an owner-close correction: this is offline implementation work and belongs in Next, not in the device/live waiver.

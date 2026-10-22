@@ -3,10 +3,10 @@ schema = 1
 id = "CONNECTION-LINK-RETIREMENT"
 title = "Retire Wing Link packaging and legacy setup after Agent-only native Local flows and migration checks pass"
 short = "Retire Wing Link packaging and legacy setup after Agent-only native Local flows and migration checks pass"
-status = "done"
+status = "open"
 goal = "CONNECTION-PATHS"
 section = "Next"
-rank = 8000
+rank = 15000
 depends_on = ["CONNECTION-LINK-REMOVAL"]
 touches = ["**"]
 resources = []
@@ -16,10 +16,6 @@ scope = "remove lib/core/wing_link, wing_link service tree, install-wing-link.sh
 acceptance = ["packaging and new phone setup include no Wing Link binary/service or pairing bootstrap; direct/native workflows pass on named Linux and Android targets. Installed paired records and personal runtimes are not erased or restarted. Previously paired installations use only retained Agent access or explicit direct reauthentication; no Link recovery/legacy compatibility mode remains. Explain unsupported former management features without a new shell bridge/backend. Audit each remaining legacy goal/task for replacement rather than marking it met because its code was removed. Reconcile agent guides only within authorized scope."]
 checks = ["zero shipped Link dependencies/artifacts; supported client build and deterministic browser closure; current docs links; exact reviewed origin/main delivery. Existing installed services and user stores are untouched. Live/native checks remain separate from offline artifact evidence. README first-success plan (owner `/autoresearch plan` criteria): six observed friction points were implementation-first opening, buried demo, receipt-heavy introduction, missing copyable source quickstart, stale Android Local button instructions, and scattered user/developer help. README now addresses those editorial findings without a fabricated quality score or stronger support claim."]
 exclusions = []
-closure = "manual"
-closure_actor = "xel"
-closure_timestamp = "2026-10-22T12:45:45.169458+00:00"
-closure_reason = "2026-10-22 owner decision: defer this device/live qualification and close the queue row. Offline work and recorded evidence remain; no live evidence is claimed. Reopen when the authorized device/host target is available."
 +++
 
 - Payoff: a standalone Wing client with Agent-only/native setup, not a second backend. Offline implementation was reviewed and delivered with the same t_587682e1 batch at origin/main 963b9b5b; no second deletion worker is needed. Named Linux/Android direct setup and migration acceptance remains unqualified. Keep offline removal/build evidence separate from native/device/live acceptance; do not block independent closeout on an invented approval or report completion from implementation alone. Preserve installed services, raw records and history.
@@ -46,3 +42,4 @@ closure_reason = "2026-10-22 owner decision: defer this device/live qualificatio
 - Section: Needs decision.
 - Owner decision: 2026-10-18 — Apply the existing deferral of CONNECTION-LINK-REMOVAL to this dependent task. Preserve its dependency and original acceptance; no approval question, dispatch or completion is implied. Resume only when the prerequisite's stated qualification/contract gate is satisfied.
 - Touches: none before conversion; ** stands for the whole repository
+- Reopened: Reopened after an owner-close correction: this is offline implementation work and belongs in Next, not in the device/live waiver.

@@ -240,6 +240,16 @@ is still an ancestor of HEAD; the current tab report names later `e564642d`.
 No missing current-store edit is justified. Drop both proposals without applying
 patches, reopening tasks, changing goals or undoing newer planning/closures.
 
+Rechecked the outstanding Profiles proposal at
+`8efb05f473c522a6d9b03e0755e061cec7ecc443`: the complete saved patch, adjacent
+report, archived Sources/acceptance and current task records still justify only
+**drop**. Its generated browser-successor/plan-task coverage refresh and removal
+of done `VERIFY-CHAT-TRANSCRIPT-NATIVE` from coverage/priority order target retired
+`TODO.md`/`goals.json`. Candidate `7f5c64c9` remains an ancestor of HEAD; the four
+named completed task records remain done and both live successors remain open in
+Needs decision. No current-store edit, reopened task, goal qualification or replay
+of the obsolete snapshot is justified; the saved patch was not applied.
+
 These are documentation dispositions, not new closure or coordinator verification.
 `PARITYUPDATE-005-11-LIVE` and `MT-VERIFY-BROWSER-GATES-LIVE` remain open in Needs
 decision. No current goal evidence, acceptance, ordering or live authority changes.

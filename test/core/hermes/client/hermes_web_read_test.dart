@@ -11,7 +11,10 @@ const recoveryStore =
 
 bool usesInternalTransport(String path, String source) {
   // The secure pointer codec shares models, never client/lifecycle authority.
-  if (path == recoveryStore) {
+  if ({
+    recoveryStore,
+    'lib/core/hermes/setup/secure_gateway_recovery_store.dart',
+  }.contains(path)) {
     source = source.replaceAll("import '../models/hermes_web_reads.dart';", '');
   }
   return source.contains('hermes_web_read') ||

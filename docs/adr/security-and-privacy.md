@@ -40,4 +40,28 @@ Diagnostics remain bounded and redact credentials, transcripts, private origins,
 host paths and content. No arbitrary shell, config key, executable or host path
 bridge may replace an unavailable Agent operation.
 
+## Gateway sign-in and metadata QR
+
+The owner approved a new direct native-gateway path: an explicitly scanned QR
+carries only an HTTPS origin and literal profile ID. It is not an enrollment
+credential, legacy pairing code or authorization grant. Unknown fields, embedded
+keys, userinfo, paths, queries and fragments are rejected without displaying raw
+input. Existing external intent/share rejection remains unchanged.
+
+Wing initiates the gateway's advertised `native_pkce` flow in the phone's system
+browser, with its own random S256 verifier/state and an ephemeral loopback callback
+on that phone. The gateway alone verifies the login and issues access/refresh
+tokens. Tokens stay bound to the exact HTTPS origin in platform secure storage;
+they are never exchanged for an API-server key or transferred from Desktop.
+Remote native REST and WSS use normal certificate validation and a fresh one-use
+WebSocket ticket per dial. No mutation is retried on token refresh or reconnect.
+
+This path does not start or publish a gateway, configure a VPN, open ports, read
+Agent credential files, modify Agent, or introduce a management backend. A reachable
+HTTPS gateway advertising compatible login remains a prerequisite. A QR can reveal
+a private hostname/profile and should not be posted publicly even without tokens.
+Camera permission is requested only by the explicit scanner; manual address entry
+is the accessible equivalent. Runtime qualification must distinguish metadata scan,
+login, socket negotiation, exact-session recovery and real generation.
+
 See [SECURITY.md](../../SECURITY.md) and the [threat model](../security/threat-model.md).

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'hermes_session_history_export.dart';
 import '../models/hermes_web_reads.dart';
+import '../setup/hermes_gateway_invite.dart';
 import '../models/hermes_chat_turn.dart';
 import '../models/hermes_profile.dart';
 import '../shared/hermes_api_http.dart';
@@ -26,16 +27,33 @@ final class HermesWebReadClient {
          profile: profile,
        );
 
+  HermesWebReadClient.forRemoteGateway({
+    required Uri origin,
+    required String credential,
+    required String profile,
+    Duration timeout = const Duration(seconds: 10),
+  }) : this.forQualification(
+         origin: origin,
+         credential: credential,
+         profile: profile,
+         timeout: timeout,
+         remoteGateway: true,
+       );
+
   HermesWebReadClient.forQualification({
     required Uri origin,
     required String? credential,
     required String profile,
     this.timeout = const Duration(seconds: 10),
+    this.remoteGateway = false,
   }) : _origin = origin,
        _credential = credential,
        _profile = profile {
-    if (origin.scheme != 'http' ||
-        !{'127.0.0.1', '::1'}.contains(origin.host) ||
+    if ((remoteGateway
+            ? origin.scheme != 'https'
+            : origin.scheme != 'http' ||
+                  !{'127.0.0.1', '::1'}.contains(origin.host)) ||
+        origin.host.isEmpty ||
         origin.userInfo.isNotEmpty ||
         origin.hasQuery ||
         origin.hasFragment ||
@@ -43,6 +61,10 @@ final class HermesWebReadClient {
       throw const HermesWebReadException(HermesWebFailureKind.identity);
     }
     _validateIdentity(profile);
+    if (remoteGateway) HermesGatewayInvite(origin: origin, profile: profile);
+    if (remoteGateway && (credential == null || credential.isEmpty)) {
+      throw const HermesWebReadException(HermesWebFailureKind.authentication);
+    }
     if (credential != null &&
         (credential.isEmpty ||
             credential.length > 8192 ||
@@ -59,11 +81,14 @@ final class HermesWebReadClient {
   final String? _credential;
   final String _profile;
   final Duration timeout;
+  final bool remoteGateway;
   HermesWebReadClient forProfile(String profile) =>
-      HermesWebReadClient.forLocalReads(
+      HermesWebReadClient.forQualification(
         origin: _origin,
         credential: _credential ?? '',
         profile: profile,
+        timeout: timeout,
+        remoteGateway: remoteGateway,
       );
   int _generation = 0;
   bool _closed = false;
@@ -272,7 +297,12 @@ final class HermesWebReadClient {
     try {
       socket =
           await WebSocket.connect(
-                _origin.replace(scheme: 'ws', path: '/api/ws').toString(),
+                _origin
+                    .replace(
+                      scheme: _origin.scheme == 'https' ? 'wss' : 'ws',
+                      path: '/api/ws',
+                    )
+                    .toString(),
                 protocols: [
                   'hermes-gateway-v1',
                   'hermes-gateway-ticket.$ticket',

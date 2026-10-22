@@ -9,6 +9,8 @@ import '../../hermes_chat/screens/hermes_chat_screen.dart';
 import '../../local_setup/providers/local_hermes_setup_provider.dart';
 
 import '../widgets/hermes_welcome.dart';
+import '../widgets/gateway_login_panel.dart';
+import '../widgets/gateway_qr_builder.dart';
 
 /// Direct Agent entry; deprecated handoffs are discarded, never exchanged.
 class HermesEnrollmentScreen extends ConsumerStatefulWidget {
@@ -119,7 +121,7 @@ class _HermesEnrollmentScreenState
                   title: Text(s.enrollOptionalSetupAction),
                   children: [_chooserActions()],
                 )
-              : const SizedBox.shrink(),
+              : _chooserActions(),
         ),
       ),
     );
@@ -132,7 +134,23 @@ class _HermesEnrollmentScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (!android)
+          TextButton.icon(
+            key: const ValueKey('gateway-qr-create'),
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => const GatewayQrBuilder(),
+            ),
+            icon: const Icon(Icons.qr_code),
+            label: Text(s.gatewayQrCreate),
+          ),
         if (android) ...[
+          ExpansionTile(
+            key: const ValueKey('gateway-login-entry'),
+            title: Text(s.gatewayLoginTitle),
+            leading: const Icon(Icons.qr_code_scanner),
+            children: const [GatewayLoginPanel()],
+          ),
           OutlinedButton.icon(
             key: const ValueKey('hermes-enrollment-local-setup'),
             onPressed: () => context.push<void>(AppRoutes.localSetup),

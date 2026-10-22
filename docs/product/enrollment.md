@@ -33,6 +33,24 @@ or restart Agent.
 Keep the manual single-profile Agent connection available. See the
 [Desktop comparison](desktop-connection-paths.md) for source evidence and limits.
 
+## Android gateway sign-in (candidate)
+
+The owner approved a distinct **Connect to Hermes Desktop** flow. Explicit camera
+scanning accepts only versioned metadata (`hermes-wing-gateway`, HTTPS origin,
+profile); manual origin/profile entry remains available. This is not the retired
+pairing format, credential QR or external-intent ingress. Legacy handoffs stay
+rejected. The phone opens its own system browser for the gateway's advertised
+`native_pkce` login; access/refresh tokens are origin-bound secure-storage values,
+never API-server form keys. A direct HTTPS/WSS reader negotiates a fresh ticket and
+native chat capabilities before enabling sends. Reconnect is explicit and does not
+replay prompts or approvals.
+
+An existing reachable HTTPS native gateway with compatible authentication is
+required. Wing does not start Hermes, publish a listener, configure VPN/firewall,
+read a desktop credential or modify Agent. A metadata QR only removes address
+entry, not login or network prerequisites. Physical camera/browser/live-account
+qualification must be recorded separately from fixtures.
+
 ## Journey
 
 Choose a direct Agent action, complete its existing authenticated form, or cancel
@@ -77,7 +95,8 @@ automatically and the connection draft remains unchanged on close.
 
 This is preparation guidance, not automatic enrollment or credential acquisition.
 The host operator still controls setup and authorization; users enter credentials
-only in the masked field. Browser OAuth remains unsupported. See
+only in the masked field. Browser sign-in is separate from these API-token forms;
+the Android native-gateway candidate above owns its PKCE flow. See
 [bounded delivery evidence](../../tasks/items/CONNECTION-ACCESS-ASSISTANCE.md).
 
 ### Deprecated handoff rejection

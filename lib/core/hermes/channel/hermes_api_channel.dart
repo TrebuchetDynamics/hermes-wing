@@ -91,6 +91,7 @@ class HermesApiChannel extends ChangeNotifier
   bool _serveRestorationPending = false;
   String? _serveCredential;
   bool _serveTransient = false;
+  bool _serveRemoteGateway = false;
   bool Function()? _serveCanAccept;
   Future<void> Function(HermesWebRecovery)? _persistForwardedRecovery;
   String? _forwardedOrigin, _forwardedRunOwner;
@@ -523,6 +524,35 @@ class HermesApiChannel extends ChangeNotifier
     );
   }
 
+  /// Explicit native gateway session. Never interpret OAuth as an API-server key.
+  /// Only HTTPS is accepted by the dedicated reader; old local gates are intact.
+  Future<void> connectRemoteGateway({
+    required String baseUrl,
+    required String accessToken,
+    required String profile,
+    required bool Function() canAccept,
+    required Future<void> Function(HermesWebRecovery) persistRecovery,
+    required void Function(bool Function() isCurrent) onAcquire,
+    String? storedSession,
+    bool uncertain = false,
+  }) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      throw UnsupportedError('Gateway login is Android-only.');
+    }
+    await _selectServeReads(
+      baseUrl,
+      accessToken,
+      canAccept: canAccept,
+      transient: true,
+      remoteGateway: true,
+      onAcquire: onAcquire,
+      profile: profile,
+      storedSession: storedSession,
+      uncertain: uncertain,
+      persistRecovery: persistRecovery,
+    );
+  }
+
   /// Revokes only a captured forwarding owner. No remote Stop or retry occurs.
   /// The cached selection remains visible but cannot authorize writes.
   void interruptForwardedConnection(bool Function() ownsConnection) {
@@ -551,6 +581,7 @@ class HermesApiChannel extends ChangeNotifier
     String credential, {
     bool Function()? canAccept,
     bool transient = false,
+    bool remoteGateway = false,
     void Function(bool Function() isCurrent)? onAcquire,
     String profile = 'default',
     String? storedSession,
@@ -592,6 +623,7 @@ class HermesApiChannel extends ChangeNotifier
       credential,
       canAccept: canAccept,
       transient: transient,
+      remoteGateway: remoteGateway,
       onAcquire: onAcquire,
       deferSessionSelection: deferSessionSelection,
       profile: profile,

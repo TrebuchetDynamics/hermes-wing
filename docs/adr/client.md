@@ -95,6 +95,14 @@ durability claim. The
 [bounded delivery plan](../plans/2026-10-03-study-follow-through.md), not a
 transport migration or new capability.
 
+The Android gateway-login candidate adds a separate HTTPS-only constructor and
+explicit channel entry over these same fixed native session/ticket contracts.
+Normal certificate validation and WSS are mandatory; the local reader's loopback
+restriction remains unchanged. PKCE access/refresh credentials use dedicated
+origin-scoped secure slots, never direct API endpoint records. Unknown submission
+outcomes retain exact recovery pointers and never authorize resends. See
+[the enrollment candidate](../product/enrollment.md#android-gateway-sign-in-candidate).
+
 ## Flexible guidance
 
 - Reuse existing seams before introducing a new abstraction or dependency.

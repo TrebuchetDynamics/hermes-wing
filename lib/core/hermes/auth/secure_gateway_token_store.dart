@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -17,16 +18,51 @@ class SecureGatewayTokenStore {
       'wing.gateway.native_tokens.v1.'
       '${sha256.convert(utf8.encode(origin.toString()))}';
 
-  Future<void> save(GatewayTokenSet tokens) async {
+  static final Map<String, Future<void>> _pending = {};
+
+  Future<T> _serialized<T>(Uri origin, Future<T> Function() action) async {
+    final key = _key(origin);
+    final previous = _pending[key];
+    final release = Completer<void>();
+    _pending[key] = release.future;
+    try {
+      if (previous != null) await previous;
+      return await action();
+    } finally {
+      release.complete();
+      if (identical(_pending[key], release.future)) {
+        final removed = _pending.remove(key);
+        if (removed != null) unawaited(removed);
+      }
+    }
+  }
+
+  Future<void> save(
+    GatewayTokenSet tokens, {
+    bool Function()? isCurrent,
+  }) async {
     final origin = validateGatewayOrigin(tokens.origin);
     try {
-      await _storage.write(
-        key: _key(origin),
-        value: jsonEncode({
-          'origin': origin.toString(),
-          'tokens': tokens.toSecureJson(),
-        }),
-      );
+      await _serialized(origin, () async {
+        final previous = await _storage.read(key: _key(origin));
+        if (!(isCurrent?.call() ?? true)) return;
+        await _storage.write(
+          key: _key(origin),
+          value: jsonEncode({
+            'origin': origin.toString(),
+            'tokens': tokens.toSecureJson(),
+          }),
+        );
+        // The platform write is not cancellable. Roll back under the same lock
+        // before another save/delete can run, never overwriting a newer owner.
+        if (!(isCurrent?.call() ?? true)) {
+          if (previous == null) {
+            await _storage.delete(key: _key(origin));
+          } else {
+            await _storage.write(key: _key(origin), value: previous);
+          }
+        }
+      });
     } catch (_) {
       throw const GatewayAuthException('secure_storage_failed');
     }
@@ -35,6 +71,8 @@ class SecureGatewayTokenStore {
   Future<GatewayTokenSet?> load(Uri origin) async {
     final scope = validateGatewayOrigin(origin);
     try {
+      final pending = _pending[_key(scope)];
+      if (pending != null) await pending;
       final raw = await _storage.read(key: _key(scope));
       if (raw == null) return null;
       if (utf8.encode(raw).length > 65536) {
@@ -58,7 +96,7 @@ class SecureGatewayTokenStore {
   Future<void> delete(Uri origin) async {
     final scope = validateGatewayOrigin(origin);
     try {
-      await _storage.delete(key: _key(scope));
+      await _serialized(scope, () => _storage.delete(key: _key(scope)));
     } catch (_) {
       throw const GatewayAuthException('secure_storage_failed');
     }

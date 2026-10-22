@@ -280,6 +280,96 @@ abstract class AppLocalizations {
   /// **'Connect step by step'**
   String get connectionGuideTitle;
 
+  /// No description provided for @gatewayLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Hermes Desktop'**
+  String get gatewayLoginTitle;
+
+  /// No description provided for @gatewayAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes gateway HTTPS address'**
+  String get gatewayAddress;
+
+  /// No description provided for @gatewayProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Hermes profile'**
+  String get gatewayProfile;
+
+  /// No description provided for @gatewaySignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorize this phone'**
+  String get gatewaySignIn;
+
+  /// No description provided for @gatewayScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan computer QR'**
+  String get gatewayScan;
+
+  /// No description provided for @gatewayQrCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Show connection QR'**
+  String get gatewayQrCreate;
+
+  /// No description provided for @gatewayQrSafe.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR contains only the gateway address and profile. It does not contain a token or authorize access. Both devices need a reachable private network; sign in on the phone to authorize it.'**
+  String get gatewayQrSafe;
+
+  /// No description provided for @gatewayInvalidQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported connection QR or address. Use an HTTPS gateway address with no key, query or fragment. Legacy pairing codes are not accepted.'**
+  String get gatewayInvalidQr;
+
+  /// No description provided for @gatewayCameraFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera is unavailable or permission was denied. Go back and enter the gateway address instead.'**
+  String get gatewayCameraFailed;
+
+  /// No description provided for @gatewayLoginBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the address shown on your computer, or enter its existing HTTPS gateway address. Sign in in this phone\'s browser. Wing will never ask you to copy the computer\'s API key. This does not start Hermes, create a VPN or change firewall settings.'**
+  String get gatewayLoginBody;
+
+  /// No description provided for @gatewayLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway sign-in or connection could not be completed. Check the address, trusted HTTPS certificate and native sign-in support. No message was sent. Retry explicitly.'**
+  String get gatewayLoginFailed;
+
+  /// No description provided for @gatewayLoginPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for authorization in your browser…'**
+  String get gatewayLoginPending;
+
+  /// No description provided for @gatewayReconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to my Hermes'**
+  String get gatewayReconnect;
+
+  /// No description provided for @gatewayForget.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget gateway sign-in'**
+  String get gatewayForget;
+
+  /// No description provided for @gatewayStorageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure sign-in storage is unavailable. Access was not confirmed as remembered.'**
+  String get gatewayStorageFailed;
+
   /// No description provided for @connectionAccessTitle.
   ///
   /// In en, this message translates to:

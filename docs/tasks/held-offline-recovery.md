@@ -208,6 +208,16 @@ of HEAD; `PARITYUPDATE-005-11`, `VERIFY-CHAT-TRANSCRIPT-NATIVE`,
 successors remain open in Needs decision. Retain the existing drop disposition;
 no patch was applied and no current task or goal status was changed.
 
+Rechecked both complete proposals and their adjacent reports at
+`1c94fc1bf6bedb15d87795e61f3ff6ba885ed3bb`. They still target only retired
+`TODO.md` generated coverage and, for PARITYUPDATE-005-11, `goals.json` priority
+order. Current records still mark all five named tasks done and keep both live
+successors in Needs decision; their archived Sources/accepted plans supply no
+reason to reverse those closures. Both producer
+slots are closed; the later tab slot names `e564642df5f0273b915a2fde153ab4cd0ff786e3`,
+not the older proposal candidate. Drop both obsolete proposals without applying
+patches, changing current task/goal status or undoing newer planning.
+
 These are documentation dispositions, not new closure or coordinator verification.
 `PARITYUPDATE-005-11-LIVE` and `MT-VERIFY-BROWSER-GATES-LIVE` remain open in Needs
 decision. No current goal evidence, acceptance, ordering or live authority changes.

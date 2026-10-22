@@ -1,3 +1,30 @@
++++
+schema = 1
+id = "CONNECTION-ACCESS-ASSISTANCE"
+title = "Safe request from Wing to an existing Hermes chat for access preparation"
+short = "Hermes access assistance request"
+status = "done"
+goal = "CONNECTION-PATHS"
+section = "Next"
+rank = 16000
+depends_on = []
+touches = []
+resources = []
+kind = "implementation"
+ownership = "worker"
+scope = "Bounded client assistance: direct-token and SSH API-token forms offer an 'I need access to Hermes' request that an existing Hermes chat or operator can inspect, with a fixed public request text, explicit copy and official documentation links; no credential exposure or rotation."
+acceptance = ["The delivered forms, guide step and discovery denial offer the help request as described in the notes below"]
+checks = []
+exclusions = []
+closure = "manual"
+closure_actor = "owner interactive session (Claude)"
+closure_timestamp = "2026-10-22T16:33:41.433389+00:00"
+closure_reason = "Delivered in 735e97f1 by a contributor on another host, who recorded it as a Markdown note under tasks/items/ without the record frontmatter; the frontmatter is added so the store validates again and the delivery note is kept below"
+closure_evidence = "commit 735e97f1 (feat(connection): add safe access preparation for existing Hermes chats); the note below"
++++
+
+- Sources: commit 735e97f1; the delivery note below was written by its author.
+
 # CONNECTION-ACCESS-ASSISTANCE — Safe request from Wing to an existing Hermes chat
 
 Status: DONE (bounded client assistance only)

@@ -1662,6 +1662,16 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
     final scaffold = Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(
+          size: 18,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        actionsPadding: const EdgeInsetsDirectional.only(end: 8),
+        shape: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
         bottom:
             workspaceAvailable &&
                 !_editingConnection &&
@@ -1684,7 +1694,7 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
         titleSpacing: 12,
         toolbarHeight: MediaQuery.textScalerOf(context).scale(14) > 20
             ? 104
-            : 64,
+            : 52,
         title: !_editingConnection && !showingDirectory && activeSession != null
             ? TextButton(
                 key: const ValueKey('hermes-contact-header'),
@@ -1724,7 +1734,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                         key: const ValueKey('hermes-chat-owner'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),

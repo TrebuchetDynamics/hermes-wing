@@ -588,6 +588,28 @@ no editar Agent ni abrir provider/inference por navegar Settings.
 
 ## Resoluciones del builder-check
 
+### Lote visual de Chat y navegación
+
+Implementado: sidebar de 237 px según `styles.css --sidebar-width` del pin
+oficial, sesiones con foreground/peso diferenciado por selección, cabecera de
+52 px con separación de superficie y propietario secundario, esquinas compactas
+de mensaje/compositor y prosa con interlineado 1.5. El ancho de lectura conserva
+el contrato del pin (`--composer-width: 100%`, gutters 24/16), no un cap inventado.
+El editor crece hasta seis líneas sin cambiar Send/Stop ni orden de teclado;
+texto grande mantiene la cabecera de 104 px y controles de 48 px.
+Se conserva el default, la autoridad Agent y la identidad de borrador/sesión.
+
+Verificado con Flutter 3.44.9 (fuera del pin documental): 220 pruebas focalizadas
+Chat/presentación, 179 de widgets compartidos, análisis y formato; build web E2E;
+4 recorridos Chromium sin retries (390/1280, claro/oscuro), con borrador y Send
+habilitado sin enviarlo. Capturas finales de móvil oscuro/escritorio claro
+inspeccionadas; no hay comparación renderizada 1:1 con Desktop. `npm audit`:
+cero vulnerabilidades. La suite ampliada fue interrumpida por timeout y no cuenta
+como aprobada; dos casos de confirmación por Back también fallan en main previo
+(`hermes_chat_gateway_confirmation_owner_test`, 390/1280). Quedan como defecto
+previo, no se suprimen ni se califican verdes. El test de menú contextual usa
+ahora un punto dentro del texto visible, no el centro vacío de una fila ancha.
+
 ### Primer cambio implementado de CLONE-03
 
 Refinamiento visual: Appearance agrupa modo y galería bajo Theme y separa

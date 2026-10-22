@@ -109,7 +109,7 @@ void main() {
         'local draft',
       );
 
-      expect(tester.getSize(sidebar).width, 250);
+      expect(tester.getSize(sidebar).width, 237);
       expect(find.text('Hermes Agent client'), findsNothing);
       // Desktop's clean header parks the toggle top-right, not under a wordmark.
       final toggleRect = tester.getRect(toggle);

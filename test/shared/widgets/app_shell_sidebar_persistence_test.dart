@@ -60,7 +60,7 @@ void main() {
     expect(tester.getSize(sidebar).width, 64);
     await tester.tap(toggle);
     await tester.pumpAndSettle();
-    expect(tester.getSize(sidebar).width, 250);
+    expect(tester.getSize(sidebar).width, 237);
     expect(
       (await SharedPreferences.getInstance()).getBool(
         'wing.shell.sidebar_expanded',

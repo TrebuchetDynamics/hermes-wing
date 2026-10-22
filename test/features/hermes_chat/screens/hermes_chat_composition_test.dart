@@ -54,6 +54,12 @@ void main() {
           findsNothing,
         );
         final field = find.byKey(const ValueKey('hermes-composer-field'));
+        expect(tester.widget<TextField>(field).minLines, 1);
+        expect(tester.widget<TextField>(field).maxLines, 6);
+        expect(
+          tester.widget<AppBar>(find.byType(AppBar)).toolbarHeight,
+          scale > 1 ? 104 : 52,
+        );
         final editor = tester.getRect(field);
         final actions = tester.getRect(
           find.byKey(const ValueKey('hermes-composer-actions')),

@@ -121,7 +121,7 @@ void main() {
             tester.getBottomLeft(utilities).dy,
             lessThanOrEqualTo(tester.getTopLeft(sessions).dy),
           );
-          expect(tester.getSize(sidebar).width, 250);
+          expect(tester.getSize(sidebar).width, 237);
           expect(
             find.byKey(const ValueKey('hermes-session-rail-search-field')),
             findsNothing,

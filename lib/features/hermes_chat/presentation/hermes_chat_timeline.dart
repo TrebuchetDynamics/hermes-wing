@@ -1046,12 +1046,7 @@ class _TurnBubble extends ConsumerWidget {
           border: structuredError != null
               ? Border.all(color: colors.error.withValues(alpha: 0.35))
               : null,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 5),
-            bottomRight: Radius.circular(isUser ? 5 : 16),
-          ),
+          borderRadius: BorderRadius.circular(3),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

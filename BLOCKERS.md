@@ -6,14 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-LINUXQA-001-8163f50f — USER_DECISION — effort decision — unblocks 1
-
-- Task: LINUXQA-001-8163f50f — Qualify Linux connection recovery and isolated native plugin custody
-- Needs: integration validation failed or changed the integration tree: the full check has new failures the base does not: /home/xel/git/gormes/hermes-wing/.worktrees/autowork-integration/test/features/hermes_chat/screens/hermes_chat_approval_dismissal_test.dart: retained malformed dismissal preserves replacement after connection reset (variant: TargetPlatform.linux), /home/xel/git/gormes/hermes-wing/.worktrees/autowork-integration/test/features/hermes_chat/providers/managed_ssh_serve_test.dart: Android SSH separates REST authentication from ticket and owner authorization, /home/xel/git/gormes/hermes-wing/.worktrees/autowork-integration/test/features/hermes_chat/p; DOCS-MAINTAINER already changed Checks, Dependencies, Prerequisites, Produces, Review findings, Review recovery, Scope, Touches, Verification status, but the task is still waiting for the same reason.
-- Since: 2026-10-23T04:06:33Z
-- Answer: Decide the missing input or disposition in tasks/items/LINUXQA-001-8163f50f.md, or move it to Needs decision. The maintainer will not repeat this repair unless the record or waiting reason changes.
-- Kind: maintainer
-
 ### Q-LINUXQA-001-cbe0b043 — USER_DECISION — effort decision — unblocks 1
 
 - Task: LINUXQA-001-cbe0b043 — Qualify Linux accessibility native lifecycle and voice failure boundaries

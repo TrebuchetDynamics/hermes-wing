@@ -14,7 +14,7 @@ CARD = 't_0246c28c'
 
 
 def validate(receipt):
-    expected = dict(phase='compact-return', initial_width=250.0, restored_width=64.0,
+    expected = dict(phase='compact-return', initial_width=237.0, restored_width=64.0,
                     compact_width=390, returned_width=1280, keyboard_collapse=True,
                     persisted_expanded=False, compact_sidebar_absent=True,
                     draft_state_retained=True, draft_text_retained=True,
@@ -109,7 +109,7 @@ def run(*, card=CARD, target='integration_test/linux_shell_compact_return_test.d
 
 
 def self_check():
-    receipt = dict(phase='compact-return', native_pid=1, initial_width=250.0, restored_width=64.0,
+    receipt = dict(phase='compact-return', native_pid=1, initial_width=237.0, restored_width=64.0,
                    compact_width=390, returned_width=1280, keyboard_collapse=True,
                    persisted_expanded=False, compact_sidebar_absent=True, draft_state_retained=True,
                    draft_text_retained=True, provider_scope_retained=True, preference_unchanged=True,

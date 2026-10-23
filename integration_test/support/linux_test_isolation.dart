@@ -12,7 +12,7 @@ String requireLinuxTestRoot(String prefix) {
       Directory(root).parent.resolveSymbolicLinksSync() !=
           Directory.systemTemp.resolveSymbolicLinksSync() ||
       !RegExp(
-        '^${RegExp.escape(prefix)}[a-zA-Z0-9]+\$',
+        '^${RegExp.escape(prefix)}[a-zA-Z0-9_]+\$',
       ).hasMatch(root.split(Platform.pathSeparator).last) ||
       !File('$root/.wing-linux-test-owner').existsSync()) {
     throw StateError('Use the isolated Linux test launcher.');

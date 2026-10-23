@@ -1,0 +1,22 @@
++++
+schema = 1
+id = "CHECK-PACKAGES-001"
+title = "Restore locked package preparation so the full Flutter check reaches test results"
+short = "Recover full-check package preparation"
+status = "open"
+goal = "INTEGRATION"
+section = "Now"
+rank = 1000
+depends_on = []
+touches = ["AGENTS.md", "CONTRIBUTING.md", "docs/tasks/main-check-package-recovery.md"]
+resources = []
+kind = "implementation"
+ownership = "worker"
+scope = "Repair the setup/check contract, not product code: restate AGENTS.md's Full check line as flutter pub get --enforce-lockfile && flutter test --no-pub --concurrency=1, align adjacent validation and contributor setup wording, and record actual validation results in docs/tasks/main-check-package-recovery.md. The documented Flutter 3.44.2 setup may fetch the existing exact locked public packages before the unchanged complete serial suite; offline resolution requires a populated cache. No dependency/lockfile change or Python result wrapper. No named test is known to fail from this package-resolution crash."
+acceptance = ["The Full check line uses setup-backed flutter pub get --enforce-lockfile followed by the entire unchanged flutter test --no-pub --concurrency=1 suite. Contributor and validation wording distinguish initial package downloads from warm-cache offline validation and retain Flutter 3.44.2.", "Locked preparation resolves the existing pinned qr_flutter 4.1.0 and all other dependencies without editing pubspec.yaml, pubspec.lock, package checksums, SDK or installed runner. Document the real preparation exit; if the public source is unavailable, report that concrete blocker rather than invent provisioning or success.", "On the prepared cache the existing whole offline sequence reaches terminal Flutter results; retain source revision, SDK, child exits, terminal counts and any remaining test failures separately from preparation. A complete failed suite proves reporting recovery, not green main. No tests are filtered, skipped or repaired under this task.", "Normal review and runner validation remain mandatory; no wrapper, fabricated summary, failure masking, gate bypass, product/native/live support or goal qualification follows from this setup repair."]
+checks = ["flutter --version --machine", "flutter pub get --enforce-lockfile", "flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1", "git diff --exit-code -- pubspec.yaml pubspec.lock", "git diff --check"]
+exclusions = ["No product or named-test repair, QR/sign-in redesign, new dependency, SDK upgrade or lockfile/checksum change", "No installed Autowork or Agent/runtime/reference edits, test filtering, fabricated results or bypassed review/gates", "No credentials, live Agent/provider/device operations, system installs, publication or goal qualification", "No changes to running or awaiting-integration task records or newer closures"]
++++
+- Sources: docs/tasks/main-check-package-recovery.md#bounded-repair; AGENTS.md#validation; CONTRIBUTING.md#setup; CONTRIBUTING.md#required-checks
+- Evidence: Crash line: Failed to update packages. Runner reported two pre-result crashes at 7603dcdd97098e064c5c2a450fbd649eaa781d53; previous green 9ca06dca7065c3d047f2e4f909937b6147a2dcf4. All five files read in place under Git-common autowork-execution/main-evidence/7603dcdd97098e064c5c2a450fbd649eaa781d53/{main_check.json,main-check.log,main-check.exit,main-check-reruns.log,flaky_history.json}: broken/INCOMPLETE, failures null, exit 1, empty reruns, history {}. Full log: Resolving dependencies...; Because wing depends on qr_flutter 4.1.0 which doesn't match any versions, version solving failed.; Failed to update packages. Dependency introduction commit 1684d76a56add2db2e9211990016af1eb04be8dc changed pubspec.yaml and pubspec.lock; both pin qr_flutter 4.1.0. No test result or isolated rerun exists; no named-test or flaky repair is justified. See docs/tasks/main-check-package-recovery.md#evidence-at-7603dcdd. No implementation or package provisioning was performed by DOCS-MAINTAINER.
+- Queue reason: No open task covers the package-preparation crash. Add one disjoint setup/check repair in Now; the previous CHECK-RESULTS-001 and MAIN-REPAIR tasks remain closed. Preserve running Linux work, existing owner priorities and all newer task closures.

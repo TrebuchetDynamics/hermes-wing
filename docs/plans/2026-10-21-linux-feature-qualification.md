@@ -277,3 +277,90 @@ Goal: existing `PARITY`; no focus or priority change. Saved through the
 and external gate order preserved. The [plan index](README.md#plan-to-task-coverage)
 connects this full batch. No workers, test processes, services or schedules are
 started by saving it.
+
+## Remaining held-candidate recovery
+
+This owner-requested planning follow-up addresses four engineering holds and the
+existing Files deferral. It authorizes no implementation, test run, dispatch,
+service change or timer. Original sections describe their initial planning
+baseline, not current runtime results. Reuse existing task IDs and retained work;
+keep all acceptance, required checks, relative priority and live boundaries.
+
+### Reconciled evidence
+
+`MAIN-REPAIR-003` is coordinator-verified and integrated. Main was recorded green
+at `84f5d66`; a newer `eff6de9f` check was still running at inspection. Green main
+does not approve separate candidates. Read the latest reports and retained rejection
+records; no runtime checks were executed by this planner.
+
+During this planning pass, `2939ea05` independently integrated
+[the existing recovery handoff](../tasks/review-findings-recovery.md).
+It restored package, connections and accessibility task contracts; all three
+workers were then observed running. Preserve their updated checks, write sets,
+recovery instructions and live ownership. Do not overwrite them with this pass's
+older isolated draft or requeue them. Their started work is not completed proof.
+
+Current `scripts/support/linux_qualification_support.py` already contains native-only
+package admission, guarded by plugin attribution and manifest data. Missing arbitrary
+paths, links, stale roots and containment violations must remain rejected. That
+repair is no longer a reason to make accessibility wait for connections.
+
+### Plan by existing task
+
+- **`CHECK-PACKAGES-001` — package preparation:** the resumed task reuses
+  `302444a54489ec9d539f1242c7621dd2494c0971` against repaired main. Keep its
+  three-file setup/documentation boundary and current required checks. Resolve
+  exact locked dependencies without SDK/lockfile changes; retain real preparation
+  exits separately from the complete suite's terminal results. Warm-cache success
+  is not proof of a cold download. No product-test repair or Python result wrapper.
+- **`LINUXQA-001-8163f50f` — connections:** the resumed task reconciles
+  `efe2347a2ca1f0c193be417136336871d7acab2a` with current code and the completed
+  fixture repair. Preserve its added approval-dismissal regression and every
+  exact-owner/no-replay assertion. Require its registered campaign, distinct
+  plugin/storage/SSH checks and normal integrated full gate; standalone or historical
+  evidence is reused only when source, tool, dependency and fixture inputs match.
+- **`LINUXQA-001-cbe0b043` — accessibility:** the resumed task reuses
+  `1e3adcac6e3475bd86fc9362ff6839ac80484b0e`, current package validation and repaired
+  fixture ports. Require actual access-lane dispatch, compact-return persistence,
+  focused access checks, SSH modules together and integrated full-gate evidence.
+  Standalone GTK semantics/framework input never qualify real screen readers,
+  physical audio, Wayland/IME or installation. It can proceed independently of
+  package setup and connections with its already-available prerequisite inputs.
+- **`LINUXQA-001-800e359b` — management:** reuse
+  `34ab767e1cfc2e9390989f15b03dba7794e67b82`. The latest rejected integration
+  `4a907ed8a48b5bed68a575ca16e1a744de1564d7` stopped before test results on package
+  preparation at base `7603dcdd`. The worker separately reports standalone GTK and
+  SSH module passes but campaign refusal before dispatch. Make package setup a
+  real prerequisite, consume current native-only validation and completed
+  `MAIN-REPAIR-003`, then run the exact management lane on combined source. Retain
+  case/source/tool/cleanup identity and unsupported rows; standalone GTK is not
+  aggregate qualification. Keep the original three-file management write boundary.
+- **Files browsing/download:** keep the recorded owner deferral and original
+  dependency. Reconsider only when an unmodified Agent contract supplies effective
+  session/profile/backend terminal-root identity, authorization and canonical
+  confinement. Permission cannot supply that contract. No shell/SFTP substitute,
+  always-disabled completion claim or Agent edits.
+
+### Order, ownership and acceptance
+
+Planner's call: preserve the three independently resumed tasks and give management
+only the evidenced package-setup dependency, plus the completed main repair.
+Do not add artificial dependencies on already-landed helper fixes. The existing
+`LINUXQA-001-c232368b` still joins the original qualification lanes, and a child
+completion does not qualify the final report or platform.
+
+The unintegrated `aad4a590` draft is superseded by this reconciled plan; do not
+import its stale task snapshots or dependency edges. The earlier `b36ece5e` fixture
+proposal also remains unintegrated history: the completed main repair now owns that
+work. No duplicate task is needed.
+
+All original acceptance and checks remain mandatory. Revalidate named failures on
+the actual integrated candidate, retaining exact exits, skips, remaining failures
+and owned teardown. Unknown or incomplete results stay unqualified. Preserve
+credential, transport, containment, cancellation, approval/Stop and no-replay
+invariants; trace a remaining failure before expanding scope. Do not kill unrelated
+listeners, edit shared SDKs/installed runners, alter lockfiles, or discover personal
+credentials. Physical/live/package gates remain separate.
+
+No material product question remains. This plan records recovery and preserves
+Files deferral; it does not clear any validation hold or claim a runtime pass.

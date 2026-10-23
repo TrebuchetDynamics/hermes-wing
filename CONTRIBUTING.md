@@ -14,9 +14,14 @@ the Hermes session/run model described in [CONTEXT.md](CONTEXT.md) and the
 Use Flutter 3.44.2 and Node.js 22.
 
 ```bash
-flutter pub get
+flutter pub get --enforce-lockfile
 npm ci
 ```
+
+Initial Flutter preparation may download the exact public packages already pinned
+in `pubspec.lock`. Do not update the dependency manifest, lockfile or checksums to
+work around a missing cache. Offline resolution requires these packages to be
+cached first; it cannot bootstrap an empty cache.
 
 ## Repository map
 
@@ -35,6 +40,24 @@ device. Run `flutter build web --release -t lib/main_e2e.dart` followed by
 still need appropriate hardware or an emulator.
 
 ## Required checks
+
+Run locked preparation followed by the entire serial Flutter suite:
+
+```bash
+flutter pub get --enforce-lockfile && flutter test --no-pub --concurrency=1
+```
+
+After successful preparation, the warm-cache offline equivalent is:
+
+```bash
+flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1
+```
+
+Neither command filters the suite or introduces skips. Keep preparation failures
+separate from terminal test results; a complete failed suite is not a green check.
+
+These commands do not replace the relevant formatting, analysis, browser,
+security or native qualification gates. For full release/cross-boundary work:
 
 ```bash
 dart format --output=none --set-exit-if-changed lib test integration_test

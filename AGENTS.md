@@ -180,7 +180,9 @@ rollback behavior to reduce implementation effort.
   outside an explicit dependency task.
 
 Toolchain: Flutter 3.44.2, Node.js 22. Initial
-setup is `flutter pub get` and `npm ci`.
+setup is `flutter pub get --enforce-lockfile` and `npm ci`. Locked Flutter
+preparation may download the existing exact public packages; offline resolution
+requires an already populated dependency cache.
 
 ## Worktree and change discipline
 
@@ -215,14 +217,17 @@ setup is `flutter pub get` and `npm ci`.
 
 ## Validation
 
-The runner's whole offline Flutter test-suite entry point is:
+The runner's whole Flutter test-suite entry point is:
 
-Full check: flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1
+Full check: flutter pub get --enforce-lockfile && flutter test --no-pub --concurrency=1
 
-This prepares checkout-local package metadata from the existing dependency cache
-without network access or lockfile changes. It does not replace the applicable
-formatting, analysis, browser, security or native qualification gates below, and
-it does not authorize live tests.
+Locked preparation may download the existing exact public packages and prepares
+checkout-local package metadata without changing the lockfile. After successful
+preparation, warm-cache offline validation can use
+`flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1`;
+this is not a cold-cache bootstrap. Both paths run the entire unchanged serial
+suite. They do not replace the applicable formatting, analysis, browser, security
+or native qualification gates below, and do not authorize live tests.
 
 Run the smallest relevant check while iterating, then the checks proportional to
 the affected boundary.

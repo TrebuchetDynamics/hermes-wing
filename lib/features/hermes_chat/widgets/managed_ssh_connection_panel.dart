@@ -308,99 +308,99 @@ class _ManagedSshConnectionPanelState
     final saved = _saved;
     return SingleChildScrollView(
       child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (_loading) const LinearProgressIndicator(),
-        if (saved != null && !_editing) ...[
-          Text(
-            strings.managedSshQuickTitle,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          Text(
-            '${saved.request.username}@${saved.request.host}:${saved.request.sshPort}',
-            overflow: TextOverflow.ellipsis,
-            maxLines: 2,
-          ),
-          Text(saved.request.agentProfile ?? 'default'),
-          Text(strings.managedSshQuickBody),
-          FilledButton.icon(
-            key: const ValueKey('ssh-quick-connect'),
-            onPressed: _busy || _loading
-                ? null
-                : () => _submit(saved.request, saved: saved),
-            icon: const Icon(Icons.link),
-            label: Text(
-              _busy
-                  ? strings.managedSshConnectingAction
-                  : strings.managedSshQuickConnect,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_loading) const LinearProgressIndicator(),
+          if (saved != null && !_editing) ...[
+            Text(
+              strings.managedSshQuickTitle,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-          ),
-          TextButton(
-            key: const ValueKey('ssh-quick-edit'),
-            onPressed: _busy
-                ? null
-                : () => setState(() {
-                    _editing = true;
-                    _remember = false;
-                    _error = null;
-                  }),
-            child: Text(strings.managedSshQuickEdit),
-          ),
-        ] else ...[
-          if (defaultTargetPlatform == TargetPlatform.android)
-            CheckboxListTile(
-              key: const ValueKey('ssh-quick-remember'),
-              value: _remember,
-              onChanged: _busy || _loading
+            Text(
+              '${saved.request.username}@${saved.request.host}:${saved.request.sshPort}',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
+            Text(saved.request.agentProfile ?? 'default'),
+            Text(strings.managedSshQuickBody),
+            FilledButton.icon(
+              key: const ValueKey('ssh-quick-connect'),
+              onPressed: _busy || _loading
                   ? null
-                  : (value) => setState(() => _remember = value ?? false),
-              title: Text(strings.managedSshQuickRemember),
-              subtitle: Text(strings.managedSshQuickConsent),
-              controlAffinity: ListTileControlAffinity.leading,
+                  : () => _submit(saved.request, saved: saved),
+              icon: const Icon(Icons.link),
+              label: Text(
+                _busy
+                    ? strings.managedSshConnectingAction
+                    : strings.managedSshQuickConnect,
+              ),
             ),
-          LocalizedManagedSshConnectionForm(
-            key: ObjectKey(controller),
-            initialTarget: controller.recoveryTarget,
-            onSubmit: _submit,
-            allowServe:
-                defaultTargetPlatform == TargetPlatform.android && !_remember,
-            pickKey: widget.pickKey,
-            generatedKeyStore: widget.generatedKeyStore,
-            onCancel: _cancel,
-            busy: _busy || _loading,
-            sanitizedError: _error,
-          ),
+            TextButton(
+              key: const ValueKey('ssh-quick-edit'),
+              onPressed: _busy
+                  ? null
+                  : () => setState(() {
+                      _editing = true;
+                      _remember = false;
+                      _error = null;
+                    }),
+              child: Text(strings.managedSshQuickEdit),
+            ),
+          ] else ...[
+            if (defaultTargetPlatform == TargetPlatform.android)
+              CheckboxListTile(
+                key: const ValueKey('ssh-quick-remember'),
+                value: _remember,
+                onChanged: _busy || _loading
+                    ? null
+                    : (value) => setState(() => _remember = value ?? false),
+                title: Text(strings.managedSshQuickRemember),
+                subtitle: Text(strings.managedSshQuickConsent),
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            LocalizedManagedSshConnectionForm(
+              key: ObjectKey(controller),
+              initialTarget: controller.recoveryTarget,
+              onSubmit: _submit,
+              allowServe:
+                  defaultTargetPlatform == TargetPlatform.android && !_remember,
+              pickKey: widget.pickKey,
+              generatedKeyStore: widget.generatedKeyStore,
+              onCancel: _cancel,
+              busy: _busy || _loading,
+              sanitizedError: _error,
+            ),
+          ],
+          if (saved != null && !_editing)
+            TextButton(
+              key: const ValueKey('ssh-quick-cancel'),
+              onPressed: _cancel,
+              child: Text(strings.cancelAction),
+            ),
+          if (saved != null)
+            TextButton(
+              key: const ValueKey('ssh-quick-forget'),
+              onPressed: _busy ? null : _forgetSaved,
+              child: Text(strings.managedSshQuickForget),
+            ),
+          if (_error != null && saved != null && !_editing)
+            Semantics(
+              liveRegion: true,
+              child: Text(_error!, key: const ValueKey('ssh-quick-error')),
+            ),
+          if (_adopted && _error == strings.managedSshQuickSaveFailed)
+            TextButton(
+              key: const ValueKey('ssh-quick-continue'),
+              onPressed: _busy
+                  ? null
+                  : () {
+                      if (_continueConnection?.call() ?? false) {
+                        widget.onConnected?.call();
+                      }
+                    },
+              child: Text(strings.managedSshQuickContinue),
+            ),
         ],
-        if (saved != null && !_editing)
-          TextButton(
-            key: const ValueKey('ssh-quick-cancel'),
-            onPressed: _cancel,
-            child: Text(strings.cancelAction),
-          ),
-        if (saved != null)
-          TextButton(
-            key: const ValueKey('ssh-quick-forget'),
-            onPressed: _busy ? null : _forgetSaved,
-            child: Text(strings.managedSshQuickForget),
-          ),
-        if (_error != null && saved != null && !_editing)
-          Semantics(
-            liveRegion: true,
-            child: Text(_error!, key: const ValueKey('ssh-quick-error')),
-          ),
-        if (_adopted && _error == strings.managedSshQuickSaveFailed)
-          TextButton(
-            key: const ValueKey('ssh-quick-continue'),
-            onPressed: _busy
-                ? null
-                : () {
-                    if (_continueConnection?.call() ?? false) {
-                      widget.onConnected?.call();
-                    }
-                  },
-            child: Text(strings.managedSshQuickContinue),
-          ),
-      ],
       ),
     );
   }

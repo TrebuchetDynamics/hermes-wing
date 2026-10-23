@@ -13,16 +13,14 @@ void main() {
   late HermesApiChannel channel;
   setUp(() async {
     fixture = LocalServeChatFixture();
+    addTearDown(() => fixture.close());
     await fixture.start();
     channel = HermesApiChannel();
+    addTearDown(() => channel.dispose());
     await channel.connectLocalServeReads(
       baseUrl: fixture.origin,
       credential: LocalServeReadFixture.token,
     );
-  });
-  tearDown(() async {
-    channel.dispose();
-    await fixture.close();
   });
   Future<void> flush() =>
       Future<void>.delayed(const Duration(milliseconds: 40));

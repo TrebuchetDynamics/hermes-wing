@@ -13,6 +13,7 @@ import 'package:wing/l10n/app_localizations.dart';
 import 'package:wing/router/providers/app_router.dart';
 
 import '../hermes_chat/support/fake_hermes_endpoint_store.dart';
+import '../hermes_chat/support/fake_ssh_quick_connect_store.dart';
 import '../../../integration_test/support/direct_first_run_native_fixture.dart';
 
 Finder control(String name) => find.byKey(ValueKey(name));
@@ -43,6 +44,9 @@ void main() {
           );
           final container = ProviderContainer(
             overrides: [
+              sshQuickConnectStoreProvider.overrideWithValue(
+                FakeSshQuickConnectStore(),
+              ),
               hermesChannelProvider.overrideWith((_) => channel),
               hermesEndpointStoreProvider.overrideWithValue(store),
               hermesGatewayDirectoryProvider.overrideWith((_) => directory),

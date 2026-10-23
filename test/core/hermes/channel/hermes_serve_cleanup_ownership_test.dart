@@ -34,10 +34,10 @@ void main() {
     test('serve cleanup wait cannot overtake $replacement ownership', () async {
       final original = LocalServeReadFixture();
       final newer = LocalServeReadFixture();
-      await original.start();
-      await newer.start();
       addTearDown(original.close);
+      await original.start();
       addTearDown(newer.close);
+      await newer.start();
       final store = _HeldClearStore();
       final apiReads = <String>[];
       final channel = HermesApiChannel(

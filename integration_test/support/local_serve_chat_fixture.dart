@@ -7,6 +7,14 @@ import 'local_serve_read_fixture.dart';
 /// Deterministic wire fixture, not an Agent authentication/inference substitute.
 class LocalServeChatFixture extends LocalServeReadFixture {
   final sockets = <WebSocket>[];
+  bool _closing = false;
+
+  @override
+  Future<void> start() async {
+    await super.start();
+    _closing = false;
+  }
+
   final rpc = <Map<String, dynamic>>[];
   final replies = <Map<String, dynamic>>[];
   Completer<void>? replyReceived;
@@ -67,6 +75,10 @@ class LocalServeChatFixture extends LocalServeReadFixture {
       request,
       protocolSelector: (_) => 'hermes-gateway-v1',
     );
+    if (_closing) {
+      await ws.close();
+      return true;
+    }
     sockets.add(ws);
     ws.add(
       jsonEncode({
@@ -85,6 +97,7 @@ class LocalServeChatFixture extends LocalServeReadFixture {
     var profile = 'default';
     var stored = 'default-session';
     ws.listen((raw) async {
+      if (_closing) return;
       final frame = jsonDecode(raw as String) as Map<String, dynamic>;
       if (frame['method'] == null) {
         replies.add(frame);
@@ -182,6 +195,7 @@ class LocalServeChatFixture extends LocalServeReadFixture {
           );
           return;
       }
+      if (_closing) return;
       ws.add(
         jsonEncode({'jsonrpc': '2.0', 'id': frame['id'], 'result': result}),
       );
@@ -238,10 +252,14 @@ class LocalServeChatFixture extends LocalServeReadFixture {
 
   @override
   Future<void> close() async {
-    if (submitHeld != null && !submitHeld!.isCompleted) submitHeld!.complete();
-    for (final ws in sockets) {
-      await ws.close();
+    _closing = true;
+    if (!(submitHeld?.isCompleted ?? true)) submitHeld!.complete();
+    if (!(holdHistory?.isCompleted ?? true)) holdHistory!.complete();
+    try {
+      await Future.wait([for (final ws in sockets) ws.close()]);
+    } finally {
+      sockets.clear();
+      await super.close();
     }
-    await super.close();
   }
 }

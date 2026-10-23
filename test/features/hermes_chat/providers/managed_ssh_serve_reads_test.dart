@@ -87,19 +87,19 @@ void main() {
 
   setUp(() async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     fixture = _ServeFixture();
+    addTearDown(() => fixture.close());
     await fixture.start();
     store = _Store();
     channel = HermesApiChannel(serveRecoveryStore: store);
+    addTearDown(() => channel.dispose());
     forward = _Forward(fixture.origin);
     controller = ManagedSshConnectionController(forward, channel);
-  });
-  tearDown(() async {
-    await controller.cancel();
-    controller.dispose();
-    channel.dispose();
-    await fixture.close();
-    debugDefaultTargetPlatformOverride = null;
+    addTearDown(() async {
+      await controller.cancel();
+      controller.dispose();
+    });
   });
 
   Future<bool> connect({bool serveReads = true, String? token}) =>

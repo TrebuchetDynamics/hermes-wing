@@ -131,29 +131,29 @@ void main() {
           return call.method == 'read' ? values[key] : null;
         });
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() {
+      debugDefaultTargetPlatformOverride = null;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(storageChannel, null);
+    });
     first = _Fixture();
-    replacement = _Fixture();
+    addTearDown(() => first.close());
     await first.start();
+    replacement = _Fixture();
+    addTearDown(() => replacement.close());
     await replacement.start();
     channel = HermesApiChannel();
+    addTearDown(() => channel.dispose());
     forward = _Forward(first.origin);
     controller = ManagedSshConnectionController(forward, channel);
-  });
-  tearDown(() async {
-    if (!(holdStorage?.isCompleted ?? true)) {
-      holdStorage!.complete();
-    }
-    if (!(replacement.holdHistory?.isCompleted ?? true)) {
-      replacement.holdHistory!.complete();
-    }
-    await controller.cancel();
-    controller.dispose();
-    channel.dispose();
-    await first.close();
-    await replacement.close();
-    debugDefaultTargetPlatformOverride = null;
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(storageChannel, null);
+    addTearDown(() async {
+      if (!(holdStorage?.isCompleted ?? true)) holdStorage!.complete();
+      if (!(replacement.holdHistory?.isCompleted ?? true)) {
+        replacement.holdHistory!.complete();
+      }
+      await controller.cancel();
+      controller.dispose();
+    });
   });
 
   Future<bool> connect({

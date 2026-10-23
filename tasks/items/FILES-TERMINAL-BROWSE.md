@@ -5,8 +5,8 @@ title = "Browse and read the selected Agent terminal working-directory files on 
 short = "Browse and read the selected Agent terminal working-directory files on Linux and Android"
 status = "open"
 goal = "PARITY"
-section = "Next"
-rank = 17000
+section = "Needs decision"
+rank = 1000
 depends_on = []
 touches = ["lib/core/hermes/", "lib/features/", "lib/router/", "test/core/hermes/", "test/features/", "test/router/", "integration_test/", "playwright/tests/", "docs/quality/", "lib/l10n/app_en.arb", "lib/l10n/app_localizations.dart", "lib/l10n/app_localizations_en.dart"]
 resources = []
@@ -23,6 +23,6 @@ exclusions = []
 - Evidence: `autowork-execution/slot-data/FILES-TERMINAL-BROWSE/attempt-1/report.json` under the Git common directory names exactly these three localization paths for the already-required accessible labels, empty/denied/unsupported states, bounded preview and root-ownership explanations. No new product behavior or live access is admitted. The worker stopped before edits; resume the existing implementation contract with localized copy and unchanged authentication/containment gates.
 - Readiness: CONTRACT-UNREADY: the latest source-bound attempt established no safe positive enablement rule for exact session/profile/backend root and canonical server confinement. Localization scope is already repaired; do not repeat that repair or submit an always-disabled feature as completed Files support.
 - Planner decision: skip positive Files implementation until an existing unmodified Agent contract establishes all FILES-4 guarantees. Keep the original acceptance and FILES-TERMINAL-DOWNLOAD dependency; missing API authority is not a question the owner can waive. No shell/SFTP substitute, Agent edits, incidental-write probe or speculative qualification flag. Reconsider only with new source-bound contract evidence and independent review.
-- Next action: retain the clean candidate at 0b9cc27d9b7df5265dedd19622b106579c385ee9 and its latest report as evidence. Resume only after the missing offline contract is supplied and reviewed; native/live cells remain separately gated.
+- Next action: Preserve candidate 0b9cc27d9b7df5265dedd19622b106579c385ee9 and all source/worker evidence. No retry of the unchanged implementation: reconsider only after new source-bound authoritative root/authentication/confinement contract evidence and review. Keep download waiting; no shell/SFTP substitute, Agent edits or always-disabled completion claim.
 - Reopened: Reopened after an owner-close correction: this is offline implementation work and belongs in Next, not in the device/live waiver.
-- Owner decision: 2026-10-22: deferred under the approved CONTRACT-UNREADY planner decision: the unmodified Agent contracts give no safe positive enablement rule for terminal-root file browsing. Revisit when the Agent contract exposes the effective terminal root with server-enforced confinement.
+- Owner decision: 2026-10-22: Apply the existing recorded owner deferral: positive Files implementation stays incomplete until the unmodified Agent exposes the effective selected session/profile/backend terminal root, matching authorization and canonical confinement. This is not a new permission question or a waiver; preserve acceptance, retained candidate and download dependency.

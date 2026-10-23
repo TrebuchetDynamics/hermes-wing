@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:wing/theme/wing_theme.dart';
 
 import 'hermes_features_maestro_main.dart' as fixture;
 import 'support/linux_test_isolation.dart';
@@ -82,20 +81,24 @@ void main() {
 
     await open('Settings fixture');
     final mode = find.byKey(const ValueKey('settings-theme-mode'));
-    final palette = find.byKey(const ValueKey('settings-palette-picker'));
+    final palette = find.byKey(const ValueKey('settings-theme-forest'));
     if (phase == 'write') {
       await tap(find.text('Dark'));
       await tap(palette);
-      await tap(find.text('Forest').last);
     }
     expect(tester.widget<SegmentedButton<ThemeMode>>(mode).selected, {
       ThemeMode.dark,
     });
     expect(
-      tester.state<FormFieldState<WingThemePalette>>(palette).value,
-      WingThemePalette.forest,
+      tester
+          .widget<Semantics>(
+            find.ancestor(of: palette, matching: find.byType(Semantics)).first,
+          )
+          .properties
+          .selected,
+      isTrue,
     );
-    await tap(find.byKey(const ValueKey('settings-category-chat')));
+    await tap(find.byKey(const ValueKey('settings-category-voice')));
     await tap(find.byKey(const ValueKey('settings-voice-link')));
     final spoken = find.byKey(const ValueKey('voice-speak-replies-enabled'));
     if (phase == 'write') await tap(spoken);

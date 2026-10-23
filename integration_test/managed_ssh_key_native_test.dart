@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,9 +28,10 @@ void main() {
     if (!isolated || (!Platform.isLinux && !Platform.isAndroid)) {
       throw StateError('Use the isolated native SSH key launcher');
     }
-    // Local storage acquisition only is substituted. No channel, API client,
-    // managed controller or SSH forward provider is overridden.
+    // Preferences, endpoint/recovery and host-pin storage are substituted.
+    // Channel, parsing, fingerprint review, controller and SSH stay real.
     SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
     final fixture = await ManagedSshKeyNativeFixture.load();
     addTearDown(fixture.dispose);
     final selector = ManagedSshKeyDocumentSelector();
@@ -82,6 +84,15 @@ void main() {
     final form = find.byType(ManagedSshConnectionForm);
     Finder formButton(Type type) =>
         find.descendant(of: form, matching: find.byType(type));
+    Future<void> cancelForm() async {
+      final cancel = find.descendant(
+        of: form,
+        matching: find.widgetWithText(TextButton, 'Cancel'),
+      );
+      expect(cancel, findsOneWidget);
+      await tap(cancel);
+    }
+
     Future<Map<String, dynamic>> stats() async =>
         (await tester.runAsync(() => fixture.control('stats')))!;
     Map<String, dynamic> reads(Map<String, dynamic> value) =>
@@ -169,7 +180,7 @@ void main() {
     final selection = selector.hold();
     await tap(control('managed-ssh-select-key'));
     await tester.pump(const Duration(milliseconds: 300));
-    await tap(formButton(TextButton));
+    await cancelForm();
     selection.complete(fixture.document('valid'));
     await tester.pump(const Duration(seconds: 1));
     expect(channel.state.isConnected, false);
@@ -181,12 +192,13 @@ void main() {
     await pick('valid');
     await tester.runAsync(() => fixture.control('hold'));
     await submit();
-    await trust();
+    // The first reviewed fingerprint remains pinned despite wrong-key auth.
+    expect(find.byType(AlertDialog), findsNothing);
     await until(
       () => (channel.state.status == HermesConnectionStatus.connecting),
       'Bootstrap did not start',
     );
-    await tap(formButton(TextButton));
+    await cancelForm();
     await tester.runAsync(() => fixture.control('release'));
     await until(
       () => !(channel.state.status == HermesConnectionStatus.connecting),
@@ -202,22 +214,20 @@ void main() {
       await pick('valid');
       final before = await stats();
       await submit();
-      await trust();
+      expect(find.byType(AlertDialog), findsNothing);
       await until(
         () =>
             channel.state.isConnected &&
             (cycle == 0 ||
-                (channel.state.selectedProfileId == 'qa-key' &&
+                (channel.state.selectedProfileId == 'default' &&
                     channel.state.activeSessionId == 'qa-history')),
         'SSH/Agent connection failed',
       );
-      if (cycle == 0) {
-        await tap(control('hermes-profile-switcher'));
-        await tap(control('chat-profile-row-qa-key'));
-      }
+      // This ephemeral connection acquires the advertised default profile.
+      // It does not expose or qualify the saved-host profile picker.
       await until(
         () =>
-            channel.state.selectedProfileId == 'qa-key' &&
+            channel.state.selectedProfileId == 'default' &&
             channel.state.activeSessionId == 'qa-history',
         'Exact profile/session not restored',
       );
@@ -256,7 +266,7 @@ void main() {
           () => !channel.state.isConnected,
           'Interrupted SSH remained connected',
         );
-        expect(channel.state.selectedProfileId, 'qa-key');
+        expect(channel.state.selectedProfileId, 'default');
         expect(channel.state.activeSessionId, 'qa-history');
         await tester.pump(const Duration(seconds: 1));
         expect(reads(await stats()), exactReads);
@@ -282,15 +292,15 @@ void main() {
         await tap(control('managed-ssh-auth-private-key'));
         await pick('valid');
         await submit();
-        await trust();
+        expect(find.byType(AlertDialog), findsNothing);
         await until(
           () =>
               channel.state.isConnected &&
-              channel.state.selectedProfileId == 'qa-key' &&
+              channel.state.selectedProfileId == 'default' &&
               channel.state.activeSessionId == 'qa-history',
           'Explicit SSH Retry failed',
         );
-        expect(channel.state.selectedProfileId, 'qa-key');
+        expect(channel.state.selectedProfileId, 'default');
         expect(channel.state.activeSessionId, 'qa-history');
         if (channel.state.connectedBaseUrl == originalOrigin) {
           fail('Fixture journey did not exercise forwarding port replacement');
@@ -322,8 +332,8 @@ void main() {
       expect(disconnected['live_ssh'], 0);
       expect(reads(disconnected), exactReads);
     }
-    // Fresh profile selection and exact-owner reconnect are separate journeys;
-    // both retain bounded GET-only receipts, not equal page-zero read counts.
+    // Advertised-default acquisition and exact-owner reconnect are separate
+    // journeys; neither synthesizes a missing profile inventory or selector.
     final result = await stats();
     expect(result['mutation_attempts'], 0);
     expect(result['forbidden_ssh'], 0);
@@ -332,7 +342,7 @@ void main() {
     // Launcher accepts only this bounded sanitized summary, never Flutter logs.
     // ignore: avoid_print
     print(
-      'WING_SSH_KEY_RESULT ${jsonEncode({'platform': Platform.operatingSystem, 'workflow': 'PASS', 'native_picker': 'NOT_CHECKED', 'physical_secure_storage': 'NOT_CHECKED', 'encrypted_key': 'NOT_CHECKED', 'model': 'READ_ONLY_INVENTORY', 'wing_link': 'NO_LISTENER', 'cycles': cycles, 'counters': result})}',
+      'WING_SSH_KEY_RESULT ${jsonEncode({'platform': Platform.operatingSystem, 'workflow': 'PASS', 'native_picker': 'NOT_CHECKED', 'physical_secure_storage': 'NOT_CHECKED', 'encrypted_key': 'NOT_CHECKED', 'model': 'READ_ONLY_INVENTORY', 'wing_link': 'NO_LISTENER', 'profile_selection': 'ADVERTISED_DEFAULT_NOT_SWITCHER', 'cycles': cycles, 'counters': result})}',
     );
     await tester.pumpWidget(const SizedBox.shrink());
   });

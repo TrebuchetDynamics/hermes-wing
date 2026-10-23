@@ -250,9 +250,52 @@ named completed task records remain done and both live successors remain open in
 Needs decision. No current-store edit, reopened task, goal qualification or replay
 of the obsolete snapshot is justified; the saved patch was not applied.
 
-These are documentation dispositions, not new closure or coordinator verification.
-`PARITYUPDATE-005-11-LIVE` and `MT-VERIFY-BROWSER-GATES-LIVE` remain open in Needs
-decision. No current goal evidence, acceptance, ordering or live authority changes.
+#### Current disposition at 9fa722f6
+
+At `9fa722f6c7233c4ace6d4a890aae77518cb19dca`, both complete saved patches,
+adjacent reports, later tab report, archived task Sources/accepted scope and
+current records were rechecked. Their only changes remain the retired generated
+coverage/priority edits listed above. **Drop both proposals**; no current-store
+edit is justified. The five named completed tasks and both producer slots remain
+closed. Contrary to the historical inspections above,
+[PARITYUPDATE-005-11-LIVE](../../tasks/items/PARITYUPDATE-005-11-LIVE.md) and
+[MT-VERIFY-BROWSER-GATES-LIVE](../../tasks/items/MT-VERIFY-BROWSER-GATES-LIVE.md)
+are now manually closed by the owner's recorded 2026-10-22 waiver. Preserve those
+newer closures: they supply no live evidence or goal qualification. No patch was
+applied and no task, goal, acceptance or ordering was changed.
+
+#### Package-check evidence at 9fa722f6
+
+The runner reported two pre-result crashes at the same revision. All five files
+were read in place under Git-common
+`autowork-execution/main-evidence/9fa722f6c7233c4ace6d4a890aae77518cb19dca/`:
+
+- `main_check.json`: `broken`, `INCOMPLETE`, `failures: null`; checked revision
+  `9fa722f6c7233c4ace6d4a890aae77518cb19dca`, previous green
+  `9ca06dca7065c3d047f2e4f909937b6147a2dcf4`.
+- `main-check.log`: `Resolving dependencies...`, then
+  `Because wing depends on qr_flutter 4.1.0 which doesn't match any versions, version solving failed.`,
+  then **`Failed to update packages.`**
+- `main-check.exit`: `1`; `main-check-reruns.log`: empty;
+  `flaky_history.json`: `{}`. There are no test results or isolated reruns.
+
+This is the same preparation crash already owned by
+[CHECK-PACKAGES-001](../../tasks/items/CHECK-PACKAGES-001.md), not red-test or
+flaky-test evidence. Its [accepted bounded repair](main-check-package-recovery.md#bounded-repair)
+already covers setup-backed locked preparation and the unchanged entire serial
+Flutter suite. `pubspec.yaml:31` and `pubspec.lock` still pin `qr_flutter` 4.1.0,
+introduced by `1684d76a56add2db2e9211990016af1eb04be8dc`; no dependency change or
+named-test repair is justified by this bundle.
+
+The existing task is running: its recorded worker PID/start identity matches a
+live process and no terminal worker report exists at this inspection. Do not
+edit its entry or its owned recovery page, duplicate it, reorder it or infer a
+result. This separate evidence note preserves its contract and active ownership.
+The full check remains
+`flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1`
+until that worker's repair is reviewed and integrated. This maintainer pass ran
+no package preparation, Flutter tests, browser/native/device or live operations;
+check recovery and green main are not claimed.
 
 The eight preserved transcript-native files are `lib/features/hermes_chat/screens/widgets/hermes_chat_status.dart`,
 `integration_test/support/transcript_recovery_native_fixture.dart`,

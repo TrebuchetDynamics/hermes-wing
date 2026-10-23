@@ -1,0 +1,9 @@
+schema = 1
+task = "LINUXQA-001-8163f50f"
+candidate = "8067d05232c3d6063e06997a81ead0264dfdc0e8"
+integration = "aebfbb96273324b20c2e5894e3a4335e9a44d5dc"
+tree = "ac95797c3039638d963b3594bbbfb751a35c94ae"
+contract_hash = "3c3ea8fb3ddd53c086a383d2ce63558be33ea4f9af276c0d70a0bca7f2e6ba23"
+checks = ["<path>", "<path>", "--verify", "<path>", "LINUXQA-001-8163f50f"]
+result = "pass"
+review = "passed"

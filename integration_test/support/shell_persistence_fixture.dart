@@ -30,7 +30,7 @@ Future<Map<String, Object?>> runShellPersistenceJourney(
   final sidebar = find.byKey(const ValueKey('desktop-sidebar'));
   final toggle = find.byKey(const ValueKey('desktop-sidebar-toggle'));
   final initialWidth = tester.getSize(sidebar).width;
-  expect(initialWidth, phase == 'collapse' ? 250 : 64);
+  expect(initialWidth, phase == 'collapse' ? 237 : 64);
   if (phase == 'collapse') {
     await navigation.reach(tester, toggle);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);

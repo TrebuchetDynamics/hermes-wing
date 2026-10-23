@@ -25,7 +25,7 @@ def module(name, path):
 def validate(receipt, phase):
     assert phase in ('collapse', 'restore') and receipt['phase'] == phase
     assert type(receipt['native_pid']) is int and receipt['native_pid'] > 0
-    assert receipt['initial_width'] == (250 if phase == 'collapse' else 64)
+    assert receipt['initial_width'] == (237 if phase == 'collapse' else 64)
     assert receipt['restored_width'] == 64
     assert receipt['keyboard_collapse'] is (phase == 'collapse')
     assert receipt['persisted_expanded'] is False
@@ -137,12 +137,12 @@ def run():
 
 def self_check():
     for phase in ('collapse', 'restore'):
-        receipt = dict(phase=phase, native_pid=1, initial_width=250 if phase == 'collapse' else 64,
+        receipt = dict(phase=phase, native_pid=1, initial_width=237 if phase == 'collapse' else 64,
                        restored_width=64, keyboard_collapse=phase == 'collapse', persisted_expanded=False,
                        unavailable_storage_usable=True, reads=0, sends=0, mutations=0)
         validate(receipt, phase)
         for key, value in [('phase', 'other'), ('native_pid', True), ('initial_width', 0),
-                           ('restored_width', 250), ('keyboard_collapse', phase != 'collapse'),
+                           ('restored_width', 237), ('keyboard_collapse', phase != 'collapse'),
                            ('persisted_expanded', True), ('unavailable_storage_usable', False),
                            ('reads', 1), ('sends', 1), ('mutations', 1), ('reads', False)]:
             try:

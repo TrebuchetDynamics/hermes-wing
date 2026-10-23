@@ -3,7 +3,7 @@ schema = 1
 id = "MOBILE-GATEWAY-SIGNIN"
 title = "Direct mobile gateway sign-in with metadata QR"
 short = "Mobile gateway sign-in"
-status = "open"
+status = "done"
 goal = "CONNECTION-PATHS"
 section = "Next"
 rank = 16010
@@ -16,6 +16,8 @@ scope = "Android explicit metadata QR/manual HTTPS origin, native PKCE browser l
 acceptance = ["QR excludes all credentials and legacy formats", "Phone initiates advertised native_pkce and stores only exact-origin tokens securely", "HTTPS/WSS uses valid certificates, fresh tickets and existing no-replay session gates", "Cancellation, refresh and secure persistence have regression coverage", "Report real-device and live-host gates separately"]
 checks = ["flutter --version --machine", "flutter pub get --enforce-lockfile", "flutter test --no-pub --concurrency=1 test/core/hermes/auth/native_gateway_auth_test.dart test/core/hermes/auth/secure_gateway_token_store_test.dart test/core/hermes/setup/hermes_gateway_invite_test.dart test/core/hermes/channel/hermes_remote_gateway_test.dart test/features/enrollment/gateway_https_flow_test.dart test/features/enrollment/gateway_login_entry_test.dart", "flutter analyze --no-pub", "flutter build web --release --no-pub -t lib/main_e2e.dart", "node desktop_plugins/wing-connect/build.mjs --check", "node --check desktop_plugins/wing-connect/plugin.js", "node --experimental-vm-modules --test test/tooling/test_gateway_qr_plugin.mjs", "git diff --exit-code -- pubspec.yaml pubspec.lock", "git diff --check"]
 exclusions = ["No Agent modifications", "No gateway startup, VPN/firewall changes or hosted deployment", "No credential QR or legacy pairing", "No live-account/provider qualification from fixtures"]
+closure = "coordinator_verified"
+closure_evidence = "tasks/evidence/MOBILE-GATEWAY-SIGNIN.toml"
 +++
 
 # Mobile gateway sign-in candidate
@@ -73,3 +75,6 @@ sign-in gateway. This client does not create one; host setup remains explicit.
 - Sources: docs/product/enrollment.md#android-gateway-sign-in-candidate; docs/adr/security-and-privacy.md#gateway-sign-in-and-metadata-qr; desktop_plugins/wing-connect/README.md#source-and-validation
 - Blocker resolution: not runnable: needs Scope, Acceptance, Checks and Touches (draft: checks); filled the missing exact offline check commands from current auth/token/invite/channel/enrollment tests and the plugin README. This is task-contract repair, not new product authority or test success. Preserve all acceptance, rank, saved implementation and live-device limits.
 - Next action: Reconcile the already-present gateway sign-in implementation and retained source-bound checks; do not rebuild it from scratch. Run missing/invalidated exact checks on documented Flutter 3.44.2 and Node 22; retained Flutter 3.44.9 evidence does not qualify the pinned SDK. Plugin decoding requires the existing zbarimg tool; report unavailable tool input rather than fabricate a pass. Preserve origin/token/callback and no-replay assertions. Physical camera/system-browser/live-account and installation checks remain separately unqualified; no service setup, provider call, APK installation or deployment is authorized by this recovery.
+- Pending live: Actual official Hermes Desktop plugin installation/load and operator interaction remain unqualified; no runtime installation was performed.
+- Pending live: Physical Android camera scan, actual system-browser PKCE login/callback, platform secure persistence, refresh and cancellation require device qualification.
+- Pending live: Reachable live HTTPS gateway/account qualification with valid certificates, fresh WSS tickets, exact-session recovery and deliberate generation without replay remains separate; no service setup, account/provider call, APK installation or deployment was performed.

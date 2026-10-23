@@ -1,0 +1,9 @@
+schema = 1
+task = "MOBILE-GATEWAY-SIGNIN"
+candidate = "4eb0135a8d63b99af0275531ea55fd5b424d2967"
+integration = "6d5672495e1c118c6c8142b40d650fe6ed8889bd"
+tree = "9bc540a1d819e001f00a7120f7f4a99652fb6b97"
+contract_hash = "7ac55d20f6efa68bcc4eae6671cd9814fac3930d6352878228f5f427fbc54735"
+checks = ["<path>", "<path>", "--verify", "<path>", "MOBILE-GATEWAY-SIGNIN"]
+result = "pass"
+review = "passed"

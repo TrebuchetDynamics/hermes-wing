@@ -129,6 +129,19 @@ was changed. Fixture completeness remains separate from live/platform
 qualification; the coordinator's full offline suite is separate and was not rerun
 by this worker.
 
+The final evidence-join task reproduced a GTK abort at the first `paged JSON GTK
+save keeps projection and destination outcomes separate` case, including one
+unchanged isolated rerun: exit 1, ten completed tests, fifteen incomplete tests
+plus teardown, no published case document and no downstream runners dispatched.
+As in the access lane, the private XDG data root lacked stock MIME metadata for
+GTK fallback PNG decoding. The Chat target now seeds only
+`/usr/share/mime/mime.cache` into its owned data directory before chooser cases
+and records those bytes' SHA-256 in each case; it neither inherits host search
+roots nor mocks the chooser. A fresh registered
+Chat campaign then passed all 25 cases and both downstream runners with complete
+owned cleanup. The [final join](linux-full-feature-qualification.md) preserves the
+failed attempt separately from current source-equivalent fixture coverage.
+
 Revisit this document when the case registry, transport selection, Bot ownership,
 queue admission, timestamp renderer, native picker/saver, campaign dispatch or
 restart evidence changes. The [campaign plan](../plans/2026-10-21-linux-feature-qualification.md)

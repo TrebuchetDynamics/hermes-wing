@@ -6,14 +6,6 @@ This file contains only hard blockers that require user action.
 
 <!-- pi-autowork:questions:start -->
 
-### Q-LINUXQA-001-cbe0b043 — USER_DECISION — effort decision — unblocks 1
-
-- Task: LINUXQA-001-cbe0b043 — Qualify Linux accessibility native lifecycle and voice failure boundaries
-- Needs: integration validation failed or changed the integration tree: the full check has new failures the base does not: /home/xel/git/gormes/hermes-wing/.worktrees/autowork-integration/test/features/hermes_chat/providers/managed_ssh_serve_test.dart: Android SSH separates REST authentication from ticket and owner authorization, /home/xel/git/gormes/hermes-wing/.worktrees/autowork-integration/test/features/hermes_chat/providers/managed_ssh_serve_reads_test.dart: API remains default and does not guess serve after failure, /home/xel/git/gormes/hermes-wing/.worktrees/autowork-integration/test/features/hermes_chat/providers/managed_ssh_session_recovery_test.dart: rec; DOCS-MAINTAINER already changed Checks, Dependencies, Next action, Review findings, Review recovery, Touches, Verification status, but the task is still waiting for the same reason.
-- Since: 2026-10-23T04:06:33Z
-- Answer: Decide the missing input or disposition in tasks/items/LINUXQA-001-cbe0b043.md, or move it to Needs decision. The maintainer will not repeat this repair unless the record or waiting reason changes.
-- Kind: maintainer
-
 <!-- pi-autowork:questions:end -->
 
 ### BLK-20261007-W04 — Separate disposable QA authentication for live Desktop

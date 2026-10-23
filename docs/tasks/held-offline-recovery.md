@@ -250,11 +250,13 @@ named completed task records remain done and both live successors remain open in
 Needs decision. No current-store edit, reopened task, goal qualification or replay
 of the obsolete snapshot is justified; the saved patch was not applied.
 
-#### Current disposition at 9fa722f6
+#### Current disposition at 3ccaea06
 
-At `9fa722f6c7233c4ace6d4a890aae77518cb19dca`, both complete saved patches,
-adjacent reports, later tab report, archived task Sources/accepted scope and
-current records were rechecked. Their only changes remain the retired generated
+Rechecked at `3ccaea06387f2e36e1b4789cef77a9a03bde8b04`, preserving the prior
+`9fa722f6c7233c4ace6d4a890aae77518cb19dca` disposition: both complete saved
+patches (including every changed cell in the long generated rows), adjacent
+reports, later tab report, archived task Sources/accepted scope and current
+records were inspected. Their only changes remain the retired generated
 coverage/priority edits listed above. **Drop both proposals**; no current-store
 edit is justified. The five named completed tasks and both producer slots remain
 closed. Contrary to the historical inspections above,
@@ -264,20 +266,21 @@ are now manually closed by the owner's recorded 2026-10-22 waiver. Preserve thos
 newer closures: they supply no live evidence or goal qualification. No patch was
 applied and no task, goal, acceptance or ordering was changed.
 
-#### Package-check evidence at 9fa722f6
+#### Package-check evidence at 3ccaea06
 
 The runner reported two pre-result crashes at the same revision. All five files
 were read in place under Git-common
-`autowork-execution/main-evidence/9fa722f6c7233c4ace6d4a890aae77518cb19dca/`:
+`autowork-execution/main-evidence/3ccaea06387f2e36e1b4789cef77a9a03bde8b04/`:
 
 - `main_check.json`: `broken`, `INCOMPLETE`, `failures: null`; checked revision
-  `9fa722f6c7233c4ace6d4a890aae77518cb19dca`, previous green
+  `3ccaea06387f2e36e1b4789cef77a9a03bde8b04`, previous green
   `9ca06dca7065c3d047f2e4f909937b6147a2dcf4`.
 - `main-check.log`: `Resolving dependencies...`, then
   `Because wing depends on qr_flutter 4.1.0 which doesn't match any versions, version solving failed.`,
   then **`Failed to update packages.`**
 - `main-check.exit`: `1`; `main-check-reruns.log`: empty;
   `flaky_history.json`: `{}`. There are no test results or isolated reruns.
+  The bundle retains one final log, not two independent attempt logs.
 
 This is the same preparation crash already owned by
 [CHECK-PACKAGES-001](../../tasks/items/CHECK-PACKAGES-001.md), not red-test or
@@ -287,15 +290,26 @@ Flutter suite. `pubspec.yaml:31` and `pubspec.lock` still pin `qr_flutter` 4.1.0
 introduced by `1684d76a56add2db2e9211990016af1eb04be8dc`; no dependency change or
 named-test repair is justified by this bundle.
 
-The existing task is running: its recorded worker PID/start identity matches a
-live process and no terminal worker report exists at this inspection. Do not
-edit its entry or its owned recovery page, duplicate it, reorder it or infer a
-result. This separate evidence note preserves its contract and active ownership.
+The existing task is running: its recorded worker start ticks and boot identity
+match the live process, and no terminal worker report exists at this inspection.
+Do not edit its entry or its owned recovery page, duplicate it, reorder it or
+infer a result. This separate evidence note preserves its contract and active ownership.
 The full check remains
 `flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1`
 until that worker's repair is reviewed and integrated. This maintainer pass ran
 no package preparation, Flutter tests, browser/native/device or live operations;
 check recovery and green main are not claimed.
+
+Maintainer checklist for this revision:
+
+- [x] Read the five crash-bundle files in place and verify existing repair coverage.
+- [x] Compare both saved proposals with Sources, reports and newer task closures;
+  retain the drop disposition without applying either patch.
+- [x] Preserve the running task's record, recovery page, order and all acceptance.
+- [x] Validate the current ledger, changed local links and whitespace before commit:
+  native `tasks validate --worktree .` passed (296 tasks, 36 goals; the same two
+  existing drafts), four section links/anchors and eight preserved task statuses
+  passed a read-only Python check, and `git diff --check` passed.
 
 The eight preserved transcript-native files are `lib/features/hermes_chat/screens/widgets/hermes_chat_status.dart`,
 `integration_test/support/transcript_recovery_native_fixture.dart`,

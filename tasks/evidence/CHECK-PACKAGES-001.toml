@@ -1,0 +1,9 @@
+schema = 1
+task = "CHECK-PACKAGES-001"
+candidate = "2132def9c1530309b2d3c2622498b728c73d6975"
+integration = "4028318b8f8134a62cf9e3590165f614549d639e"
+tree = "8047c5377eeb12155bf90bc773ab694e0dbdd206"
+contract_hash = "8f632f122cc6fdaa80b8f195e332d92cd2cd81268e1291204f71b6ba4dcb2773"
+checks = ["<path>", "<path>", "--verify", "<path>", "CHECK-PACKAGES-001"]
+result = "pass"
+review = "passed"

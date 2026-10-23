@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,8 +37,24 @@ void main() {
     registerLinuxChatRestartPhase(root, restartPhase);
     return;
   }
+  // GTK's fallback PNG decoding needs shared-mime-info even with isolated XDG
+  // lookup. Seed only this fixed public cache, never user settings/search roots.
+  if (Platform.environment['XDG_DATA_DIRS'] != '$root/data') {
+    throw StateError('Owned GTK data lookup required');
+  }
+  final mimeCache = File('$root/data/mime/mime.cache');
+  mimeCache.parent.createSync(recursive: true);
+  final mimeBytes = File('/usr/share/mime/mime.cache').readAsBytesSync();
+  mimeCache.writeAsBytesSync(mimeBytes, flush: true);
   final cases = LinuxChatCases(root);
-  tearDownAll(cases.publish);
+  tearDownAll(() async {
+    for (final row in cases.rows) {
+      row['evidence'] = {
+        'mime_cache_sha256': sha256.convert(mimeBytes).toString(),
+      };
+    }
+    await cases.publish();
+  });
   final field = find.byKey(const ValueKey('hermes-composer-field'));
 
   Future<void> settle(WidgetTester tester) async {

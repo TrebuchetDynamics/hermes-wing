@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,9 +15,80 @@ import 'package:wing/l10n/app_localizations.dart';
 import '../../../core/hermes/ssh/secure_ssh_quick_connect_store_test.dart'
     show entry;
 import 'managed_ssh_connection_panel_test.dart' show FakeChannel, FakeForward;
+import '../support/fake_ssh_quick_connect_store.dart';
 
 void main() {
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+
+  testWidgets(
+    'pending saved access settles safely on error or caller cancellation',
+    (tester) async {
+      final channel = FakeChannel();
+      final forward = FakeForward();
+      final controller = ManagedSshConnectionController(forward, channel);
+      addTearDown(channel.dispose);
+      addTearDown(controller.dispose);
+      var cancelled = 0;
+      var connected = 0;
+      Future<void> mount(Completer<SshQuickConnection?> read) =>
+          tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                managedSshConnectionControllerProvider.overrideWithValue(
+                  controller,
+                ),
+                sshQuickConnectStoreProvider.overrideWithValue(
+                  FakeSshQuickConnectStore(read: () => read.future),
+                ),
+              ],
+              child: MaterialApp(
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: Scaffold(
+                  body: ManagedSshConnectionPanel(
+                    onCancel: () => cancelled++,
+                    onConnected: () => connected++,
+                  ),
+                ),
+              ),
+            ),
+          );
+      final failed = Completer<SshQuickConnection?>();
+      await mount(failed);
+      await tester.pump();
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(forward.config, isNull);
+      final strings = AppLocalizations.of(
+        tester.element(find.byType(ManagedSshConnectionPanel)),
+      );
+      failed.completeError(StateError('synthetic private storage error'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(find.text(strings.managedSshQuickStorageFailed), findsOneWidget);
+      expect(
+        find.textContaining('synthetic private storage error'),
+        findsNothing,
+      );
+      expect(find.byType(TextFormField), findsWidgets);
+      await tester.pumpWidget(const SizedBox());
+
+      final lateRead = Completer<SshQuickConnection?>();
+      await mount(lateRead);
+      await tester.pump();
+      final cancel = find.widgetWithText(TextButton, strings.cancelAction);
+      await tester.ensureVisible(cancel);
+      await tester.tap(cancel);
+      expect(cancelled, 1);
+      await tester.pumpWidget(const SizedBox());
+      lateRead.complete(entry());
+      await tester.pumpAndSettle();
+      expect(forward.config, isNull);
+      expect(channel.token, isNull);
+      expect(connected, 0);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
 
   for (final changedKey in [false, true]) {
     testWidgets(

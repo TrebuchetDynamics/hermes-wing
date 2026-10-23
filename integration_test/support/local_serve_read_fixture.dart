@@ -2,11 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'fixture_server.dart';
+
 /// Synthetic session token and sanitized rows; never starts or contacts Agent.
 class LocalServeReadFixture {
   static const token = 'synthetic-serve-owner';
-  late HttpServer server;
-  static int _nextPort = 0;
+  HttpServer? _server;
+  HttpServer get server => _server!;
+  bool _starting = false;
+  bool _closed = false;
   final requests = <String>[];
   final profiles = ['default', 'demo'];
   bool unsupported = false;
@@ -16,11 +20,21 @@ class LocalServeReadFixture {
   int get portOffset => 0;
 
   Future<void> start() async {
-    final base = int.tryParse(Platform.environment['AUTOWORK_PORT_BASE'] ?? '');
-    server = await HttpServer.bind(
-      InternetAddress.loopbackIPv4,
-      base == null ? 0 : base + ((portOffset + _nextPort++) % 100),
-    );
+    if (_starting || _server != null) {
+      throw StateError('Fixture already started.');
+    }
+    _starting = true;
+    _closed = false;
+    try {
+      final bound = await bindHermesFixtureServer(portOffset: portOffset);
+      if (_closed) {
+        await bound.close(force: true);
+        return;
+      }
+      _server = bound;
+    } finally {
+      _starting = false;
+    }
     server.listen((request) async {
       requests.add('${request.method} ${request.uri.path}');
       if (await handleExtra(request)) return;
@@ -35,6 +49,7 @@ class LocalServeReadFixture {
           profilesRequested!.complete();
         }
         await holdProfiles?.future;
+        if (_closed) return;
         request.response.write(
           jsonEncode({
             'profiles': [
@@ -114,7 +129,10 @@ class LocalServeReadFixture {
   };
   Future<bool> handleExtra(HttpRequest request) async => false;
   Future<void> close() async {
+    _closed = true;
+    final owned = _server;
+    _server = null;
     if (!(holdProfiles?.isCompleted ?? true)) holdProfiles!.complete();
-    await server.close(force: true);
+    await owned?.close(force: true);
   }
 }

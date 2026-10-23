@@ -13,6 +13,7 @@ import 'package:wing/core/hermes/local_discovery/local_hermes_home_discovery.dar
 import 'package:wing/features/hermes_chat/widgets/platform_local_connection_panel.dart';
 import 'package:wing/l10n/app_localizations.dart';
 import '../support/fake_hermes_endpoint_store.dart';
+import '../support/fake_ssh_quick_connect_store.dart';
 import '../support/fake_hermes_gateway_directory.dart';
 
 Finder key(String value) => find.byKey(ValueKey(value));
@@ -62,6 +63,9 @@ Future<(HermesChannel, FakeHermesEndpointStore, SyntheticHome)> pumpEntry(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        sshQuickConnectStoreProvider.overrideWithValue(
+          FakeSshQuickConnectStore(),
+        ),
         platformLocalHomeDiscoveryProvider.overrideWithValue(
           LocalHermesHomeDiscovery(platform: home),
         ),

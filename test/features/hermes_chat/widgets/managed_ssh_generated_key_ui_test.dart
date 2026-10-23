@@ -16,6 +16,7 @@ import 'package:wing/features/hermes_chat/providers/managed_ssh_connection_contr
 import 'package:wing/features/hermes_chat/widgets/managed_ssh_connection_panel.dart';
 import 'package:wing/features/hermes_chat/widgets/managed_ssh_connection_form.dart';
 import 'managed_ssh_connection_panel_test.dart' as support;
+import '../support/fake_ssh_quick_connect_store.dart';
 
 // Public deterministic seed, never a personal or randomly generated runtime key.
 ManagedSshGeneratedKey fixture() {
@@ -80,6 +81,9 @@ mount(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        sshQuickConnectStoreProvider.overrideWithValue(
+          FakeSshQuickConnectStore(),
+        ),
         managedSshConnectionControllerProvider.overrideWithValue(controller),
       ],
       child: MaterialApp(

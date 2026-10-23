@@ -104,10 +104,13 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({});
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     fixture = LocalServeChatFixture();
+    addTearDown(() => fixture.close());
     await fixture.start();
     store = _RecoveryStore();
     channel = HermesApiChannel(serveRecoveryStore: store);
+    addTearDown(() => channel.dispose());
     forward = _Forward(fixture.origin);
     sshStore = _SshStore();
     controller = ManagedSshConnectionController(
@@ -115,12 +118,7 @@ void main() {
       channel,
       recoveryStore: sshStore,
     );
-  });
-  tearDown(() async {
-    controller.dispose();
-    channel.dispose();
-    await fixture.close();
-    debugDefaultTargetPlatformOverride = null;
+    addTearDown(() => controller.dispose());
   });
   Future<bool> connect({String token = LocalServeReadFixture.token}) =>
       controller.connectSsh(

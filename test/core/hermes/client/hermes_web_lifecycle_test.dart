@@ -183,13 +183,11 @@ void main() {
   setUp(() async {
     fixture = LifecycleFixture();
     await fixture.start();
+    addTearDown(() => fixture.close());
     client = fixture.client();
+    addTearDown(() => client.disconnect());
     adapter = await client.connectLifecycleForQualification();
     await adapter.createSession();
-  });
-  tearDown(() async {
-    client.disconnect();
-    await fixture.close();
   });
 
   test(

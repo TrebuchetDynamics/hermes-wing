@@ -11,6 +11,7 @@ import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
 import '../support/fake_hermes_endpoint_store.dart';
+import '../support/fake_ssh_quick_connect_store.dart';
 import '../support/fake_hermes_gateway_directory.dart';
 
 void main() {
@@ -31,6 +32,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          sshQuickConnectStoreProvider.overrideWithValue(
+            FakeSshQuickConnectStore(),
+          ),
           hermesChannelProvider.overrideWith((_) => channel),
           hermesEndpointStoreProvider.overrideWithValue(store),
           hermesGatewayDirectoryProvider.overrideWith((_) => directory),

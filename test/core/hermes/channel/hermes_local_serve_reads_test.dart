@@ -13,12 +13,10 @@ void main() {
   late HermesApiChannel channel;
   setUp(() async {
     fixture = LocalServeReadFixture();
+    addTearDown(() => fixture.close());
     await fixture.start();
     channel = HermesApiChannel();
-  });
-  tearDown(() async {
-    channel.dispose();
-    await fixture.close();
+    addTearDown(() => channel.dispose());
   });
   Future<void> connect({
     String token = LocalServeReadFixture.token,

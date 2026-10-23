@@ -18,22 +18,20 @@ void main() {
   setUp(() async {
     HttpOverrides.global = null;
     debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     FlutterSecureStorage.setMockInitialValues({});
     fixture = LocalServeChatFixture();
+    addTearDown(() => fixture.close());
     await fixture.start();
     store = _DelayedRecoveryStore();
     channel = HermesApiChannel(serveRecoveryStore: store);
+    addTearDown(() => channel.dispose());
     await channel.connectLocalServeReads(
       baseUrl: fixture.origin,
       credential: LocalServeReadFixture.token,
     );
     await channel.selectProfile('demo');
     await channel.enableLocalServeChat();
-  });
-  tearDown(() async {
-    channel.dispose();
-    await fixture.close();
-    debugDefaultTargetPlatformOverride = null;
   });
 
   test(

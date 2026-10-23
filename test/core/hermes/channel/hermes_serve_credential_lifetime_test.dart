@@ -11,10 +11,10 @@ void main() {
       () async {
         final original = LocalServeReadFixture();
         final replacement = LocalServeReadFixture();
-        await original.start();
-        await replacement.start();
         addTearDown(original.close);
+        await original.start();
         addTearDown(replacement.close);
+        await replacement.start();
         final apiReads = <String>[];
         final channel = HermesApiChannel(
           clientBuilder: (config) => HermesApiClient(

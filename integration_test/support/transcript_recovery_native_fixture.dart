@@ -14,8 +14,10 @@ import '../../test/features/hermes_chat/screens/hermes_chat_transcript_reconnect
 class TranscriptRecoveryNativeFixture {
   TranscriptRecoveryNativeFixture({this.leaseFile}) {
     canonical = leaseFile != null;
+    if (leaseFile != null) _issuedEventPaths.add('/v1/runs/run_1/events');
   }
 
+  final _issuedEventPaths = <String>{};
   final File? leaseFile;
   final history = reference.ReconnectFixture();
   final decisions = <Map<String, Object?>>[];
@@ -132,10 +134,9 @@ class TranscriptRecoveryNativeFixture {
       mutations.add(uri.path);
       record('POST', uri, body);
       if (uri.path == '/v1/runs') {
-        return jsonEncode({
-          'run_id': 'run_${streams.length + 1}',
-          'session_id': reference.session,
-        });
+        final runId = 'run_${streams.length + 1}';
+        _issuedEventPaths.add('/v1/runs/$runId/events');
+        return jsonEncode({'run_id': runId, 'session_id': reference.session});
       }
       if (!uri.path.endsWith('/approval')) {
         throw StateError('Forbidden synthetic mutation');
@@ -154,7 +155,7 @@ class TranscriptRecoveryNativeFixture {
     },
     getStream: (uri, headers) {
       record('SSE', uri);
-      if (uri.path != '/v1/runs/run_1/events') {
+      if (!_issuedEventPaths.contains(uri.path)) {
         throw StateError('Unexpected synthetic event owner');
       }
       final stream = StreamController<String>();

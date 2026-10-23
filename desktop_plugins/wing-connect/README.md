@@ -78,7 +78,16 @@ imported by the artifact. There are no other runtime files, network images or
 external module loads. Black/white SVG ink is intentional for QR readability;
 the surrounding UI uses SDK controls and theme colors.
 
+Use Node.js **22** and make **`zbarimg` available on PATH** before running the
+checks. On Ubuntu, the `zbar-tools` package supplies the decoder. A user-space
+installation is also sufficient if its runtime libraries resolve: prepend its
+`bin` directory to PATH for both the worker and subsequent verification commands.
+Downloading/extracting a cached tool alone does not make it discoverable.
+
 ```sh
+node --version
+command -v zbarimg
+zbarimg --version
 node desktop_plugins/wing-connect/build.mjs
 node desktop_plugins/wing-connect/build.mjs --check
 node --check desktop_plugins/wing-connect/plugin.js
@@ -91,8 +100,12 @@ allowed module specifiers), exercise the actual registered page and form gesture
 reject unsafe origins/IDs, and check result invalidation. An independent **zbarimg**
 decoder reads rasterized versions of the rendered SVG modules and asserts the exact
 JSON for DNS, IPv6/port and long-profile examples. `zbarimg` must be installed to
-run that test; it is **not** a plugin/runtime dependency. The VM test also checks
-artifact reproducibility and prohibited host/network dependencies.
+run that test; it is **not** a plugin/runtime dependency. A missing executable
+fails the decoder case before decoding; four other passing cases are not a
+five-test pass. Do not skip or replace the independent decoder to claim success.
+The VM test also checks artifact reproducibility and prohibited host/network
+dependencies. See the [offline reconciliation](../../docs/product/enrollment.md#offline-reconciliation)
+for the pinned-toolchain results and remaining live qualification.
 
 These offline tests do not establish a real Desktop installation, camera scan,
 phone connectivity, certificate acceptance, gateway PKCE authentication or a live

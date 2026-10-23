@@ -51,6 +51,43 @@ read a desktop credential or modify Agent. A metadata QR only removes address
 entry, not login or network prerequisites. Physical camera/browser/live-account
 qualification must be recorded separately from fixtures.
 
+### Offline reconciliation
+
+MOBILE-GATEWAY-SIGNIN rechecked the existing implementation at Wing baseline
+`7bac44af16829ee5aacfdd642bf85205967d7e4f` on Linux, without changing runtime code
+or tests. Flutter **3.44.2** (Dart **3.12.2**) passed dependency resolution with
+`flutter pub get --enforce-lockfile`, all **21** focused tests below, and
+`flutter analyze --no-pub`:
+
+```sh
+flutter test --no-pub --concurrency=1 test/core/hermes/auth/native_gateway_auth_test.dart test/core/hermes/auth/secure_gateway_token_store_test.dart test/core/hermes/setup/hermes_gateway_invite_test.dart test/core/hermes/channel/hermes_remote_gateway_test.dart test/features/enrollment/gateway_https_flow_test.dart test/features/enrollment/gateway_login_entry_test.dart
+```
+
+These retained tests cover callback/cancellation rejection, S256 exchange, explicit
+refresh, exact-origin secure persistence, metadata-only invitation validation and
+fixture HTTPS/WSS negotiation without implicit prompt replay. They use synthetic
+credentials, mock secure storage and Android presentation overrides, not Android
+hardware or an actual system browser.
+
+`flutter build web --release --no-pub -t lib/main_e2e.dart` passed the JavaScript
+build, with existing `flutter_tts` Wasm dry-run incompatibilities and a missing
+Cupertino font warning. It does not qualify Wasm or Android browser login.
+`git diff --exit-code -- pubspec.yaml pubspec.lock` confirmed unchanged dependencies.
+
+On Node **22.22.2**, plugin artifact reproducibility, syntax and all **5** VM tests
+passed, including independent decoding of all three QR examples with **zbarimg
+0.23.93**. The initial missing-PATH failure was resolved with a user-space decoder
+in the shared tool cache; verification must expose that binary on PATH too. See
+[plugin prerequisites and commands](../../desktop_plugins/wing-connect/README.md#source-and-validation).
+No full-suite result is claimed here; the coordinator owns the merged-tree gate.
+
+Remaining qualification is separate: actual Desktop plugin installation, physical
+Android camera and system-browser login, platform secure persistence/refresh and
+cancellation, and a reachable live HTTPS gateway with valid certificates, fresh
+WSS tickets, exact-session recovery and deliberate generation without replay.
+No device installation, live-account/provider call, service setup or deployment
+was performed.
+
 ## Journey
 
 Choose a direct Agent action, complete its existing authenticated form, or cancel

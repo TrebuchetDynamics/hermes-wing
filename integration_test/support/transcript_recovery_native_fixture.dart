@@ -154,7 +154,7 @@ class TranscriptRecoveryNativeFixture {
     },
     getStream: (uri, headers) {
       record('SSE', uri);
-      if (uri.path != '/v1/runs/run_1/events') {
+      if (uri.path != '/v1/runs/run_${streams.length + 1}/events') {
         throw StateError('Unexpected synthetic event owner');
       }
       final stream = StreamController<String>();

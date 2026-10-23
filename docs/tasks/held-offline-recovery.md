@@ -250,10 +250,10 @@ named completed task records remain done and both live successors remain open in
 Needs decision. No current-store edit, reopened task, goal qualification or replay
 of the obsolete snapshot is justified; the saved patch was not applied.
 
-#### Current disposition at 3ccaea06
+#### Current disposition at 38808ce0
 
-Rechecked at `3ccaea06387f2e36e1b4789cef77a9a03bde8b04`, preserving the prior
-`9fa722f6c7233c4ace6d4a890aae77518cb19dca` disposition: both complete saved
+Rechecked at `38808ce0d7ca0d40b99ba94e833a46e045a950f7`, preserving the prior
+`3ccaea06387f2e36e1b4789cef77a9a03bde8b04` disposition: both complete saved
 patches (including every changed cell in the long generated rows), adjacent
 reports, later tab report, archived task Sources/accepted scope and current
 records were inspected. Their only changes remain the retired generated
@@ -266,14 +266,14 @@ are now manually closed by the owner's recorded 2026-10-22 waiver. Preserve thos
 newer closures: they supply no live evidence or goal qualification. No patch was
 applied and no task, goal, acceptance or ordering was changed.
 
-#### Package-check evidence at 3ccaea06
+#### Package-check evidence at 38808ce0
 
 The runner reported two pre-result crashes at the same revision. All five files
 were read in place under Git-common
-`autowork-execution/main-evidence/3ccaea06387f2e36e1b4789cef77a9a03bde8b04/`:
+`autowork-execution/main-evidence/38808ce0d7ca0d40b99ba94e833a46e045a950f7/`:
 
 - `main_check.json`: `broken`, `INCOMPLETE`, `failures: null`; checked revision
-  `3ccaea06387f2e36e1b4789cef77a9a03bde8b04`, previous green
+  `38808ce0d7ca0d40b99ba94e833a46e045a950f7`, previous green
   `9ca06dca7065c3d047f2e4f909937b6147a2dcf4`.
 - `main-check.log`: `Resolving dependencies...`, then
   `Because wing depends on qr_flutter 4.1.0 which doesn't match any versions, version solving failed.`,
@@ -290,10 +290,17 @@ Flutter suite. `pubspec.yaml:31` and `pubspec.lock` still pin `qr_flutter` 4.1.0
 introduced by `1684d76a56add2db2e9211990016af1eb04be8dc`; no dependency change or
 named-test repair is justified by this bundle.
 
-The existing task is running: its recorded worker start ticks and boot identity
-match the live process, and no terminal worker report exists at this inspection.
+At initial inspection, the existing task's slot was running, its recorded worker
+start ticks and boot identity matched the live process, and no terminal report
+existed. During closeout the worker exited and its `attempt-1/report.json` appeared,
+naming candidate `5b48375d76e32151f6ddeb7d7b13c3d7fcff3677`; the slot still says
+`running`. The report records successful locked preparation and focused smoke
+checks, but explicitly leaves the runner-owned merged whole-suite gate pending.
+These are worker-reported results, not maintainer execution or integration proof.
 Do not edit its entry or its owned recovery page, duplicate it, reorder it or
-infer a result. This separate evidence note preserves its contract and active ownership.
+infer completion. The task's Evidence field is deliberately unchanged under the
+running/awaiting-integration restriction; this separate evidence note records the
+new bundle without overlapping either protected task's Touches.
 The full check remains
 `flutter pub get --offline --enforce-lockfile && flutter test --no-pub --concurrency=1`
 until that worker's repair is reviewed and integrated. This maintainer pass ran

@@ -27,6 +27,25 @@ class PreparationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 m.mapping(lane, mode)
 
+    def test_refused_output_allocates_no_native_scratch(self):
+        import argparse
+        import asyncio
+        import os
+        import sys
+        from unittest.mock import patch
+        m = self.helper()
+        with tempfile.TemporaryDirectory(dir=os.environ['TMPDIR']) as temp:
+            root = pathlib.Path(temp)
+            occupied = root / 'occupied'
+            occupied.mkdir()
+            for extra in ({'WING_LIVE_TEST': '1'},
+                          {'WING_LINUX_RUNNER_OUTPUT': str(occupied)}):
+                with patch.dict(os.environ, {'TMPDIR': str(root)} | extra, clear=True), \
+                        patch.object(sys, 'path', [str(REPO / 'scripts/support'), *sys.path]):
+                    with self.assertRaises((ValueError, FileExistsError)):
+                        asyncio.run(m.run(argparse.Namespace(lane='linux')))
+                self.assertEqual(list(root.iterdir()), [occupied])
+
     def test_snapshot_freezes_inputs_and_refuses_aliases(self):
         m = self.helper()
         with tempfile.TemporaryDirectory() as temp:
@@ -66,12 +85,13 @@ class PreparationTests(unittest.TestCase):
     def test_result_validation_rejects_unbounded_and_unsanitized_data(self):
         m = self.helper()
         journey = {f'GET {path}': 1 for path in ('/health', '/v1/capabilities',
-            '/api/profiles', '/api/sessions', '/api/model/options',
+            '/api/sessions', '/api/model/options',
             '/api/sessions/qa-history/messages')}
         value = {'platform': 'linux', 'workflow': 'PASS',
                  'native_picker': 'NOT_CHECKED', 'physical_secure_storage': 'NOT_CHECKED',
                  'encrypted_key': 'NOT_CHECKED', 'model': 'READ_ONLY_INVENTORY',
-                 'wing_link': 'NO_LISTENER', 'cycles': [{'request_delta': journey}] * 2,
+                 'wing_link': 'NO_LISTENER', 'profile_selection': 'ADVERTISED_DEFAULT_NOT_SWITCHER',
+                 'cycles': [{'request_delta': journey}] * 2,
                  'counters': {'requests': {key: 2 for key in journey}, 'mutation_attempts': 0,
                               'forbidden_reads': 0, 'forbidden_ssh': 0,
                               'auth_denials': 0, 'ssh_auths': 3, 'ssh_denials': 1,
@@ -130,12 +150,14 @@ class PreparationTests(unittest.TestCase):
         code, capabilities = agent.respond('GET', '/v1/capabilities', headers, '')
         self.assertEqual(code, 200)
         self.assertTrue(capabilities['auth']['required'])
+        self.assertEqual(capabilities['profile_context']['default_profile_id'], 'default')
+        self.assertEqual(agent.respond('GET', '/api/sessions?profile=qa-key', headers, '')[0], 404)
         self.assertEqual(agent.respond('GET', '/api/sessions?profile=other', headers, '')[0], 404)
-        code, history = agent.respond('GET', '/api/sessions/qa-history/messages?profile=qa-key', headers, '')
+        code, history = agent.respond('GET', '/api/sessions/qa-history/messages?profile=default', headers, '')
         self.assertEqual((code, history['session_id']), (200, 'qa-history'))
         self.assertEqual(agent.summary()['requests']['GET /v1/capabilities'], 1)
         self.assertEqual(agent.summary()['mutation_attempts'], 1)
-        self.assertEqual(agent.summary()['forbidden_reads'], 2)
+        self.assertEqual(agent.summary()['forbidden_reads'], 3)
         self.assertNotIn('disposable-test-token', str(agent.summary()))
 
 

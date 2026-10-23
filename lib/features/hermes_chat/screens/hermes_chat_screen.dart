@@ -1767,7 +1767,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
               onPressed: () => context.push(AppRoutes.addHermes),
               icon: const Icon(Icons.person_add_alt_1_outlined),
             ),
-          if (!showingDirectory && canUseConnectedAgent) ...[
+          if (!_editingConnection &&
+              !showingDirectory &&
+              canUseConnectedAgent) ...[
             if (state.profiles.isNotEmpty)
               _buildProfileSwitcher(context, channel, state),
             if (!compactAppBar) ...[
@@ -1956,7 +1958,9 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
           : const Center(child: CircularProgressIndicator()),
     );
     Widget content = scaffold;
-    if (desktopShortcuts.isNotEmpty) {
+    // Keep the editing form mounted while SSH restores its exact session;
+    // normal Chat reconnects retain their existing shortcut/focus transition.
+    if (_editingConnection || desktopShortcuts.isNotEmpty) {
       content = Shortcuts(
         shortcuts: desktopShortcuts,
         child: Actions(

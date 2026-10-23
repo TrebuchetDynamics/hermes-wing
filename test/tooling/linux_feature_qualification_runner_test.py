@@ -517,6 +517,9 @@ class DriverTest(unittest.TestCase):
         deps = qa.stage_dependencies(self.prefix, state / 'deps')
         env = qa.isolated_environment(state, prefix=deps, sdk=self.sdk)
         self.assertEqual(env['CMAKE_PREFIX_PATH'], str(deps))
+        self.assertEqual(env['XDG_DATA_DIRS'], str(state / 'data'))
+        self.assertEqual(env['GIO_USE_VFS'], 'local')
+        self.assertEqual(env['GSETTINGS_BACKEND'], 'memory')
         self.assertIn('prefix=' + str(deps), (deps / 'lib/x86_64-linux-gnu/pkgconfig/libsecret-1.pc').read_text())
         sys.path.insert(0, str(REPO / 'integration_test'))
         for name in ('run_linux_shell_compact_return', 'run_linux_local_serve_reads', 'run_linux_transcript_keyboard'):

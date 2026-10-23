@@ -68,6 +68,9 @@ The report lane is read-only checker delegation, not native execution; it can
 run without GTK readiness, but requires its checker and matching campaign inputs.
 Later tasks own the proposed targets/checker. No arbitrary command, target or live
 mode is accepted. Historical live/installer wrappers are never implicit children.
+The [connections guide](linux-connection-qualification.md) maps its registered
+cases and the separate native plugin/SSH receipts; a connections lane pass does
+not silently run or aggregate those other owners.
 The runner's whole-suite gate and separately admitted browser/native/live checks
 remain separate; this registry is not a claim that every planned check has run.
 
@@ -89,7 +92,10 @@ Children receive a current-source snapshot, copied SDK/packages, relocated nativ
 prefix and private HOME/XDG/cache. New Dart native targets use an owned Xvfb
 and D-Bus session; the older Python runners create their own Xvfb display and
 reject inherited D-Bus. Inherited credentials, proxies, loader/startup injection,
-display and D-Bus are absent.
+display and D-Bus are absent. Synthetic children also use a private
+`XDG_DATA_DIRS`, local GIO VFS and in-memory GTK settings with the installed
+read-only schema directory. Real native chooser checks separately need public
+OS MIME/icon data; the connections guide records that input distinction.
 Nonempty `LIVE`/`PRODUCTION` opt-ins are rejected without opening their values.
 This is process/state isolation, **not a network sandbox or live authorization**.
 The transcript runner uses the task-owned `AUTOWORK_PORT_BASE` with DDS disabled.

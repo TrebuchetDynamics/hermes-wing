@@ -156,6 +156,8 @@ def isolated_environment(root, *, prefix=None, sdk=None, node=None):
     env.update(HOME=str(root / 'home'), XDG_CONFIG_HOME=str(root / 'config'),
                XDG_DATA_HOME=str(root / 'data'), XDG_CACHE_HOME=str(root / 'cache'),
                XDG_RUNTIME_DIR=str(root / 'runtime'), TMPDIR=str(root / 'cache'),
+               XDG_DATA_DIRS=str(root / 'data'), GIO_USE_VFS='local',
+               GSETTINGS_SCHEMA_DIR='/usr/share/glib-2.0/schemas', GSETTINGS_BACKEND='memory',
                PUB_CACHE=str(root / 'cache/pub'), WING_LINUX_TEST_ROOT=str(root),
                GDK_BACKEND='x11', LIBGL_ALWAYS_SOFTWARE='1', CMAKE_BUILD_PARALLEL_LEVEL='2',
                FLUTTER_SUPPRESS_ANALYTICS='true', DART_SUPPRESS_ANALYTICS='true', CI='true')

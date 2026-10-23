@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:wing/core/hermes/client/hermes_api_client.dart';
+import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/client/hermes_api_config.dart';
 import 'package:wing/core/hermes/shared/hermes_api_http.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,6 +87,7 @@ Future<FakeHermesChannel> mount(
   WidgetTester tester,
   FakeHermesEndpointStore store, {
   Probe? probe,
+  FakeHermesChannel? activeChannel,
   double width = 1280,
   double scale = 1,
 }) async {
@@ -93,7 +95,7 @@ Future<FakeHermesChannel> mount(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  final channel = FakeHermesChannel.disconnected();
+  final channel = activeChannel ?? FakeHermesChannel.disconnected();
   addTearDown(channel.dispose);
   final directory = HermesGatewayDirectory(
     store: store,
@@ -138,6 +140,29 @@ Future<void> edit(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('Add Hermes excludes active chat actions at compact 200% text', (
+    tester,
+  ) async {
+    final channel = FakeHermesChannel(
+      profiles: const [
+        HermesProfile(
+          id: 'synthetic',
+          displayName: 'Synthetic',
+          revision: 'r1',
+        ),
+      ],
+      selectedProfileId: 'synthetic',
+    );
+    await mount(tester, Store(), activeChannel: channel, width: 390, scale: 2);
+    expect(find.byKey(const ValueKey('hermes-connect-button')), findsOneWidget);
+    expect(find.byKey(const ValueKey('hermes-profile-switcher')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('hermes-disconnect-button')),
+      findsNothing,
+    );
+    expect(channel.connectCalls, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
   for (final abandon in ['owner', 'dispose']) {
     testWidgets('pending save settlement after $abandon cannot replace owner', (
       tester,

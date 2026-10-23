@@ -171,11 +171,11 @@ def service_phases(live, root, app, sdk, env, evidence, result, check):
 
 
 def run(source):
+    from linux_qualification_support import runner_output
     source = pathlib.Path(source).resolve()
     prerequisite, first, snapshot = helpers()
     live, helper_hash = snapshot.predecessor(source)
-    evidence_root = source / 'build' / CARD / 'evidence'
-    evidence_root.mkdir(parents=True, exist_ok=True)
+    evidence_root = runner_output(os.environ, 'wing-saved-storage-evidence-')
     evidence = pathlib.Path(tempfile.mkdtemp(prefix='attempt-', dir=evidence_root))
     result = {'status': 'FAIL', 'checks': [], 'runtime_helper_sha256': helper_hash,
               'inference': 'NOT_CHECKED', 'evidence': str(evidence)}

@@ -101,7 +101,7 @@ class Agent:
         allowed = {'/health', '/v1/capabilities', '/api/profiles'}
         scoped = {'/api/sessions', '/api/sessions/qa-history',
                   '/api/sessions/qa-history/messages', '/api/model/options'}
-        if path not in allowed and not (path in scoped and profile in {'default', 'qa-key'}):
+        if path not in allowed and not (path in scoped and profile == 'default'):
             self.forbidden += 1
             return 404, {'error': 'Unavailable'}
         if sum(self.requests.values()) >= 256:
@@ -126,7 +126,7 @@ class Agent:
                         'models:read' if key == 'model_options' else 'sessions:read']}
                     for key, value in endpoints.items()}}
         if path == '/api/profiles':
-            return 200, {'data': [{'id': 'qa-key', 'name': 'Key QA'}]}
+            return 200, {'data': [{'id': 'default', 'name': 'Key QA'}]}
         row = {'id': 'qa-history', 'title': 'Key QA history', 'source': 'api_server',
                'profile_id': profile, 'message_count': 1,
                'runtime': {'provider': 'synthetic', 'model': 'synthetic/model'}}
@@ -311,7 +311,7 @@ async def probe_fixture():
                       known_hosts=(), client_factory=PinnedClient, agent_path=None, config=None)
         async with asyncssh.connect(**common, client_keys=[fixture.client_key]) as conn:
             reader, writer = await conn.open_connection('127.0.0.1', runtime['agent_port'])
-            request = 'GET /api/sessions/qa-history/messages?profile=qa-key HTTP/1.1\r\nHost: fixture\r\nAuthorization: Bearer ' + runtime['agent_token'] + '\r\n\r\n'
+            request = 'GET /api/sessions/qa-history/messages?profile=default HTTP/1.1\r\nHost: fixture\r\nAuthorization: Bearer ' + runtime['agent_token'] + '\r\n\r\n'
             writer.write(request.encode())
             await writer.drain()
             response = await asyncio.wait_for(reader.read(), 5)
@@ -385,7 +385,7 @@ def native_command(flutter, lane, device):
 
 def validate_result(value, lane):
     expected = {'platform', 'workflow', 'native_picker', 'physical_secure_storage',
-                'encrypted_key', 'model', 'wing_link', 'cycles', 'counters'}
+                'encrypted_key', 'model', 'wing_link', 'profile_selection', 'cycles', 'counters'}
     if set(value) != expected or value['platform'] != lane or value['workflow'] != 'PASS':
         raise ValueError('Native result schema failed')
     for field in ('native_picker', 'physical_secure_storage', 'encrypted_key'):
@@ -393,6 +393,8 @@ def validate_result(value, lane):
             raise ValueError('Substituted seams cannot qualify native behavior')
     if value['model'] != 'READ_ONLY_INVENTORY' or value['wing_link'] != 'NO_LISTENER':
         raise ValueError('Unexpected authority claim')
+    if value['profile_selection'] != 'ADVERTISED_DEFAULT_NOT_SWITCHER':
+        raise ValueError('Fixture does not qualify a profile picker')
     counts = value['counters']
     if set(counts) != {'requests', 'mutation_attempts', 'forbidden_reads', 'forbidden_ssh',
                        'auth_denials', 'ssh_auths', 'ssh_denials', 'forwards', 'live_ssh'}:
@@ -418,14 +420,14 @@ def validate_result(value, lane):
             raise ValueError('Unexpected cycle schema')
         check_reads(cycle['request_delta'])
         required = {'GET ' + path for path in ('/health', '/v1/capabilities',
-            '/api/profiles', '/api/sessions', '/api/model/options',
+            '/api/sessions', '/api/model/options',
             '/api/sessions/qa-history/messages')}
         if any(cycle['request_delta'].get(path, 0) < 1 for path in required):
             raise ValueError('Native journey did not exercise required Agent reads')
     if counts['live_ssh'] != 0 or counts['ssh_auths'] < 3 or counts['ssh_denials'] < 1:
         raise ValueError('SSH authentication, mismatch or teardown evidence missing')
-    # Fresh selection and exact saved-owner restoration intentionally have
-    # different read counts; both must satisfy the bounded route oracle above.
+    # Current ephemeral connections acquire the advertised default profile,
+    # not a profile inventory. Reconnect must retain that exact owner.
     return value
 
 
@@ -475,11 +477,12 @@ async def run(args):
     repo = pathlib.Path(__file__).resolve().parents[2]
     base = pathlib.Path(os.environ['TMPDIR']).resolve()
     tag = 'r' + secrets.token_hex(6)
+    from linux_qualification_support import runner_output
+    logs = runner_output(os.environ, 'wing-ssh-key-evidence-') / (args.lane + '-' + tag)
+    logs.mkdir(mode=0o700)
     root = pathlib.Path(tempfile.mkdtemp(prefix='wing-ssh-key-', dir=base))
     marker = root / '.owned-ssh-key-qa'
     marker.touch()
-    logs = repo / '.task-evidence/parallel-key-native' / (args.lane + '-' + tag)
-    logs.mkdir(parents=True, mode=0o700)
     result = {'platform': args.lane, 'native_workflow': 'NOT_CHECKED',
               'native_picker': 'NOT_CHECKED'}
     mapped = []

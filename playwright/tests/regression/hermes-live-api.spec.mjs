@@ -24,7 +24,16 @@ test("Hermes route connects to a live installed Hermes Agent API server", async 
     { baseUrl: liveUrl, apiKey: liveKey || null },
   );
 
-  await expect(page.getByRole("button", { name: "Sessions" })).toBeVisible();
+  // A live connection exposes two controls named "Sessions": the sidebar's
+  // global-session opener inside the "Loaded sessions" region, and the chat app
+  // bar's panel opener. This journey drives the panel, so exclude the sidebar one
+  // instead of relying on document order or generated semantics ids.
+  const sessionsOpener = page.locator(
+    'xpath=//*[@role="button" and (@aria-label="Sessions" or normalize-space(text())="Sessions")' +
+      ' and not(ancestor::*[@aria-label="Loaded sessions"])]',
+  );
+
+  await expect(sessionsOpener).toBeVisible();
   const title = `Hermes Wing live API ${Date.now()}`;
   await page.evaluate(
     (sessionTitle) => globalThis.wingE2EHermesCreateSession(sessionTitle),
@@ -41,11 +50,13 @@ test("Hermes route connects to a live installed Hermes Agent API server", async 
       .getByRole("button", { name: "Hands-free voice" })
       .and(page.locator('flt-semantics:not([aria-disabled="true"])')),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Sessions" }).click();
+  await sessionsOpener.click();
   await expect(
     page.getByRole("group", { name: "Hermes sessions" }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "New" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "New", exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Session actions" }).first(),
   ).toBeVisible();

@@ -175,7 +175,9 @@ platform-specific.
 
 ## Terminal working-directory files
 
-Status: accepted requirement; not implemented or platform-qualified.
+Status: accepted requirement; not implemented or platform-qualified. Root amended by
+owner decision on 2026-10-24 to the Agent's managed-files root; see the
+[Files surface exception](../adr/product.md#owner-approved-files-surface-the-agents-managed-files-root).
 
 [Source research](../analysis/terminal-files-feasibility.md) establishes existing
 browse/read/download routes in the official Desktop's `hermes serve` backend.
@@ -186,9 +188,11 @@ support must be qualified before enabling the affected operation. Missing contra
 remain unavailable; this does not relax FILES-4 or promise support on every host.
 
 **FILES-1 — Browse:** Linux and Android users can navigate folders and see files
-within the connected Agent's effective `terminal.cwd`. Resolve the root for the
-selected connection/profile/session from Agent authority; never substitute the
-Wing device's current directory, Hermes home, or a guessed Project folder.
+inside the connected Agent's enforced file root. The owner-selected root is the
+managed-files root that the server advertises as `locked_root`; it is not the
+session's `terminal.cwd`, so Desktop's terminal-root outcome is not claimed.
+Never substitute the Wing device's current directory, Hermes home or a guessed
+Project folder, and never browse a policy that reports no locked root.
 Show the owning context and loading, empty, unavailable, permission and connection
 errors. A context switch must discard stale listings and read results.
 

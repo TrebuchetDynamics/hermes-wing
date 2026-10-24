@@ -72,6 +72,37 @@ are installation-local appearance preferences; they do not assign or overwrite
 Agent profile avatars. No external image service, identity upload or Agent
 mutation is permitted. Hermes Desktop remains the functional reference.
 
+### Owner-approved Files surface: the Agent's managed-files root
+
+Owner decision, 2026-10-24: the read-only Files surface roots at the Agent's
+**managed-files root** served by `/api/files`, not at the selected session's
+`terminal.cwd`. This supersedes the earlier requirement that Files stay
+unimplemented until an unmodified Agent names the effective
+session/profile/backend terminal root; the [upstream recheck](../analysis/terminal-files-feasibility.md#revisit-check-upstream-14e1e43a-2026-10-24)
+confirmed that operation still does not exist.
+
+This is a recorded divergence, not parity: Desktop's remote Files pane reads
+`/api/fs/*` against the terminal cwd, so Wing's Files shows the managed root and
+is not Desktop's Files outcome. The surface stays read-only (no upload, mkdir,
+delete or write-text).
+
+Its enablement gate is the exact advertised policy, not a version, connection
+label or owner assumption:
+
+- enable only when the server's managed-files response advertises a non-empty
+  `locked_root` and refuses paths outside it. Without a locked root the policy is
+  `can_change_path` and is not confined, so the surface stays unavailable;
+- rely on the server's canonical containment (`..` refused, resolved symlinks
+  and absolute paths checked against the root, sensitive paths denied) rather
+  than a client-side prefix check;
+- FILES-4 redaction, FILES-2 bounded preview and FILES-3 verified-byte download
+  acceptance are unchanged, and Linux/Android save cells stay separately
+  qualified.
+
+No Agent fork, runtime configuration change, credential discovery or new service
+is implied; enabling it on a host still requires that host to run a locked serve
+deployment.
+
 Status: Accepted
 
 The owner explicitly requires a **1:1 Flutter port**, implementing only product

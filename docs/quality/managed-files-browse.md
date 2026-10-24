@@ -6,7 +6,9 @@ Implements `FILES-TERMINAL-BROWSE` under the
 [owner-approved managed-root exception](../adr/product.md#owner-approved-files-surface-the-agents-managed-files-root),
 not the deferred terminal-cwd contract. This is an offline candidate receipt,
 not canonical integration, device qualification or Desktop Files parity.
-Downloads and native saving remain `FILES-TERMINAL-DOWNLOAD` work.
+`FILES-TERMINAL-DOWNLOAD` extends this candidate with individual raw downloads
+and verified native saving, described below. Real picker/device qualification
+remains open.
 
 Chat exposes **Files** in the compact overflow menu and wide toolbar. Native
 Linux/Android serve readers can request the current connection's managed policy;
@@ -41,7 +43,8 @@ APIs**. The root is not a Hermes home, Project or terminal cwd.
 - Previews are selectable **literal** strict UTF-8 text, including HTML. Binary
   control bytes/invalid UTF-8 are refused. There is no HTML execution, WebView or
   download-byte reconstruction.
-- Only authenticated `GET /api/files` and `GET /api/files/read` are added.
+- Browse/preview use authenticated `GET /api/files` and `GET /api/files/read`;
+  individual downloads additionally use `GET /api/files/download`.
   Credentials remain in the reader's Authorization header, never URLs.
   Redirects are not followed. Raw server errors, paths and content are not logged
   or persisted. The volatile dialog does not put file data into Chat state.
@@ -145,6 +148,109 @@ mutation requests is not proof of zero server-side writes.
 Native Linux keyboard and Android touch/device operation, screen readers, actual
 SSH/HTTPS file permissions, live Agent behavior and containment/concurrency races
 are **NOT_CHECKED** here. Host-root `/` and non-POSIX policies stay unavailable.
-No live service or physical device was exercised. Save As/document creation,
-progress, cancellation cleanup and verified saved-byte readback are not implemented.
-Terminal-cwd Files parity remains explicitly unclaimed.
+No live service or physical device was exercised. The browse receipt above does
+not qualify the download extension below. Terminal-cwd Files parity remains
+explicitly unclaimed.
+
+## Individual download extension — FILES-TERMINAL-DOWNLOAD
+
+The dialog offers a separate **Download file** button for each listed file,
+including binary files without opening their preview. Only the current bounded
+listing's handles, the same advertised locked root and the qualified owning
+serve reader can authorize retrieval. Browser/messaging connections and other
+native platforms receive no save action. No upload, Agent edit/delete, recursive
+folder download, external URL launch or content execution is added.
+
+- Raw `GET /api/files/download?path=…` uses the owning reader's Authorization
+  header, never a token-bearing URL. Profile/session folder parameters are not
+  invented for this connection-scoped managed route. Redirects, partial responses
+  and encoded representations are refused. Both known and unknown response
+  lengths have an 8 MiB ceiling and a 30-second retrieval deadline.
+- Progress reports retrieved bytes, then distinguishes destination selection and
+  local verification. Retry is explicit, with a new attempt identity. Cancellation,
+  denial, disconnect, owner change, dialog disposal and corrupt readback cannot
+  publish a verified-save receipt. Downloaded bytes stay volatile outside Chat
+  and preferences; neither errors nor diagnostics expose destination paths/content.
+- Suggested names come from the selected entry, not Content-Disposition. Path
+  separators, control/bidi characters and non-ASCII characters become underscores;
+  leading dots/dashes, reserved device names and excessive length are handled.
+  The native chooser, not the Agent filename, selects the device destination.
+- Linux uses the existing GTK Save As plugin and a second explicit replacement
+  confirmation, even when a destination did not previously exist. Existing links
+  and special files are refused. A private same-directory staging file is written,
+  then atomically renamed over the chosen destination entry: a link swapped in
+  after validation cannot redirect the truncating write to its target. This
+  replaces the file entry, not its metadata or hard-linked siblings. The actual
+  final destination is read back and compared byte-for-byte with the raw response.
+  Publication reserves the canonical destination until any submitted rename
+  settles, even after cancellation/timeout; another save to that destination fails
+  explicitly rather than letting an older pending rename overwrite a verified retry.
+- Android uses `ACTION_CREATE_DOCUMENT`, keeping the content URI exclusively in
+  the native channel. The system creates a new document rather than silently
+  overwriting an existing one. Attempt IDs reserve an outstanding chooser until
+  its result returns; stale choices cannot target a later attempt. Descriptor
+  reads and writes run off the UI thread with cancellation signals and closeable
+  attempt-owned resources. Native and Dart comparisons both require exact bytes.
+  At most two native I/O jobs run without an accumulating retry queue; an occupied
+  provider lane returns an actionable failure rather than waiting behind it.
+  Descriptor/signal cancellation and best-effort deletion use separate bounded,
+  no-queue pools, so a stuck delete does not hold up cancellation or grow a queue.
+- After destination consent, local I/O has a 30-second deadline. Cancel escapes
+  pending work and requests handle/descriptor closure; subsequent explicit retries
+  have independent ownership. OS chooser interaction itself has no automatic
+  deadline. A provider/kernel call that ignores cancellation can outlive the UI;
+  it cannot restore a success receipt or authorize another destination. Android
+  partial-document deletion and Linux staging cleanup are best effort, not rollback
+  guarantees. An interruption after final replacement may leave an unconfirmed
+  destination. No automatic retry or silent replay occurs.
+
+The raw handler and nearest download tests were also inspected in the read-only
+upstream checkout at `158fd638da1629c8e62caf9ade1515d162def8ab`
+(`hermes_cli/web_routers/files.py`, `tests/hermes_cli/test_web_server_files.py`).
+This source inspection is not an executed upstream test or deployed receipt.
+
+Readback proves equality with the **retrieved response**, not an immutable remote
+revision: the Agent download route provides no source snapshot/digest or atomic
+policy-discovery-plus-download contract. Live deployment confinement, source
+changes and local destination races beyond the final-entry symlink swap still
+require target qualification. No Agent changes are made.
+
+### Offline oracles and remaining native receipts
+
+The focused Flutter command is:
+
+```sh
+flutter test --no-pub --concurrency=1 test/core/hermes/client/hermes_managed_files_test.dart test/core/hermes/client/hermes_web_read_test.dart test/features/hermes_chat/hermes_managed_file_save_test.dart test/features/hermes_chat/hermes_managed_files_dialog_test.dart
+```
+
+It passes 27 tests, covering authenticated text/binary bytes, unknown-length bounds,
+redirect/denial refusal, progress, explicit retry, cancellation/disconnect/owner
+loss, real temporary Linux file writes/readback, hostile suggested names, overwrite
+consent, deterministic destination-link replacement during open, stalled-open
+cancellation/retry isolation, cancelled pending-rename destination reservation,
+and mocked Android channel choice/write/cancel/release
+identity. The transport source-contract allowlist includes the new internal native
+reader part, not another public native import path.
+
+`ManagedFileSaveJobTest` adds two JVM oracles for Android's production byte-I/O
+helper: text/binary readback mismatch refusal and actively closing a stalled
+stream followed by successful new work. They pass with cached Kotlin 2.2.20 and
+JUnit 4.13.2. The Gradle unit-test task could not resolve an existing uncached
+AndroidX test-runner version in offline mode; standalone JVM execution does not
+qualify Activity, picker, provider or engine lifecycle behavior. The Android debug
+APK builds, with existing SDK/Kotlin plugin warnings; it was not installed.
+
+Final required module run,
+`flutter test --no-pub --concurrency=1 test/core/hermes/ test/features/hermes_chat/`,
+passes **3022 cases, nine existing opt-in SSH fixture skips, zero failures**.
+`flutter analyze --no-pub` reports no issues; changed-Dart formatting and scoped
+local-link/anchor/readback checks pass. Exact commands and the Gradle environment
+failure are recorded in the task report. Existing source-bound managed-root denial
+receipts above are reused without upgrading them to deployment evidence.
+
+Separate pending native cells remain: (1) real Linux GTK Save As, keyboard input,
+permissions, overwrite/cancel, disk failure and final destination readback; (2)
+Android document provider create/readback for text/binary/hostile names, denial,
+blocked I/O, cancellation, Activity recreation and owner/disconnection races.
+Both need a named target and the owning authorized Agent connection. Fixture and
+JVM results, download-start signals and APK compilation do not qualify either cell.

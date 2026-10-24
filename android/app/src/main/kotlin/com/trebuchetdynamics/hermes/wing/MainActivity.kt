@@ -15,6 +15,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private var managedFileSave: ManagedFileSaveChannel? = null
     private var initialConnectInput = false
     private var connectIntentEvents: EventChannel.EventSink? = null
 
@@ -27,6 +28,11 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        managedFileSave = ManagedFileSaveChannel(this).also { handler ->
+            MethodChannel(flutterEngine.dartExecutor.binaryMessenger,
+                "com.trebuchetdynamics.hermes.wing/managed_file_save",
+            ).setMethodCallHandler(handler)
+        }
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CONNECT_INTENTS_METHOD_CHANNEL,
@@ -65,6 +71,17 @@ class MainActivity : FlutterActivity() {
                 }
             },
         )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (managedFileSave?.onActivityResult(requestCode, resultCode, data) == true) return
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onDestroy() {
+        managedFileSave?.dispose()
+        managedFileSave = null
+        super.onDestroy()
     }
 
     override fun onNewIntent(intent: Intent) {

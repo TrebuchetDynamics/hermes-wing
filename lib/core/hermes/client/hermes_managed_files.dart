@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 /// Optional native serve capability. Messaging API permission is not file access.
 abstract interface class HermesManagedFilesChannel {
@@ -15,6 +17,7 @@ enum HermesManagedFilesFailure {
   oversized,
   binary,
   stale,
+  cancelled,
 }
 
 final class HermesManagedFilesException implements Exception {
@@ -22,6 +25,26 @@ final class HermesManagedFilesException implements Exception {
   final HermesManagedFilesFailure kind;
   @override
   String toString() => 'Managed files unavailable: ${kind.name}';
+}
+
+/// One explicit attempt, including its native save. Never reused for Retry.
+final class HermesManagedFileTransfer {
+  HermesManagedFileTransfer({this.onProgress});
+  final void Function(int received, int? total)? onProgress;
+  final _cancelled = Completer<void>();
+  bool get isCancelled => _cancelled.isCompleted;
+  Future<void> get whenCancelled => _cancelled.future;
+  void cancel() {
+    if (!isCancelled) _cancelled.complete();
+  }
+
+  void check() {
+    if (isCancelled) {
+      throw const HermesManagedFilesException(
+        HermesManagedFilesFailure.cancelled,
+      );
+    }
+  }
 }
 
 final class HermesManagedFileEntry {
@@ -60,17 +83,25 @@ final class HermesManagedFilesSession {
     )
     request,
     required bool Function() isCurrent,
+    Future<Uint8List> Function(String path, HermesManagedFileTransfer transfer)?
+    download,
   }) : // Public callbacks keep the native transport out of this shared decoder.
+       // ignore: prefer_initializing_formals
+       _download = download,
        // ignore: prefer_initializing_formals
        _request = request,
        // ignore: prefer_initializing_formals
        _isCurrent = isCurrent;
 
+  static const maximumDownloadBytes = 8 * 1024 * 1024;
   static const maximumPreviewBytes = 64 * 1024;
   static const maximumEntries = 500;
   final Future<Map<String, dynamic>> Function(String, Map<String, String>, int)
   _request;
   final bool Function() _isCurrent;
+  final Future<Uint8List> Function(String, HermesManagedFileTransfer)?
+  _download;
+  bool get canDownload => isCurrent && _root != null && _download != null;
   String? _root;
   bool _retired = false, _busy = false;
   final _directories = <String>{};
@@ -196,6 +227,29 @@ final class HermesManagedFilesSession {
     ]);
     _entries = List.unmodifiable(entries);
     return HermesManagedDirectory._(root, actual, parent as String?, _entries);
+  });
+
+  Future<Uint8List> download(
+    HermesManagedFileEntry entry,
+    HermesManagedFileTransfer transfer,
+  ) => _run(() async {
+    transfer.check();
+    if (!canDownload ||
+        !_entries.contains(entry) ||
+        entry.isDirectory ||
+        !_inside(entry.path)) {
+      _fail(HermesManagedFilesFailure.denied);
+    }
+    if ((entry.size ?? 0) > maximumDownloadBytes) {
+      _fail(HermesManagedFilesFailure.oversized);
+    }
+    final bytes = await _download!(entry.path, transfer);
+    transfer.check();
+    _current();
+    if (bytes.length > maximumDownloadBytes) {
+      _fail(HermesManagedFilesFailure.oversized);
+    }
+    return bytes;
   });
 
   Future<String> read(HermesManagedFileEntry entry) => _run(() async {

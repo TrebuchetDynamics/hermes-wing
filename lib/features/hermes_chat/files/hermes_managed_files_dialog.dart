@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/client/hermes_managed_files.dart';
 import '../../../l10n/app_localizations.dart';
+import 'hermes_managed_file_save.dart';
 
 /// Explicit reads only. No file content or host paths enter Chat state, caches,
 /// persistence or diagnostics; replacing the owner discards the volatile view.
@@ -13,8 +14,10 @@ class HermesManagedFilesDialog extends StatefulWidget {
     super.key,
     required this.channel,
     this.opening,
+    this.saver,
   });
   final HermesChannel channel;
+  final HermesManagedFileSaver? saver;
 
   /// The invocation's lease and provider identity, captured before route building.
   final ({HermesChannel channel, HermesManagedFilesSession? files})? opening;
@@ -28,7 +31,13 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
   HermesManagedDirectory? _directory;
   HermesManagedFilesFailure? _failure;
   String? _text, _name;
-  bool _loading = false;
+  bool _loading = false, _saving = false, _choosingDestination = false;
+  late final _saver = widget.saver ?? createManagedFileSaver();
+  HermesManagedFileTransfer? _transfer;
+  HermesManagedFileEntry? _downloadEntry;
+  HermesManagedFileSaveResult? _saveResult;
+  int _received = 0;
+  int? _total;
   int _operation = 0;
   final _parentFocus = FocusNode(), _backFocus = FocusNode();
 
@@ -54,6 +63,10 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
   void didUpdateWidget(covariant HermesManagedFilesDialog oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (identical(oldWidget.channel, widget.channel)) return;
+    _transfer?.cancel();
+    _saving = false;
+    _saveResult = null;
+    _downloadEntry = null;
     oldWidget.channel.removeListener(_ownerChanged);
     widget.channel.addListener(_ownerChanged);
     _operation++;
@@ -66,6 +79,7 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
 
   @override
   void dispose() {
+    _transfer?.cancel();
     _operation++;
     widget.channel.removeListener(_ownerChanged);
     _parentFocus.dispose();
@@ -75,8 +89,12 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
 
   void _ownerChanged() {
     if (_files == null || _files!.isCurrent) return;
+    _transfer?.cancel();
     _operation++;
     setState(() {
+      _saving = false;
+      _saveResult = null;
+      _downloadEntry = null;
       _files = null;
       _directory = null;
       _text = _name = null;
@@ -86,7 +104,7 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
   }
 
   void _open() {
-    if (_loading) return;
+    if (_loading || _saving) return;
     final Object channel = widget.channel;
     if (channel is! HermesManagedFilesChannel ||
         !channel.canBrowseManagedFiles) {
@@ -109,13 +127,15 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
     int? expectedOperation,
   }) async {
     if (expectedOperation != null && expectedOperation != _operation) return;
-    if (!identical(files, _files) || !files.isCurrent || _loading) {
+    if (!identical(files, _files) || !files.isCurrent || _loading || _saving) {
       _ownerChanged();
       return;
     }
     final operation = ++_operation;
     setState(() {
       _loading = true;
+      _saveResult = null;
+      _downloadEntry = null;
       _failure = null;
       _text = _name = null;
     });
@@ -147,6 +167,97 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
       });
     } finally {
       if (mounted && operation == _operation) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _download(
+    HermesManagedFilesSession files,
+    HermesManagedFileEntry entry,
+    int expectedOperation,
+  ) async {
+    if (_loading ||
+        _saving ||
+        expectedOperation != _operation ||
+        !identical(files, _files) ||
+        !files.canDownload ||
+        !_saver.supported) {
+      return;
+    }
+    final operation = ++_operation;
+    bool current() =>
+        mounted &&
+        operation == _operation &&
+        identical(files, _files) &&
+        files.isCurrent;
+    final transfer = HermesManagedFileTransfer(
+      onProgress: (received, total) {
+        if (current()) {
+          setState(() {
+            _received = received;
+            _total = total;
+          });
+        }
+      },
+    );
+    setState(() {
+      _transfer = transfer;
+      _downloadEntry = entry;
+      _saveResult = null;
+      _saving = true;
+      _choosingDestination = false;
+      _received = 0;
+      _total = null;
+    });
+    try {
+      final bytes = await files.download(entry, transfer);
+      if (!current() || transfer.isCancelled) return;
+      setState(() => _choosingDestination = true);
+      final result = await _saver.save(
+        bytes,
+        filename: entry.name,
+        isCurrent: current,
+        transfer: transfer,
+        confirmOverwrite: () async {
+          if (!current() || transfer.isCancelled) return false;
+          final strings = AppLocalizations.of(context);
+          return await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text(strings.managedDownloadWriteTitle),
+                  content: Text(strings.managedDownloadWriteExplanation),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text(strings.cancelAction),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: Text(strings.managedDownloadWriteConfirm),
+                    ),
+                  ],
+                ),
+              ) ==
+              true;
+        },
+      );
+      if (current()) setState(() => _saveResult = result);
+    } catch (_) {
+      if (current()) {
+        setState(
+          () => _saveResult = transfer.isCancelled
+              ? HermesManagedFileSaveResult.cancelled
+              : HermesManagedFileSaveResult.failed,
+        );
+      }
+    } finally {
+      if (current()) {
+        setState(() {
+          _saving = false;
+          if (transfer.isCancelled) {
+            _saveResult = HermesManagedFileSaveResult.cancelled;
+          }
+        });
+      }
     }
   }
 
@@ -214,27 +325,47 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
                             : Icons.description_outlined,
                       ),
                       title: Text(entry.name),
-                      onTap: () {
-                        if (files == null) return;
-                        if (entry.isDirectory) {
-                          unawaited(
-                            _load(
-                              files,
-                              () => files.list(entry.path),
-                              expectedOperation: renderedOperation,
-                            ),
-                          );
-                        } else {
-                          unawaited(
-                            _load(
-                              files,
-                              () => files.read(entry),
-                              name: entry.name,
-                              expectedOperation: renderedOperation,
-                            ),
-                          );
-                        }
-                      },
+                      trailing:
+                          !entry.isDirectory &&
+                              files?.canDownload == true &&
+                              _saver.supported
+                          ? IconButton(
+                              tooltip: strings.managedDownloadAction,
+                              icon: const Icon(Icons.download),
+                              onPressed: _saving
+                                  ? null
+                                  : () => unawaited(
+                                      _download(
+                                        files!,
+                                        entry,
+                                        renderedOperation,
+                                      ),
+                                    ),
+                            )
+                          : null,
+                      onTap: _saving
+                          ? null
+                          : () {
+                              if (files == null) return;
+                              if (entry.isDirectory) {
+                                unawaited(
+                                  _load(
+                                    files,
+                                    () => files.list(entry.path),
+                                    expectedOperation: renderedOperation,
+                                  ),
+                                );
+                              } else {
+                                unawaited(
+                                  _load(
+                                    files,
+                                    () => files.read(entry),
+                                    name: entry.name,
+                                    expectedOperation: renderedOperation,
+                                  ),
+                                );
+                              }
+                            },
                     );
                   }
                   return Column(
@@ -260,7 +391,10 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
                         if (directory.path != directory.root)
                           SelectableText(directory.path),
                       ],
-                      if (!_loading && failure == null && directory != null)
+                      if (!_loading &&
+                          !_saving &&
+                          failure == null &&
+                          directory != null)
                         Row(
                           children: [
                             if (preview)
@@ -304,6 +438,55 @@ class _HermesManagedFilesDialogState extends State<HermesManagedFilesDialog> {
                             ),
                           ],
                         ),
+                      if (_saving) ...[
+                        const SizedBox(height: 12),
+                        LinearProgressIndicator(
+                          value:
+                              _choosingDestination ||
+                                  _total == null ||
+                                  _total == 0
+                              ? null
+                              : _received / _total!,
+                        ),
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            _choosingDestination
+                                ? strings.managedDownloadSaving(_received)
+                                : strings.managedDownloadProgress(_received),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => _transfer?.cancel(),
+                          child: Text(strings.managedDownloadCancel),
+                        ),
+                      ],
+                      if (_saveResult != null) ...[
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(switch (_saveResult!) {
+                            HermesManagedFileSaveResult.verified =>
+                              strings.managedDownloadVerified,
+                            HermesManagedFileSaveResult.cancelled =>
+                              strings.managedDownloadCancelled,
+                            HermesManagedFileSaveResult.failed =>
+                              strings.managedDownloadFailed,
+                          }),
+                        ),
+                        if (_saveResult == HermesManagedFileSaveResult.failed &&
+                            _downloadEntry != null &&
+                            files?.canDownload == true)
+                          TextButton(
+                            onPressed: () => unawaited(
+                              _download(
+                                files!,
+                                _downloadEntry!,
+                                renderedOperation,
+                              ),
+                            ),
+                            child: Text(strings.managedDownloadRetry),
+                          ),
+                      ],
                       if (_loading)
                         Center(
                           child: CircularProgressIndicator(

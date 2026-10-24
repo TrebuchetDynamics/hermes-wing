@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'hermes_session_history_export.dart';
 import 'hermes_managed_files.dart';
@@ -13,6 +14,7 @@ import '../shared/hermes_api_http.dart';
 export '../models/hermes_web_reads.dart';
 
 part 'hermes_web_read_rpc.dart';
+part 'hermes_web_managed_download.dart';
 part 'hermes_web_lifecycle.dart';
 part 'hermes_web_bot_chat.dart';
 
@@ -374,6 +376,11 @@ final class HermesWebReadClient {
     final generation = _generation;
     return HermesManagedFilesSession(
       isCurrent: () => !_closed && generation == _generation && isCurrent(),
+      download: (path, transfer) => _downloadManagedFile(
+        path,
+        transfer,
+        isCurrent: () => !_closed && generation == _generation && isCurrent(),
+      ),
       request: (path, query, maximum) async {
         if (_credential == null) {
           throw const HermesManagedFilesException(

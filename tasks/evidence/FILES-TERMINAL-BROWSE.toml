@@ -1,0 +1,9 @@
+schema = 1
+task = "FILES-TERMINAL-BROWSE"
+candidate = "cd92b36799b6c8bfb460cbbc1da52646fe55424a"
+integration = "a7c06dd4346a9bb61454ef59b08cf94f68515905"
+tree = "0b41612169235cf8c26692c3e4af5e9e7d03b06b"
+contract_hash = "78c7d65d08e79a3ff66de1a593d88936cea3e253b7d744aae61b32d1c0c2afd8"
+checks = ["<path>", "<path>", "--verify", "<path>", "FILES-TERMINAL-BROWSE"]
+result = "pass"
+review = "passed"

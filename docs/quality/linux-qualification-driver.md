@@ -43,6 +43,11 @@ Requirements:
   same prefix, with headers and x86_64 ELF libraries present. GTK >=3.24,
   GStreamer >=1.18 and libsecret >=0.20 metadata and GTK library/header inputs are
   inspected. This is not proof of ABI loading or successful native behavior.
+  Optional tools in that prefix's `bin` directory are inspected and hashed along
+  with the dependency tree. Runtime lookup includes only the copied SDK, Node,
+  reviewed prefix and system directories; it never inherits the caller's tool or
+  loader search paths. Both multiarch and ordinary `lib` directories in the
+  captured prefix are available for privately extracted tool dependencies.
 - A dedicated private output child of `TMPDIR`, outside source, SDK and caches.
   Nonempty output requires the matching ownership marker. Source, tool or
   dependency changes require a fresh output directory, never repinned evidence.
@@ -51,6 +56,36 @@ SDKs are copied before Flutter can acquire locks or alter caches. Absolute,
 broken or escaping SDK links are refused. SDK control/engine inputs are pinned
 at inspection and checked against the copy and original before terminal success.
 No system installation, dependency download or shared SDK mutation is offered.
+
+## Normal application startup
+
+```sh
+python3 integration_test/run_linux_production_startup.py
+```
+
+The separate startup runner uses the same preflight, current-source snapshot and
+private SDK/package/native-dependency capture. It builds **`lib/main.dart`**,
+then launches that debug bundle under an owned Xvfb and D-Bus session with fresh
+HOME/Hermes/XDG state. It accepts no endpoint, credential or executable arguments.
+`xdotool` and ImageMagick `magick` must be available in the reviewed prefix or
+system directories. They are recorded as inspected inputs.
+
+The private output retains exact build/display commands and exits, logs, source
+and bundle digests, the native PID/birth/group identity and `startup.png`. A
+mapped window must belong to the launched app, have the expected title and
+nonempty dimensions, and render a nonblank image. Merely staying alive cannot
+pass. Review the retained image to confirm the welcome/connection UI; the runner
+keeps `screenshot_review: REQUIRED` rather than inventing a visual verdict.
+Missing prerequisites produce `NOT_RUN`; failed commands or cleanup remain
+failures. The owned app/display groups exit before private state removal.
+This smoke does not contact an Agent or qualify packaged installation, live
+authentication, physical input or the separate feature/plugin lanes.
+
+Chat and access fixtures copy the fixed public MIME cache and, when installed,
+Glycin loader `.conf` metadata into their private XDG data tree. The receipt
+records each copied file digest. Linked metadata is refused; user search roots
+and settings remain excluded. This allows GTK icon decoding on Glycin-based
+systems without disabling its sandbox or widening XDG lookup.
 
 ## Fixed lanes
 

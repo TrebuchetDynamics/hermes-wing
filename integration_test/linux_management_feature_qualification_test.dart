@@ -624,18 +624,36 @@ void main() {
     (tester) async {
       final f = ManagementFixture();
       await f.open(tester, '/settings');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('wing.appearance.avatar_variation.v1', 2);
+      final appearanceRequests = f.requests.length;
       await managementTap(tester, find.text('Dark'));
       await managementTap(tester, managementKey('settings-theme-forest'));
+      expect(managementKey('settings-chat-text-scale-125'), findsNothing);
+      expect(managementKey('wing-avatar-family-2'), findsNothing);
+      await managementTap(
+        tester,
+        managementKey('settings-appearance-page-typography'),
+      );
+      expect(managementKey('settings-theme-gallery'), findsNothing);
       await managementTap(
         tester,
         managementKey('settings-chat-text-scale-125'),
       );
-      await managementTap(tester, managementKey('wing-avatar-family-2'));
-      final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('wing.theme.mode'), 'dark');
       expect(prefs.getString('wing.theme.palette'), 'forest');
       expect(prefs.getDouble('wing.chat.transcript_text_scale'), 1.25);
       expect(prefs.getInt('wing.appearance.avatar_variation.v1'), 2);
+      expect(f.requests, hasLength(appearanceRequests));
+      await f.go(tester, '/settings?page=typography&setting=chat-text-scale');
+      expect(managementKey('settings-chat-text-scale-125'), findsOneWidget);
+      expect(managementKey('settings-theme-gallery'), findsNothing);
+      await managementTap(
+        tester,
+        managementKey('settings-appearance-page-theme'),
+      );
+      expect(managementKey('settings-theme-gallery'), findsOneWidget);
+      expect(managementKey('settings-chat-text-scale-125'), findsNothing);
       // No conditional pass: GTK has no supported native spellcheck service.
       expect(managementKey('settings-category-chat'), findsNothing);
       await managementTap(

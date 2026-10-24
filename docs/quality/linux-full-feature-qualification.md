@@ -290,6 +290,104 @@ Separate connection/plugin/SSH runners described in their existing owner are not
 registered targets of these five lanes. Their earlier evidence remains separate;
 this join does not silently adopt inaccessible or source-stale receipts.
 
+## Current Linux retest — 2026-10-24
+
+Baseline: `49ad6d1a520314ee5e2bac87fc9da773e751ef47`, including the already
+integrated managed-root Files implementation. Captured source-input SHA-256:
+`9181edf1b6d162a69394592c6f658b3a531c5dcd342c19e0181a9b72dc878797`.
+These are fresh Linux x86_64 GTK/X11 fixtures on Omarchy, Flutter 3.44.2 /
+Dart 3.12.2 and Node 22.22.2. Native dependencies are privately captured; no
+system installation, shared SDK edit, personal Agent, account or keyring is used.
+
+The normal `lib/main.dart` debug build and startup smoke passed. The owned GTK
+window had title **Hermes Wing**, geometry 1280×720 and 1,770 image colors.
+The retained image was visually inspected: it shows the welcome, Get Started,
+SSH, Remote and Local setup controls. The native PID/birth/group, commands,
+exits, source/tool inputs and cleanup remain in the private receipt. Bundle
+SHA-256: `45033a4d8f5a41f9eb6341ca94af0ca139bba2a7e15ef48561bc0984b73bec0b`;
+image SHA-256: `d0b0ec30ddc78476a6a0dbe00548af9abfe19bd8a75abc6f6af3fb093cfe3219`.
+The process and display groups exited and owned state was removed. This is an
+unpackaged debug startup, not installation or Desktop visual parity.
+
+The management fixture first reproduced an obsolete Settings expectation: it
+looked for text scaling on Theme and then the retired creature picker. The
+corrected journey uses Typography, checks direct field navigation and return to
+Theme, preserves an inert saved avatar preference and checks zero appearance
+Agent requests. All 12 management journeys then passed, producing 33 rows
+(12 positive, 21 unsupported negative assertions). The five connection rows also
+passed (four positive and one unsupported negative assertion).
+
+Real preference write/verify across two GTK processes and the separate real
+Secret Service write/verify both passed in private state. The shared adapter now
+registers managed-files client/dialog and Settings subpage regressions explicitly;
+its inventory test rejects their omission. Python driver/checker/startup checks
+passed all 34 tests; analysis reported no issues and the whole Dart formatting
+check made zero changes. The separate synthetic loopback SSH/key workflow also
+passed; native key picking and a real remote host were not exercised.
+
+The initial Chat and access lanes stopped at native GTK export. The Chat core
+recorded SIGABRT through `g_assertion_message_error` in GTK. A separate public
+icon probe reproduced missing Glycin image loaders with the private MIME cache;
+copying the public loader configuration restored decoding. The driver now copies
+only MIME/loader metadata into the private XDG tree, records hashes and rejects
+links. It does not widen user lookup or disable the image-loader sandbox.
+The repaired-source input SHA-256 is
+`34f6ea308cbb1d897217e9051f5b44085b771a2c8471bc448f21858d2654b891`.
+On that source, all 25 principal Chat journeys passed; the complete access lane
+also passed its 12 cases and separate shell/compact-return runner, with private
+state and process cleanup verified. Earlier-source plugin/startup/management
+results remain bounded historical cells, not a current-source aggregate pass.
+
+Validation commands and terminal results:
+
+- `flutter pub get --offline --enforce-lockfile` followed by
+  `flutter test --no-pub --concurrency=1 --reporter expanded`: exit 0,
+  4,204 passed, nine existing skips, 54m28s. No test selection or new skips.
+- `flutter analyze --no-pub`: exit 0, no issues.
+- `dart format --output=none --set-exit-if-changed lib test integration_test`:
+  exit 0, 686 files, zero changes.
+- `TMPDIR=/tmp python3 -m unittest discover -s test/tooling
+  -p 'linux_feature_qualification*_test.py' -q`: exit 0, 34 passed,
+  including the final GTK metadata repair.
+- `python3 integration_test/run_linux_production_startup.py`: exit 0,
+  normal debug startup and manual image review as described above.
+- `git diff --check`: exit 0.
+
+The Dart suite ran unchanged while the Python-only GTK prerequisite fix was
+completed; final Python checks and the repaired native lanes cover that fix.
+Only Linux was exercised in this retest. No new browser, device or packaged
+qualification is claimed.
+
+Retained limitations/failures:
+
+- The shared native core batch failed when the managed-files dialog fixture
+  completed its denied Future, followed by live-binding pending-frame assertions.
+  Both six-minute timer batches passed. The screens batch was refused for
+  original-source drift while the GTK prerequisite repair was made; it is not
+  counted as a pass. The five-lane checker exited 2 with `INVALID` (missing
+  aggregate `shared.json`), retaining overall `PARTIAL`. These receipts precede
+  the GTK preparation repair and are not presented as a green current join.
+- The native input/export wrapper failed the **Linux GTK IME commit and
+  cancellation preserve text** case: after composition, expected synthetic text
+  plus an emoji but observed an empty editor. This target does not have an IBus
+  input service. No assertion, input mode or production behavior was weakened;
+  the wrapper is not qualified from its other passing cases.
+- `bash scripts/run_linux_saved_endpoint_storage.sh` exited 1 before native
+  dispatch because its exact historical helper revision
+  `894439b76c889fed45f3c4d57b73086f1e18d479` is absent. Fetching that exact revision
+  from the repository failed with `not our ref`. This separate saved-endpoint
+  custody cell remains unqualified; preference/keyring passes do not replace it.
+- The first sandboxed GTK attempt could not bind its private D-Bus socket.
+  Native execution was repeated with the required OS permission. An attempted
+  concurrent lane correctly refused active linked output artifacts; independent
+  lanes retain their original private locations for the supported composition
+  checker. Neither refusal is a passing runtime result.
+
+Overall Linux remains **PARTIAL**. Physical keyboard/IME, screen reader, audio,
+Wayland, actual Agent/SSH/OAuth/provider operations and packaged delivery are
+separate, unqualified cells. The open current-retest task is not closed by these
+bounded results.
+
 ## Existing live, physical and package owners
 
 These are residual cells, **not prerequisites of offline reporting**, new tasks,

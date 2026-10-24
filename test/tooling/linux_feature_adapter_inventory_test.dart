@@ -11,6 +11,9 @@ void main() {
         'test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart',
         'test/features/hermes_chat/screens/hermes_chat_slash_commands_test.dart',
         'test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart',
+        'test/features/hermes_chat/hermes_managed_files_dialog_test.dart',
+        'test/core/hermes/client/hermes_managed_files_test.dart',
+        'test/features/settings/settings_subpages_test.dart',
         for (final root in [
           'test/features/hermes_chat/bots',
           'test/features/hermes_chat/export',

@@ -244,6 +244,8 @@ def execute(lane, source, output, state, receipt, prefix, sdk, node, environ):
                    PUB_CACHE=str(state / 'packages'))
         if deps: env['WING_LINUX_DEPENDENCY_PREFIX'] = str(deps)
         if lane in ('chat', 'shared'): env['AUTOWORK_PORT_BASE'] = str(int(environ['AUTOWORK_PORT_BASE']))
+        if lane in ('chat', 'access'):
+            receipt['gtk_public_data'] = qa.stage_gtk_data(case_root)
         (case_root / '.wing-linux-test-owner').write_text(qa.identity(receipt['source']))
         cases_file, observed = case_root / 'feature-cases.json', {}
         def observe(group):

@@ -183,9 +183,11 @@ owner decision on 2026-10-24 to the Agent's managed-files root; see the
 browse/read/download routes in the official Desktop's `hermes serve` backend.
 This does not establish file support on Wing's current messaging API connection.
 Initial implementation targets qualified authenticated `serve` connections.
-Session/profile root selection, strict canonical containment and terminal-backend
-support must be qualified before enabling the affected operation. Missing contracts
-remain unavailable; this does not relax FILES-4 or promise support on every host.
+Qualify the owning connection/identity, advertised managed-root policy and strict
+canonical containment before enabling the affected operation. The selected
+managed-root surface does not require a terminal-backend cwd contract or claim to
+browse that backend. Missing contracts remain unavailable; this does not relax
+FILES-4 or promise support on every host.
 
 **FILES-1 — Browse:** Linux and Android users can navigate folders and see files
 inside the connected Agent's enforced file root. The owner-selected root is the

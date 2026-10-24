@@ -2716,6 +2716,10 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
           ],
           TextField(
             key: const ValueKey('hermes-composer-field'),
+            textDirection: ref
+                .watch(wingChatPreferencesProvider)
+                .textDirection
+                .forcedDirection,
             controller: _composerController,
             focusNode: _composerFocusNode,
             spellCheckConfiguration: _composerSpellCheckConfiguration,

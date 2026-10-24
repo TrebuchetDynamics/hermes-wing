@@ -434,7 +434,7 @@ class _AssistantTimelineItem extends StatelessWidget {
   Widget build(BuildContext context) => child;
 }
 
-class _ReasoningCard extends StatefulWidget {
+class _ReasoningCard extends ConsumerStatefulWidget {
   const _ReasoningCard({
     required this.turn,
     required this.active,
@@ -450,10 +450,10 @@ class _ReasoningCard extends StatefulWidget {
   final bool showAvatar;
 
   @override
-  State<_ReasoningCard> createState() => _ReasoningCardState();
+  ConsumerState<_ReasoningCard> createState() => _ReasoningCardState();
 }
 
-class _ReasoningCardState extends State<_ReasoningCard> {
+class _ReasoningCardState extends ConsumerState<_ReasoningCard> {
   bool _expanded = false;
 
   @override
@@ -497,6 +497,10 @@ class _ReasoningCardState extends State<_ReasoningCard> {
                   alignment: Alignment.centerLeft,
                   child: HermesRichText(
                     _safeHermesUiText(widget.turn.text),
+                    textDirection: ref
+                        .watch(wingChatPreferencesProvider)
+                        .textDirection
+                        .forcedDirection,
                     selectable: true,
                   ),
                 ),
@@ -694,7 +698,7 @@ class _ToolActivityGroup extends StatelessWidget {
   }
 }
 
-class _MessageContent extends StatelessWidget {
+class _MessageContent extends ConsumerWidget {
   const _MessageContent({
     required this.text,
     required this.attachment,
@@ -708,7 +712,7 @@ class _MessageContent extends StatelessWidget {
   final bool selectable;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final displayText = text;
     final safeAttachment = attachment == null
         ? null
@@ -726,6 +730,10 @@ class _MessageContent extends StatelessWidget {
         if (displayText.isNotEmpty)
           HermesRichText(
             displayText,
+            textDirection: ref
+                .watch(wingChatPreferencesProvider)
+                .textDirection
+                .forcedDirection,
             selectable: selectable,
             showSelectionToolbar: false,
           ),

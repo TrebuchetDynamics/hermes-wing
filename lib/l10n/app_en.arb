@@ -1,4 +1,11 @@
 {
+  "skillsAllCategoriesLabel": "All categories",
+  "skillsCategoriesLabel": "Categories",
+  "settingsChatDisplayHeading": "Chat display",
+  "chatTextDirectionTitle": "Text direction",
+  "chatTextDirectionAuto": "Auto",
+  "chatTextDirectionRtl": "Right to left",
+  "chatTextDirectionLtr": "Left to right",
   "chatBotOpen": "Bot Chat",
   "chatBotGap": "Canonical Bot Chat requires supported native Agent operations and settled history/replay. Ordinary sessions remain available; reconcile active work before switching.",
   "chatBotFailure": "Bot Chat could not be confirmed. Your current conversation is unchanged. Retry explicitly; no message was sent.",

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/hermes/channel/hermes_channel.dart';
+import '../../../core/hermes/models/hermes_metadata_text.dart';
 import '../../../core/hermes/models/hermes_skill.dart';
 import '../../../core/hermes/models/hermes_toolset.dart';
 import '../../../l10n/app_localizations.dart';
@@ -112,6 +113,9 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
                 child: _ToolsBody(
                   key: ValueKey(_presentationOwner),
                   skillsOwner: _skillsOwner,
+                  isSkillsOwner: () =>
+                      _isInventoryOwner(channel, owner) &&
+                      channel.state.canReadSkills,
                   toolsetsOwner: _toolsetsOwner,
                   state: channel.state,
                   strings: strings,
@@ -253,10 +257,12 @@ class _ToolsBody extends StatelessWidget {
     required this.state,
     required this.strings,
     required this.skillsOwner,
+    required this.isSkillsOwner,
     required this.toolsetsOwner,
   });
 
   final Object skillsOwner;
+  final bool Function() isSkillsOwner;
   final Object toolsetsOwner;
 
   final HermesChannelState state;
@@ -310,6 +316,7 @@ class _ToolsBody extends StatelessWidget {
               children: [
                 _SkillsInventorySection(
                   key: ValueKey(skillsOwner),
+                  isCurrentOwner: isSkillsOwner,
                   advertised: skillsAdvertised,
                   loadFailed: state.optionalResourceErrors.containsKey(
                     HermesOptionalResource.skills,
@@ -340,6 +347,7 @@ class _ToolsBody extends StatelessWidget {
 class _SkillsInventorySection extends StatefulWidget {
   const _SkillsInventorySection({
     super.key,
+    required this.isCurrentOwner,
     required this.advertised,
     required this.loadFailed,
     required this.details,
@@ -347,6 +355,7 @@ class _SkillsInventorySection extends StatefulWidget {
     required this.strings,
   });
 
+  final bool Function() isCurrentOwner;
   final bool advertised;
   final bool loadFailed;
   final List<HermesSkill> details;
@@ -364,6 +373,7 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection>
   bool get wantKeepAlive => true;
   final _searchController = TextEditingController();
   String _query = '';
+  final _categories = <String>{};
 
   @override
   void dispose() {
@@ -386,16 +396,25 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection>
         ? widget.strings.skillsEmptyBody
         : null;
     final normalizedQuery = _query.trim().toLowerCase();
-    final filtered = normalizedQuery.isEmpty
-        ? details
-        : details
-              .where(
-                (skill) =>
-                    skill.name.toLowerCase().contains(normalizedQuery) ||
-                    skill.description.toLowerCase().contains(normalizedQuery) ||
-                    skill.category.toLowerCase().contains(normalizedQuery),
-              )
-              .toList(growable: false);
+    final categories = <String>{
+      ..._categories,
+      for (final skill in details) _skillCategory(skill),
+    }..remove('');
+    final orderedCategories = categories.toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    final filtered = details
+        .where((skill) {
+          final matchesCategory =
+              _categories.isEmpty ||
+              _categories.contains(_skillCategory(skill));
+          final matchesQuery =
+              normalizedQuery.isEmpty ||
+              skill.name.toLowerCase().contains(normalizedQuery) ||
+              skill.description.toLowerCase().contains(normalizedQuery) ||
+              skill.category.toLowerCase().contains(normalizedQuery);
+          return matchesCategory && matchesQuery;
+        })
+        .toList(growable: false);
 
     return Semantics(
       container: true,
@@ -450,6 +469,42 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection>
                     onChanged: (value) => setState(() => _query = value),
                   ),
                 ),
+                if (orderedCategories.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(widget.strings.skillsCategoriesLabel),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ChoiceChip(
+                        key: const ValueKey('installed-skills-all-categories'),
+                        label: Text(widget.strings.skillsAllCategoriesLabel),
+                        selected: _categories.isEmpty,
+                        onSelected: (_) {
+                          if (!mounted || !widget.isCurrentOwner()) return;
+                          setState(_categories.clear);
+                        },
+                      ),
+                      for (final category in orderedCategories)
+                        FilterChip(
+                          key: ValueKey('installed-skills-category-$category'),
+                          label: Text(category),
+                          selected: _categories.contains(category),
+                          onSelected: (selected) {
+                            if (!mounted || !widget.isCurrentOwner()) return;
+                            setState(() {
+                              if (selected) {
+                                _categories.add(category);
+                              } else {
+                                _categories.remove(category);
+                              }
+                            });
+                          },
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 8),
                 if (filtered.isEmpty)
                   Padding(
@@ -474,10 +529,10 @@ class _SkillsInventorySectionState extends State<_SkillsInventorySection>
                           children: [
                             if (filtered[index].description.isNotEmpty)
                               Text(filtered[index].description),
-                            if (filtered[index].category.isNotEmpty) ...[
+                            if (_skillCategory(filtered[index]).isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Text(
-                                filtered[index].category,
+                                _skillCategory(filtered[index]),
                                 style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(
                                       color: Theme.of(
@@ -730,3 +785,6 @@ class _ToolsetTile extends StatelessWidget {
     );
   }
 }
+
+String _skillCategory(HermesSkill skill) =>
+    boundedHermesMetadataText(skill.category, 80);

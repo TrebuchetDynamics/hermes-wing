@@ -218,3 +218,33 @@ names the effective selected session/profile/backend terminal root and enforces
 server-side canonical confinement to it, so positive Files access stays
 unimplemented and `FILES-TERMINAL-DOWNLOAD` stays dependent. This is a source
 contract recheck only, not an HTTP, native or live qualification.
+
+## Managed-files root: the owner-selected alternative
+
+Owner decision, 2026-10-24 (recorded in the
+[product ADR](../adr/product.md#owner-approved-files-surface-the-agents-managed-files-root)):
+root the read-only Files surface at the Agent's managed-files root instead of the
+terminal cwd. The contract below is what makes that implementable and safe; it is
+read from the same `14e1e43a` sources.
+
+- `GET /api/files?path=…` returns `path`, `parent`, `entries` (`name`, `path`,
+  `isDirectory`) and the policy meta `{root, locked_root, can_change_path}`.
+  Entries hide `_FS_READDIR_HIDDEN` noise and sensitive paths, directories sort
+  first, and `parent` is `null` at the locked root, so the client gets no
+  above-root navigation token.
+- `GET /api/files/read?path=…` returns `name`, `path`, `size`, `mime_type` and a
+  base64 `data_url`, capped by `_MANAGED_FILE_MAX_BYTES` (100 MiB). Use
+  `/api/files/download?path=…` for exact streamed bytes and
+  `/api/files/stream` for range media; never rebuild a download from a preview.
+- Confinement is server-side in `_resolve_managed_path`: `..` is refused, a
+  relative path joins the locked root, an absolute path must resolve under it
+  (403 otherwise), the target is canonicalised with `require_exists`, and
+  sensitive paths are denied on list, read and download.
+- Without `locked_root` the same routes serve `default_path` with
+  `can_change_path: true` and no containment. That is a different, unconfined
+  policy: Wing must show the surface unavailable rather than fall back to it.
+- Authentication is the serve deployment's own session/bearer contract.
+  `_QUERY_TOKEN_API_PATHS` allows a `?token=` only for `/api/files/download`;
+  a native client should send headers instead of putting a token in a URL.
+- `write-text`, `upload`, `mkdir` and `delete` exist but stay outside Wing's
+  read-only scope.

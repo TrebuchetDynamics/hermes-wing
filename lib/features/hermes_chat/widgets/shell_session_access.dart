@@ -14,6 +14,8 @@ import '../providers/hermes_channel_provider.dart';
 import '../providers/hermes_directory_lifetime.dart';
 import '../gateways/gateway_contact.dart';
 import '../session/hermes_session_pin_store.dart';
+import '../session/hermes_session_pin_contact.dart';
+import '../providers/hermes_session_pin_provider.dart';
 import '../screens/hermes_chat_screen.dart' show HermesSessionsPanel;
 import 'global_session_scope.dart';
 
@@ -59,14 +61,13 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
   }
 
   bool _scheduled = false;
-  final _pins = HermesSessionPinStore();
+  late final HermesSessionPinStore _pins;
 
-  GatewayContactId get _pinContact =>
-      _directory?.activeContactId ??
-      GatewayContactId(
-        gatewayId: 'direct',
-        profileId: _channel.state.selectedProfileId ?? 'default',
-      );
+  GatewayContactId? get _pinContact => hermesSessionPinContact(
+    savedContact: _directory?.activeContactId,
+    baseUrl: _channel.state.connectedBaseUrl,
+    profileId: _channel.state.selectedProfileId,
+  );
 
   bool get _canList {
     final caps = _channel.state.capabilities;
@@ -83,10 +84,7 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
   @override
   void initState() {
     super.initState();
-    if (widget.fullPanel) {
-      _pins.addListener(_changed);
-      unawaited(_pins.load());
-    }
+    _pins = ref.read(hermesSessionPinStoreProvider)..addListener(_changed);
     _channel = ref.read(hermesChannelProvider);
     _channel.addListener(_changed);
     _lifetime = ref.read(hermesDirectoryLifetimeProvider);
@@ -176,7 +174,6 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
     _directory?.removeListener(_changed);
     _lifetime.removeListener(_directoryChanged);
     _pins.removeListener(_changed);
-    _pins.dispose();
     _router?.routeInformationProvider.removeListener(_routeChanged);
     super.dispose();
   }
@@ -501,13 +498,7 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
                       if (_pins.isPinned(_pinContact, row.id)) row.id,
                   },
                   unreadCompletedSessionIds: const {},
-                  onTogglePinned: (row) {
-                    if (enabled &&
-                        generation == _generation &&
-                        state.sessions.any((s) => s.id == row.id)) {
-                      unawaited(_pins.toggle(_pinContact, row.id));
-                    }
-                  },
+                  onTogglePinned: (row) => _togglePin(generation, row),
                   onCreate: () => _activate(generation, null),
                   onSelect: (row) => _activate(generation, row.id),
                   onLoadMore: () => _loadMore(generation),
@@ -525,8 +516,13 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
     }
     // Exact source identity is separate from its redacted display label. Dart's
     // insertion-ordered map preserves first encounter and incoming row order.
+    final pinned = <HermesSession>[];
     final groups = <String?, List<HermesSession>>{};
     for (final session in state.visibleSessions) {
+      if (_pins.isPinned(_pinContact, session.id)) {
+        pinned.add(session);
+        continue;
+      }
       final source = session.source.trim().isEmpty ? null : session.source;
       (groups[source] ??= []).add(session);
     }
@@ -571,80 +567,144 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
               Semantics(liveRegion: true, child: Text(_error!)),
             if (!_settled)
               Text(strings.shellUnavailable)
-            else
-              for (final group in groups.entries) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
-                  child: Semantics(
-                    header: true,
-                    child: Text(
+            else ...[
+              if (pinned.isNotEmpty)
+                Column(
+                  key: const ValueKey('shell-pinned-sessions'),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _sectionHeading(context, strings.chatRailPinnedGroupLabel),
+                    for (final session in pinned)
+                      _sessionRow(context, session, generation, enabled),
+                  ],
+                ),
+              Column(
+                key: const ValueKey('shell-recent-sessions'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final group in groups.entries) ...[
+                    _sectionHeading(
+                      context,
                       strings.shellSessionSource(
                         group.key == null
                             ? strings.sessionUnknownSource
                             : wingRedactedPreview(group.key!, maxLength: 48),
                       ),
+                    ),
+                    for (final session in group.value)
+                      _sessionRow(context, session, generation, enabled),
+                  ],
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _togglePin(int generation, HermesSession session) {
+    final contact = _pinContact;
+    bool current() =>
+        mounted &&
+        generation == _generation &&
+        _settled &&
+        _pending == null &&
+        contact != null &&
+        contact == _pinContact &&
+        _channel.state.visibleSessions.any((row) => row.id == session.id);
+    if (!current()) return;
+    unawaited(_pins.toggle(contact, session.id, canAccept: current));
+  }
+
+  Widget _sectionHeading(BuildContext context, String label) => Padding(
+    padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
+    child: Semantics(
+      header: true,
+      child: Text(
+        label,
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.labelSmall,
+      ),
+    ),
+  );
+
+  Widget _sessionRow(
+    BuildContext context,
+    HermesSession session,
+    int generation,
+    bool enabled,
+  ) {
+    final strings = AppLocalizations.of(context);
+    final state = _channel.state;
+    final selected = state.activeSessionId == session.id;
+    final pinned = _pins.isPinned(_pinContact, session.id);
+    return Builder(
+      builder: (rowContext) => Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: (focused) {
+          if (focused) Scrollable.ensureVisible(rowContext, alignment: 0.5);
+        },
+        child: Row(
+          children: [
+            Expanded(
+              child: MergeSemantics(
+                child: Semantics(
+                  selected: selected,
+                  child: TextButton(
+                    key: ValueKey('shell-open-session-${session.id}'),
+                    style: TextButton.styleFrom(
+                      alignment: Alignment.centerLeft,
+                      foregroundColor: selected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface,
+                      textStyle: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(
+                            fontWeight: selected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      backgroundColor: selected
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.08)
+                          : Colors.transparent,
+                    ),
+                    onPressed: enabled
+                        ? () => _activate(generation, session.id)
+                        : null,
+                    child: Text(
+                      strings.shellOpenSession(
+                        wingRedactedPreview(
+                          session.title ?? session.id,
+                          maxLength: 80,
+                        ),
+                      ),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ),
                 ),
-                for (final session in group.value)
-                  Builder(
-                    builder: (rowContext) => Focus(
-                      canRequestFocus: false,
-                      skipTraversal: true,
-                      onFocusChange: (focused) {
-                        if (focused) {
-                          Scrollable.ensureVisible(rowContext, alignment: 0.5);
-                        }
-                      },
-                      child: MergeSemantics(
-                        child: Semantics(
-                          selected: state.activeSessionId == session.id,
-                          child: TextButton(
-                            key: ValueKey('shell-open-session-${session.id}'),
-                            style: TextButton.styleFrom(
-                              alignment: Alignment.centerLeft,
-                              foregroundColor:
-                                  state.activeSessionId == session.id
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.onSurface,
-                              textStyle: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    fontWeight:
-                                        state.activeSessionId == session.id
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                  ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              backgroundColor:
-                                  state.activeSessionId == session.id
-                                  ? Theme.of(context).colorScheme.primary
-                                        .withValues(alpha: 0.08)
-                                  : Colors.transparent,
-                            ),
-                            onPressed: enabled
-                                ? () => _activate(generation, session.id)
-                                : null,
-                            child: Text(
-                              strings.shellOpenSession(
-                                wingRedactedPreview(
-                                  session.title ?? session.id,
-                                  maxLength: 80,
-                                ),
-                              ),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+              ),
+            ),
+            IconButton(
+              key: ValueKey('shell-pin-session-${session.id}'),
+              tooltip: pinned
+                  ? strings.chatRailUnpinSessionAction
+                  : strings.chatRailPinSessionAction,
+              onPressed: enabled && _pinContact != null
+                  ? () => _togglePin(generation, session)
+                  : null,
+              icon: Icon(
+                pinned ? Icons.push_pin : Icons.push_pin_outlined,
+                size: 16,
+              ),
+            ),
           ],
         ),
       ),

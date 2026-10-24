@@ -82,9 +82,65 @@ failures and the reproduced Close overlap are not hidden by these bounded result
 
 ## Publication state
 
+Historical publication failure below was superseded by the remote `main` merge
+`9a6fc49d17fd2c58a479ddb509be0b0438114687`, verified through GitHub during the
+follow-up review. This establishes publication of that batch, not full parity.
+
 The owner requested incremental publication. Native Git authenticated as
 `DanielOlan28` returned 403 permission denied for this repository. The connected
 `olanhiram-bot` account reports repository push permission, but the GitHub
 integration rejected Git tree creation with 403, `Resource not accessible by
 integration`. These are external authorization failures, not branch-protection
 checks to bypass. No remote branch or commit publication is claimed.
+
+## Follow-up: task counts and local Settings subpages
+
+The task reporter now partitions administrative records by their recorded closure
+disposition. In the 297-record snapshot at `9a6fc49d`, 75 closed records retain qualification
+gaps (64 waivers, 9 deferrals and 2 retired aggregates); aggregate rows can overlap
+with child tasks. Fourteen matching pass receipts, one manual delivery reference,
+202 historical/other closures, three retired/superseded records and two open rows
+remain separate. No percentage or new runtime acceptance is inferred.
+
+Settings ports the supported Appearance children Theme/Typography, parent versus
+caret actions, and `page`/`setting` navigation from the same official pin's
+`appearance-subpages.ts`, `subpages.ts` and `settings-manifest.ts`. Search can open
+Theme or Chat text size directly. Changing categories clears stale target
+parameters; cancelling search or replacing its navigation owner preserves the
+newer selection. Existing preference keys, values and Agent authority are unchanged.
+The rest of the Settings tree and field catalog remains pending.
+
+Executed on Linux with Flutter 3.44.2 and Node 22.22.2:
+
+- `python3 -m unittest discover -s test/tooling -p task_status_report_test.py -v`:
+  9 passed; text/JSON output, receipt identity, unknown closures, duplicate IDs,
+  and read-only reporting are covered.
+- Focused serial Flutter run across `test/features/settings`, `test/router`,
+  `hermes_chat_rich_transcript_test.dart`, `local_hermes_home_discovery_test.dart`
+  and `fixture_server_test.dart`: 221 passed. The subsequent stale-search guard
+  and route checks passed in an 8-case run of `settings_subpages_test.dart` and
+  `settings_routes_test.dart`.
+- The original complete serial attempt finished with 4,172 passed, nine existing
+  skips and 13 failures. Eleven failures required absent `TMPDIR`, one spawned an
+  unconfigured `dart` shim, and one retained the retired 20px message radius.
+  Discovery now uses `Directory.systemTemp`; all 11 cases pass with `TMPDIR`
+  explicitly unset. The matching Flutter SDK is on PATH for child Dart processes.
+  The old radius assertion now checks the pinned 3.2px user/flat assistant geometry;
+  its focused suite passed. A new complete-suite pass is not established here.
+- `flutter analyze --no-pub`: no issues after addressing two analyzer suggestions.
+- Formatting of the eight changed Dart files: no changes. `git diff --check` passed.
+- `flutter build web --no-pub --release -t lib/main_e2e.dart`: passed; existing
+  Wasm/Cupertino-font warnings remain. `npm ci` used the existing lockfile and
+  reported zero vulnerabilities.
+
+`npm run web:e2e` passed all 12 browser-surface cases, then stopped on two new
+Settings assertions that expected standalone text where Flutter merges the
+accessible label. The corrected focused command
+`npx playwright test --config=playwright.config.mjs playwright/tests/regression/settings-search.spec.mjs`
+passed both 390px/1280px cases against the same E2E build. These cases check search,
+cancellation, direct targets, persisted text size after reload, no Agent mutations
+and no browser/overflow errors. Both resulting screenshots were reviewed. The
+remaining default browser suites did not execute in this run.
+
+No physical device, native GTK journey, actual Agent call, acoustic test, paired
+Desktop visual comparison or signed distribution is qualified by this follow-up.

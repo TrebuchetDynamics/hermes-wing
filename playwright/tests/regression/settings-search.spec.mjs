@@ -28,6 +28,16 @@ for (const width of [390, 1280]) {
     await expect(page.getByRole('button', { name: 'Appearance', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Back', exact: true }).click();
     await expect(page).toHaveURL(/tab=config(?::|%3A)voice/);
+    await page.getByRole('button', { name: 'Search settings', exact: true }).click();
+    await search.fill('Chat text size');
+    await page.getByRole('button', { name: /Chat text size/ }).click();
+    await expect(page).toHaveURL(/page=typography/);
+    await expect(page).toHaveURL(/setting=chat-text-scale/);
+    await expect(page.getByRole('checkbox', { name: '100%', exact: true })).toBeChecked();
+    await page.getByRole('checkbox', { name: '150%', exact: true }).click();
+    await page.reload();
+    await enableFlutterAccessibility(page);
+    await expect(page.getByRole('checkbox', { name: '150%', exact: true })).toBeChecked();
     await page.screenshot({ path: test.info().outputPath(`settings-search-${width}.png`) });
     expect(mutations).toEqual([]);
     expect(errors).toEqual([]);

@@ -108,5 +108,28 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Diagnostics'), findsWidgets);
     expect(find.text('Settings'), findsWidgets);
+
+    router.go(
+      '${AppRoutes.settings}?tab=config:appearance&page=theme&setting=chat-text-scale&field=old&keep=1',
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('settings-chat-text-scale-100')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('settings-theme-gallery')), findsNothing);
+    await selectCategory('Voice');
+    final query = router.routeInformationProvider.value.uri.queryParameters;
+    expect(query['tab'], 'config:voice');
+    expect(query['keep'], '1');
+    for (final key in ['page', 'setting', 'field']) {
+      expect(query.containsKey(key), isFalse);
+    }
+    expect(
+      find.byKey(const ValueKey('settings-content-voice')),
+      findsOneWidget,
+    );
+    expect(channel.connectCalls, isEmpty);
+    expect(tester.takeException(), isNull);
   });
 }

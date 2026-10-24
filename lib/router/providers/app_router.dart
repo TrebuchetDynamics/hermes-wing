@@ -144,12 +144,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           key: state.pageKey,
           child: SettingsScreen(
             initialCategory: state.uri.queryParameters['tab'],
-            onCategoryChanged: (category) => context.replace(
+            initialPage: state.uri.queryParameters['page'],
+            initialSetting: state.uri.queryParameters['setting'],
+            onTargetChanged: (category, page, setting) => context.replace(
               state.uri
                   .replace(
                     queryParameters: {
-                      ...state.uri.queryParameters,
+                      for (final entry in state.uri.queryParameters.entries)
+                        if (!{'page', 'setting', 'field'}.contains(entry.key))
+                          entry.key: entry.value,
                       'tab': category,
+                      'page': ?page,
+                      'setting': ?setting,
                     },
                   )
                   .toString(),

@@ -7,9 +7,7 @@ import 'package:wing/core/hermes/local_discovery/local_hermes_home_platform_io.d
 void main() {
   late Directory workspace;
   setUp(() async {
-    workspace = await Directory(
-      Platform.environment['TMPDIR']!,
-    ).createTemp('wing-local-discovery-');
+    workspace = await Directory.systemTemp.createTemp('wing-local-discovery-');
   });
   tearDown(() async => workspace.delete(recursive: true));
 

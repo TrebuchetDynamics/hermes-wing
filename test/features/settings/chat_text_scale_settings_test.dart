@@ -32,7 +32,7 @@ void main() {
                 ).copyWith(textScaler: const TextScaler.linear(2)),
                 child: child!,
               ),
-              home: const SettingsScreen(),
+              home: const SettingsScreen(initialPage: 'typography'),
             ),
           ),
         );

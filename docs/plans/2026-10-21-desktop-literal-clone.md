@@ -25,7 +25,7 @@ ciclo de distribución permanecen pendientes, sin sustituirlos por fixtures.
 | F0 | Flutter 3.44.2 y Node 22 preparados; dependencias bloqueadas resueltas. Admisión de credenciales legacy corregida; 675 pruebas focalizadas y análisis aprobados. Suites completas interrumpidas por reinicio del entorno; pendientes. CLI `autowork` no instalada: registro de tareas pendiente, sin transiciones inventadas. |
 | CLONE-01 | Tokens existentes; geometría de mensajes/compositor adaptada al pin actual. Baseline visual emparejado pendiente. |
 | CLONE-02 | Shell final, destinos y overlays oficiales pendientes; conservar rutas existentes durante migración. |
-| CLONE-03 | Búsqueda de categorías implementadas añadida; árbol completo y enlaces a campos pendientes. Galería de criaturas Wing retirada sin borrar preferencias. |
+| CLONE-03 | Búsqueda de categorías y controles locales; Appearance separa Theme/Typography con navegación y enlaces `page`/`setting`. Árbol completo y demás campos pendientes. Galería de criaturas Wing retirada sin borrar preferencias. |
 | CLONE-04 | Onboarding completo y guía pendientes; preservar conexión directa ya implementada. |
 | CLONE-05 | Remote/SSH y gateway sign-in existentes; attachment canónico, Cloud y cobertura completa OAuth pendientes. |
 | CLONE-06 | Rutas legacy de credenciales rechazadas antes de red y formularios sin entrada de secretos; contrato positivo sigue pendiente. Modelos mantienen gates independientes. |
@@ -47,6 +47,13 @@ búsqueda aprobados. No son paridad visual emparejada ni aceptación native/live
 Cada paquete conserva los contratos y dependencias detallados abajo; este estado
 no crea otra cola ni convierte cierres por exención en aceptación. La comparación
 actual de implementación con todo el nuevo upstream aún no está terminada.
+
+Seguimiento local: el contador de tareas separa exenciones, aplazamientos, retiros,
+sustituciones, recibos y cierres históricos; no presenta `done` como porcentaje de
+paridad. Appearance incorpora los hijos Theme/Typography y los targets oficiales
+`theme`/`chat-text-scale`, conservando claves y valores. Una búsqueda abierta no
+sobrescribe una navegación posterior. El recibo del primer lote conserva sus
+resultados originales y añade el seguimiento de estas comprobaciones.
 
 ### Admisión contractual de credenciales
 

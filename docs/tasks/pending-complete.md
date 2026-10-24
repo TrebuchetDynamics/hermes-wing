@@ -3,7 +3,8 @@
 ## Estado actual frente a esta fotografía histórica
 
 El contador distingue el estado administrativo de la evidencia de cierre.
-En la revisión del inventario de 297 registros se obtiene:
+La siguiente fotografía corresponde al inventario de 297 registros en
+`9a6fc49d`; no es un contador vivo:
 
 | Clasificación | Registros |
 | --- | ---: |
@@ -23,9 +24,10 @@ otras tareas. Los 202 cierres históricos no se convierten en fallos ni se dan p
 revalidados. Los 14 recibos acreditan lo registrado para el alcance original,
 incluidos trabajos de tooling; no acreditan paridad del producto actual.
 
-Las únicas tareas administrativamente abiertas son Files browse y su descarga
-dependiente. El trabajo de producto pendiente es mayor y no está totalmente
-representado por esas tareas. **No hay un porcentaje de paridad establecido.**
+En esa fotografía, las únicas tareas administrativamente abiertas eran Files
+browse y su descarga dependiente. El reporte vivo incluye las tareas nuevas. El
+trabajo de producto pendiente es mayor y no está totalmente representado por esas
+tareas. **No hay un porcentaje de paridad establecido.**
 
 Para el estado actualizado ejecutar `python3 scripts/report_task_status.py`
 (o `--json` para IDs, motivos y referencias de evidencia);

@@ -174,10 +174,14 @@ void main() {
     testWidgets(
       'first verified connection remembers only with explicit consent: $remember',
       (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
         final channel = FakeChannel();
         final forward = FakeForward();
         final controller = ManagedSshConnectionController(forward, channel);
+        addTearDown(() async {
+          await tester.pumpWidget(const SizedBox());
+          controller.dispose();
+          channel.dispose();
+        });
         final store = SecureSshQuickConnectStore();
         await const SecureManagedSshHostTrustStore().verify(
           ManagedSshConfig(
@@ -213,6 +217,16 @@ void main() {
           await tester.tap(find.byKey(const ValueKey('ssh-quick-remember')));
           await tester.pumpAndSettle();
         }
+        expect(
+          find.byKey(const ValueKey('managed-ssh-agent-profile')),
+          findsNothing,
+        );
+        final advanced = find.byKey(const ValueKey('managed-ssh-advanced'));
+        await tester.ensureVisible(advanced);
+        await tester.tap(
+          find.descendant(of: advanced, matching: find.text('Advanced')),
+        );
+        await tester.pumpAndSettle();
         for (final field in {
           'host': 'example.invalid',
           'username': 'tester',
@@ -230,15 +244,14 @@ void main() {
         forward.ready();
         await tester.pumpAndSettle();
         expect(channel.state.isConnected, isTrue);
+        expect(forward.config!.agentProfile, 'demo');
         expect(
           (await store.load())?.request.agentProfile,
           remember ? 'demo' : null,
         );
         expect(find.textContaining('synthetic-token'), findsNothing);
-        await tester.pumpWidget(const SizedBox());
-        controller.dispose();
-        debugDefaultTargetPlatformOverride = null;
       },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
     );
   }
 

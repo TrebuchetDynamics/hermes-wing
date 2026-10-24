@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/l10n/app_localizations.dart';
+import '../support/fake_hermes_channel.dart';
 import 'platform_local_connection_panel_test.dart' show pumpEntry, key;
 import 'platform_local_connection_behavior_test.dart'
     show activate, keyboardActivate, capture, loadCaptureFonts;
@@ -27,9 +28,22 @@ void main() {
         null,
       ),
     );
-    final (channel, store, _) = await pumpEntry(tester, TargetPlatform.android);
+    final channel = FakeHermesChannel.disconnected();
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox());
+      channel.dispose();
+    });
+    final (_, store, _) = await pumpEntry(
+      tester,
+      TargetPlatform.android,
+      channelOverride: channel,
+    );
     for (final mode in ['local', 'ssh', 'remote']) {
       await activate(tester, 'hermes-connection-mode-$mode');
+      if (mode == 'ssh') {
+        expect(key('connection-information-help'), findsNothing);
+        continue;
+      }
       expect(key('connection-information-help'), findsOneWidget);
       if (mode == 'remote') {
         await tester.enterText(
@@ -74,7 +88,7 @@ void main() {
       });
       expect(restored, isTrue);
     }
-    expect(copied, hasLength(3));
+    expect(copied, hasLength(2));
     expect(channel.state.isConnected, isFalse);
     expect(store.saveCalls, isEmpty);
     expect(tester.takeException(), isNull);

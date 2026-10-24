@@ -90,3 +90,65 @@ private endpoints, inference, gateway restarts or device changes were used.
 
 Questions: none. Reversible grouping default applied; review approval follows
 native same-card handoff and is not an implementation gate.
+
+## UI-DRIFT-REPAIR-001: current connection journey repair
+
+Retry baseline: `c26b43ea72b9acceb87351e235e65d508ce0e9ab`. Commit `b2ba738c`
+already repaired the three-choice chooser's Advanced navigation. That journey
+passes alone on the untouched baseline. General connection help and both SSH
+remember-consent journeys still fail alone: zero passes and one failure each.
+These are expectation drift from `588718f8`, which intentionally hid optional
+Agent port/profile under Advanced and omitted general help in SSH, not product
+regressions. The [route contract](../product/routes.md) already describes the
+compact form. Reproduction commands (each run separately):
+
+```bash
+flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart --plain-name 'Add Hermes groups VPN within three primary connection choices'
+flutter test --no-pub --concurrency=1 test/features/hermes_chat/widgets/connection_information_help_dialog_test.dart --plain-name 'production chooser offers safe selectable connection help'
+flutter test --no-pub --concurrency=1 test/features/hermes_chat/widgets/ssh_quick_connect_test.dart --plain-name 'first verified connection remembers only with explicit consent: false'
+flutter test --no-pub --concurrency=1 test/features/hermes_chat/widgets/ssh_quick_connect_test.dart --plain-name 'first verified connection remembers only with explicit consent: true'
+```
+
+The repaired help journey retains selectable text, sanitized clipboard, keyboard
+activation and automatic focus return in Local/Remote, and explicitly requires
+help to be absent in SSH. Both remember cases open Advanced through its rendered
+header, verify the reviewed host pin, forward the exact `demo` profile, and persist
+only with consent. The hidden-profile and secret-obscuring assertions remain.
+Platform restoration, widget unmount and fixture-owned controller/channel disposal
+are failure-safe. No production, Agent, credential or trust behavior changed.
+Independent read-only review found no actionable issues.
+
+The final focused check passes **28 tests, zero failures**:
+
+```bash
+flutter test --no-pub --concurrency=1 test/features/hermes_chat/widgets/ssh_quick_connect_test.dart test/features/hermes_chat/widgets/connection_information_help_dialog_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart
+```
+
+Locked preparation, `dart format --output=none --set-exit-if-changed lib test`
+(602 files unchanged), `flutter analyze --no-pub`, task-store validation and
+whitespace checks pass. The broader command completes, but is **not green**:
+
+```bash
+autowork-run timeout 1700 flutter test --no-pub --concurrency=1 test/features/hermes_chat/
+```
+
+Result: **2,037 passes, four failures, zero skips**, exit 1. All four are the
+untouched `hermes_reasoning_disclosure_accessibility_test.dart` (200% text) and
+`hermes_reasoning_disclosure_adaptive_test.dart` keyboard-roundtrip cases, each
+at initial widths 390.0 and 1280.0. Each also fails alone on untouched `c26b43ea`
+before this repair, at its initial collapsed-summary assertion. Commit `0d15a9b4`
+added live-preview preferences; these unrelated expectations are not changed here.
+The retry's held-integration failures therefore also exist in its current base.
+
+The retained main-evidence bundles were inspected in place. `ee7ba740` records
+4,218 passes, nine skips and four connection failures; `c26b43ea` records 4,268
+passes, nine skips and seven failures (three connection, four reasoning). Both
+exit 1, with empty isolated-rerun logs and no flaky history. They contain Dart
+execution, not browser qualification. The five retained bundles do not include
+the older claimed `69e2a8dd` pass; it cannot establish either cluster's provenance.
+No full unchanged Dart suite was run by this worker; the coordinator owns that gate.
+
+Exercised: Flutter 3.44.2/Dart 3.12.2 widgets on Linux, including Android/Linux
+target overrides. [Cluster B](chat-workspace-overlay-browser.md#ui-drift-repair-001-settings-picker-navigation)
+has separate deterministic Chromium results. Native SSH, physical devices and
+live Agent/provider qualification remain outside this repair.

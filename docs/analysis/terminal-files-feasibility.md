@@ -165,3 +165,56 @@ unqualified terminal backends and missing strict root enforcement. Then implemen
 raw download streaming and platform save integration. No Agent fork, plugin,
 Wing Link installation, prompt submission or unrestricted client shell is needed
 for the supported route. Do not close either feature task on this research alone.
+
+## Revisit check: upstream 14e1e43a (2026-10-24)
+
+The FILES deferral is reconsidered only with new source-bound contract evidence.
+A read-only probe on 2026-10-24 resolved upstream `main` to
+`14e1e43a23761b369641208e204365cd6cb9399d`, newer than the analysed
+`1e0c7730…`. `hermes_cli/web_routers/files.py`, `hermes_cli/web_server_files.py`
+and `tests/hermes_cli/test_web_server_fs.py` were fetched from that exact
+revision through raw URLs; the reference checkout was not fetched into, reset or
+otherwise changed. No Agent, service, credential or device operation was
+performed.
+
+Changed since the analysed pin:
+
+- `_agent_fs_path` (new in `web_server_files.py`) translates a readable host path
+  or a container path to its host mount for the requested profile before the
+  caller's boundary guard runs.
+- `fs_list` and `fs_read_text` now resolve one host target through that helper,
+  so the requested profile's container volumes translate before the read
+  boundary check.
+- `_fs_profile_home` resolves an omitted, empty or `current` profile to the
+  request's own profile and asks `_cron_profile_home` for any other one.
+- Download/data-URL responses distinguish an untranslated container path
+  (`SANDBOX_NOT_FOUND`) from an ordinary missing file.
+- Upstream tests add cases for that translation and profile binding.
+
+Unchanged, and still gating the strict FILES-4 requirement:
+
+- `/api/fs/list` and `/api/fs/read-text` take `profile` only. Neither accepts a
+  `session_id`, so neither can name the selected session's authoritative
+  terminal root (Material limit 2).
+- `_fs_path` → `_resolve_fs_candidate` resolves an absolute path as given; `cwd`
+  only joins relative paths. `_hosted_fs_read_guard` refuses a target outside
+  `locked_root`, and that root comes from the managed-files policy
+  (`HERMES_DASHBOARD_FILES_ROOT`, or `/opt/data` for a hosted root). It is an
+  operator-configured managed files root, not the selected session/profile
+  terminal cwd, and it is unset for ordinary local serve (Material limit 3).
+- `_fs_download_path` still uses the stored session cwd for relative
+  resolution and ownership validation only; an absolute path is not confined to
+  it.
+- The route set is unchanged: `list`, `read-text`, `write-text`,
+  `read-data-url`, `download`, `git-root`, `default-cwd`. The contract summary
+  above lists the four GET routes it relied on, and `write-text` stays outside
+  Wing's read-only scope.
+- Upstream tests at this revision still assert ordering/noise filtering,
+  container translation, profile scope, sensitive-path refusal and
+  authentication. None asserts cwd confinement.
+
+Verdict: the deferral gate is still unsatisfied. No advertised operation both
+names the effective selected session/profile/backend terminal root and enforces
+server-side canonical confinement to it, so positive Files access stays
+unimplemented and `FILES-TERMINAL-DOWNLOAD` stays dependent. This is a source
+contract recheck only, not an HTTP, native or live qualification.

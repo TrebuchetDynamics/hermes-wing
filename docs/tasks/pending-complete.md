@@ -2,12 +2,33 @@
 
 ## Estado actual frente a esta fotografía histórica
 
-El 2026-10-24, `python scripts/report_task_status.py` lee 297 registros: 295
-`done`, 2 `open` y 64 cierres con exención explícita. Un cierre no acredita
-implementación ni pruebas live. Las únicas tareas abiertas son Files browse y
-su descarga dependiente; el trabajo pendiente de producto es mayor.
+El contador distingue el estado administrativo de la evidencia de cierre.
+En la revisión del inventario de 297 registros se obtiene:
 
-Para el estado actualizado ejecutar ese reporte de solo lectura (o `--json`);
+| Clasificación | Registros |
+| --- | ---: |
+| Abiertos en la cola | 2 |
+| Cerrados por exención; calificación pendiente | 64 |
+| Cerrados por aplazamiento; calificación pendiente | 9 |
+| Filas agregadas retiradas; calificación pendiente | 2 |
+| Alcance retirado, sin entrega | 2 |
+| Sustituidos, sin contarlos como entrega | 1 |
+| Cierres con recibo de resultado/revisión aprobados para esa tarea | 14 |
+| Entrega declarada manualmente, sin revalidación | 1 |
+| Cierres históricos/otros sin recibo verificado por el contador | 202 |
+
+Hay **75 registros cerrados que conservan calificación pendiente** (64 + 9 + 2).
+No son 75 funcionalidades distintas: las filas agregadas pueden solaparse con
+otras tareas. Los 202 cierres históricos no se convierten en fallos ni se dan por
+revalidados. Los 14 recibos acreditan lo registrado para el alcance original,
+incluidos trabajos de tooling; no acreditan paridad del producto actual.
+
+Las únicas tareas administrativamente abiertas son Files browse y su descarga
+dependiente. El trabajo de producto pendiente es mayor y no está totalmente
+representado por esas tareas. **No hay un porcentaje de paridad establecido.**
+
+Para el estado actualizado ejecutar `python3 scripts/report_task_status.py`
+(o `--json` para IDs, motivos y referencias de evidencia);
 para paquetes del clon consultar la
 [ejecución vigente](../plans/2026-10-21-desktop-literal-clone.md#ejecución-vigente--2026-10-24).
 Los 86 registros y checkboxes siguientes son la fotografía anterior a los cierres,

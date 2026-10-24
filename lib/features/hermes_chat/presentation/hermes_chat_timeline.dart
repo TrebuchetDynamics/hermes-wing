@@ -539,6 +539,8 @@ class _ReasoningCardState extends ConsumerState<_ReasoningCard> {
               // The avatar layout can remount the tile inside a retained row.
               // Keep its visible body aligned with the row's expanded semantics.
               controller: _expansion,
+              // Keep the disclosure header a button when its preview has children.
+              internalAddSemanticForOnTap: true,
               initiallyExpanded: _expanded,
               expansionAnimationStyle: MediaQuery.disableAnimationsOf(context)
                   ? AnimationStyle.noAnimation

@@ -1,4 +1,7 @@
+import 'dart:ui' show SemanticsAction, Tristate;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,12 +20,15 @@ Future<ProviderContainer> mount(
   FakeHermesChannel channel, {
   bool? collapsed,
   bool preload = true,
+  double width = 1280,
+  double scale = 1,
+  double height = 1100,
 }) async {
   SharedPreferences.setMockInitialValues({
     'wing.tips.dismissed.v1': ['moreDestinations', 'voice', 'approvals'],
     'wing.chat.reasoning_collapsed_by_default': ?collapsed,
   });
-  tester.view.physicalSize = const Size(1280, 1100);
+  tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
@@ -37,10 +43,16 @@ Future<ProviderContainer> mount(
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: const MaterialApp(
+      child: MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        ),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: HermesChatScreen(),
+        home: const HermesChatScreen(),
       ),
     ),
   );
@@ -244,4 +256,65 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  for (final platform in [TargetPlatform.linux, TargetPlatform.android]) {
+    testWidgets(
+      'reasoning summary stays an operable button at 390px 200 percent: $platform',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        final channel = FakeHermesChannel();
+        addTearDown(channel.dispose);
+        channel.beginStreamingTurn('Synthetic accessible request');
+        channel.addReasoningTurn('Synthetic accessible reasoning');
+        await mount(tester, channel, width: 390, scale: 2, height: 1400);
+        await tester.pump(const Duration(milliseconds: 300));
+        void expectSummary(String label, bool expanded) {
+          final node = tester.getSemantics(find.text(label));
+          expect(node.flagsCollection.isButton, isTrue);
+          expect(
+            node.flagsCollection.isExpanded,
+            expanded ? Tristate.isTrue : Tristate.isFalse,
+          );
+          expect(
+            node.getSemanticsData().hasAction(SemanticsAction.tap),
+            isTrue,
+          );
+        }
+
+        expectSummary('Thinking…', true);
+        bool focused() =>
+            FocusManager.instance.primaryFocus?.context
+                ?.findAncestorWidgetOfExactType<ExpansionTile>() !=
+            null;
+        for (var i = 0; i < 80 && !focused(); i++) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+          await tester.pump();
+        }
+        expect(focused(), isTrue);
+        final focus = FocusManager.instance.primaryFocus;
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expectSummary('Thinking…', false);
+        expect(find.text('Synthetic accessible reasoning'), findsNothing);
+        await tester.sendKeyEvent(LogicalKeyboardKey.space);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expectSummary('Thinking…', true);
+        expect(find.text('Synthetic accessible reasoning'), findsOneWidget);
+        channel.completeStreamingTurn(text: 'Synthetic accessible answer');
+        await tester.pumpAndSettle();
+        expectSummary('Thought', true);
+        expect(FocusManager.instance.primaryFocus, same(focus));
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expectSummary('Thought', false);
+        expect(FocusManager.instance.primaryFocus, same(focus));
+        expect(channel.stopActiveTurnCalls, 0);
+        expect(tester.takeException(), isNull);
+        handle.dispose();
+      },
+      variant: TargetPlatformVariant.only(platform),
+    );
+  }
 }

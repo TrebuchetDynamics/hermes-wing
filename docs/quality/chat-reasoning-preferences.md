@@ -75,3 +75,20 @@ Flutter 3.44.2 / Dart 3.12.2 on Linux, deterministic fake channels only:
 The coordinator owns final integrated analysis, the unchanged whole serial suite,
 web build/browser execution and publication. Native GTK/device behavior, paired
 Desktop screenshots and physical accessibility/voice remain separate acceptance.
+
+### Expanded summary semantics follow-up
+
+The integrated Chromium journey exposed an expanded live preview whose summary
+was exposed as a group rather than an operable button. Two widget regressions
+reproduced the missing button flag at 390px/200% text under Linux and Android
+platform variants. Flutter 3.44.2's public
+`ExpansionTile.internalAddSemanticForOnTap` forwards the button role to its native
+ListTile header; enabling it preserves that role with expanded body children.
+
+`flutter test --no-pub --concurrency=1
+ test/features/hermes_chat/screens/hermes_chat_reasoning_preferences_test.dart`
+passed all **7 cases** after the fix. The new cases assert button/tap semantics,
+expanded/collapsed state, Enter/Space operation and retained focus while active
+reasoning becomes Thought. `flutter analyze --no-pub`, changed-file formatting
+and `git diff --check` passed. The coordinator reruns the original browser
+journey on the integrated build; its assertions remain unchanged.

@@ -371,7 +371,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Automate an approved browser session.'), findsOneWidget);
-    expect(find.text('browser'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ListTile),
+        matching: find.text('browser'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Work with source repositories.'), findsOneWidget);
 
     await tester.enterText(

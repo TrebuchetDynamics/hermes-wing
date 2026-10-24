@@ -884,7 +884,7 @@ void main() {
       );
       expect(
         details['Provider/model configuration'],
-        contains('exact scoped provider and model contracts'),
+        contains('exact credential identity, revision, durable'),
       );
       expect(statuses['Skills/toolset mutation'], HermesSurfaceStatus.deferred);
       expect(
@@ -927,7 +927,7 @@ void main() {
     },
   );
 
-  test('complete provider/model readiness contract is available', () {
+  test('legacy provider/model endpoint grants do not qualify credentials', () {
     final capabilities = HermesCapabilityDocument.fromJson(
       _providerModelReadinessCapabilities(),
     );
@@ -936,7 +936,7 @@ void main() {
       capabilities,
     ).singleWhere((item) => item.title == 'Provider/model configuration');
 
-    expect(providerModels.status, HermesSurfaceStatus.available);
+    expect(providerModels.status, HermesSurfaceStatus.deferred);
   });
 
   test('every provider/model readiness contract guard is required', () {

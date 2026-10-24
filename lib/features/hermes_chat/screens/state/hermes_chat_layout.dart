@@ -2694,7 +2694,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
       ),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(4.8),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       padding: const EdgeInsets.fromLTRB(12, 8, 8, 6),

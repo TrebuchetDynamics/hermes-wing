@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../groups/chat_group_controller.dart';
-import '../../../shared/widgets/wing_avatar.dart';
+import '../../../shared/widgets/hermes_profile_avatar.dart';
 import 'gateway_contact.dart';
 
 class GatewayContactsView extends StatelessWidget {
@@ -424,10 +424,7 @@ class _ContactAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WingAvatar(
-      identity: [contact.id.gatewayId, contact.id.profileId],
-      size: 40,
-    );
+    return HermesProfileAvatar(profileId: contact.id.profileId, size: 40);
   }
 }
 

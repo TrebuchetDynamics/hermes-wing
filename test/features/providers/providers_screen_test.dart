@@ -641,26 +641,29 @@ void main() {
     expect(find.text('Long subscription provider account'), findsOneWidget);
   });
 
-  testWidgets('write scopes expose mutation affordances', (tester) async {
-    final channel = FakeHermesChannel(
-      capabilities: _capabilities(const [
-        'providers:read',
-        'providers:write',
-        'models:read',
-        'models:write',
-      ]),
-      providers: const [_openAiProvider],
-      modelInventory: _inventory(),
-      selectedProfileId: 'default',
-    );
-    addTearDown(channel.dispose);
+  testWidgets(
+    'model writes remain independent of unqualified credential writes',
+    (tester) async {
+      final channel = FakeHermesChannel(
+        capabilities: _capabilities(const [
+          'providers:read',
+          'providers:write',
+          'models:read',
+          'models:write',
+        ]),
+        providers: const [_openAiProvider],
+        modelInventory: _inventory(),
+        selectedProfileId: 'default',
+      );
+      addTearDown(channel.dispose);
 
-    await tester.pumpWidget(_testApp(channel));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_testApp(channel));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Manage credential'), findsWidgets);
-    expect(find.text('Choose model'), findsOneWidget);
-  });
+      expect(find.text('Manage credential'), findsNothing);
+      expect(find.text('Choose model'), findsOneWidget);
+    },
+  );
 
   testWidgets('read-only token hides set/remove/validate', (tester) async {
     final channel = FakeHermesChannel(
@@ -902,7 +905,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('OpenAI'), findsOneWidget);
-    expect(find.text('Manage credential'), findsWidgets);
+    expect(find.text('Manage credential'), findsNothing);
     await tester.scrollUntilVisible(
       find.text('Choose model'),
       180,

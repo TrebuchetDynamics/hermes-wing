@@ -1026,27 +1026,29 @@ class _TurnBubble extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
 
     final bubble = Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: Alignment.centerLeft,
       child: Container(
         key: ValueKey('hermes-turn-${turn.id}'),
         margin: EdgeInsets.symmetric(vertical: isUser ? 8 : 12),
         padding: EdgeInsets.symmetric(
-          horizontal: isUser ? 16 : 0,
-          vertical: 12,
+          horizontal: isUser ? 12 : 0,
+          vertical: isUser ? 8 : 12,
         ),
         // The parent transcript owns width; assistant prose must not acquire
         // a second independent cap when panes resize the conversation.
-        width: isUser ? null : double.infinity,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: isUser
-              ? colors.primaryContainer
+              ? colors.surfaceContainerLowest
               : structuredError != null
               ? colors.error.withValues(alpha: 0.1)
-              : colors.surfaceContainerLow,
+              : Colors.transparent,
           border: structuredError != null
               ? Border.all(color: colors.error.withValues(alpha: 0.35))
+              : isUser
+              ? Border.all(color: colors.outlineVariant)
               : null,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(isUser ? 3.2 : 0),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

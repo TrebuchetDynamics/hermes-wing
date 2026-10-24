@@ -1,5 +1,79 @@
 # Plan maestro: clon 1:1 de Hermes Desktop en Flutter
 
+## Ejecución vigente — 2026-10-24
+
+El propietario confirmó implementar todo el plan contra Desktop actual, apariencia
+literal incluida, en Linux, Android, web, macOS y Windows. La excepción Muse/Duet y
+criaturas locales queda sustituida; sus preferencias guardadas se conservan inertes.
+Una función sin contrato o evidencia queda pendiente: no se acepta como paridad.
+
+Referencia de esta ejecución: `14e1e43a23761b369641208e204365cd6cb9399d`
+de NousResearch/hermes-agent, HEAD/main consultado el 2026-10-24. Checkout separado
+solo para lectura. Frente al pin anterior `47b23fa048`, Desktop/shared tienen 316
+archivos cambiados (16,622 inserciones y 3,032 eliminaciones); las 50 familias son
+inventario inicial, no cobertura validada del nuevo pin. No se repinan pruebas antiguas.
+
+Disponibilidad confirmada por el propietario: usar los targets presentes; no hay
+Agent desechable de QA preparado. Esta sesión valida Linux/Chromium donde las
+herramientas lo permiten. Android/macOS/Windows, inferencia real, voz física y
+ciclo de distribución permanecen pendientes, sin sustituirlos por fixtures.
+
+### Estado de los paquetes
+
+| Paquete | Estado actual de ejecución |
+| --- | --- |
+| F0 | Flutter 3.44.2 y Node 22 preparados; dependencias bloqueadas resueltas. Admisión de credenciales legacy corregida; 675 pruebas focalizadas y análisis aprobados. Suites completas interrumpidas por reinicio del entorno; pendientes. CLI `autowork` no instalada: registro de tareas pendiente, sin transiciones inventadas. |
+| CLONE-01 | Tokens existentes; geometría de mensajes/compositor adaptada al pin actual. Baseline visual emparejado pendiente. |
+| CLONE-02 | Shell final, destinos y overlays oficiales pendientes; conservar rutas existentes durante migración. |
+| CLONE-03 | Búsqueda de categorías implementadas añadida; árbol completo y enlaces a campos pendientes. Galería de criaturas Wing retirada sin borrar preferencias. |
+| CLONE-04 | Onboarding completo y guía pendientes; preservar conexión directa ya implementada. |
+| CLONE-05 | Remote/SSH y gateway sign-in existentes; attachment canónico, Cloud y cobertura completa OAuth pendientes. |
+| CLONE-06 | Rutas legacy de credenciales rechazadas antes de red y formularios sin entrada de secretos; contrato positivo sigue pendiente. Modelos mantienen gates independientes. |
+| CLONE-07 | Projects/multifolder/worktrees pendientes de contratos exactos y caller. |
+| CLONE-08 | Transcript existente y geometría actualizada; completar controles/adjuntos/ramificación según contratos. |
+| CLONE-09 | Recibos durables, resultado incierto, FIFO y aclaraciones completas pendientes. |
+| CLONE-10 | Bot Chat existente preservado; fallback visual estático oficial añadido. Roster completo, multipane, ventanas y lifecycle pendientes. |
+| CLONE-11 | Files continúa CONTRACT-UNREADY; PTY/review pendientes, sin shell/SFTP sustituto. |
+| CLONE-12 | Artifacts y preview aislado pendientes; export de transcript no los satisface. |
+| CLONE-13 | Completar Skills/MCP/memoria/cron/Messaging/Webhooks/Kanban tras contratos por operación. |
+| CLONE-14 | Vault/paquetes/Screen/Pets pendientes; no cargar JS Electron ni llamar proveedores sin admisión. |
+| CLONE-15 | Radio/Starmap/importación pendientes. |
+| CLONE-16 | Campaña Linux/Android existente; calificación actual de cinco plataformas, voz física y distribución pendientes. |
+
+Recibo del primer lote y límites: [validación 2026-10-24](../quality/2026-10-24-desktop-parity-first-batch.md).
+Build web y Linux debug aprobados; Chromium tiene 12 casos de superficies y 2 de
+búsqueda aprobados. No son paridad visual emparejada ni aceptación native/live.
+
+Cada paquete conserva los contratos y dependencias detallados abajo; este estado
+no crea otra cola ni convierte cierres por exención en aceptación. La comparación
+actual de implementación con todo el nuevo upstream aún no está terminada.
+
+### Admisión contractual de credenciales
+
+Fuente actual: `hermes_cli/web_routers/ops.py` expone pool add con unsuppression y
+remove por índice con cleanup de la fuente; `config_env.py` expone validación por
+clave/valor con efectos de red. Estos contratos no equivalen a reemplazo/remoción
+por ID y revisión con idempotencia durable y consentimiento de efectos del ADR.
+Las rutas legacy Wing `/api/providers/{slug}/credential` no se admiten por tener
+scope `providers:write`. Canal y UI rechazan Set/Remove/Validate; inventario y
+operaciones de modelos retienen sus gates independientes. El cliente HTTP de bajo
+nivel permanece para pruebas de protocolo, sin caller de credenciales de producto.
+No hay soporte positivo de credenciales ni resultado live declarado.
+
+### Apariencia entregada en este lote
+
+Fuentes del pin: `thread/user-message.tsx` usa fila completa y `rounded-xl`;
+`thread/assistant-message.tsx` usa prosa sin burbuja; compositor usa `rounded-2xl`.
+Con `styles.css --radius-scalar: 0.2`, los radios son 3.2 y 4.8 px. Se mantienen
+identidades, selección, acciones, controles táctiles accesibles y borradores.
+Avatares de contactos usan las formas fallback y colores de `hermes-bots/avatar.tsx`
+y `lib/profile-color.ts`; no implementan imágenes/meta Agent, blobatar ni animación.
+La búsqueda Settings solo indexa categorías/temas ya implementados: no ofrece
+controles ficticios, lecturas Agent ni mutaciones al buscar/cancelar.
+
+Los apartados siguientes conservan el plan y recibos históricos; sus pins,
+excepciones visuales y declaraciones de plataforma no prevalecen sobre esta sección.
+
 ## Mandato y estado
 
 Requisito del propietario: «literal un clon de Hermes Desktop», no una aplicación

@@ -63,14 +63,19 @@ metadata via the official SDK without reading credentials or controlling service
 The phone initiates its own sign-in and talks directly to an existing HTTPS native
 gateway. This does not qualify unimplemented native RPCs or Desktop parity.
 
-### Explicit presentation exception: conversational chat and local avatars
+### Literal presentation — owner decision 2026-10-24
 
-The owner approved a softer chat presentation inspired by Muse and Claude Duet
-and explicitly authorized a local deterministic avatar generator. This is an
-exception for Wing presentation, not new Agent administration. Avatar variations
-are installation-local appearance preferences; they do not assign or overwrite
-Agent profile avatars. No external image service, identity upload or Agent
-mutation is permitted. Hermes Desktop remains the functional reference.
+The owner superseded the Muse/Duet chat and local creature-avatar exception and
+selected literal official Desktop presentation, pinned for this execution to
+`14e1e43a23761b369641208e204365cd6cb9399d`. Product acceptance includes Linux,
+Android, web, macOS and Windows; platform adaptations preserve outcomes and
+record unavoidable differences. No blanket native support is inferred.
+
+Preserve saved avatar-family and appearance records during migration; retiring
+the picker does not authorize deleting preferences or assigning Agent avatars.
+Existing historical visual receipts remain evidence of their original source,
+not acceptance of the current reference. Unimplemented or contract-blocked
+outcomes remain pending rather than waived into full-parity acceptance.
 
 ### Owner-approved Files surface: the Agent's managed-files root
 

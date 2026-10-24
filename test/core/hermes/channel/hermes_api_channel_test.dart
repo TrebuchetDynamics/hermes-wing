@@ -1933,94 +1933,39 @@ void _hermesApiChannelProviderModelTests() {
     },
   );
 
-  test('setProviderCredential sends the value in the body but never stores '
-      'it in state', () async {
-    const sentinel = 'sk-live-DEADBEEF-super-secret';
-    final requests = <Uri>[];
-    String? putBodyRaw;
-    final channel = await _connectedProviderModelChannel(
-      capabilities: _providerModelCapabilitiesFixture,
-      requests: requests,
-      get: (uri) async =>
-          uri.path == '/api/providers' ? _providersFixtureBody() : null,
-      put: (uri, body) async {
-        putBodyRaw = body;
-        return jsonEncode({
-          'data': {
-            'slug': 'openai',
-            'label': 'OpenAI',
-            'auth_type': 'api_key',
-            'env_vars': ['OPENAI_API_KEY'],
-            'configured': true,
-            'key_hint': '····cret',
-          },
-        });
-      },
-    );
-    await channel.loadProviders();
-
-    await channel.setProviderCredential(
-      slug: 'openai',
-      envVar: 'OPENAI_API_KEY',
-      value: sentinel,
-    );
-
-    // The credential set request carries the profile and the value...
-    final putRequest = requests.firstWhere(
-      (uri) => uri.path == '/api/providers/openai/credential',
-    );
-    expect(putRequest.queryParameters['profile'], 'default');
-    expect(putBodyRaw!.contains(sentinel), isTrue);
-    // ...but the presence-updated state never contains the sent value.
-    final openai = channel.state.providers.firstWhere(
-      (p) => p.slug == 'openai',
-    );
-    expect(openai.configured, isTrue);
-    expect(openai.keyHint, '····cret');
-    expect(_stateContainsSentinel(channel.state, sentinel), isFalse);
-  });
-
   test(
-    'late provider credential responses cannot cross profile state',
+    'legacy credential grants cannot admit secret writes or probes',
     () async {
-      final setStarted = Completer<void>();
-      final releaseSet = Completer<String>();
+      final requests = <Uri>[];
       final channel = await _connectedProviderModelChannel(
         capabilities: _providerModelCapabilitiesFixture,
+        requests: requests,
         get: (uri) async =>
             uri.path == '/api/providers' ? _providersFixtureBody() : null,
-        put: (uri, body) {
-          setStarted.complete();
-          return releaseSet.future;
-        },
       );
       await channel.loadProviders();
-
-      final mutation = channel.setProviderCredential(
-        slug: 'openai',
-        envVar: 'OPENAI_API_KEY',
-        value: 'secret-value',
-      );
-      await setStarted.future;
-      await channel.selectProfile('coder');
-      await channel.loadProviders();
-      expect(channel.state.selectedProfileId, 'coder');
-      expect(channel.state.providers.first.keyHint, '····1234');
-
-      releaseSet.complete(
-        jsonEncode({
-          'data': {
-            'slug': 'openai',
-            'label': 'OpenAI',
-            'auth_type': 'api_key',
-            'configured': true,
-            'key_hint': '····cret',
-          },
-        }),
-      );
-      await mutation;
-
-      expect(channel.state.providers.first.keyHint, '····1234');
+      final before = requests.length;
+      final providers = channel.state.providers;
+      expect(channel.state.canReadProviders, isTrue);
+      expect(channel.state.canWriteProviders, isFalse);
+      expect(channel.state.canRemoveProviderCredential, isFalse);
+      expect(channel.state.canValidateProviderCredential, isFalse);
+      for (final action in <Future<Object?> Function()>[
+        () async => channel.setProviderCredential(
+          slug: 'openai',
+          envVar: 'OPENAI_API_KEY',
+          value: 'synthetic-only',
+        ),
+        () async => channel.removeProviderCredential(
+          slug: 'openai',
+          envVar: 'OPENAI_API_KEY',
+        ),
+        () => channel.validateProviderCredential(slug: 'openai'),
+      ]) {
+        await expectLater(action(), throwsStateError);
+      }
+      expect(requests.length, before);
+      expect(channel.state.providers, same(providers));
     },
   );
 

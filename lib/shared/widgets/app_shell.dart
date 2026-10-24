@@ -217,6 +217,11 @@ class AppShellMenuButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Overlay pages share this trailing action slot. Reserve the floating
+    // Close target so it cannot cover page actions such as Settings search.
+    if (context.findAncestorWidgetOfExactType<ChatWorkspaceOverlay>() != null) {
+      return const SizedBox(width: 48);
+    }
     final channel = ref.watch(hermesChannelProvider);
     return AnimatedBuilder(
       animation: channel,

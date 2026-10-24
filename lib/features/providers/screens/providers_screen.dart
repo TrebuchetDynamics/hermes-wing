@@ -380,6 +380,11 @@ class _ProvidersScreenState extends ConsumerState<ProvidersScreen> {
     HermesChannel channel,
     HermesProvider provider,
   ) async {
+    if (!channel.state.canWriteProviders &&
+        !channel.state.canRemoveProviderCredential &&
+        !channel.state.canValidateProviderCredential) {
+      return;
+    }
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,

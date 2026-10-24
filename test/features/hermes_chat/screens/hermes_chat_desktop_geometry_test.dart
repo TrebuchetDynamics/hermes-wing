@@ -28,6 +28,29 @@ void main() {
         find.byKey(const ValueKey('hermes-transcript')),
       );
       final reply = tester.getRect(find.byKey(ValueKey('hermes-turn-$id')));
+      final replyBox =
+          tester
+                  .widget<Container>(find.byKey(ValueKey('hermes-turn-$id')))
+                  .decoration!
+              as BoxDecoration;
+      expect(replyBox.color, Colors.transparent);
+      expect(replyBox.borderRadius, BorderRadius.zero);
+      final user = channel.state.activeMessages.firstWhere(
+        (turn) => turn.author.name == 'user',
+      );
+      final userRect = tester.getRect(
+        find.byKey(ValueKey('hermes-turn-${user.id}')),
+      );
+      expect(userRect.left, reply.left);
+      expect(userRect.width, reply.width);
+      final userBox =
+          tester
+                  .widget<Container>(
+                    find.byKey(ValueKey('hermes-turn-${user.id}')),
+                  )
+                  .decoration!
+              as BoxDecoration;
+      expect(userBox.borderRadius, BorderRadius.circular(3.2));
       final desktop = width >= 720;
       expect(reply.left - transcript.left, desktop ? 24 : 12);
       expect(transcript.right - reply.right, desktop ? 24 : 12);

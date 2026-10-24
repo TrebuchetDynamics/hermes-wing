@@ -91,45 +91,6 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
         '/api/profiles/{name}/soul',
         'profiles:write',
       );
-  final supportsProviderModelConfiguration =
-      capabilities.profileContext.isSupportedQueryContext &&
-      authorizesScopedEndpoint(
-        'providers',
-        'GET',
-        '/api/providers',
-        'providers:read',
-      ) &&
-      authorizesScopedEndpoint(
-        'provider_credential_set',
-        'PUT',
-        '/api/providers/{slug}/credential',
-        'providers:write',
-      ) &&
-      authorizesScopedEndpoint(
-        'provider_credential_delete',
-        'DELETE',
-        '/api/providers/{slug}/credential',
-        'providers:write',
-      ) &&
-      authorizesScopedEndpoint(
-        'provider_credential_validate',
-        'POST',
-        '/api/providers/{slug}/credential/validate',
-        'providers:write',
-      ) &&
-      authorizesScopedEndpoint('models', 'GET', '/api/models', 'models:read') &&
-      authorizesScopedEndpoint(
-        'models_refresh',
-        'POST',
-        '/api/models/refresh',
-        'models:write',
-      ) &&
-      authorizesScopedEndpoint(
-        'models_assignment',
-        'PUT',
-        '/api/models/assignment',
-        'models:write',
-      );
   final supportsSkillsInventory = authorizesEndpoint(
     'skills',
     'GET',
@@ -242,12 +203,12 @@ List<HermesSurfaceReadiness> hermesSurfaceReadiness(
     ),
     HermesSurfaceReadiness(
       title: 'Provider/model configuration',
-      status: supportsProviderModelConfiguration
-          ? HermesSurfaceStatus.available
-          : HermesSurfaceStatus.deferred,
-      detail: supportsProviderModelConfiguration
-          ? 'Profile-scoped provider credentials, validation, model refresh, and revisioned assignment are available.'
-          : 'Provider/model configuration remains hidden until Hermes advertises all exact scoped provider and model contracts.',
+      status: HermesSurfaceStatus.deferred,
+      detail:
+          'Provider inventory and model operations have independent gates. '
+          'Credential changes and validation remain unavailable until an '
+          'Agent contract provides exact credential identity, revision, durable '
+          'idempotency and explicit effect consent.',
     ),
     HermesSurfaceReadiness(
       title: 'Skills/toolset mutation',

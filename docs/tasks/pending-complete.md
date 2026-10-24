@@ -1,5 +1,21 @@
 # Lista completa de pendientes
 
+## Estado actual frente a esta fotografía histórica
+
+El 2026-10-24, `python scripts/report_task_status.py` lee 297 registros: 295
+`done`, 2 `open` y 64 cierres con exención explícita. Un cierre no acredita
+implementación ni pruebas live. Las únicas tareas abiertas son Files browse y
+su descarga dependiente; el trabajo pendiente de producto es mayor.
+
+Para el estado actualizado ejecutar ese reporte de solo lectura (o `--json`);
+para paquetes del clon consultar la
+[ejecución vigente](../plans/2026-10-21-desktop-literal-clone.md#ejecución-vigente--2026-10-24).
+Los 86 registros y checkboxes siguientes son la fotografía anterior a los cierres,
+no la cola actual. Se conservan como inventario histórico de resultados no probados;
+no reabren tareas ni anulan decisiones del propietario.
+
+## Fotografía histórica conservada
+
 Vista consolidada solicitada por el propietario. Los contratos en `tasks/items/`
 siguen siendo la autoridad; esta vista no cambia estados ni crea otra cola.
 Incluye los 86 registros abiertos y las brechas de implementación detectadas en

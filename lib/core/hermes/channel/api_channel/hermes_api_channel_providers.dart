@@ -6,9 +6,8 @@ part of '../hermes_api_channel.dart';
 /// present), and drops responses that land after a reconnect via the
 /// connection-generation check.
 ///
-/// Secret invariant: [_setProviderCredential] transmits the credential value
-/// to the server but nothing here ever stores it — only presence
-/// (`configured` + masked hint) is reconciled into state.
+/// Legacy credential mutations are rejected before any client or transport use.
+/// Provider inventory and model operations retain their independent authority.
 extension _ProvidersExtension on HermesApiChannel {
   Future<void> _loadProviders() async {
     final client = _requireConnectedClient();
@@ -40,86 +39,20 @@ extension _ProvidersExtension on HermesApiChannel {
     required String slug,
     required String envVar,
     required String value,
-  }) async {
-    final client = _requireConnectedClient();
-    _requireScopedEndpoint(
-      'provider_credential_set',
-      'PUT',
-      '/api/providers/{slug}/credential',
-      'providers:write',
-      'set a provider credential',
-    );
-    final profile = _requireSelectedProfile('set a provider credential');
-    _requireNonBlank(slug, 'slug');
-    _requireNonBlank(envVar, 'envVar');
-    _requireNonBlank(value, 'value');
-    final generation = _connectionGeneration;
-    final profileGeneration = _profileSelectionGeneration;
-    final provider = await client.setProviderCredential(
-      slug: slug,
-      envVar: envVar,
-      value: value,
-      profile: profile,
-    );
-    if (!_isCurrentProviderModelRequest(
-      generation,
-      profileGeneration,
-      client,
-      profile,
-    )) {
-      return;
-    }
-    _replaceProvider(provider);
-  }
+  }) async => throw StateError(_credentialContractUnavailable);
 
   Future<void> _removeProviderCredential({
     required String slug,
     required String envVar,
-  }) async {
-    final client = _requireConnectedClient();
-    _requireScopedEndpoint(
-      'provider_credential_delete',
-      'DELETE',
-      '/api/providers/{slug}/credential',
-      'providers:write',
-      'remove a provider credential',
-    );
-    final profile = _requireSelectedProfile('remove a provider credential');
-    _requireNonBlank(slug, 'slug');
-    _requireNonBlank(envVar, 'envVar');
-    final generation = _connectionGeneration;
-    final profileGeneration = _profileSelectionGeneration;
-    final provider = await client.removeProviderCredential(
-      slug: slug,
-      envVar: envVar,
-      profile: profile,
-    );
-    if (!_isCurrentProviderModelRequest(
-      generation,
-      profileGeneration,
-      client,
-      profile,
-    )) {
-      return;
-    }
-    _replaceProvider(provider);
-  }
+  }) async => throw StateError(_credentialContractUnavailable);
 
   Future<HermesCredentialProbe> _validateProviderCredential({
     required String slug,
-  }) async {
-    final client = _requireConnectedClient();
-    _requireScopedEndpoint(
-      'provider_credential_validate',
-      'POST',
-      '/api/providers/{slug}/credential/validate',
-      'providers:write',
-      'validate a provider credential',
-    );
-    final profile = _requireSelectedProfile('validate a provider credential');
-    _requireNonBlank(slug, 'slug');
-    return client.validateProviderCredential(slug: slug, profile: profile);
-  }
+  }) async => throw StateError(_credentialContractUnavailable);
+
+  static const _credentialContractUnavailable =
+      'Provider credential operations require a verified identity, revision, '
+      'idempotency and effect-consent contract.';
 
   Future<void> _loadModels() async {
     final client = _requireConnectedClient();
@@ -340,17 +273,6 @@ extension _ProvidersExtension on HermesApiChannel {
         modelInventory: catalogGeneration == _modelCatalogRequestGeneration
             ? inventory
             : inventory.withCatalog(current.catalog),
-      ),
-    );
-  }
-
-  void _replaceProvider(HermesProvider updated) {
-    _setState(
-      _state.copyWith(
-        providers: [
-          for (final provider in _state.providers)
-            if (provider.slug == updated.slug) updated else provider,
-        ],
       ),
     );
   }

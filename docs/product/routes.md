@@ -1,5 +1,17 @@
 # Routes
 
+Current clone reference: `14e1e43a23761b369641208e204365cd6cb9399d`.
+Settings search opens a dismissible search surface for implemented local categories
+and topics. Selection uses existing category intents; cancellation preserves the
+previous category. Unsupported settings are not indexed. The full Desktop tree
+and field-level navigation remain pending. The local creature-family picker has
+been retired without deleting saved preferences; contacts use official static
+fallback profile shapes/colors, without claiming full BotFace metadata/animation.
+Provider inventory and model actions retain independent authorization. Legacy
+credential Set/Remove/Validate are unavailable even when their route grants exist:
+no eligible credential identity/revision/idempotency/effect-consent contract is
+implemented. The retained sheet entry point collects no secrets.
+
 The only Desktop product reference is [Nous Research Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop),
 locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
 [withdrawn as official parity evidence](../quality/official-desktop-reference.md).

@@ -158,16 +158,19 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              _connectionMode == HermesConnectionMode.local
-                                  ? strings.platformLocalConnectBody
-                                  : strings.chatLayoutConnectBody,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colors.onSurfaceVariant,
-                                height: 1.45,
+                            if (_connectionMode !=
+                                HermesConnectionMode.ssh) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                _connectionMode == HermesConnectionMode.local
+                                    ? strings.platformLocalConnectBody
+                                    : strings.chatLayoutConnectBody,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                  height: 1.45,
+                                ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
                       ),
@@ -181,12 +184,13 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                         style: theme.textTheme.titleSmall,
                       ),
                     ),
-                    IconButton(
-                      key: const ValueKey('connection-information-help'),
-                      tooltip: strings.connectionInformationHelpTitle,
-                      onPressed: () => showConnectionInformationHelp(context),
-                      icon: const Icon(Icons.help_outline, size: 20),
-                    ),
+                    if (_connectionMode != HermesConnectionMode.ssh)
+                      IconButton(
+                        key: const ValueKey('connection-information-help'),
+                        tooltip: strings.connectionInformationHelpTitle,
+                        onPressed: () => showConnectionInformationHelp(context),
+                        icon: const Icon(Icons.help_outline, size: 20),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 4),

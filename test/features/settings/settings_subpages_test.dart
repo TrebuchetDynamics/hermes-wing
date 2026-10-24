@@ -9,6 +9,121 @@ import 'package:wing/l10n/app_localizations.dart';
 import '../hermes_chat/support/fake_hermes_channel.dart';
 
 void main() {
+  for (final scale in [1.0, 2.0]) {
+    testWidgets(
+      'one compact menu opens child pages and breadcrumb returns at $scale',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({
+          'wing.chat.transcript_text_scale': 1.37,
+        });
+        final channel = FakeHermesChannel();
+        addTearDown(channel.dispose);
+        (String, String?, String?)? target;
+        await _mount(
+          tester,
+          channel,
+          320,
+          scale,
+          SettingsScreen(
+            initialCategory: 'voice',
+            onTargetChanged: (category, page, setting) =>
+                target = (category, page, setting),
+          ),
+        );
+        expect(
+          find.byKey(const ValueKey('settings-appearance-page-picker')),
+          findsNothing,
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('settings-category-picker')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Typography').last);
+        await tester.pumpAndSettle();
+        expect(target, ('config:appearance', 'typography', null));
+        expect(
+          find.byKey(const ValueKey('settings-chat-text-scale-137')),
+          findsOneWidget,
+        );
+        expect(
+          tester
+              .widget<Text>(
+                find.byKey(const ValueKey('settings-breadcrumb-current')),
+              )
+              .data,
+          'Typography',
+        );
+        final parent = find.byKey(const ValueKey('settings-breadcrumb-parent'));
+        await tester.ensureVisible(parent);
+        await tester.tap(parent);
+        await tester.pumpAndSettle();
+        expect(target, ('config:appearance', 'theme', null));
+        expect(
+          find.byKey(const ValueKey('settings-theme-gallery')),
+          findsOneWidget,
+        );
+        expect(
+          tester
+              .widget<Text>(
+                find.byKey(const ValueKey('settings-breadcrumb-current')),
+              )
+              .data,
+          'Theme',
+        );
+        expect(
+          (await SharedPreferences.getInstance()).getDouble(
+            'wing.chat.transcript_text_scale',
+          ),
+          1.37,
+        );
+        expect(channel.connectCalls, isEmpty);
+        expect(channel.selectProfileCalls, isEmpty);
+        expect(channel.loadProvidersCalls, 0);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'only the active leaf is selected and disclosure follows deliberate navigation',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      await _mount(
+        tester,
+        channel,
+        1280,
+        1,
+        const SettingsScreen(initialPage: 'typography'),
+      );
+      final parent = find.byKey(const ValueKey('settings-category-appearance'));
+      final leaf = find.byKey(
+        const ValueKey('settings-appearance-page-typography'),
+      );
+      expect(tester.widget<ListTile>(parent).selected, isFalse);
+      expect(tester.widget<ListTile>(leaf).selected, isTrue);
+      await tester.tap(find.byKey(const ValueKey('settings-category-voice')));
+      await tester.pumpAndSettle();
+      expect(leaf, findsNothing);
+      await tester.tap(
+        find.byKey(const ValueKey('settings-appearance-expand')),
+      );
+      await tester.pumpAndSettle();
+      expect(leaf, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('settings-content-voice')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('settings-category-connections')),
+      );
+      await tester.pumpAndSettle();
+      expect(leaf, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('an open search cannot replace a newer navigation intent', (
     tester,
   ) async {

@@ -4,6 +4,11 @@ Current clone reference: `14e1e43a23761b369641208e204365cd6cb9399d`.
 Settings search opens a dismissible search surface for implemented local categories
 and controls. Appearance now separates Theme and Typography; its parent selects
 the first implemented child, while its caret only expands/collapses navigation.
+Compact Settings uses one hierarchical selector for categories and their supported
+children. Both layouts show a wrapping Settings/category/page breadcrumb; its
+parent opens the first supported child. The wide navigation marks only the
+current leaf as selected. Automatically revealed branches fold when leaving,
+while deliberately expanded branches remain open.
 Search and saved links accept `page=theme|typography` and the official
 `setting=theme|chat-text-scale` targets. A setting selects its owning page even
 when a saved page disagrees. Category changes clear stale page/setting/field
@@ -36,6 +41,11 @@ uses typed connection-failure guidance: rejected authentication identifies the
 exact endpoint/profile token (not a provider key), while address, response, network,
 TLS and timeout failures keep their distinct recovery instructions. Raw transport
 responses are never displayed. Failed activation does not retry or resend work.
+
+Connection entry no longer offers QR creation or scanning. SSH opens a compact
+form; optional Agent port/profile, transport and destination save/load sit under
+Advanced. Hidden values retain validation, and host-key verification and secure
+credential storage are unchanged. Android gateway browser sign-in remains manual.
 
 Hermes Wing uses one adaptive route tree. Compact Chat prioritizes the transcript and composer without a persistent bottom bar; its header menu keeps all existing destinations and current connection status reachable, including saved-contact Chat. Other compact feature routes retain Chat, Profiles, Connections and More in the bottom bar. This is a mobile adaptation of official Desktop's Chat-home hierarchy (`apps/desktop/DESIGN.md`, information architecture), not full navigation parity. Desktop and wide web separate **Workflow** (Chat, Schedules) from **Utilities** (Providers, Connections, Tools, Profiles, Persona, Settings) in the sidebar. All eight working destinations remain explicit, named and route-selected when expanded or icon-only; short windows scroll the groups while keeping the collapse control available. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands. See the [desktop navigation runbook](../runbooks/desktop-navigation-groups.md) for evidence and deliberate Desktop differences.
 

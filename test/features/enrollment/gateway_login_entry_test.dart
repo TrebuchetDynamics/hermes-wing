@@ -55,7 +55,8 @@ void main() {
     await tester.pumpWidget(app(const GatewayLoginPanel()));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('gateway-sign-in')), findsOneWidget);
-    expect(find.byKey(const ValueKey('gateway-scan')), findsOneWidget);
+    expect(find.byKey(const ValueKey('gateway-scan')), findsNothing);
+    expect(find.byIcon(Icons.qr_code_scanner), findsNothing);
     expect(find.byKey(const ValueKey('gateway-reconnect')), findsNothing);
     expect(find.textContaining('synthetic'), findsNothing);
     await tester.pumpWidget(const SizedBox());

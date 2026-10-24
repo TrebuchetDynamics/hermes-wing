@@ -42,6 +42,12 @@ bridge may replace an unavailable Agent operation.
 
 ## Gateway sign-in and metadata QR
 
+Current UI decision: the owner requested removal of QR creation/scanning from
+connection screens. Manual HTTPS address/profile and browser sign-in remain;
+removing the QR affordances does not delete saved identities or credentials.
+The metadata constraints below describe the retained format and historical flow,
+not an available scanner in the current login UI.
+
 The owner approved a new direct native-gateway path: an explicitly scanned QR
 carries only an HTTPS origin and literal profile ID. It is not an enrollment
 credential, legacy pairing code or authorization grant. Unknown fields, embedded

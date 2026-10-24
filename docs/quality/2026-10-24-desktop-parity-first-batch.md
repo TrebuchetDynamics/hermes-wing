@@ -144,3 +144,48 @@ remaining default browser suites did not execute in this run.
 
 No physical device, native GTK journey, actual Agent call, acoustic test, paired
 Desktop visual comparison or signed distribution is qualified by this follow-up.
+
+## Follow-up: Settings navigation hierarchy
+
+This slice follows the same `14e1e43a23761b369641208e204365cd6cb9399d`
+official reference:
+
+- [`overlay-split-layout.tsx`](https://github.com/NousResearch/hermes-agent/blob/14e1e43a23761b369641208e204365cd6cb9399d/apps/desktop/src/app/overlays/overlay-split-layout.tsx):
+  one narrow category/child menu, one current leaf, automatic branch disclosure
+  distinct from explicit expansion.
+- [`overlay-breadcrumb-header.tsx`](https://github.com/NousResearch/hermes-agent/blob/14e1e43a23761b369641208e204365cd6cb9399d/apps/desktop/src/app/overlays/overlay-breadcrumb-header.tsx):
+  Settings/category/page context; parent selection opens its default child.
+
+Wing now exposes its supported categories and Theme/Typography children in one
+compact selector. Both layouts show the breadcrumb, which wraps at large text
+instead of overflowing. Only the current leaf is selected in the wide navigation.
+Leaving an automatically opened branch folds it; explicitly expanded branches
+remain open. Reentering a collapsed branch reveals the requested page.
+
+Existing navigation callbacks clear stale field targets, preserve unrelated query
+parameters and retain the mounted Chat workspace. Preference keys and Agent
+operations are unchanged. Unsupported categories are not introduced as empty
+pages. Flutter dropdown, button and heading semantics provide the platform
+adaptation; the full official overlay shell and remaining Settings fields are
+still pending.
+
+Validation on Linux with Flutter 3.44.2 / Node 22.22.2:
+
+- Locked offline dependency preparation passed without lockfile changes.
+- `flutter test --no-pub --concurrency=1 test/features/settings
+  test/router/settings_routes_test.dart test/router/chat_workspace_overlay_test.dart`:
+  91 passed, including 320px/200% navigation, preserved preferences, exact route
+  targets, search cancellation and retained Chat ownership.
+- `flutter analyze --no-pub`: no issues. Changed Dart files formatted;
+  `git diff --check` passed.
+- `flutter build web --release --no-pub -t lib/main_e2e.dart`: passed;
+  existing Wasm/Cupertino-font warnings remain. `npm ci`: zero vulnerabilities.
+- `npx playwright test --config=playwright.config.mjs
+  playwright/tests/regression/settings-search.spec.mjs`: both 390px/1280px
+  cases passed. The initial run exposed a merged accessibility heading; the
+  current-page heading now has its own semantics container. The narrow menu
+  assertion uses Flutter's actual button/menuitem roles. Both final screenshots
+  were reviewed; breadcrumb, selector and controls are visible without overflow.
+- The complete serial suite was started separately; no terminal result is
+  claimed at this delivery checkpoint. Broader browser checks are also separate.
+  No native/device or matched Desktop visual acceptance follows from this slice.

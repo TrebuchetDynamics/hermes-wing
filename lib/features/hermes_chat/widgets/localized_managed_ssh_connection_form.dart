@@ -16,6 +16,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
     this.busy = false,
     this.sanitizedError,
     this.initialTarget,
+    this.rememberAccess,
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
     this.allowServe = false,
@@ -28,6 +29,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
   final bool busy;
   final bool allowServe;
   final String? sanitizedError;
+  final Widget? rememberAccess;
   final ManagedSshRecovery? initialTarget;
 
   @override
@@ -44,6 +46,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
         failure: strings.managedSshTargetFailure,
       ),
       labels: ManagedSshConnectionLabels(
+        advanced: strings.managedSshAdvanced,
         host: strings.managedSshHostLabel,
         sshPort: strings.managedSshPortLabel,
         username: strings.managedSshUsernameLabel,
@@ -91,6 +94,7 @@ class LocalizedManagedSshConnectionForm extends StatelessWidget {
         generating: strings.managedSshGeneratingKey,
       ),
       initialTarget: initialTarget,
+      rememberAccess: rememberAccess,
       onSubmit: onSubmit,
       pickKey: pickKey,
       generatedKeyStore: generatedKeyStore,

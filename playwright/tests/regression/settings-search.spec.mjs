@@ -38,6 +38,20 @@ for (const width of [390, 1280]) {
     await page.reload();
     await enableFlutterAccessibility(page);
     await expect(page.getByRole('checkbox', { name: '150%', exact: true })).toBeChecked();
+    const breadcrumb = page.getByRole('heading', { name: 'Typography', exact: true });
+    await expect(breadcrumb).toBeVisible();
+    await page.getByRole('button', { name: 'Appearance', exact: true }).last().click();
+    await expect(page).toHaveURL(/page=theme/);
+    await expect(page).not.toHaveURL(/setting=chat-text-scale/);
+    await expect(page.getByRole('heading', { name: 'Theme', exact: true })).toBeVisible();
+    if (width < 820) {
+      const navigation = page.getByRole('button', { name: 'Settings Theme', exact: true });
+      await expect(navigation).toHaveCount(1);
+      await navigation.click();
+      await page.getByRole('menuitem', { name: 'Typography', exact: true }).click();
+      await expect(page).toHaveURL(/page=typography/);
+      await expect(page.getByRole('checkbox', { name: '150%', exact: true })).toBeChecked();
+    }
     await page.screenshot({ path: test.info().outputPath(`settings-search-${width}.png`) });
     expect(mutations).toEqual([]);
     expect(errors).toEqual([]);

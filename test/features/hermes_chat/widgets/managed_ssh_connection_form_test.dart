@@ -57,6 +57,17 @@ Future<void> showForm(
   );
 }
 
+Future<void> openAdvanced(WidgetTester tester) async {
+  final toggle = find.byKey(const ValueKey('managed-ssh-advanced'));
+  if (!tester.widget<ExpansionTile>(toggle).controller!.isExpanded) {
+    await tester.ensureVisible(toggle);
+    await tester.tap(
+      find.descendant(of: toggle, matching: find.text('Advanced')),
+    );
+    await tester.pumpAndSettle();
+  }
+}
+
 Finder field(String id) => find.byKey(ValueKey('managed-ssh-$id'));
 
 Future<void> fillValid(WidgetTester tester) async {
@@ -75,6 +86,47 @@ Future<void> connect(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('default form connects without opening optional settings', (
+    tester,
+  ) async {
+    SshConnectionRequest? submitted;
+    await showForm(tester, submit: (value) async => submitted = value);
+    expect(field('agent-port'), findsNothing);
+    expect(field('agent-profile'), findsNothing);
+    expect(find.text(labels.agentProfileHelp), findsNothing);
+    await fillValid(tester);
+    await connect(tester);
+    expect(submitted!.agentPort, 8642);
+    expect(submitted!.sshPort, 22);
+    expect(submitted!.agentProfile, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'collapsed invalid optional fields are revealed and never submitted',
+    (tester) async {
+      var calls = 0;
+      await showForm(tester, submit: (_) async => calls++);
+      await fillValid(tester);
+      await openAdvanced(tester);
+      await tester.enterText(field('agent-port'), '0');
+      await tester.ensureVisible(find.text(labels.advanced));
+      await tester.tap(find.text(labels.advanced));
+      await tester.pumpAndSettle();
+      expect(field('agent-port'), findsNothing);
+      await connect(tester);
+      await tester.pumpAndSettle();
+      expect(calls, 0);
+      expect(field('agent-port'), findsOneWidget);
+      expect(find.text(labels.invalidPort), findsOneWidget);
+      expect(
+        tester.widget<TextFormField>(field('password')).controller!.text,
+        'synthetic-password',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final externalFailure in [
     null,
     'SSH authentication was rejected. Check your username and authentication choice, then retry.',
@@ -175,6 +227,7 @@ void main() {
       await showForm(tester, submit: (input) async => submitted = input);
       await fillValid(tester);
       await tester.enterText(field('agent-token'), 'synthetic-root-token');
+      await openAdvanced(tester);
       await tester.enterText(field('agent-profile'), '/p/demo');
       expect(
         tester.widget<TextFormField>(field('agent-token')).controller!.text,
@@ -209,6 +262,7 @@ void main() {
       );
       await fillValid(tester);
       await tester.enterText(field('agent-token'), 'synthetic-api-token');
+      await openAdvanced(tester);
       final choice = find.byKey(const ValueKey('managed-ssh-serve-reads'));
       await tester.ensureVisible(choice);
       await tester.tap(choice);
@@ -416,6 +470,7 @@ void main() {
         ),
       ),
     );
+    await openAdvanced(tester);
     await tester.ensureVisible(field('agent-token'));
     await tester.pumpAndSettle();
     final tokenLabel = tester.renderObject<RenderParagraph>(
@@ -434,9 +489,9 @@ void main() {
       'ssh-port',
       'username',
       'password',
+      'agent-token',
       'agent-port',
       'agent-profile',
-      'agent-token',
     ]) {
       if (id == 'password') {
         // Authentication choices are keyboard-operable before the password.
@@ -450,6 +505,10 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.space);
         await tester.pumpAndSettle();
         expect(field('password'), findsOneWidget);
+      }
+      if (id == 'agent-port') {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pumpAndSettle();
       }
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pumpAndSettle();
@@ -544,6 +603,7 @@ void main() {
       expect(calls, 0);
     }
     await tester.enterText(field('host'), 'ssh.example.invalid');
+    await openAdvanced(tester);
     for (final id in ['ssh-port', 'agent-port']) {
       for (final value in ['', '0', '65536', '22x', '-1']) {
         await tester.enterText(field(id), value);
@@ -558,6 +618,7 @@ void main() {
     tester,
   ) async {
     await showForm(tester);
+    await openAdvanced(tester);
     final semantics = tester.ensureSemantics();
     for (final label in [
       labels.host,
@@ -575,9 +636,9 @@ void main() {
       'ssh-port',
       'username',
       'password',
+      'agent-token',
       'agent-port',
       'agent-profile',
-      'agent-token',
     ]) {
       expect(field(id), findsOneWidget);
     }

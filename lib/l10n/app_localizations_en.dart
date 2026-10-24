@@ -63,6 +63,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transcriptOverwriteConfirm => 'Save and allow replacement';
 
   @override
+  String get managedSshAdvanced => 'Advanced';
+
+  @override
   String get managedSshSaveTarget => 'Save SSH settings';
 
   @override
@@ -70,7 +73,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get managedSshTargetBody =>
-      'Save one SSH destination and Agent transport on this device. Serve mode also remembers the last settled profile and conversation for this saved destination. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.';
+      'Save the destination on this device without passwords, keys or tokens.';
 
   @override
   String get managedSshTargetSaved =>
@@ -150,7 +153,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gatewayLoginBody =>
-      'Scan the address shown on your computer, or enter its existing HTTPS gateway address. Sign in in this phone\'s browser. Wing will never ask you to copy the computer\'s API key. This does not start Hermes, create a VPN or change firewall settings.';
+      'Enter the HTTPS address and sign in with your browser.';
 
   @override
   String get gatewayLoginFailed =>
@@ -181,11 +184,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reconnect using this phone\'s secure saved access. Host identity and Agent authorization are checked again. No messages are resent.';
 
   @override
-  String get managedSshQuickRemember => 'Remember access on this phone';
+  String get managedSshQuickRemember => 'Remember this connection';
 
   @override
   String get managedSshQuickConsent =>
-      'After a successful connection, store this SSH password or private key, its unlock phrase and the Agent token in platform secure storage. Only enable this on your own protected phone. No automatic connection. API connections only.';
+      'Save the SSH password or key, key passphrase and Agent token securely on this phone.';
 
   @override
   String get managedSshQuickEdit => 'Use different connection details';
@@ -961,7 +964,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get managedFilesRefresh => 'Refresh files';
 
   @override
-  String get managedSshAgentProfileLabel => 'Agent API profile (optional)';
+  String get managedSshAgentProfileLabel => 'Agent profile (optional)';
 
   @override
   String get managedSshAgentProfileHelp =>

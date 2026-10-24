@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/core/hermes/ssh/secure_managed_ssh_target_store.dart';
 import 'package:wing/core/hermes/ssh/ssh_types.dart';
 import 'package:wing/features/hermes_chat/widgets/managed_ssh_connection_form.dart';
-import 'managed_ssh_connection_form_test.dart' show labels, field;
+import 'managed_ssh_connection_form_test.dart' show labels, field, openAdvanced;
 
 const targetLabels = ManagedSshTargetLabels(
   save: 'Save settings',
@@ -81,6 +81,7 @@ void main() {
         ),
       );
       await tester.pumpWidget(form());
+      await openAdvanced(tester);
       await tester.enterText(field('host'), 'example.invalid');
       await tester.enterText(field('username'), 'tester');
       await tester.enterText(field('ssh-port'), '2222');
@@ -96,11 +97,14 @@ void main() {
       expect(find.text(targetLabels.saved), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       await tester.pumpWidget(form());
+      await openAdvanced(tester);
       expect(serveSelected(tester), isFalse);
       expect(
         tester.widget<TextFormField>(field('host')).controller!.text,
         isEmpty,
       );
+      await openAdvanced(tester);
+      await tester.ensureVisible(find.text(targetLabels.load));
       await tester.tap(find.text(targetLabels.load));
       await tester.pumpAndSettle();
       expect(
@@ -148,6 +152,7 @@ void main() {
         ),
       );
       await tester.pumpWidget(form());
+      await openAdvanced(tester);
       await tester.enterText(field('host'), 'example.invalid');
       await tester.enterText(field('username'), 'tester');
       await tester.enterText(field('agent-profile'), 'demo');
@@ -156,6 +161,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpWidget(const SizedBox());
       await tester.pumpWidget(form());
+      await openAdvanced(tester);
       await tester.enterText(field('agent-token'), 'synthetic-other-token');
       await tester.ensureVisible(find.text(targetLabels.load));
       await tester.tap(find.text(targetLabels.load));
@@ -210,6 +216,7 @@ void main() {
     await tester.enterText(field('host'), 'draft.invalid');
     await tester.enterText(field('password'), 'synthetic-password');
     await tester.enterText(field('agent-token'), 'synthetic-token');
+    await openAdvanced(tester);
     await tester.ensureVisible(find.text(targetLabels.load));
     await tester.tap(find.text(targetLabels.load));
     await tester.pumpAndSettle();
@@ -247,6 +254,8 @@ void main() {
           ),
         );
         await tester.enterText(field('host'), 'draft.invalid');
+        await openAdvanced(tester);
+        await tester.ensureVisible(find.text(targetLabels.load));
         await tester.tap(find.text(targetLabels.load));
         await tester.pump();
         expect(
@@ -300,7 +309,9 @@ void main() {
       ),
     );
     await tester.pumpWidget(form(false));
+    await openAdvanced(tester);
     await tester.enterText(field('host'), 'draft.invalid');
+    await tester.ensureVisible(find.text(targetLabels.load));
     await tester.tap(find.text(targetLabels.load));
     await tester.pump();
     // The serve choice is disabled while loading; a parent attempt fences it.
@@ -339,11 +350,15 @@ void main() {
         ),
       ),
     );
+    await openAdvanced(tester);
+    await tester.ensureVisible(find.text(targetLabels.save));
     await tester.tap(find.text(targetLabels.save));
     await tester.pumpAndSettle();
     expect(await const SecureManagedSshTargetStore().load(), isNull);
     await tester.enterText(field('host'), 'example.invalid');
     await tester.enterText(field('username'), 'tester');
+    await tester.ensureVisible(find.text(targetLabels.save));
+    await openAdvanced(tester);
     await tester.ensureVisible(find.text(targetLabels.save));
     await tester.tap(find.text(targetLabels.save));
     await tester.pumpAndSettle();
@@ -374,6 +389,8 @@ void main() {
         ),
       );
       await tester.enterText(field('host'), 'draft.invalid');
+      await openAdvanced(tester);
+      await tester.ensureVisible(find.text(targetLabels.load));
       await tester.tap(find.text(targetLabels.load));
       await tester.pumpAndSettle();
       expect(find.text(targetLabels.missing), findsOneWidget);

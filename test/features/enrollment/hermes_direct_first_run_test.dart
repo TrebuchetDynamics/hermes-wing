@@ -113,6 +113,8 @@ void main() {
           expect(key('hermes-welcome'), findsOneWidget);
           expect(find.text('Welcome to Hermes Wing'), findsOneWidget);
           expect(key('mobile-shell-navigation-bar'), findsNothing);
+          expect(key('gateway-qr-create'), findsNothing);
+          expect(key('gateway-scan'), findsNothing);
           for (final entry in ['hermes-welcome-ssh', 'hermes-welcome-remote']) {
             await activate(tester, entry);
             final mode = entry.endsWith('ssh') ? 'ssh' : 'remote';

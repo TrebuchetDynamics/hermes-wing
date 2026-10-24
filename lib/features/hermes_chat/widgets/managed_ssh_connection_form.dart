@@ -9,8 +9,6 @@ import '../../../core/hermes/ssh/secure_managed_ssh_target_store.dart';
 import '../../../core/hermes/ssh/ssh_types.dart';
 import '../ssh_keys/managed_ssh_generated_key_store.dart';
 import '../ssh_keys/managed_ssh_key_selection.dart';
-import '../../../l10n/app_localizations.dart';
-import 'connection_access_help.dart';
 
 /// All visible copy is supplied by the localized parent.
 @immutable
@@ -44,6 +42,7 @@ class ManagedSshConnectionLabels {
     required this.invalidPassword,
     required this.invalidToken,
     required this.failure,
+    this.advanced = 'Advanced',
     this.agentProfile = 'Agent API profile (optional)',
     this.agentProfileHelp =
         'Leave blank for the root API. For a shared gateway, enter only the profile ID, not /p/ or a URL.',
@@ -64,7 +63,7 @@ class ManagedSshConnectionLabels {
   final String invalidHost, invalidPort, invalidUsername, invalidPassword;
   final String invalidToken, failure;
   final String? serveReads, serveToken;
-  final String agentProfile, agentProfileHelp, invalidAgentProfile;
+  final String advanced, agentProfile, agentProfileHelp, invalidAgentProfile;
 }
 
 @immutable
@@ -108,6 +107,7 @@ class ManagedSshConnectionForm extends StatefulWidget {
     this.busy = false,
     this.sanitizedError,
     this.initialTarget,
+    this.rememberAccess,
     this.pickKey = pickManagedSshKey,
     this.generatedKeyStore,
     this.generatedKeyLabels,
@@ -117,6 +117,7 @@ class ManagedSshConnectionForm extends StatefulWidget {
   final ManagedSshTargetLabels? targetLabels;
   final SecureManagedSshTargetStore targetStore;
   final ManagedSshGeneratedKeyStore? generatedKeyStore;
+  final Widget? rememberAccess;
   final ManagedSshRecovery? initialTarget;
   final ManagedSshGeneratedKeyLabels? generatedKeyLabels;
   final ManagedSshConnectionLabels labels;
@@ -136,6 +137,7 @@ class ManagedSshConnectionForm extends StatefulWidget {
 
 class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
   final _form = GlobalKey<FormState>();
+  final _advanced = ExpansibleController();
   final _feedbackActions = GlobalKey();
 
   void _revealFailure() {
@@ -330,6 +332,11 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
         _picking ||
         _keyOperationBusy ||
         !_form.currentState!.validate()) {
+      if (_validate('agent-port', _agentPort.text) != null ||
+          (!_serveReads &&
+              _validate('agent-profile', _agentProfile.text) != null)) {
+        _advanced.expand();
+      }
       return;
     }
     if (_keyAuthentication && _selectedKey == null) {
@@ -591,6 +598,7 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
 
   @override
   void dispose() {
+    _advanced.dispose();
     ++_targetGeneration;
     _clearSecrets();
     for (final c in [
@@ -665,30 +673,6 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!kIsWeb && widget.targetLabels != null) ...[
-                Text(widget.targetLabels!.body),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    TextButton(
-                      key: const ValueKey('managed-ssh-save-target'),
-                      onPressed: _busy || _picking || _keyOperationBusy
-                          ? null
-                          : () => _savedTarget(save: true),
-                      child: Text(widget.targetLabels!.save),
-                    ),
-                    TextButton(
-                      key: const ValueKey('managed-ssh-load-target'),
-                      onPressed: _busy || _picking || _keyOperationBusy
-                          ? null
-                          : () => _savedTarget(save: false),
-                      child: Text(widget.targetLabels!.load),
-                    ),
-                  ],
-                ),
-                if (_targetNotice != null)
-                  Semantics(liveRegion: true, child: Text(_targetNotice!)),
-              ],
               LayoutBuilder(
                 builder: (context, constraints) {
                   final host = _field('host', l.host, _host);
@@ -818,52 +802,66 @@ class _ManagedSshConnectionFormState extends State<ManagedSshConnectionForm> {
                 ],
                 if (_keyError != null) Text(_keyError!),
               ],
-              _field('agent-port', l.agentPort, _agentPort, port: true),
-              if (!_serveReads) ...[
-                _field('agent-profile', l.agentProfile, _agentProfile),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(l.agentProfileHelp),
-                ),
-              ],
-              if (l.serveReads != null)
-                CheckboxListTile(
-                  key: const ValueKey('managed-ssh-serve-reads'),
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l.serveReads!),
-                  value: _serveReads,
-                  onChanged: _busy
-                      ? null
-                      : (value) {
-                          setState(() {
-                            _serveReads = value ?? false;
-                            // Tokens from the two Agent surfaces are not interchangeable.
-                            _agentToken.clear();
-                          });
-                        },
-                ),
               _field(
                 'agent-token',
                 _serveReads ? l.serveToken! : l.agentToken,
                 _agentToken,
                 secret: true,
               ),
-              if (!_serveReads &&
-                  Localizations.of<AppLocalizations>(
-                        context,
-                        AppLocalizations,
-                      ) !=
-                      null)
-                TextButton.icon(
-                  key: const ValueKey('connection-access-help'),
-                  onPressed: _busy
-                      ? null
-                      : () => showConnectionAccessHelp(context),
-                  icon: const Icon(Icons.help_outline),
-                  label: Text(
-                    AppLocalizations.of(context).connectionAccessTitle,
-                  ),
-                ),
+              ExpansionTile(
+                key: const ValueKey('managed-ssh-advanced'),
+                controller: _advanced,
+                maintainState: true,
+                tilePadding: EdgeInsets.zero,
+                title: Text(l.advanced),
+                children: [
+                  _field('agent-port', l.agentPort, _agentPort, port: true),
+                  if (!_serveReads) ...[
+                    _field('agent-profile', l.agentProfile, _agentProfile),
+                  ],
+                  if (l.serveReads != null)
+                    CheckboxListTile(
+                      key: const ValueKey('managed-ssh-serve-reads'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l.serveReads!),
+                      value: _serveReads,
+                      onChanged: _busy
+                          ? null
+                          : (value) {
+                              setState(() {
+                                _serveReads = value ?? false;
+                                // Tokens from the two Agent surfaces are not interchangeable.
+                                _agentToken.clear();
+                              });
+                            },
+                    ),
+                  if (!kIsWeb && widget.targetLabels != null) ...[
+                    Text(widget.targetLabels!.body),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          key: const ValueKey('managed-ssh-save-target'),
+                          onPressed: _busy || _picking || _keyOperationBusy
+                              ? null
+                              : () => _savedTarget(save: true),
+                          child: Text(widget.targetLabels!.save),
+                        ),
+                        TextButton(
+                          key: const ValueKey('managed-ssh-load-target'),
+                          onPressed: _busy || _picking || _keyOperationBusy
+                              ? null
+                              : () => _savedTarget(save: false),
+                          child: Text(widget.targetLabels!.load),
+                        ),
+                      ],
+                    ),
+                    if (_targetNotice != null)
+                      Semantics(liveRegion: true, child: Text(_targetNotice!)),
+                  ],
+                ],
+              ),
+              if (widget.rememberAccess != null) widget.rememberAccess!,
               Column(
                 key: _feedbackActions,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

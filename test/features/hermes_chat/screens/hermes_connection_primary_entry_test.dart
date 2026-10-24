@@ -217,7 +217,9 @@ void main() {
       expect(_key('hermes-remote-connection-modes'), findsNothing);
       expect(_key('managed-ssh-host'), findsOneWidget);
       expect(_key('managed-ssh-password'), findsOneWidget);
-      expect(_key('managed-ssh-agent-port'), findsOneWidget);
+      expect(_key('managed-ssh-agent-port'), findsNothing);
+      expect(_key('managed-ssh-advanced'), findsOneWidget);
+      expect(_key('connection-information-help'), findsNothing);
       expect(_key('hermes-base-url-field'), findsNothing);
       expect(
         find.textContaining('Start the fixed tunnel outside Wing'),

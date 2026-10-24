@@ -10,6 +10,7 @@ import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart
 import 'package:wing/features/hermes_chat/screens/hermes_chat_screen.dart';
 import 'package:wing/core/hermes/client/hermes_managed_files.dart';
 import 'package:wing/features/hermes_chat/files/hermes_managed_files_dialog.dart';
+import 'package:wing/features/hermes_chat/files/hermes_managed_file_save.dart';
 import 'package:wing/l10n/app_localizations.dart';
 
 import 'support/fake_hermes_channel.dart';
@@ -18,6 +19,7 @@ class FilesChannel extends FakeHermesChannel
     implements HermesManagedFilesChannel {
   int generation = 0, requests = 0;
   Future<Map<String, dynamic>> Function(String, Map<String, String>)? reply;
+  Future<Uint8List> Function(String, HermesManagedFileTransfer)? download;
   void invalidate() {
     generation++;
     notifyListeners();
@@ -30,6 +32,7 @@ class FilesChannel extends FakeHermesChannel
     final owner = generation;
     return HermesManagedFilesSession(
       isCurrent: () => owner == generation,
+      download: download,
       request: (route, query, _) async {
         requests++;
         return reply!(route, query);
@@ -55,7 +58,11 @@ const note = {
   'size': 12,
 };
 
-Future<void> open(WidgetTester tester, FakeHermesChannel channel) async {
+Future<void> open(
+  WidgetTester tester,
+  FakeHermesChannel channel, {
+  HermesManagedFileSaver? saver,
+}) async {
   await tester.pumpWidget(
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -65,7 +72,8 @@ Future<void> open(WidgetTester tester, FakeHermesChannel channel) async {
           builder: (context) => TextButton(
             onPressed: () => showDialog<void>(
               context: context,
-              builder: (_) => HermesManagedFilesDialog(channel: channel),
+              builder: (_) =>
+                  HermesManagedFilesDialog(channel: channel, saver: saver),
             ),
             child: const Text('Open'),
           ),
@@ -78,6 +86,70 @@ Future<void> open(WidgetTester tester, FakeHermesChannel channel) async {
 }
 
 void main() {
+  testWidgets(
+    'download shows progress, retries explicitly and never confirms cancelled or stale saves',
+    (tester) async {
+      final channel = FilesChannel();
+      addTearDown(channel.dispose);
+      channel.reply = (_, _) async => listing(entries: [note]);
+      var reads = 0;
+      channel.download = (_, transfer) async {
+        reads++;
+        transfer.onProgress?.call(3, 3);
+        return Uint8List.fromList([0, 255, 128]);
+      };
+      Completer<Uint8List?>? pending;
+      final saver = HermesManagedFileSaver(
+        supported: true,
+        writeAndReadBack: (_, _, _, _, _) async {
+          if (pending != null) return pending.future;
+          return Uint8List.fromList([1]); // Corruption must not claim success.
+        },
+      );
+      await open(tester, channel, saver: saver);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Download file'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Download failed. Check access, connection and destination, then retry. The limit is 8 MiB.',
+        ),
+        findsOneWidget,
+      );
+      expect(reads, 1);
+      pending = Completer<Uint8List?>();
+      await tester.tap(find.text('Retry download'));
+      await tester.pump();
+      await tester.pump();
+      expect(reads, 2);
+      expect(
+        find.text(
+          'Retrieved 3 bytes. Choose a destination; saved bytes will be verified.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancel download'));
+      pending.complete(Uint8List.fromList([0, 255, 128]));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Download cancelled. No verified save.'),
+        findsOneWidget,
+      );
+      pending = Completer<Uint8List?>();
+      await tester.tap(find.byTooltip('Download file'));
+      await tester.pump();
+      await tester.pump();
+      channel.invalidate();
+      pending.complete(Uint8List.fromList([0, 255, 128]));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Saved and byte-verified on this device.'),
+        findsNothing,
+      );
+      expect(reads, 3);
+    },
+  );
+
   testWidgets(
     'Chat exposes Files at compact/wide widths without changing conversation',
     (tester) async {

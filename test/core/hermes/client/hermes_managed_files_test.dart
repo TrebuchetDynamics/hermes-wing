@@ -67,6 +67,108 @@ void main() {
   });
 
   test(
+    'raw download preserves text and binary bytes with progress and cancellation',
+    () async {
+      for (final bytes in [
+        utf8.encode('hello\n'),
+        [0, 255, 128, 13, 10],
+      ]) {
+        files = client.beginManagedFiles(isCurrent: () => true);
+        respond = (r) async {
+          if (r.uri.path == '/api/files') {
+            r.response.write(
+              jsonEncode(
+                listing(entries: [entry('raw.bin', size: bytes.length)]),
+              ),
+            );
+          } else {
+            expect(r.uri.path, '/api/files/download');
+            expect(r.uri.queryParameters, {'path': '/managed/raw.bin'});
+            r.response.add(bytes);
+          }
+        };
+        final selected = (await files.list()).entries.single;
+        final progress = <int>[];
+        final transfer = HermesManagedFileTransfer(
+          onProgress: (count, total) => progress.add(count),
+        );
+        expect(await files.download(selected, transfer), bytes);
+        expect(progress.last, bytes.length);
+        transfer.cancel();
+        await expectLater(
+          files.download(selected, transfer),
+          throwsA(isA<HermesManagedFilesException>()),
+        );
+      }
+    },
+  );
+
+  test(
+    'download denies unsafe responses and bounds unknown-length binary streams',
+    () async {
+      for (final status in [403, 302, 413, 200]) {
+        files = client.beginManagedFiles(isCurrent: () => true);
+        respond = (r) async {
+          if (r.uri.path == '/api/files') {
+            r.response.write(jsonEncode(listing(entries: [entry('raw.bin')])));
+          } else {
+            r.response.statusCode = status;
+            if (status == 302) {
+              r.response.headers.set('location', '/redirected');
+            }
+            if (status == 200) {
+              r.response.add(
+                List.filled(
+                  HermesManagedFilesSession.maximumDownloadBytes + 1,
+                  0,
+                ),
+              );
+            }
+          }
+        };
+        final selected = (await files.list()).entries.single;
+        await expectLater(
+          files.download(selected, HermesManagedFileTransfer()),
+          throwsA(isA<HermesManagedFilesException>()),
+        );
+        expect(requests.where((r) => r.path == '/redirected'), isEmpty);
+      }
+    },
+  );
+
+  test(
+    'cancel, disconnect and owner switch reject an in-flight download',
+    () async {
+      for (final cause in ['cancel', 'owner', 'disconnect']) {
+        var current = true;
+        files = client.beginManagedFiles(isCurrent: () => current);
+        final started = Completer<void>(), release = Completer<void>();
+        respond = (r) async {
+          if (r.uri.path == '/api/files') {
+            r.response.write(jsonEncode(listing(entries: [entry('raw.bin')])));
+          } else {
+            started.complete();
+            await release.future;
+            r.response.add([0, 255]);
+          }
+        };
+        final selected = (await files.list()).entries.single;
+        final transfer = HermesManagedFileTransfer();
+        final result = expectLater(
+          files.download(selected, transfer),
+          throwsA(isA<HermesManagedFilesException>()),
+        );
+        await started.future;
+        if (cause == 'cancel') transfer.cancel();
+        if (cause == 'owner') current = false;
+        if (cause == 'disconnect') client.disconnect();
+        release.complete();
+        await result;
+      }
+    },
+  );
+
+  test(
     'locked managed listing and literal text preview use authenticated GET only',
     () async {
       respond = (r) async {

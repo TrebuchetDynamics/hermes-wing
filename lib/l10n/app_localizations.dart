@@ -1573,8 +1573,74 @@ abstract class AppLocalizations {
   /// No description provided for @managedFilesExplanation.
   ///
   /// In en, this message translates to:
-  /// **'Read-only Agent managed files. This locked root is not the terminal working directory or a Hermes Project. Text previews are limited to 64 KiB; folders to 500 entries. Downloads are not available here.'**
+  /// **'Read-only Agent managed files. This locked root is not the terminal working directory or a Hermes Project. Text previews are limited to 64 KiB; folders to 500 entries. Individual downloads up to 8 MiB use a device save picker on Linux and Android.'**
   String get managedFilesExplanation;
+
+  /// No description provided for @managedDownloadAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Download file'**
+  String get managedDownloadAction;
+
+  /// No description provided for @managedDownloadProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Retrieved {bytes} bytes…'**
+  String managedDownloadProgress(int bytes);
+
+  /// No description provided for @managedDownloadSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Retrieved {bytes} bytes. Choose a destination; saved bytes will be verified.'**
+  String managedDownloadSaving(int bytes);
+
+  /// No description provided for @managedDownloadCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get managedDownloadCancel;
+
+  /// No description provided for @managedDownloadRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry download'**
+  String get managedDownloadRetry;
+
+  /// No description provided for @managedDownloadVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved and byte-verified on this device.'**
+  String get managedDownloadVerified;
+
+  /// No description provided for @managedDownloadCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Download cancelled. No verified save.'**
+  String get managedDownloadCancelled;
+
+  /// No description provided for @managedDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed. Check access, connection and destination, then retry. The limit is 8 MiB.'**
+  String get managedDownloadFailed;
+
+  /// No description provided for @managedDownloadWriteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write to the selected destination?'**
+  String get managedDownloadWriteTitle;
+
+  /// No description provided for @managedDownloadWriteExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'This writes the downloaded bytes and replaces any file at the chosen destination. Cancel to keep it unchanged. An interrupted write may leave a partial file; only byte-verified saves are confirmed.'**
+  String get managedDownloadWriteExplanation;
+
+  /// No description provided for @managedDownloadWriteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Write file'**
+  String get managedDownloadWriteConfirm;
 
   /// No description provided for @managedFilesOwner.
   ///

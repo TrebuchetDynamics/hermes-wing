@@ -61,8 +61,12 @@ dismissible read-only surface, not a new route or a Project folder picker.
 Native Linux/Android serve readers require an advertised locked managed root.
 Unlocked, messaging-only and browser connections show unavailable without a
 fallback browser. Bounded literal text previews and explicit retry preserve the
-owning connection/profile/conversation context; downloads and native/live
-qualification remain pending. See the [managed Files contract and evidence](../quality/managed-files-browse.md).
+owning connection/profile/conversation context. Individual downloads up to 8 MiB
+use authenticated raw bytes, Linux Save As or Android document creation, explicit
+cancellation/retry and final saved-byte readback before success. Browser saving is
+not offered. Real Linux/Android picker and live-Agent qualification remain pending;
+fixtures and APK compilation are not native save receipts. See the
+[managed Files contract and evidence](../quality/managed-files-browse.md#individual-download-extension--files-terminal-download).
 
 Chat's compact More actions menu and wide header offer **Bot Chat** for the
 selected profile through verified native registry, hidden-state and history/replay

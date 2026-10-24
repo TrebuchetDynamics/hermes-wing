@@ -870,7 +870,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get managedFilesExplanation =>
-      'Read-only Agent managed files. This locked root is not the terminal working directory or a Hermes Project. Text previews are limited to 64 KiB; folders to 500 entries. Downloads are not available here.';
+      'Read-only Agent managed files. This locked root is not the terminal working directory or a Hermes Project. Text previews are limited to 64 KiB; folders to 500 entries. Individual downloads up to 8 MiB use a device save picker on Linux and Android.';
+
+  @override
+  String get managedDownloadAction => 'Download file';
+
+  @override
+  String managedDownloadProgress(int bytes) {
+    return 'Retrieved $bytes bytes…';
+  }
+
+  @override
+  String managedDownloadSaving(int bytes) {
+    return 'Retrieved $bytes bytes. Choose a destination; saved bytes will be verified.';
+  }
+
+  @override
+  String get managedDownloadCancel => 'Cancel download';
+
+  @override
+  String get managedDownloadRetry => 'Retry download';
+
+  @override
+  String get managedDownloadVerified =>
+      'Saved and byte-verified on this device.';
+
+  @override
+  String get managedDownloadCancelled =>
+      'Download cancelled. No verified save.';
+
+  @override
+  String get managedDownloadFailed =>
+      'Download failed. Check access, connection and destination, then retry. The limit is 8 MiB.';
+
+  @override
+  String get managedDownloadWriteTitle => 'Write to the selected destination?';
+
+  @override
+  String get managedDownloadWriteExplanation =>
+      'This writes the downloaded bytes and replaces any file at the chosen destination. Cancel to keep it unchanged. An interrupted write may leave a partial file; only byte-verified saves are confirmed.';
+
+  @override
+  String get managedDownloadWriteConfirm => 'Write file';
 
   @override
   String managedFilesOwner(String connection, String profile, String session) {

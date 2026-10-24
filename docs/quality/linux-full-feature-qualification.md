@@ -385,8 +385,11 @@ Retained limitations/failures:
 
 Overall Linux remains **PARTIAL**. Physical keyboard/IME, screen reader, audio,
 Wayland, actual Agent/SSH/OAuth/provider operations and packaged delivery are
-separate, unqualified cells. The open current-retest task is not closed by these
-bounded results.
+separate, unqualified cells. Task `LINUXQA-003-738b0446` is administratively
+closed at the owner’s explicit request after these gaps were explained. Its
+implementation was delivered in `9b12eec3`; closure does not qualify the remaining
+cells or change the overall verdict. The task records a manual owner closure,
+not a passing acceptance receipt.
 
 ## Existing live, physical and package owners
 

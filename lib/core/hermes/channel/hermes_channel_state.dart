@@ -231,26 +231,14 @@ class HermesChannelState {
   bool get canReadProviders =>
       _allowsEndpoint('providers', 'GET', '/api/providers', 'providers:read');
 
-  bool get canWriteProviders => _allowsEndpoint(
-    'provider_credential_set',
-    'PUT',
-    '/api/providers/{slug}/credential',
-    'providers:write',
-  );
+  // The legacy slug/env-var routes have no credential identity, authoritative
+  // revision or durable idempotency contract. Endpoint grants cannot admit them.
+  // See docs/adr/api-and-state.md#required-agent-owned-mutation-contract.
+  bool get canWriteProviders => false;
 
-  bool get canRemoveProviderCredential => _allowsEndpoint(
-    'provider_credential_delete',
-    'DELETE',
-    '/api/providers/{slug}/credential',
-    'providers:write',
-  );
+  bool get canRemoveProviderCredential => false;
 
-  bool get canValidateProviderCredential => _allowsEndpoint(
-    'provider_credential_validate',
-    'POST',
-    '/api/providers/{slug}/credential/validate',
-    'providers:write',
-  );
+  bool get canValidateProviderCredential => false;
 
   bool get canReadModels =>
       _allowsEndpoint('models', 'GET', '/api/models', 'models:read');

@@ -2,7 +2,7 @@ import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wing/shared/widgets/wing_avatar.dart';
+import 'package:wing/shared/widgets/hermes_profile_avatar.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wing/l10n/app_localizations.dart';
@@ -41,10 +41,10 @@ void main() {
     );
 
     expect(find.byKey(const ValueKey('gateway-contact-row')), findsNWidgets(5));
-    expect(find.byType(WingAvatar), findsNWidgets(5));
+    expect(find.byType(HermesProfileAvatar), findsNWidgets(5));
     final identities = tester
-        .widgetList<WingAvatar>(find.byType(WingAvatar))
-        .map((avatar) => avatar.identity.join('/'))
+        .widgetList<HermesProfileAvatar>(find.byType(HermesProfileAvatar))
+        .map((avatar) => avatar.profileId)
         .toSet();
     expect(identities.length, 5);
     expect(find.text('Agent A1'), findsOneWidget);
@@ -427,7 +427,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(WingAvatar), findsNWidgets(2));
+    expect(find.byType(HermesProfileAvatar), findsNWidgets(2));
     expect(find.text('👩🏽‍💻 Agent'), findsOneWidget);
     expect(find.text('?'), findsOneWidget);
   });

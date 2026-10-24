@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -217,7 +216,7 @@ void main() {
   );
 
   testWidgets(
-    'Provider sheet never reads a secret and retries Set only on explicit input',
+    'Provider inventory search never admits legacy credential operations',
     (tester) async {
       final f = ManagementFixture();
       await f.open(tester, '/providers');
@@ -228,141 +227,60 @@ void main() {
       await managementTap(tester, find.byTooltip('Clear provider search'));
       expect(f.requests, hasLength(reads));
       expect(find.textContaining('synthetic-stored-secret'), findsNothing);
-      Future<void> open() async {
-        await managementTap(
-          tester,
-          find.widgetWithText(TextButton, 'Manage credential'),
-        );
-        final field = tester.widget<TextField>(
-          find.descendant(
-            of: find.byType(ProviderCredentialSheet),
-            matching: find.byType(TextField),
-          ),
-        );
-        expect(field.obscureText, isTrue);
-        expect(field.controller!.text, isEmpty);
-        expect(find.textContaining('synthetic-stored-secret'), findsNothing);
-      }
-
-      await open();
-      await tester.enterText(
-        find.descendant(
-          of: find.byType(ProviderCredentialSheet),
-          matching: find.byType(TextField),
-        ),
-        'synthetic-new-secret',
-      );
-      f.failures.add('PUT /api/providers/synthetic/credential');
-      await managementTap(tester, find.widgetWithText(FilledButton, 'Set'));
-      expect(find.byType(ProviderCredentialSheet), findsOneWidget);
-      f.failures.clear();
-      await tester.pump(const Duration(seconds: 1));
-      expect(f.writes, 1);
-      await managementTap(tester, find.widgetWithText(FilledButton, 'Set'));
+      expect(find.text('Manage credential'), findsNothing);
       expect(find.byType(ProviderCredentialSheet), findsNothing);
-      expect(f.writes, 2);
-      for (final r in f.requests.where((r) => r.method == 'PUT')) {
-        expect(r.uri.path, '/api/providers/synthetic/credential');
-        expect(r.uri.queryParameters, {'profile': 'coder'});
-        expect(r.body, {
-          'env_var': 'SYNTHETIC_API_KEY',
-          'value': 'synthetic-new-secret',
-        });
-        expect(r.uri.toString(), isNot(contains('secret')));
+      for (final action in <Future<void> Function()>[
+        () => f.channel.setProviderCredential(
+          slug: 'synthetic',
+          envVar: 'SYNTHETIC_API_KEY',
+          value: 'synthetic-only',
+        ),
+        () => f.channel.removeProviderCredential(
+          slug: 'synthetic',
+          envVar: 'SYNTHETIC_API_KEY',
+        ),
+        () async {
+          await f.channel.validateProviderCredential(slug: 'synthetic');
+        },
+      ]) {
+        await expectLater(action(), throwsStateError);
       }
-      expect(
-        f.channel.state.providers
-            .singleWhere((p) => p.slug == 'synthetic')
-            .keyHint,
-        '····0001',
-      );
-      await open();
-      await managementTap(
-        tester,
-        find.widgetWithText(OutlinedButton, 'Validate'),
-      );
-      expect(find.textContaining('Synthetic accepted'), findsOneWidget);
-      expect(find.textContaining('redact-me'), findsNothing);
-      expect(find.textContaining('/home/example/private'), findsNothing);
-      expect(f.writes, 3);
-      final validate = f.requests.singleWhere((r) => r.method == 'POST');
-      expect(validate.uri.path, '/api/providers/synthetic/credential/validate');
-      expect(validate.uri.queryParameters, {'profile': 'coder'});
-      await managementTap(tester, find.widgetWithText(TextButton, 'Remove'));
-      expect(f.writes, 4);
-      expect(
-        f.channel.state.providers
-            .singleWhere((p) => p.slug == 'synthetic')
-            .configured,
-        isFalse,
-      );
-      expect(
-        f.requests.singleWhere((r) => r.method == 'DELETE').uri.queryParameters,
-        {'profile': 'coder', 'env_var': 'SYNTHETIC_API_KEY'},
-      );
-      expect(tester.takeException(), isNull);
+      expect(f.requests, hasLength(reads));
+      expect(f.writes, 0);
       cases.record(
         'provider-secret-recovery',
         ['HD-PROVIDER'],
         ['/providers'],
         f,
+        unsupported:
+            'Legacy credential grants do not establish identity/revision/idempotency/effect consent.',
       );
     },
   );
 
-  testWidgets(
-    'Provider sheet rejects stale submission and late old-owner completion',
-    (tester) async {
-      final f = ManagementFixture();
-      await f.open(tester, '/providers');
-      final manage = find.widgetWithText(TextButton, 'Manage credential');
-      await managementTap(tester, manage);
-      final input = find.descendant(
-        of: find.byType(ProviderCredentialSheet),
-        matching: find.byType(TextField),
-      );
-      await tester.enterText(input, 'synthetic-stale-secret');
-      await f.channel.selectProfile('other');
+  testWidgets('Provider credential denial survives profile replacement', (
+    tester,
+  ) async {
+    final f = ManagementFixture();
+    await f.open(tester, '/providers');
+    for (final profile in ['other', 'coder']) {
+      await f.channel.selectProfile(profile);
       await tester.pumpAndSettle();
-      await managementTap(tester, find.widgetWithText(FilledButton, 'Set'));
-      expect(f.writes, 0);
-      await managementTap(tester, find.widgetWithText(TextButton, 'Cancel'));
-      await managementTap(tester, manage);
-      await tester.enterText(input, 'synthetic-pending-secret');
-      f.pendingWrite = Completer<String>();
-      await tester.tap(find.widgetWithText(FilledButton, 'Set'));
-      await tester.pump();
-      expect(f.writes, 1);
-      await f.channel.selectProfile('coder');
-      await tester.pumpAndSettle();
-      final current = f.channel.state.providers;
-      f.pendingWrite!.complete(
-        jsonEncode({
-          'data': {
-            'slug': 'synthetic',
-            'configured': false,
-            'key_hint': '····9999',
-          },
-        }),
-      );
-      await tester.pumpAndSettle();
-      expect(f.channel.state.providers, current);
-      expect(find.byType(ProviderCredentialSheet), findsOneWidget);
-      expect(
-        f.requests.singleWhere((r) => r.method == 'PUT').uri.queryParameters,
-        {'profile': 'other'},
-      );
-      expect(f.writes, 1);
-      expect(tester.takeException(), isNull);
-      cases.record(
-        'provider-stale-owner',
-        ['HD-PROVIDER'],
-        ['/providers'],
-        f,
-        owners: 3,
-      );
-    },
-  );
+      expect(find.text('Manage credential'), findsNothing);
+      expect(f.channel.state.canWriteProviders, isFalse);
+      expect(f.channel.state.canRemoveProviderCredential, isFalse);
+      expect(f.channel.state.canValidateProviderCredential, isFalse);
+    }
+    expect(f.writes, 0);
+    cases.record(
+      'provider-stale-owner',
+      ['HD-PROVIDER'],
+      ['/providers'],
+      f,
+      owners: 3,
+      unsupported: 'No credential mutation is admitted across owner changes.',
+    );
+  });
 
   testWidgets(
     'Models use revisioned main and auxiliary assignments, with local presets',

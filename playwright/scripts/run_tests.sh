@@ -53,6 +53,7 @@ echo ""
 echo "Running Playwright tests..."
 DEFAULT_SPECS=(
   playwright/tests/regression/browser-surfaces.spec.mjs
+  playwright/tests/regression/settings-search.spec.mjs
   playwright/tests/regression/chat-workspace-overlay.spec.mjs
   playwright/tests/regression/browser-cors-streams.spec.mjs
   playwright/tests/regression/chat-approval-confirmations.spec.mjs

@@ -690,6 +690,7 @@
       }
     }
   },
+  "credentialContractUnavailable": "Credential changes and validation are unavailable for this connection. Manage credentials directly in Hermes Agent.",
   "credentialWriteOnlyNotice": "Hermes Wing can set this credential but never shows a stored key.",
   "credentialEnvVarLabel": "Environment variable",
   "credentialValueLabel": "New secret value",
@@ -2236,6 +2237,8 @@
       }
     }
   },
+  "settingsSearchHint": "Search settings",
+  "settingsSearchNoResults": "No matching settings",
   "settingsAppearanceSection": "Appearance",
   "settingsChatSection": "Chat",
   "chatSpellcheckTitle": "Check spelling",

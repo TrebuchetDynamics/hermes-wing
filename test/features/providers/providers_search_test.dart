@@ -253,24 +253,9 @@ void main() {
           expect(find.text('Available providers'), findsNothing);
           expect(find.text('alpha / selected'), findsOneWidget);
         }
-        // A visible management action still carries the original exact provider.
-        tester
-            .widget<TextButton>(
-              find.widgetWithText(TextButton, 'Manage credential'),
-            )
-            .onPressed!();
-        await tester.pumpAndSettle();
-        expect(
-          tester
-              .widget<ProviderCredentialSheet>(
-                find.byType(ProviderCredentialSheet),
-              )
-              .provider
-              .slug,
-          'alpha',
-        );
-        await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
-        await tester.pumpAndSettle();
+        // Search must not expose secret entry for an unqualified contract.
+        expect(find.text('Manage credential'), findsNothing);
+        expect(find.byType(ProviderCredentialSheet), findsNothing);
         for (final query in [
           'NOT_SEARCHABLE_ENV',
           'ab12',

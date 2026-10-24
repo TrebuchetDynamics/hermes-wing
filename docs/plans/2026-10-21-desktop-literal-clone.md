@@ -24,8 +24,8 @@ ciclo de distribución permanecen pendientes, sin sustituirlos por fixtures.
 | --- | --- |
 | F0 | Flutter 3.44.2 y Node 22 preparados; dependencias bloqueadas resueltas. Admisión de credenciales legacy corregida; 675 pruebas focalizadas y análisis aprobados. Suites completas interrumpidas por reinicio del entorno; pendientes. CLI `autowork` no instalada: registro de tareas pendiente, sin transiciones inventadas. |
 | CLONE-01 | Tokens existentes; geometría de mensajes/compositor adaptada al pin actual. Baseline visual emparejado pendiente. |
-| CLONE-02 | Shell final, destinos y overlays oficiales pendientes; conservar rutas existentes durante migración. |
-| CLONE-03 | Búsqueda de categorías y controles locales; Appearance separa Theme/Typography con navegación y enlaces `page`/`setting`; selector compacto único, breadcrumb navegable y selección de hoja actual. Árbol completo y demás campos pendientes. Galería de criaturas Wing retirada sin borrar preferencias. |
+| CLONE-02 | Sidebar con sesiones fijadas y estado compartido con Chat/selector; aislamiento exacto por endpoint/perfil y rechazo de acciones obsoletas. Shell final, destinos y overlays oficiales completos siguen pendientes. |
+| CLONE-03 | Búsqueda y navegación jerárquica local; Appearance separa Theme/Typography/Chat display, con enlaces a dirección Auto/RTL/LTR y plegado de razonamiento. Conserva preferencias, borradores y selección; código LTR. Árbol completo y demás campos pendientes. |
 | CLONE-04 | Onboarding completo y guía pendientes; preservar conexión directa ya implementada. |
 | CLONE-05 | Remote/SSH y gateway sign-in existentes; attachment canónico, Cloud y cobertura completa OAuth pendientes. |
 | CLONE-06 | Rutas legacy de credenciales rechazadas antes de red y formularios sin entrada de secretos; contrato positivo sigue pendiente. Modelos mantienen gates independientes. |
@@ -33,12 +33,14 @@ ciclo de distribución permanecen pendientes, sin sustituirlos por fixtures.
 | CLONE-08 | Transcript existente y geometría actualizada; completar controles/adjuntos/ramificación según contratos. |
 | CLONE-09 | Recibos durables, resultado incierto, FIFO y aclaraciones completas pendientes. |
 | CLONE-10 | Bot Chat existente preservado; fallback visual estático oficial añadido. Roster completo, multipane, ventanas y lifecycle pendientes. |
-| CLONE-11 | Files continúa CONTRACT-UNREADY; PTY/review pendientes, sin shell/SFTP sustituto. |
+| CLONE-11 | Files de solo lectura sobre la raíz administrada: navegación, preview acotado y descarga con readback implementados; divergencia respecto a la raíz terminal de Desktop documentada. PTY/review y equivalencia completa siguen pendientes. |
 | CLONE-12 | Artifacts y preview aislado pendientes; export de transcript no los satisface. |
-| CLONE-13 | Completar Skills/MCP/memoria/cron/Messaging/Webhooks/Kanban tras contratos por operación. |
+| CLONE-13 | Skills añade filtros por categoría y búsqueda; Schedules presenta lista/detalle adaptable y recuperación por dueño. CRUD, MCP, memoria, delivery/history, Messaging/Webhooks y Kanban siguen pendientes de contratos por operación. |
 | CLONE-14 | Vault/paquetes/Screen/Pets pendientes; no cargar JS Electron ni llamar proveedores sin admisión. |
 | CLONE-15 | Radio/Starmap/importación pendientes. |
 | CLONE-16 | Campaña Linux/Android existente; calificación actual de cinco plataformas, voz física y distribución pendientes. |
+
+Seguimiento del lote paralelo local y límites: [cinco resultados locales](../quality/parity-parallel-local-outcomes-2026-10-24.md).
 
 Recibo del primer lote y límites: [validación 2026-10-24](../quality/2026-10-24-desktop-parity-first-batch.md).
 Build web y Linux debug aprobados; Chromium tiene 12 casos de superficies y 2 de

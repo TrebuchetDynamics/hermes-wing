@@ -1216,8 +1216,8 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
     final userRadius = decoration(userId).borderRadius! as BorderRadius;
     final assistantRadius =
         decoration(assistantId).borderRadius! as BorderRadius;
-    expect(userRadius, BorderRadius.circular(20));
-    expect(assistantRadius, BorderRadius.circular(20));
+    expect(userRadius, BorderRadius.circular(3.2));
+    expect(assistantRadius, BorderRadius.circular(0));
   });
 
   testWidgets('message timestamps expose their full local date and time', (

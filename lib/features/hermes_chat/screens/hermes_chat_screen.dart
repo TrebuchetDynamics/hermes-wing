@@ -743,9 +743,31 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   GatewayContactId? _sessionPinContact(HermesChannelState state) =>
       hermesSessionPinContact(
         savedContact: _gatewayDirectory.activeContactId,
+        savedBaseUrl: _gatewayDirectory.activeGatewayConfig?.baseUrl,
         baseUrl: state.connectedBaseUrl,
         profileId: state.selectedProfileId,
       );
+
+  void _toggleSessionPin(
+    HermesChannel channel,
+    GatewayContactId? contact,
+    HermesSession session,
+    int ownerGeneration, {
+    bool Function()? canAccept,
+  }) {
+    bool current() =>
+        mounted &&
+        ownerGeneration == _composerOwnerGeneration &&
+        identical(ref.read(hermesChannelProvider), channel) &&
+        channel.state.isConnected &&
+        !channel.state.isSelectingProfile &&
+        contact != null &&
+        _sessionPinContact(channel.state) == contact &&
+        channel.state.visibleSessions.any((row) => row.id == session.id) &&
+        (canAccept?.call() ?? true);
+    if (!current()) return;
+    unawaited(_sessionPins.toggle(contact, session.id, canAccept: current));
+  }
 
   void _onComposerChanged() {
     final key = _activeComposerDraftKey;

@@ -38,8 +38,9 @@ void main() {
       expect(
         hermesSessionPinContact(
           savedContact: saved,
-          baseUrl: null,
-          profileId: null,
+          savedBaseUrl: 'https://agent.example.invalid',
+          baseUrl: 'https://agent.example.invalid',
+          profileId: 'alpha',
         ),
         same(saved),
       );
@@ -59,6 +60,39 @@ void main() {
         ),
         isNull,
       );
+    },
+  );
+
+  test(
+    'stale saved endpoint or profile falls back to the current exact owner',
+    () {
+      const saved = GatewayContactId(
+        gatewayId: 'saved-opaque',
+        profileId: 'alpha',
+      );
+      GatewayContactId? owner({
+        String? savedUrl = 'https://first.example.invalid',
+        String? actualUrl = 'https://second.example.invalid',
+        String? profile = 'alpha',
+      }) => hermesSessionPinContact(
+        savedContact: saved,
+        savedBaseUrl: savedUrl,
+        baseUrl: actualUrl,
+        profileId: profile,
+      );
+      final direct = hermesSessionPinContact(
+        savedContact: null,
+        baseUrl: 'https://second.example.invalid',
+        profileId: 'alpha',
+      );
+      expect(owner(), direct);
+      expect(owner(savedUrl: null), direct);
+      expect(
+        owner(savedUrl: 'https://second.example.invalid', profile: 'beta'),
+        isNot(saved),
+      );
+      expect(owner(savedUrl: 'https://second.example.invalid'), same(saved));
+      expect(owner(actualUrl: null), isNull);
     },
   );
 }

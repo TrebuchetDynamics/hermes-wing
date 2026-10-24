@@ -2,6 +2,14 @@
 
 ## Verdict
 
+Current implementation direction: the owner-selected
+[managed-files root](#managed-files-root-the-owner-selected-alternative), through
+`/api/files` and `/api/files/read`, enabled only for an authenticated connection
+whose server advertises a non-empty `locked_root`. The terminal-cwd analysis and
+deferral below remain historical evidence for a different root, not additional
+prerequisites for the managed-root tasks. Neither `terminal.cwd` nor a successful
+chat connection proves file confinement.
+
 **Browse, text preview and single-file download are feasible without modifying
 Hermes Agent or requiring Wing Link.** The official Desktop already consumes
 Agent's existing filesystem HTTP routes for remote connections. This is a client
@@ -158,7 +166,9 @@ absence of fs routes in the messaging adapter. This is source-contract evidence,
 **not an HTTP integration test or native qualification**. The read-only Agent
 worktree remained clean after inspection.
 
-Recommended first implementation: a read-only Flutter Files pane against an
+Historical terminal-cwd recommendation (superseded for the current managed-root
+surface by the [owner-selected alternative](#managed-files-root-the-owner-selected-alternative)):
+a read-only Flutter Files pane against an
 explicitly compatible authenticated serve connection, using authoritative session
 cwd and exact connection/profile ownership. Hide unsupported operations, especially
 unqualified terminal backends and missing strict root enforcement. Then implement
@@ -213,10 +223,12 @@ Unchanged, and still gating the strict FILES-4 requirement:
   container translation, profile scope, sensitive-path refusal and
   authentication. None asserts cwd confinement.
 
-Verdict: the deferral gate is still unsatisfied. No advertised operation both
-names the effective selected session/profile/backend terminal root and enforces
-server-side canonical confinement to it, so positive Files access stays
-unimplemented and `FILES-TERMINAL-DOWNLOAD` stays dependent. This is a source
+Historical terminal-root verdict: the deferral gate remained unsatisfied. No
+advertised operation both names the effective selected session/profile/backend
+terminal root and enforces server-side canonical confinement to it. The later
+[managed-root decision](#managed-files-root-the-owner-selected-alternative)
+supersedes that implementation deferral without establishing terminal-cwd support;
+`FILES-TERMINAL-DOWNLOAD` still depends on completed browsing. This is a source
 contract recheck only, not an HTTP, native or live qualification.
 
 ## Managed-files root: the owner-selected alternative

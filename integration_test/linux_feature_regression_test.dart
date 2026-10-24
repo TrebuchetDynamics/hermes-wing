@@ -78,6 +78,10 @@ import '../test/features/hermes_chat/screens/hermes_chat_message_actions_a11y_te
     as suite_31;
 import '../test/features/hermes_chat/screens/hermes_chat_profile_switch_test.dart'
     as suite_32;
+import '../test/features/hermes_chat/hermes_managed_files_dialog_test.dart'
+    as suite_93;
+import '../test/core/hermes/client/hermes_managed_files_test.dart' as suite_94;
+import '../test/features/settings/settings_subpages_test.dart' as suite_95;
 import '../test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart'
     as suite_33;
 import '../test/features/hermes_chat/screens/hermes_chat_screen_android_endpoint_test.dart'
@@ -464,4 +468,13 @@ void main({bool includeHostChecks = true}) {
     'test/features/hermes_chat/screens/hermes_chat_transcript_export_test.dart',
     suite_92.main,
   );
+  group(
+    'test/features/hermes_chat/hermes_managed_files_dialog_test.dart',
+    suite_93.main,
+  );
+  group(
+    'test/core/hermes/client/hermes_managed_files_test.dart',
+    suite_94.main,
+  );
+  group('test/features/settings/settings_subpages_test.dart', suite_95.main);
 }

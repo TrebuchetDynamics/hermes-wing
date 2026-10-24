@@ -73,6 +73,20 @@ class DriverTest(unittest.TestCase):
         patch.object(self.driver, 'native_processes', return_value=[{'native_pid': 124, 'start_ticks': '456'}]).start()
         patch.object(self.driver, 'process_identity', return_value={'native_pid': 124, 'start_ticks': '456'}).start()
 
+    def test_gtk_metadata_is_copied_without_expanding_xdg_search(self):
+        public = self.root / 'public'
+        self.put(public, 'mime/mime.cache', 'synthetic mime')
+        self.put(public, 'glycin-loaders/2+/conf.d/svg.conf', 'synthetic loader')
+        self.put(public, 'unrelated/settings', 'must not copy')
+        target = self.root / 'gtk-state'
+        captured = self.driver.qa.stage_gtk_data(target, public)
+        self.assertEqual(set(captured), {'mime/mime.cache', 'glycin-loaders/2+/conf.d/svg.conf'})
+        self.assertFalse((target / 'data/unrelated').exists())
+        self.assertEqual(captured['mime/mime.cache'], self.driver.qa.digest(public / 'mime/mime.cache'))
+        (public / 'glycin-loaders/2+/conf.d/linked.conf').symlink_to(public / 'unrelated/settings')
+        with self.assertRaisesRegex(ValueError, 'Linked GTK'):
+            self.driver.qa.stage_gtk_data(self.root / 'rejected', public)
+
     def put(self, root, name, value):
         path = root / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -517,6 +531,8 @@ class DriverTest(unittest.TestCase):
         deps = qa.stage_dependencies(self.prefix, state / 'deps')
         env = qa.isolated_environment(state, prefix=deps, sdk=self.sdk)
         self.assertEqual(env['CMAKE_PREFIX_PATH'], str(deps))
+        self.assertEqual(env['PATH'], ':'.join((str(self.sdk / 'bin'), str(deps / 'bin'), '/usr/bin', '/bin')))
+        self.assertEqual(env['LD_LIBRARY_PATH'], str(deps / 'lib/x86_64-linux-gnu') + ':' + str(deps / 'lib'))
         self.assertEqual(env['XDG_DATA_DIRS'], str(state / 'data'))
         self.assertEqual(env['GIO_USE_VFS'], 'local')
         self.assertEqual(env['GSETTINGS_BACKEND'], 'memory')
@@ -529,6 +545,25 @@ class DriverTest(unittest.TestCase):
             with self.subTest(runner=name), patch.dict(os.environ, self.env | {'WING_LIVE_AUTH': 'discard'}, clear=True), \
                     patch.object(sys, 'argv', [name]), self.assertRaises(ValueError):
                 module.run()
+
+    def test_private_tools_are_inspected_without_inheriting_caller_search_paths(self):
+        import linux_qualification_support as qa
+        private = self.put(self.prefix, 'bin/cmake', 'private synthetic tool')
+        self.env['PATH'] = '/untrusted/caller/tools'
+
+        def find(name, *, path):
+            if name in ('flutter', 'node'):
+                return str(self.sdk / 'bin/flutter') if name == 'flutter' else str(self.tools / name)
+            self.assertIn(str(self.prefix / 'bin'), path.split(':'))
+            self.assertNotIn('/untrusted/caller/tools', path.split(':'))
+            return str(private if name == 'cmake' else self.tools / name)
+
+        with patch('linux_qualification_support.shutil.which', side_effect=find):
+            self.assertEqual(self.invoke(), 0)
+        receipt = self.receipt('preflight')
+        self.assertTrue(receipt['ready'])
+        self.assertEqual(receipt['toolchain']['cmake'], {'path': str(private), 'sha256': qa.digest(private)})
+        self.assertEqual(receipt['toolchain']['dependencies_sha256'], qa.identity(qa.tree(self.prefix, links=True)))
 
 
 if __name__ == '__main__':

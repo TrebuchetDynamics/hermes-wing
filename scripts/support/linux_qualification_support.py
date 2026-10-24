@@ -148,8 +148,31 @@ def stage_dependencies(prefix, destination):
     return destination
 
 
+def stage_gtk_data(root, public=Path('/usr/share')):
+    """Copy only public MIME/image-loader metadata into the owned XDG tree."""
+    captured = {}
+    files = [public / 'mime/mime.cache']
+    loaders = public / 'glycin-loaders'
+    if loaders.exists():
+        if loaders.is_symlink():
+            raise ValueError('Linked GTK loader metadata')
+        files.extend(sorted(loaders.rglob('*.conf')))
+    for source in files:
+        relative = source.relative_to(public)
+        if source.is_symlink() or any(p.is_symlink() for p in source.parents if p != public):
+            raise ValueError('Linked GTK public metadata')
+        target = root / 'data' / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        data = source.read_bytes()
+        target.write_bytes(data)
+        captured[str(relative)] = digest(target)
+    return captured
+
+
 def isolated_environment(root, *, prefix=None, sdk=None, node=None):
     bins = ([str(sdk / 'bin')] if sdk else []) + ([str(Path(node).parent)] if node else [])
+    if prefix:
+        bins.append(str(prefix / 'bin'))
     env = dict(PATH=':'.join([*bins, '/usr/bin', '/bin']), LANG='C.UTF-8', LC_ALL='C.UTF-8')
     for name in ('home', 'config', 'data', 'cache', 'runtime'):
         (root / name).mkdir(mode=0o700, exist_ok=True)
@@ -164,7 +187,8 @@ def isolated_environment(root, *, prefix=None, sdk=None, node=None):
     if prefix:
         lib = prefix / 'lib/x86_64-linux-gnu'
         env.update(PKG_CONFIG_PATH=str(lib / 'pkgconfig'), CMAKE_PREFIX_PATH=str(prefix),
-                   LIBRARY_PATH=str(lib), LD_LIBRARY_PATH=str(lib), CPATH=str(prefix / 'include'))
+                   LIBRARY_PATH=str(lib), LD_LIBRARY_PATH=str(lib) + ':' + str(prefix / 'lib'),
+                   CPATH=str(prefix / 'include'))
     return env
 
 
@@ -326,7 +350,8 @@ def inspect(source, environ, root):
     except (OSError, ValueError) as error: errors.append(str(error))
     for name in ('flutter', 'node', 'pkg-config', 'xvfb-run', 'Xvfb', 'xauth', 'dbus-run-session', 'clang', 'cmake', 'ninja', 'git', 'bash'):
         runtime_path = ':'.join([*([str(sdk / 'bin')] if sdk else []),
-                                 *([str(Path(node).parent)] if node else []), '/usr/bin', '/bin'])
+                                 *([str(Path(node).parent)] if node else []),
+                                 *([str(prefix / 'bin')] if prefix else []), '/usr/bin', '/bin'])
         search = environ.get('PATH', '/usr/bin:/bin') if name in ('flutter', 'node') else runtime_path
         path = shutil.which(name, path=search)
         if path is None:

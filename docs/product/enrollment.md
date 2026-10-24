@@ -35,21 +35,26 @@ Keep the manual single-profile Agent connection available. See the
 
 ## Android gateway sign-in (candidate)
 
-The owner approved a distinct **Connect to Hermes Desktop** flow. Explicit camera
-scanning accepts only versioned metadata (`hermes-wing-gateway`, HTTPS origin,
-profile); manual origin/profile entry remains available. This is not the retired
-pairing format, credential QR or external-intent ingress. Legacy handoffs stay
-rejected. The phone opens its own system browser for the gateway's advertised
-`native_pkce` login; access/refresh tokens are origin-bound secure-storage values,
-never API-server form keys. A direct HTTPS/WSS reader negotiates a fresh ticket and
-native chat capabilities before enabling sends. Reconnect is explicit and does not
-replay prompts or approvals.
+The Android **Connect to Hermes Desktop** flow uses manual HTTPS address/profile
+entry and browser sign-in. At the owner's request, QR creation and scanning were
+removed from the connection screens. Existing saved gateway identities and secure
+credentials are preserved; legacy handoffs remain rejected.
 
-An existing reachable HTTPS native gateway with compatible authentication is
-required. Wing does not start Hermes, publish a listener, configure VPN/firewall,
-read a desktop credential or modify Agent. A metadata QR only removes address
-entry, not login or network prerequisites. Physical camera/browser/live-account
-qualification must be recorded separately from fixtures.
+The phone opens its own system browser for the gateway's advertised `native_pkce`
+login. Tokens remain origin-bound in secure storage, and a fresh WebSocket ticket
+and advertised chat capabilities are still required. Reconnect does not replay
+prompts or approvals. An existing reachable HTTPS gateway remains required;
+Wing does not start Agent or configure networking. Historical QR fixture results
+below do not describe the current login UI.
+
+### Simplified SSH entry
+
+The default form shows host/SSH port, username, password or private key, and the
+Agent token, followed by Connect/Cancel. Optional Agent port/profile, transport
+selection and destination save/load are under **Advanced**. Their defaults,
+validation and saved values are preserved. An invalid hidden port or profile
+reveals Advanced rather than permitting a connection. Saving credentials remains
+opt-in, and the host-key verification dialog is unchanged.
 
 ### Offline reconciliation
 

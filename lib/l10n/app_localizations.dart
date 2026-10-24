@@ -184,6 +184,12 @@ abstract class AppLocalizations {
   /// **'Save and allow replacement'**
   String get transcriptOverwriteConfirm;
 
+  /// No description provided for @managedSshAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get managedSshAdvanced;
+
   /// No description provided for @managedSshSaveTarget.
   ///
   /// In en, this message translates to:
@@ -199,7 +205,7 @@ abstract class AppLocalizations {
   /// No description provided for @managedSshTargetBody.
   ///
   /// In en, this message translates to:
-  /// **'Save one SSH destination and Agent transport on this device. Serve mode also remembers the last settled profile and conversation for this saved destination. Passwords, keys and Agent credentials are not saved. Loading settings does not connect.'**
+  /// **'Save the destination on this device without passwords, keys or tokens.'**
   String get managedSshTargetBody;
 
   /// No description provided for @managedSshTargetSaved.
@@ -337,7 +343,7 @@ abstract class AppLocalizations {
   /// No description provided for @gatewayLoginBody.
   ///
   /// In en, this message translates to:
-  /// **'Scan the address shown on your computer, or enter its existing HTTPS gateway address. Sign in in this phone\'s browser. Wing will never ask you to copy the computer\'s API key. This does not start Hermes, create a VPN or change firewall settings.'**
+  /// **'Enter the HTTPS address and sign in with your browser.'**
   String get gatewayLoginBody;
 
   /// No description provided for @gatewayLoginFailed.
@@ -391,13 +397,13 @@ abstract class AppLocalizations {
   /// No description provided for @managedSshQuickRemember.
   ///
   /// In en, this message translates to:
-  /// **'Remember access on this phone'**
+  /// **'Remember this connection'**
   String get managedSshQuickRemember;
 
   /// No description provided for @managedSshQuickConsent.
   ///
   /// In en, this message translates to:
-  /// **'After a successful connection, store this SSH password or private key, its unlock phrase and the Agent token in platform secure storage. Only enable this on your own protected phone. No automatic connection. API connections only.'**
+  /// **'Save the SSH password or key, key passphrase and Agent token securely on this phone.'**
   String get managedSshQuickConsent;
 
   /// No description provided for @managedSshQuickEdit.
@@ -1723,7 +1729,7 @@ abstract class AppLocalizations {
   /// No description provided for @managedSshAgentProfileLabel.
   ///
   /// In en, this message translates to:
-  /// **'Agent API profile (optional)'**
+  /// **'Agent profile (optional)'**
   String get managedSshAgentProfileLabel;
 
   /// No description provided for @managedSshAgentProfileHelp.

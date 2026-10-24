@@ -322,7 +322,6 @@ class _ManagedSshConnectionPanelState
               maxLines: 2,
             ),
             Text(saved.request.agentProfile ?? 'default'),
-            Text(strings.managedSshQuickBody),
             FilledButton.icon(
               key: const ValueKey('ssh-quick-connect'),
               onPressed: _busy || _loading
@@ -347,18 +346,20 @@ class _ManagedSshConnectionPanelState
               child: Text(strings.managedSshQuickEdit),
             ),
           ] else ...[
-            if (defaultTargetPlatform == TargetPlatform.android)
-              CheckboxListTile(
-                key: const ValueKey('ssh-quick-remember'),
-                value: _remember,
-                onChanged: _busy || _loading
-                    ? null
-                    : (value) => setState(() => _remember = value ?? false),
-                title: Text(strings.managedSshQuickRemember),
-                subtitle: Text(strings.managedSshQuickConsent),
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
             LocalizedManagedSshConnectionForm(
+              rememberAccess: defaultTargetPlatform == TargetPlatform.android
+                  ? CheckboxListTile(
+                      key: const ValueKey('ssh-quick-remember'),
+                      value: _remember,
+                      onChanged: _busy || _loading
+                          ? null
+                          : (value) =>
+                                setState(() => _remember = value ?? false),
+                      title: Text(strings.managedSshQuickRemember),
+                      subtitle: Text(strings.managedSshQuickConsent),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    )
+                  : null,
               key: ObjectKey(controller),
               initialTarget: controller.recoveryTarget,
               onSubmit: _submit,

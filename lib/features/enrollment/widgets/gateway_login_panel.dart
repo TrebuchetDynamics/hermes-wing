@@ -14,7 +14,6 @@ import '../../../core/hermes/setup/hermes_gateway_invite.dart';
 import '../../../core/hermes/setup/secure_gateway_recovery_store.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../l10n/app_localizations.dart';
-import 'gateway_qr_scanner.dart';
 
 final gatewayBrowserLauncherProvider = Provider<Future<bool> Function(Uri)>(
   (_) =>
@@ -152,21 +151,6 @@ class _GatewayLoginPanelState extends ConsumerState<GatewayLoginPanel> {
     }
   }
 
-  Future<void> _scan() async {
-    if (_busy || _restoring) return;
-    final generation = ++_generation;
-    final invite = await Navigator.of(context).push<HermesGatewayInvite>(
-      MaterialPageRoute(builder: (_) => const GatewayQrScanner()),
-    );
-    if (!mounted || generation != _generation || invite == null) return;
-    setState(() {
-      _origin.text = invite.origin.toString();
-      _profile.text = invite.profile;
-      _error = null;
-      _saved = false;
-    });
-  }
-
   Future<void> _forget() async {
     if (_busy) return;
     final generation = ++_generation;
@@ -227,10 +211,6 @@ class _GatewayLoginPanelState extends ConsumerState<GatewayLoginPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              s.gatewayLoginTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
             Text(s.gatewayLoginBody),
             if (_restoring) const LinearProgressIndicator(),
             TextField(
@@ -246,12 +226,6 @@ class _GatewayLoginPanelState extends ConsumerState<GatewayLoginPanel> {
               enabled: !_busy && !_restoring,
               autocorrect: false,
               decoration: InputDecoration(labelText: s.gatewayProfile),
-            ),
-            OutlinedButton.icon(
-              key: const ValueKey('gateway-scan'),
-              onPressed: _busy || _restoring ? null : _scan,
-              icon: const Icon(Icons.qr_code_scanner),
-              label: Text(s.gatewayScan),
             ),
             FilledButton(
               key: const ValueKey('gateway-sign-in'),

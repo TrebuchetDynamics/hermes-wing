@@ -158,11 +158,14 @@ void main() {
                 'ssh-port',
                 'username',
                 'password',
-                'agent-port',
                 'agent-token',
               ]) {
                 expect(control('managed-ssh-$field'), findsOneWidget);
               }
+              expect(control('managed-ssh-agent-port'), findsNothing);
+              expect(control('connection-information-help'), findsNothing);
+              await activate('managed-ssh-advanced');
+              expect(control('managed-ssh-agent-port'), findsOneWidget);
               for (final secret in ['password', 'agent-token']) {
                 expect(
                   tester

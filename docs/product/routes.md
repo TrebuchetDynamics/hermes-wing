@@ -42,6 +42,11 @@ exact endpoint/profile token (not a provider key), while address, response, netw
 TLS and timeout failures keep their distinct recovery instructions. Raw transport
 responses are never displayed. Failed activation does not retry or resend work.
 
+Connection entry no longer offers QR creation or scanning. SSH opens a compact
+form; optional Agent port/profile, transport and destination save/load sit under
+Advanced. Hidden values retain validation, and host-key verification and secure
+credential storage are unchanged. Android gateway browser sign-in remains manual.
+
 Hermes Wing uses one adaptive route tree. Compact Chat prioritizes the transcript and composer without a persistent bottom bar; its header menu keeps all existing destinations and current connection status reachable, including saved-contact Chat. Other compact feature routes retain Chat, Profiles, Connections and More in the bottom bar. This is a mobile adaptation of official Desktop's Chat-home hierarchy (`apps/desktop/DESIGN.md`, information architecture), not full navigation parity. Desktop and wide web separate **Workflow** (Chat, Schedules) from **Utilities** (Providers, Connections, Tools, Profiles, Persona, Settings) in the sidebar. All eight working destinations remain explicit, named and route-selected when expanded or icon-only; short windows scroll the groups while keeping the collapse control available. Routes are added with working vertical slices, so approved entries may remain planned until their capability lands. See the [desktop navigation runbook](../runbooks/desktop-navigation-groups.md) for evidence and deliberate Desktop differences.
 
 | Route          | Android placement | Purpose                                                                                                                                                                                                                                                                                            | State       |

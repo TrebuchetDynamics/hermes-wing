@@ -1,3 +1,4 @@
+import 'managed_ssh_connection_form_test.dart' show openAdvanced;
 import 'dart:async';
 import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
@@ -986,6 +987,7 @@ void main() {
       final controller = ManagedSshConnectionController(forward, channel);
       await mount(tester, controller);
       expect(find.text('Hermes serve session token'), findsNothing);
+      await openAdvanced(tester);
       final load = find.byKey(const ValueKey('managed-ssh-load-target'));
       await tester.ensureVisible(load);
       await tester.tap(load);
@@ -1058,6 +1060,7 @@ void main() {
         );
         await mount(tester, controller);
         if (serve) {
+          await openAdvanced(tester);
           final choice = find.byKey(const ValueKey('managed-ssh-serve-reads'));
           await tester.ensureVisible(choice);
           await tester.tap(choice);
@@ -1158,6 +1161,7 @@ void main() {
     final forward = FakeForward();
     final controller = ManagedSshConnectionController(forward, channel);
     await mount(tester, controller);
+    await openAdvanced(tester);
     final choice = find.byKey(const ValueKey('managed-ssh-serve-reads'));
     expect(choice, findsOneWidget);
     await tester.ensureVisible(choice);

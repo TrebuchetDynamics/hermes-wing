@@ -112,6 +112,9 @@ void main() {
       await edit('managed-ssh-host', fixture.host);
       await edit('managed-ssh-ssh-port', '${fixture.sshPort}');
       await edit('managed-ssh-username', fixture.username);
+      if (control('managed-ssh-agent-port').evaluate().isEmpty) {
+        await tap(control('managed-ssh-advanced'));
+      }
       await edit('managed-ssh-agent-port', '${fixture.agentPort}');
       await tap(control('managed-ssh-auth-private-key'));
     }

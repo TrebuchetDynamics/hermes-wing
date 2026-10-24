@@ -47,28 +47,48 @@ assistants, with a full-width user row and transparent normal assistant surface.
 Current `hermes_chat_timeline.dart:1028–1052` retains that behavior.
 `test/features/hermes_chat/screens/hermes_chat_desktop_geometry_test.dart:31–53`
 already checks transparent square assistant prose and 3.2px user corners at
-390/960/1440 widths. The rich-transcript case at lines 1194–1221 still expects
-20px for both authors. These assertions contradict each other.
+390/960/1440 widths. Before this repair, the rich-transcript case at lines
+1194–1221 expected 20px for both authors, contradicting the geometry coverage.
 
-Worker steps:
+## Worker repair and offline verification
 
-1. Reproduce the named test on the documented Flutter 3.44.2 SDK and record the
-   source revision and actual failure. Compare the two test contracts and the
-   named commit/current accepted plan; inspect the read-only official reference
-   under its own instructions if further source confirmation is needed.
-2. Reconcile the stale rich-transcript expectations with the accepted compact
-   user/flat assistant treatment. Keep explicit assertions for **both** authors;
-   preserve identities, content, interactions and all neighboring tests. Prefer
-   this test-only root-cause fix over reverting approved presentation. The named
-   timeline seam is available only if a different existing defect is reproduced;
-   do not redesign Chat or change unrelated parity/credential work.
-3. Run the focused test, both transcript/geometry modules together, changed-Dart
-   formatting and analysis, then the unchanged full check:
-   `flutter pub get --enforce-lockfile && flutter test --no-pub --concurrency=1`.
-   Retain actual command, source, SDK, exit, terminal counts and any residual
-   inventory here. No skips, weakened assertions, filtered full check or gate bypass.
-4. Keep main red until a real complete passing gate. Offline evidence cannot
-   qualify Desktop visual parity, native/device file access or any goal.
+Source: `47a2ac14ffc11e3d4da908a8f20073489b3a9633` on
+`autowork/MAIN-REPAIR-004`, with only the two radius expectations changed in
+`test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart:1219–1220`.
+Tested file Git blob: `b49253e295ca763ed14eeeb0530c9fbf0abec4c4`.
+No production code, geometry coverage or neighboring assertions changed. Explicit
+user 3.2px and assistant zero-radius assertions remain independent literals;
+restoring either superseded 20px treatment would fail the corresponding assertion.
+
+Executed on the Linux host with Flutter **3.44.2**, framework
+`c9a6c484230f8b5e408ec57be1ef71dee1e77020`, engine
+`77e2e94772b6eb43759e34ed1ad7da4674e19cab`, Dart **3.12.2**:
+
+| Command | Exit | Actual result |
+| --- | --- | --- |
+| `flutter --version --machine` | 0 | SDK revisions above. |
+| `flutter pub get --enforce-lockfile` | 0 | Locked dependencies resolved; manifest and lockfile unchanged. |
+| `flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart --plain-name 'message surfaces use the compact Desktop corner treatment'` (before edit) | 1 | `00:03 +0 -1`; expected 20.0, actual 3.2 at line 1219, reproducing the recorded failure. |
+| Same focused command (after edit) | 0 | `00:01 +1: All tests passed!` |
+| `autowork-run flutter test --no-pub --concurrency=1 test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart test/features/hermes_chat/screens/hermes_chat_desktop_geometry_test.dart` | 0 | `00:25 +95: All tests passed!`; all 91 rich-transcript and 4 geometry cases, no skips or failures. |
+| `dart format --output=none --set-exit-if-changed test/features/hermes_chat/screens/hermes_chat_rich_transcript_test.dart test/features/hermes_chat/screens/hermes_chat_desktop_geometry_test.dart lib/features/hermes_chat/presentation/hermes_chat_timeline.dart` | 0 | 3 files checked, 0 changed. |
+| `autowork-run flutter analyze --no-pub` | 0 | No issues found (36.9s). |
+| `autowork tasks validate --worktree .` | 0 | 300 tasks, 36 goals, no drafts or pending validation errors. |
+| `git diff --check` | 0 | No whitespace errors. |
+
+The worker instruction explicitly delegates the unchanged full check
+(`flutter pub get --enforce-lockfile && flutter test --no-pub --concurrency=1`)
+to the coordinator on the merged tree. It was **not run by this worker**; its
+source, exit, terminal totals and any remaining failures must come from that gate.
+There are no remaining failures in the executed focused checks. This local repair
+is not integration, green-main evidence, native/device execution, live-service
+qualification or visual parity acceptance. Keep main red until a complete passing
+full gate is recorded. No Files or credential behavior was implemented.
+
+Scoped Docs Sync Maintain updates this existing repair/test-evidence owner only;
+the accepted appearance plan remains unchanged. Revisit this receipt if accepted
+message geometry or these test cases change. The coordinator owns task closure,
+shared history and the final merged-gate receipt.
 
 ## Files review finding and retained work
 
@@ -96,4 +116,5 @@ full gate against the repaired baseline. Keep locked-root admission, containment
 redaction, zero mutations and stale-owner protections unchanged; actual-Agent,
 Linux/Android device and download qualification remain separate. Exact Files
 Touches come from the attempt-2 report, including its four component/product docs.
-No application changes or Flutter checks were executed by this documentation pass.
+The original documentation-only pass executed no application changes or Flutter
+checks; the worker's later focused verification is recorded above.

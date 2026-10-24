@@ -36,16 +36,9 @@ void main() {
 
     expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('Theme'), findsOneWidget);
-    expect(find.text('Typography'), findsOneWidget);
     expect(
-      tester.getTopLeft(find.text('Typography')).dy,
-      greaterThan(
-        tester
-            .getBottomRight(
-              find.byKey(const ValueKey('settings-theme-gallery')),
-            )
-            .dy,
-      ),
+      find.byKey(const ValueKey('settings-chat-text-scale-100')),
+      findsNothing,
     );
     for (final palette in WingThemePalette.values) {
       expect(

@@ -22,15 +22,30 @@ part 'settings_voice_screen.dart';
 
 enum _SettingsCategory { appearance, chat, voice, connections }
 
+enum _AppearancePage { theme, typography }
+
+typedef _SettingsTarget = ({
+  _SettingsCategory category,
+  _AppearancePage? page,
+  String? setting,
+});
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     this.initialCategory,
+    this.initialPage,
+    this.initialSetting,
     this.onCategoryChanged,
+    this.onTargetChanged,
     super.key,
   });
 
   final String? initialCategory;
+  final String? initialPage;
+  final String? initialSetting;
   final ValueChanged<String>? onCategoryChanged;
+  final void Function(String category, String? page, String? setting)?
+  onTargetChanged;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -38,6 +53,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   _SettingsCategory _category = _SettingsCategory.appearance;
+  _AppearancePage _appearancePage = _AppearancePage.theme;
+  bool _appearanceExpanded = true;
+  int _navigationRevision = 0;
 
   _SettingsCategory _resolveCategory(String? name) =>
       _SettingsCategory.values
@@ -55,27 +73,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
           .firstOrNull ??
       _SettingsCategory.appearance;
 
-  void _selectCategory(_SettingsCategory category) {
-    setState(() => _category = category);
-    widget.onCategoryChanged?.call(switch (category) {
+  void _readIntent() {
+    _navigationRevision++;
+    _category = _resolveCategory(widget.initialCategory);
+    _appearancePage = switch (widget.initialSetting) {
+      'theme' => _AppearancePage.theme,
+      'chat-text-scale' => _AppearancePage.typography,
+      _ =>
+        _AppearancePage.values
+                .where((page) => page.name == widget.initialPage)
+                .firstOrNull ??
+            _AppearancePage.theme,
+    };
+    if (_category == _SettingsCategory.appearance) _appearanceExpanded = true;
+  }
+
+  void _selectCategory(
+    _SettingsCategory category, {
+    _AppearancePage? page,
+    String? setting,
+  }) {
+    _navigationRevision++;
+    setState(() {
+      _category = category;
+      _appearancePage = page ?? _AppearancePage.theme;
+      if (category == _SettingsCategory.appearance) _appearanceExpanded = true;
+    });
+    final tab = switch (category) {
       _SettingsCategory.appearance => 'config:appearance',
       _SettingsCategory.chat => 'config:chat',
       _SettingsCategory.voice => 'config:voice',
       _SettingsCategory.connections => 'gateway',
-    });
+    };
+    widget.onCategoryChanged?.call(tab);
+    widget.onTargetChanged?.call(
+      tab,
+      category == _SettingsCategory.appearance ? _appearancePage.name : null,
+      setting,
+    );
   }
 
   @override
   void initState() {
     super.initState();
-    _category = _resolveCategory(widget.initialCategory);
+    _readIntent();
   }
 
   @override
   void didUpdateWidget(covariant SettingsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialCategory != widget.initialCategory) {
-      _category = _resolveCategory(widget.initialCategory);
+    if (oldWidget.initialCategory != widget.initialCategory ||
+        oldWidget.initialPage != widget.initialPage ||
+        oldWidget.initialSetting != widget.initialSetting) {
+      _readIntent();
     }
   }
 
@@ -87,6 +137,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _SettingsCategory.chat: strings.settingsChatSection,
       _SettingsCategory.voice: strings.settingsVoiceSection,
       _SettingsCategory.connections: strings.gatewayDestination,
+    };
+    final pageLabels = {
+      _AppearancePage.theme: strings.settingsThemeHeading,
+      _AppearancePage.typography: strings.settingsTypographyHeading,
     };
     const icons = {
       _SettingsCategory.appearance: Icons.palette_outlined,
@@ -114,7 +168,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             tooltip: strings.settingsSearchHint,
             icon: const Icon(Icons.search),
             onPressed: () async {
-              final selected = await showSearch<_SettingsCategory?>(
+              final revision = _navigationRevision;
+              final selected = await showSearch<_SettingsTarget?>(
                 context: context,
                 delegate: _SettingsSearch(
                   label: strings.settingsSearchHint,
@@ -138,9 +193,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                     _SettingsCategory.connections: [strings.diagnosticsTitle],
                   },
+                  settingLabels: {
+                    'theme': strings.settingsThemeHeading,
+                    'chat-text-scale': strings.chatTextScaleTitle,
+                  },
+                  settingTopics: {
+                    'theme': [
+                      strings.themeModeSystem,
+                      strings.themeModeLight,
+                      strings.themeModeDark,
+                    ],
+                    'chat-text-scale': [
+                      strings.settingsTypographyHeading,
+                      strings.chatTextScaleDescription,
+                    ],
+                  },
                 ),
               );
-              if (mounted && selected != null) _selectCategory(selected);
+              if (mounted &&
+                  revision == _navigationRevision &&
+                  selected != null) {
+                _selectCategory(
+                  selected.category,
+                  page: selected.page,
+                  setting: selected.setting,
+                );
+              }
             },
           ),
           const AppShellMenuButton(),
@@ -167,10 +245,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 840),
                       child: _SettingsCategoryContent(
-                        title: wide ? labels[selectedCategory]! : null,
+                        title: wide
+                            ? selectedCategory == _SettingsCategory.appearance
+                                  ? '${labels[selectedCategory]} › ${pageLabels[_appearancePage]}'
+                                  : labels[selectedCategory]!
+                            : null,
                         children: switch (selectedCategory) {
                           _SettingsCategory.appearance => [
-                            const _AppearanceSettingsSection(),
+                            if (_appearancePage == _AppearancePage.theme)
+                              const _AppearanceSettingsSection()
+                            else
+                              const _ChatTextScaleSetting(),
                           ],
                           _SettingsCategory.chat => [
                             if (hasSpellcheck) const _ChatSettingsSection(),
@@ -229,6 +314,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                   ),
+                  if (selectedCategory == _SettingsCategory.appearance)
+                    Padding(
+                      key: ValueKey((
+                        'settings-page-selection',
+                        _appearancePage,
+                      )),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: DropdownButtonFormField<_AppearancePage>(
+                        key: const ValueKey('settings-appearance-page-picker'),
+                        initialValue: _appearancePage,
+                        isExpanded: true,
+                        itemHeight: null,
+                        items: [
+                          for (final page in _AppearancePage.values)
+                            DropdownMenuItem(
+                              value: page,
+                              child: Text(pageLabels[page]!),
+                            ),
+                        ],
+                        onChanged: (page) {
+                          if (page != null) {
+                            _selectCategory(
+                              _SettingsCategory.appearance,
+                              page: page,
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   Expanded(child: content),
                 ],
               );
@@ -238,14 +352,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
-                  width: 208,
+                  width: 256 * textScale.clamp(1, 1.5),
                   child: Material(
                     color: Theme.of(context).colorScheme.surfaceContainerLow,
                     child: FocusTraversalGroup(
                       child: ListView(
                         padding: const EdgeInsets.all(12),
                         children: [
-                          for (final category in categories)
+                          for (final category in categories) ...[
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: ListTile(
@@ -261,9 +375,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                                 leading: Icon(icons[category], size: 20),
                                 title: Text(labels[category]!),
+                                trailing:
+                                    category == _SettingsCategory.appearance
+                                    ? IconButton(
+                                        key: const ValueKey(
+                                          'settings-appearance-expand',
+                                        ),
+                                        tooltip: _appearanceExpanded
+                                            ? MaterialLocalizations.of(
+                                                context,
+                                              ).expandedIconTapHint
+                                            : MaterialLocalizations.of(
+                                                context,
+                                              ).collapsedIconTapHint,
+                                        icon: Icon(
+                                          _appearanceExpanded
+                                              ? Icons.expand_less
+                                              : Icons.expand_more,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => _appearanceExpanded =
+                                              !_appearanceExpanded,
+                                        ),
+                                      )
+                                    : null,
                                 onTap: () => _selectCategory(category),
                               ),
                             ),
+                            if (category == _SettingsCategory.appearance &&
+                                _appearanceExpanded)
+                              for (final page in _AppearancePage.values)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 20),
+                                  child: ListTile(
+                                    key: ValueKey(
+                                      'settings-appearance-page-${page.name}',
+                                    ),
+                                    title: Text(pageLabels[page]!),
+                                    selected:
+                                        selectedCategory == category &&
+                                        _appearancePage == page,
+                                    onTap: () =>
+                                        _selectCategory(category, page: page),
+                                  ),
+                                ),
+                          ],
                         ],
                       ),
                     ),
@@ -280,19 +436,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-/// Only implemented categories enter the index. Searching never starts Agent
-/// reads, voice capture, credential acquisition or configuration mutations.
-class _SettingsSearch extends SearchDelegate<_SettingsCategory?> {
+/// Only implemented categories and local controls enter the index. Searching
+/// never starts Agent reads, voice capture, credential acquisition or mutations.
+class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
   _SettingsSearch({
     required String label,
     required this.noResults,
     required this.labels,
     required this.topics,
+    required this.settingLabels,
+    required this.settingTopics,
   }) : super(searchFieldLabel: label);
 
   final String noResults;
   final Map<_SettingsCategory, String> labels;
   final Map<_SettingsCategory, List<String>> topics;
+  final Map<String, String> settingLabels;
+  final Map<String, List<String>> settingTopics;
 
   @override
   List<Widget> buildActions(BuildContext context) => [
@@ -314,7 +474,14 @@ class _SettingsSearch extends SearchDelegate<_SettingsCategory?> {
       final text = [entry.value, ...?topics[entry.key]].join(' ').toLowerCase();
       return terms.every(text.contains);
     }).toList();
-    if (matches.isEmpty) {
+    final settings = settingLabels.entries.where((entry) {
+      final text = [
+        entry.value,
+        ...?settingTopics[entry.key],
+      ].join(' ').toLowerCase();
+      return terms.every(text.contains);
+    }).toList();
+    if (matches.isEmpty && settings.isEmpty) {
       return Center(child: Semantics(liveRegion: true, child: Text(noResults)));
     }
     return ListView(
@@ -324,7 +491,25 @@ class _SettingsSearch extends SearchDelegate<_SettingsCategory?> {
             key: ValueKey('settings-search-result-${entry.key.name}'),
             title: Text(entry.value),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => close(context, entry.key),
+            onTap: () => close(context, (
+              category: entry.key,
+              page: null,
+              setting: null,
+            )),
+          ),
+        for (final entry in settings)
+          ListTile(
+            key: ValueKey('settings-search-setting-${entry.key}'),
+            title: Text(entry.value),
+            subtitle: Text(labels[_SettingsCategory.appearance]!),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => close(context, (
+              category: _SettingsCategory.appearance,
+              page: entry.key == 'theme'
+                  ? _AppearancePage.theme
+                  : _AppearancePage.typography,
+              setting: entry.key,
+            )),
           ),
       ],
     );
@@ -384,10 +569,6 @@ class _AppearanceSettingsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          strings.settingsThemeHeading,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: LayoutBuilder(
@@ -447,14 +628,6 @@ class _AppearanceSettingsSection extends ConsumerWidget {
             );
           },
         ),
-        const SizedBox(height: 32),
-        const Divider(height: 1),
-        const SizedBox(height: 24),
-        Text(
-          strings.settingsTypographyHeading,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const _ChatTextScaleSetting(),
       ],
     );
   }

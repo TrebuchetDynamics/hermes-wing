@@ -1564,6 +1564,96 @@ abstract class AppLocalizations {
   /// **'Message {profile}…'**
   String chatNamedComposerHint(String profile);
 
+  /// No description provided for @managedFilesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get managedFilesTitle;
+
+  /// No description provided for @managedFilesExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only Agent managed files. This locked root is not the terminal working directory or a Hermes Project. Text previews are limited to 64 KiB; folders to 500 entries. Downloads are not available here.'**
+  String get managedFilesExplanation;
+
+  /// No description provided for @managedFilesOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection: {connection}\nProfile: {profile} · Conversation: {session}'**
+  String managedFilesOwner(String connection, String profile, String session);
+
+  /// No description provided for @managedFilesNoSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'None selected'**
+  String get managedFilesNoSelection;
+
+  /// No description provided for @managedFilesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is empty.'**
+  String get managedFilesEmpty;
+
+  /// No description provided for @managedFilesLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading managed files…'**
+  String get managedFilesLoading;
+
+  /// No description provided for @managedFilesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Files require an authenticated Agent serve connection with an advertised locked managed root. No terminal or Project folder is substituted.'**
+  String get managedFilesUnavailable;
+
+  /// No description provided for @managedFilesDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'File access denied. Check this Agent connection’s file permissions.'**
+  String get managedFilesDenied;
+
+  /// No description provided for @managedFilesFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Files could not be read. Check the connection and retry.'**
+  String get managedFilesFailed;
+
+  /// No description provided for @managedFilesOversized.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder, file or response exceeds the preview limits. No partial content is shown.'**
+  String get managedFilesOversized;
+
+  /// No description provided for @managedFilesBinary.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is not supported UTF-8 text. No active content is opened.'**
+  String get managedFilesBinary;
+
+  /// No description provided for @managedFilesStale.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection or conversation changed. Retry to read the current Agent’s managed root.'**
+  String get managedFilesStale;
+
+  /// No description provided for @managedFilesParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent folder'**
+  String get managedFilesParent;
+
+  /// No description provided for @managedFilesBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to files'**
+  String get managedFilesBack;
+
+  /// No description provided for @managedFilesRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh files'**
+  String get managedFilesRefresh;
+
   /// No description provided for @managedSshAgentProfileLabel.
   ///
   /// In en, this message translates to:

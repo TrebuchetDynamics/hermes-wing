@@ -107,6 +107,15 @@ test("mobile Hermes chat keeps secondary actions in an accessible overflow menu"
   await expect(
     page.getByRole("menuitem", { name: "Disconnect" }),
   ).toBeVisible();
+  const fileRequests = [];
+  page.on('request', (request) => {
+    if (new URL(request.url()).pathname.startsWith('/api/files')) fileRequests.push(request.url());
+  });
+  await page.getByRole('menuitem', { name: 'Files', exact: true }).click();
+  await expect(semanticLabel(page, 'Files require an authenticated Agent serve connection')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Parent folder', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  expect(fileRequests).toEqual([]);
 });
 
 test("Hermes route renders connected session/capabilities in a real browser e2e build", async ({

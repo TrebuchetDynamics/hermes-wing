@@ -1,4 +1,5 @@
 import 'hermes_session_history_export.dart';
+import 'hermes_managed_files.dart';
 import '../models/hermes_profile.dart';
 import '../models/hermes_web_reads.dart';
 
@@ -38,6 +39,12 @@ final class HermesWebReadClient {
 
   void adoptPreparedBotChat() =>
       throw UnsupportedError('Canonical Bot Chat requires native transport.');
+
+  HermesManagedFilesSession beginManagedFiles({
+    required bool Function() isCurrent,
+  }) => throw const HermesManagedFilesException(
+    HermesManagedFilesFailure.unsupported,
+  );
 
   void disconnect() {}
   void closeLifecycle() {}

@@ -81,11 +81,19 @@ void main() {
                 ),
               );
               await tester.pumpAndSettle();
-              final diagnostics = find.byKey(
-                const ValueKey('hermes-diagnostics-button'),
-              );
-              await tester.ensureVisible(diagnostics);
-              await tester.tap(diagnostics);
+              if (width < 600) {
+                await tester.tap(
+                  find.byKey(const ValueKey('hermes-more-actions-button')),
+                );
+                await tester.pumpAndSettle();
+                await tester.tap(find.text('Diagnostics'));
+              } else {
+                final diagnostics = find.byKey(
+                  const ValueKey('hermes-diagnostics-button'),
+                );
+                await tester.ensureVisible(diagnostics);
+                await tester.tap(diagnostics);
+              }
               await tester.pumpAndSettle();
               final surfaces = find.byKey(
                 const ValueKey('hermes-surfaces-chip'),

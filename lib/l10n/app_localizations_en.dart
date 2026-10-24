@@ -9,6 +9,27 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get skillsAllCategoriesLabel => 'All categories';
+
+  @override
+  String get skillsCategoriesLabel => 'Categories';
+
+  @override
+  String get settingsChatDisplayHeading => 'Chat display';
+
+  @override
+  String get chatTextDirectionTitle => 'Text direction';
+
+  @override
+  String get chatTextDirectionAuto => 'Auto';
+
+  @override
+  String get chatTextDirectionRtl => 'Right to left';
+
+  @override
+  String get chatTextDirectionLtr => 'Left to right';
+
+  @override
   String get chatBotOpen => 'Bot Chat';
 
   @override

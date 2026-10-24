@@ -840,16 +840,23 @@ revocación para verificar presentación. Cloud/OAuth de conexión sigue CLONE-0
 
 ## Backlog connection
 
-Disposición: **Proposal** en la [cobertura plan→tarea](README.md#plan-to-task-coverage).
-El mandato de producto no admite por sí solo tareas nuevas: CLONE-* sigue siendo
-clave de plan, no tarea ejecutable. Los dueños existentes citados arriba conservan
+Disposición: **Proposal** salvo el subconjunto local de CLONE-03 admitido por
+[PLAN-CLONE03-LOCAL-FRONTIER](../../tasks/items/PLAN-CLONE03-LOCAL-FRONTIER.md)
+y su implementación [CLONE03-LOCAL-NEXT](../../tasks/items/CLONE03-LOCAL-NEXT.md),
+trazados en [el handoff de Settings](../tasks/plan-clone03-local-frontier.md).
+Este subconjunto añade Chat display → Text direction (Auto/RTL/LTR), persistencia
+local y consumidores de texto/compositor. No admite ni cierra el clon completo.
+La [cobertura plan→tarea](README.md#plan-to-task-coverage) conserva el resto como
+propuesta. CLONE-* sigue siendo clave de plan, no tarea ejecutable. Los dueños existentes citados arriba conservan
 su alcance, estado y gates; este enlace no los reabre ni amplía.
 
 [MAIN-REPAIR-001](../../tasks/items/MAIN-REPAIR-001.md) enlaza este plan como fuente
 para reparar su trazabilidad y los fallos offline registrados. No es dueño de
 implementar el clon ni un recibo de admisión, paridad o calificación native/live.
-`tasks/` sigue siendo la única cola; el coordinador conserva la admisión pendiente
-para el trabajo nuevo de este plan.
+`tasks/` sigue siendo la única cola; la admisión del resto del trabajo nuevo
+permanece pendiente. La dirección Auto conserva el renderizado previo de Wing;
+esta adaptación no califica el algoritmo CSS first-strong ni la paridad visual
+completa del Desktop.
 
 ## Handoff y limitación del gestor de tareas
 

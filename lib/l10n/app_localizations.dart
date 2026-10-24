@@ -94,6 +94,48 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @skillsAllCategoriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get skillsAllCategoriesLabel;
+
+  /// No description provided for @skillsCategoriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get skillsCategoriesLabel;
+
+  /// No description provided for @settingsChatDisplayHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat display'**
+  String get settingsChatDisplayHeading;
+
+  /// No description provided for @chatTextDirectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Text direction'**
+  String get chatTextDirectionTitle;
+
+  /// No description provided for @chatTextDirectionAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get chatTextDirectionAuto;
+
+  /// No description provided for @chatTextDirectionRtl.
+  ///
+  /// In en, this message translates to:
+  /// **'Right to left'**
+  String get chatTextDirectionRtl;
+
+  /// No description provided for @chatTextDirectionLtr.
+  ///
+  /// In en, this message translates to:
+  /// **'Left to right'**
+  String get chatTextDirectionLtr;
+
   /// No description provided for @chatBotOpen.
   ///
   /// In en, this message translates to:

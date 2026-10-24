@@ -17,6 +17,7 @@ class HermesRichText extends StatefulWidget {
   const HermesRichText(
     this.data, {
     this.launchUri,
+    this.textDirection,
     this.selectable = true,
     this.showSelectionToolbar = true,
     this.inlineImagePixelBudget = maxInlineTranscriptAggregatePixels,
@@ -25,6 +26,7 @@ class HermesRichText extends StatefulWidget {
 
   final String data;
   final HermesUriLauncher? launchUri;
+  final TextDirection? textDirection;
   final bool selectable;
 
   /// Disable when the enclosing message supplies its own context menu.
@@ -121,7 +123,7 @@ class _HermesRichTextState extends State<HermesRichText> {
     );
     var remainingImagePixels = widget.inlineImagePixelBudget;
     final chunks = _plainChunks;
-    final markdown = chunks != null
+    final renderedMarkdown = chunks != null
         ? ListView.builder(
             controller: _scroll,
             padding: EdgeInsets.zero,
@@ -140,6 +142,8 @@ class _HermesRichTextState extends State<HermesRichText> {
             shrinkWrap: true,
             builders: {
               'pre': _HermesCodeBlockBuilder(outerSelection: selectable),
+              if (widget.textDirection != null)
+                'code': _HermesInlineCodeBuilder(),
             },
             imageBuilder: (uri, title, alt) => _buildTranscriptImage(
               strings: strings,
@@ -159,6 +163,12 @@ class _HermesRichTextState extends State<HermesRichText> {
               }
               unawaited((widget.launchUri ?? _launchUri)(uri));
             },
+          );
+    final markdown = widget.textDirection == null
+        ? renderedMarkdown
+        : Directionality(
+            textDirection: widget.textDirection!,
+            child: renderedMarkdown,
           );
     final content = large
         ? Column(
@@ -358,6 +368,20 @@ class _SafeInlineTranscriptImage {
 
 Future<bool> _launchUri(Uri uri) => launchUrl(uri);
 
+class _HermesInlineCodeBuilder extends MarkdownElementBuilder {
+  @override
+  Widget? visitElementAfterWithContext(
+    BuildContext context,
+    md.Element element,
+    TextStyle? preferredStyle,
+    TextStyle? parentStyle,
+  ) => Text(
+    element.textContent,
+    textDirection: TextDirection.ltr,
+    style: preferredStyle,
+  );
+}
+
 class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
   _HermesCodeBlockBuilder({required this.outerSelection});
 
@@ -382,23 +406,26 @@ class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
     final colors = Theme.of(context).colorScheme;
     final strings = AppLocalizations.of(context);
     final isLong = code.split('\n').length > 15 || code.length > 800;
-    final codeContent = SingleChildScrollView(
-      key: const ValueKey('hermes-code-content'),
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-      child: language == 'diff'
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final (index, line) in code.split('\n').indexed)
-                  Text(
-                    line.isEmpty ? '\u00a0' : line,
-                    key: ValueKey('hermes-diff-line-$index'),
-                    style: _diffLineStyle(preferredStyle, line, colors),
-                  ),
-              ],
-            )
-          : Text(code, style: preferredStyle),
+    final codeContent = Directionality(
+      textDirection: TextDirection.ltr,
+      child: SingleChildScrollView(
+        key: const ValueKey('hermes-code-content'),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        child: language == 'diff'
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final (index, line) in code.split('\n').indexed)
+                    Text(
+                      line.isEmpty ? '\u00a0' : line,
+                      key: ValueKey('hermes-diff-line-$index'),
+                      style: _diffLineStyle(preferredStyle, line, colors),
+                    ),
+                ],
+              )
+            : Text(code, style: preferredStyle),
+      ),
     );
     // Reuse the transcript selection region instead of mounting a read-only
     // editable input for every code block (or every line of a diff).

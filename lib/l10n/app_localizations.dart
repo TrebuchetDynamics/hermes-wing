@@ -94,6 +94,18 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatReasoningCollapsedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse thinking by default'**
+  String get chatReasoningCollapsedTitle;
+
+  /// No description provided for @chatReasoningCollapsedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep streamed reasoning available without expanding it until you open it.'**
+  String get chatReasoningCollapsedDescription;
+
   /// No description provided for @skillsAllCategoriesLabel.
   ///
   /// In en, this message translates to:

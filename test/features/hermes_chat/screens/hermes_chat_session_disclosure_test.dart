@@ -331,6 +331,18 @@ void main() {
       expect(channel.selectSessionCalls, isEmpty);
     });
   }
+  testWidgets('sessions panel exposes a named region for assistive tech', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pumpChat(tester, 390);
+    expect(find.byKey(const ValueKey('hermes-sessions-panel')), findsOneWidget);
+    final region = tester.getSemantics(
+      find.byKey(const ValueKey('hermes-sessions-region')),
+    );
+    expect(region.label, contains('Hermes sessions'));
+    semantics.dispose();
+  });
 }
 
 void additionalCases(double width) {

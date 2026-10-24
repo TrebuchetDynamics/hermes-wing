@@ -182,12 +182,24 @@ void main() {
       expect(generator, contains('read_file · Sample repository summarized'));
       expect(generator, contains('"Gateway readiness"'));
       expect(generator, contains('Synthetic sample workflow'));
-      expect(
-        generator,
-        contains('clip: { x: 530, y: 280, width: 750, height: 310 }'),
-      );
+      expect(generator, contains('readmeTranscriptClip({'));
+      expect(generator, contains('name: "File activity", exact: true'));
+      expect(generator, contains('part.boundingBox()'));
+      expect(generator, contains('.desktop img{object-fit:contain}'));
+      expect(generator, isNot(contains('x: 530, y: 280')));
       expect(generator, contains('"Office"'));
       expect(generator, contains('"echo e2e"'));
+    },
+  );
+
+  test(
+    'README transcript framing retains complete visible semantic content',
+    () {
+      final result = Process.runSync('node', [
+        '--test',
+        'test/tooling/readme_transcript_crop_test.mjs',
+      ]);
+      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
     },
   );
 

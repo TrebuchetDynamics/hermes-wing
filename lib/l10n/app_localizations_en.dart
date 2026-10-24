@@ -1886,6 +1886,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get credentialContractUnavailable =>
+      'Credential changes and validation are unavailable for this connection. Manage credentials directly in Hermes Agent.';
+
+  @override
   String get credentialWriteOnlyNotice =>
       'Hermes Wing can set this credential but never shows a stored key.';
 
@@ -4378,6 +4382,12 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsSearchHint => 'Search settings';
+
+  @override
+  String get settingsSearchNoResults => 'No matching settings';
 
   @override
   String get settingsAppearanceSection => 'Appearance';

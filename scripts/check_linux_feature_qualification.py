@@ -55,7 +55,7 @@ ACTION_CASES = {
     'chat/exact-two-process-restore': ['chat.two-process-recovery'],
     'profiles/search-clear-create-edit-delete-owner': ['management.profiles-lifecycle-owner'],
     'persona/save-conflict-retry': ['management.persona-revision-recovery'],
-    'providers/search-clear-set-validate-remove-owner': ['management.provider-secret-recovery', 'management.provider-stale-owner'],
+    'providers/search-clear-credential-contract-denial-owner': ['management.provider-secret-recovery', 'management.provider-stale-owner'],
     'providers/model-presets-catalog-main-vision': ['management.model-explicit-assignment'],
     'tools/search-clear-disclose-refresh-retry': ['management.read-only-inventory-recovery'],
     'schedules/search-filter-clear-refresh-retry': ['management.read-only-inventory-recovery'],

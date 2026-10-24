@@ -65,8 +65,10 @@ HermesCapabilityDocument _credentialCapabilities({String? only}) =>
     });
 
 void main() {
-  for (final only in ['set', 'delete', 'validate']) {
-    testWidgets('credential authority is independent: $only', (tester) async {
+  for (final only in [null, 'set', 'delete', 'validate', 'none']) {
+    testWidgets('legacy credential contract never collects secrets: $only', (
+      tester,
+    ) async {
       final channel = FakeHermesChannel(
         capabilities: _credentialCapabilities(only: only),
         providers: const [_configuredProvider],
@@ -74,392 +76,51 @@ void main() {
       addTearDown(channel.dispose);
       await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
       await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byType(DropdownButtonFormField<String>), findsNothing);
+      for (final label in ['Set', 'Remove', 'Validate']) {
+        expect(find.text(label), findsNothing);
+      }
       expect(
-        tester
-                .widget<FilledButton>(find.widgetWithText(FilledButton, 'Set'))
-                .onPressed !=
-            null,
-        only == 'set',
-      );
-      expect(
-        tester
-                .widget<TextButton>(find.widgetWithText(TextButton, 'Remove'))
-                .onPressed !=
-            null,
-        only == 'delete',
+        find.textContaining('Manage credentials directly in Hermes Agent'),
+        findsOneWidget,
       );
       expect(
-        tester
-                .widget<OutlinedButton>(
-                  find.widgetWithText(OutlinedButton, 'Validate'),
-                )
-                .onPressed !=
-            null,
-        only == 'validate',
+        _allRenderedText(tester).join(),
+        isNot(contains(_sentinelStoredKey)),
       );
-    });
-  }
-  testWidgets('missing capabilities cannot dispatch credential operations', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(providers: const [_configuredProvider]);
-    addTearDown(channel.dispose);
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.enterText(find.byType(TextField), 'synthetic-only');
-    for (final label in ['Set', 'Remove', 'Validate']) {
-      await tester.tap(find.text(label));
-      await tester.pumpAndSettle();
-    }
-    expect(channel.setProviderCredentialCalls, isEmpty);
-    expect(channel.removeProviderCredentialCalls, isEmpty);
-    expect(channel.validateProviderCredentialCalls, isEmpty);
-  });
-  testWidgets(
-    'revoked capability prevents dispatch from an open credential sheet',
-    (tester) async {
-      final channel = FakeHermesChannel(
-        capabilities: _credentialCapabilities(),
-        providers: const [_configuredProvider],
-      );
-      addTearDown(channel.dispose);
-      await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-      await tester.pumpAndSettle();
-      channel.replaceCapabilitiesAndProfiles(
-        HermesCapabilityDocument.fromJson({}),
-        [],
-      );
-      await tester.enterText(find.byType(TextField), 'synthetic-test-value');
-      await tester.tap(find.text('Set'));
-      await tester.pumpAndSettle();
-      expect(channel.setProviderCredentialCalls, isEmpty);
-    },
-  );
-
-  for (final action in ['Set', 'Remove', 'Validate']) {
-    testWidgets('$action rejects profile A B A while sheet remains open', (
-      tester,
-    ) async {
-      final channel = FakeHermesChannel(
-        providers: const [_configuredProvider],
-        selectedProfileId: 'a',
-      );
-      addTearDown(channel.dispose);
-      await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), 'synthetic-test-value');
-      await channel.selectProfile('b');
-      await channel.selectProfile('a');
-      await tester.tap(find.text(action));
-      await tester.pumpAndSettle();
       expect(channel.setProviderCredentialCalls, isEmpty);
       expect(channel.removeProviderCredentialCalls, isEmpty);
       expect(channel.validateProviderCredentialCalls, isEmpty);
     });
   }
-
-  testWidgets('never renders a stored key even when configured', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    // The masked hint is the single sanctioned derived disclosure.
-    expect(find.textContaining('····k9z8'), findsOneWidget);
-
-    // No rendered text anywhere contains a full stored key.
-    for (final text in _allRenderedText(tester)) {
-      expect(text.contains(_sentinelStoredKey), isFalse);
-      expect(text.contains('k9z8') && !text.contains('····'), isFalse);
-    }
-  });
-
-  testWidgets('the obscured value input starts empty', (tester) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    final field = tester.widget<TextField>(find.byType(TextField));
-    expect(field.obscureText, isTrue);
-    expect(field.controller?.text ?? '', isEmpty);
-  });
-
-  testWidgets('set forwards the typed value via setProviderCredential', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), 'typed-new-secret-xyz');
-    await tester.tap(find.text('Set'));
-    await tester.pumpAndSettle();
-
-    expect(channel.setProviderCredentialCalls, isNotEmpty);
-    expect(channel.setProviderCredentialCalls.last, {
-      'slug': 'openai',
-      'envVar': 'OPENAI_API_KEY',
-      'value': 'typed-new-secret-xyz',
-    });
-  });
-
-  testWidgets('remove calls removeProviderCredential', (tester) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Remove'));
-    await tester.pumpAndSettle();
-
-    expect(channel.removeProviderCredentialCalls, [
-      {'slug': 'openai', 'envVar': 'OPENAI_API_KEY'},
-    ]);
-  });
-
-  testWidgets('validate calls validateProviderCredential and shows detail', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-      validateProviderResult: const HermesCredentialProbe(
-        ok: true,
-        detail: 'Credential accepted.',
-      ),
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Validate'));
-    await tester.pumpAndSettle();
-
-    expect(channel.validateProviderCredentialCalls, ['openai']);
-    expect(find.textContaining('Credential accepted.'), findsOneWidget);
-  });
-
-  testWidgets('validate reports the probe round-trip latency', (tester) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-      validateProviderResult: const HermesCredentialProbe(
-        ok: true,
-        detail: 'Credential accepted.',
-      ),
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Validate'));
-    await tester.pumpAndSettle();
-
-    expect(
-      _allRenderedText(
-        tester,
-      ).any((text) => RegExp(r'^\d+ ms$').hasMatch(text)),
-      isTrue,
-      reason: 'expected a latency reading like "12 ms"',
-    );
-  });
-
-  testWidgets('successful validation shows the provider model inventory', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-      validateProviderResult: const HermesCredentialProbe(
-        ok: true,
-        detail: 'Credential accepted.',
-      ),
-      modelInventory: HermesModelInventory(
-        catalog: HermesModelCatalog.fromJson({
-          'providers': {
-            'openai': {
-              'models': [
-                {'id': 'gpt-5'},
-                {'id': 'gpt-5-mini'},
-              ],
-            },
-            'anthropic': {
-              'models': [
-                {'id': 'claude-sonnet'},
-              ],
-            },
-          },
-        }),
-        assignment: const HermesModelAssignment(
-          activeProvider: 'openai',
-          activeModel: 'gpt-5',
-          revision: 'rev-1',
-        ),
-      ),
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Validate'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('2 models available'), findsOneWidget);
-    expect(find.textContaining('gpt-5, gpt-5-mini'), findsOneWidget);
-    // Only this provider's models are disclosed.
-    expect(find.textContaining('claude-sonnet'), findsNothing);
-  });
-
-  testWidgets('probe detail is redacted and bounded before rendering', (
-    tester,
-  ) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-      validateProviderResult: HermesCredentialProbe(
-        ok: false,
-        detail:
-            'Authorization: Bearer sensitive-provider-token '
-            '/home/operator/private-config.json '
-            '${List.filled(300, 'x').join()}',
-      ),
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Validate'));
-    await tester.pumpAndSettle();
-
-    final rendered = _allRenderedText(
-      tester,
-    ).singleWhere((text) => text.contains('Authorization:'));
-    expect(rendered, contains('[redacted]'));
-    expect(rendered, isNot(contains('sensitive-provider-token')));
-    expect(rendered, isNot(contains('/home/operator')));
-    expect(rendered.length, lessThanOrEqualTo(161));
-    expect(rendered, endsWith('…'));
-  });
-
-  testWidgets('probe results stay usable at 200% text scale', (tester) async {
-    final channel = FakeHermesChannel(
-      capabilities: _credentialCapabilities(),
-      providers: const [_configuredProvider],
-      validateProviderResult: const HermesCredentialProbe(
-        ok: true,
-        detail: 'Credential accepted.',
-      ),
-      modelInventory: HermesModelInventory(
-        catalog: HermesModelCatalog.fromJson({
-          'providers': {
-            'openai': {
-              'models': [
-                {'id': 'gpt-5'},
-                {'id': 'gpt-5-mini'},
-              ],
-            },
-          },
-        }),
-        assignment: const HermesModelAssignment(
-          activeProvider: 'openai',
-          activeModel: 'gpt-5',
-          revision: 'rev-1',
-        ),
-      ),
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: const TextScaler.linear(2)),
-          child: child!,
-        ),
-        home: Scaffold(
-          body: ProviderCredentialSheet(
-            channel: channel,
-            provider: _configuredProvider,
+  testWidgets(
+    'unavailable credential explanation fits enlarged compact layout',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final channel = FakeHermesChannel();
+      addTearDown(channel.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MediaQuery(
+            data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+            child: Scaffold(
+              body: ProviderCredentialSheet(
+                channel: channel,
+                provider: _configuredProvider,
+              ),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(find.text('Validate'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Validate'));
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-    expect(find.text('2 models available'), findsOneWidget);
-  });
-
-  testWidgets('a failed probe shows the bounded error with latency', (
-    tester,
-  ) async {
-    final channel = _ThrowingValidationChannel(
-      providers: const [_configuredProvider],
-    );
-    addTearDown(channel.dispose);
-
-    await tester.pumpWidget(_hostSheet(channel, _configuredProvider));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Validate'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('The credential operation could not be completed.'),
-      findsOneWidget,
-    );
-    expect(
-      _allRenderedText(
-        tester,
-      ).any((text) => RegExp(r'^\d+ ms$').hasMatch(text)),
-      isTrue,
-    );
-    expect(find.textContaining('models available'), findsNothing);
-    // The raw failure never reaches the tree.
-    for (final text in _allRenderedText(tester)) {
-      expect(text.contains('secret-bearing-detail'), isFalse);
-    }
-  });
-}
-
-class _ThrowingValidationChannel extends FakeHermesChannel {
-  _ThrowingValidationChannel({required super.providers})
-    : super(capabilities: _credentialCapabilities());
-
-  @override
-  Future<HermesCredentialProbe> validateProviderCredential({
-    required String slug,
-  }) async {
-    throw StateError('probe exploded with secret-bearing-detail');
-  }
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.widgetWithText(TextButton, 'Cancel'), findsOneWidget);
+    },
+  );
 }

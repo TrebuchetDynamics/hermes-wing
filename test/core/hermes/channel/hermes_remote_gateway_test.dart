@@ -33,7 +33,13 @@ void main() {
         await channel.enableLocalServeChat();
         expect(channel.state.serveChat?.canSubmit, isTrue);
         expect(upstream.minted, 1);
-        expect((upstream.rpc.firstWhere((r) => r['method'] == 'session.resume')['params'] as Map)['profile'], 'demo');
+        expect(
+          (upstream.rpc.firstWhere(
+                (r) => r['method'] == 'session.resume',
+              )['params']
+              as Map)['profile'],
+          'demo',
+        );
         expect(upstream.count('prompt.submit'), 0);
         await channel.sendText('synthetic deliberate test');
         expect(upstream.count('prompt.submit'), 1);

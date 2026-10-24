@@ -3284,6 +3284,12 @@ abstract class AppLocalizations {
   /// **'{provider} credential'**
   String credentialSheetTitle(String provider);
 
+  /// No description provided for @credentialContractUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Credential changes and validation are unavailable for this connection. Manage credentials directly in Hermes Agent.'**
+  String get credentialContractUnavailable;
+
   /// No description provided for @credentialWriteOnlyNotice.
   ///
   /// In en, this message translates to:
@@ -7230,6 +7236,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 model available} other{{count} models available}}'**
   String credentialProbeModelCount(int count);
+
+  /// No description provided for @settingsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search settings'**
+  String get settingsSearchHint;
+
+  /// No description provided for @settingsSearchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching settings'**
+  String get settingsSearchNoResults;
 
   /// No description provided for @settingsAppearanceSection.
   ///

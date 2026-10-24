@@ -10,7 +10,6 @@ import '../../../core/hermes/policy/hermes_transport_policy.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../../shared/widgets/app_shell.dart';
-import '../../../shared/widgets/wing_avatar.dart';
 import '../../hermes_chat/diagnostics/hermes_diagnostics_export.dart';
 import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../theme/wing_theme.dart';
@@ -109,7 +108,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.settingsDestination),
-        actions: const [AppShellMenuButton()],
+        actions: [
+          IconButton(
+            key: const ValueKey('settings-search'),
+            tooltip: strings.settingsSearchHint,
+            icon: const Icon(Icons.search),
+            onPressed: () async {
+              final selected = await showSearch<_SettingsCategory?>(
+                context: context,
+                delegate: _SettingsSearch(
+                  label: strings.settingsSearchHint,
+                  noResults: strings.settingsSearchNoResults,
+                  labels: {
+                    for (final category in categories)
+                      category: labels[category]!,
+                  },
+                  topics: {
+                    _SettingsCategory.appearance: [
+                      strings.settingsThemeHeading,
+                      strings.settingsTypographyHeading,
+                      strings.themeModeSystem,
+                      strings.themeModeLight,
+                      strings.themeModeDark,
+                    ],
+                    _SettingsCategory.chat: [strings.settingsChatSection],
+                    _SettingsCategory.voice: [
+                      strings.voiceBehaviorSection,
+                      strings.voiceAdvancedSection,
+                    ],
+                    _SettingsCategory.connections: [strings.diagnosticsTitle],
+                  },
+                ),
+              );
+              if (mounted && selected != null) _selectCategory(selected);
+            },
+          ),
+          const AppShellMenuButton(),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -245,6 +280,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
+/// Only implemented categories enter the index. Searching never starts Agent
+/// reads, voice capture, credential acquisition or configuration mutations.
+class _SettingsSearch extends SearchDelegate<_SettingsCategory?> {
+  _SettingsSearch({
+    required String label,
+    required this.noResults,
+    required this.labels,
+    required this.topics,
+  }) : super(searchFieldLabel: label);
+
+  final String noResults;
+  final Map<_SettingsCategory, String> labels;
+  final Map<_SettingsCategory, List<String>> topics;
+
+  @override
+  List<Widget> buildActions(BuildContext context) => [
+    if (query.isNotEmpty)
+      IconButton(
+        tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
+        icon: const Icon(Icons.clear),
+        onPressed: () => query = '',
+      ),
+  ];
+
+  @override
+  Widget buildLeading(BuildContext context) =>
+      BackButton(onPressed: () => close(context, null));
+
+  Widget _matches(BuildContext context) {
+    final terms = query.trim().toLowerCase().split(RegExp(r'\s+'));
+    final matches = labels.entries.where((entry) {
+      final text = [entry.value, ...?topics[entry.key]].join(' ').toLowerCase();
+      return terms.every(text.contains);
+    }).toList();
+    if (matches.isEmpty) {
+      return Center(child: Semantics(liveRegion: true, child: Text(noResults)));
+    }
+    return ListView(
+      children: [
+        for (final entry in matches)
+          ListTile(
+            key: ValueKey('settings-search-result-${entry.key.name}'),
+            title: Text(entry.value),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => close(context, entry.key),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) => _matches(context);
+
+  @override
+  Widget buildSuggestions(BuildContext context) => _matches(context);
+}
+
 class _SettingsCategoryContent extends StatelessWidget {
   const _SettingsCategoryContent({required this.title, required this.children});
 
@@ -363,74 +455,6 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const _ChatTextScaleSetting(),
-        const SizedBox(height: 24),
-        const _AvatarGallery(),
-      ],
-    );
-  }
-}
-
-class _AvatarGallery extends ConsumerWidget {
-  const _AvatarGallery();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final strings = AppLocalizations.of(context);
-    final selected = ref.watch(wingAvatarVariationProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          strings.avatarGalleryTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        Text(strings.avatarGalleryDescription),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            for (var index = 0; index < 12; index++)
-              Semantics(
-                selected: selected == index,
-                child: OutlinedButton(
-                  key: ValueKey('wing-avatar-family-$index'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.all(10),
-                    backgroundColor: selected == index
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : null,
-                  ),
-                  onPressed: () async {
-                    final saved = await ref
-                        .read(wingAvatarVariationProvider.notifier)
-                        .select(index);
-                    if (!saved && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(strings.avatarSaveFailed)),
-                      );
-                    }
-                  },
-                  child: Semantics(
-                    label: strings.avatarVariationLabel(index + 1),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        WingAvatar(
-                          identity: const ['preview', 'hermes'],
-                          variation: index,
-                          size: 56,
-                        ),
-                        const SizedBox(height: 6),
-                        Text('${index + 1}${selected == index ? ' ✓' : ''}'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
       ],
     );
   }

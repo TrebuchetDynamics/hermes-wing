@@ -232,71 +232,56 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
 
-    testWidgets('Maestro provider mutations and revoked grants width=$width', (
-      tester,
-    ) async {
-      await launch(tester, width);
-      await tapText(tester, 'Providers fixture');
-      Future<void> receipt(String text) async {
-        await tapText(tester, 'Fixture controls');
-        expect(find.text(text), findsOneWidget);
-        await tapText(tester, 'Close controls');
-      }
+    testWidgets(
+      'Maestro credential contract denial and independent models width=$width',
+      (tester) async {
+        await launch(tester, width);
+        await tapText(tester, 'Providers fixture');
+        Future<void> receipt(String text) async {
+          await tapText(tester, 'Fixture controls');
+          expect(find.text(text), findsOneWidget);
+          await tapText(tester, 'Close controls');
+        }
 
-      await tapText(tester, 'Manage credential');
-      final secret = find.byWidgetPredicate(
-        (widget) => widget is TextField && widget.obscureText,
-      );
-      expect(secret, findsOneWidget);
-      expect(tester.widget<TextField>(secret).controller!.text, isEmpty);
-      await tapText(tester, 'Set');
-      expect(find.text('Enter a value to set.'), findsOneWidget);
-      await tester.enterText(secret, 'fixture-only-input');
-      await tapText(tester, 'Set');
-      await receipt('Credential writes: 1');
-      await tapText(tester, 'Manage credential');
-      expect(tester.widget<TextField>(secret).controller!.text, isEmpty);
-      await tapText(tester, 'Validate');
-      expect(find.text('Credential accepted.'), findsOneWidget);
-      expect(find.text('2 models available'), findsOneWidget);
-      await tapText(tester, 'Remove');
-      await receipt('Credential removals: 1');
+        expect(find.text('Manage credential'), findsNothing);
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is TextField && widget.obscureText,
+          ),
+          findsNothing,
+        );
+        await receipt('Credential writes: 0');
+        await receipt('Credential removals: 0');
 
-      await tapText(tester, 'Choose model');
-      await tapText(tester, 'fixture-small');
-      await tapText(tester, 'fixture-large');
-      await tapText(tester, 'Assign');
-      await receipt('Model writes: 1');
-      await tapText(tester, 'Choose model');
-      await control(tester, 'Inject revision conflict');
-      await tapText(tester, 'Assign');
-      expect(
-        find.text(
-          'The model selection changed elsewhere. Reopen the picker to try again.',
-        ),
-        findsOneWidget,
-      );
-      await receipt('Model writes: 1');
-      await tapText(tester, 'Cancel');
-      await tapText(tester, 'Choose model');
-      await tapText(tester, 'Assign');
-      await receipt('Model writes: 2');
-      await receipt('Model attempts: 3');
+        await tapText(tester, 'Choose model');
+        await tapText(tester, 'fixture-small');
+        await tapText(tester, 'fixture-large');
+        await tapText(tester, 'Assign');
+        await receipt('Model writes: 1');
+        await tapText(tester, 'Choose model');
+        await control(tester, 'Inject revision conflict');
+        await tapText(tester, 'Assign');
+        expect(
+          find.text(
+            'The model selection changed elsewhere. Reopen the picker to try again.',
+          ),
+          findsOneWidget,
+        );
+        await receipt('Model writes: 1');
+        await tapText(tester, 'Cancel');
+        await tapText(tester, 'Choose model');
+        await tapText(tester, 'Assign');
+        await receipt('Model writes: 2');
+        await receipt('Model attempts: 3');
 
-      await tapText(tester, 'Manage credential');
-      await tester.enterText(secret, 'fixture-only-input');
-      await control(tester, 'Revoke write grants');
-      await tapText(tester, 'Set');
-      expect(
-        find.text('The credential operation could not be completed.'),
-        findsOneWidget,
-      );
-      await tapText(tester, 'Cancel');
-      await receipt('Credential writes: 1');
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-    });
+        await control(tester, 'Revoke write grants');
+        expect(find.text('Manage credential'), findsNothing);
+        await receipt('Credential writes: 0');
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+      },
+    );
 
     for (final delayedPicker in [false, true]) {
       testWidgets(

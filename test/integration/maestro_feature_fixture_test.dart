@@ -36,7 +36,7 @@ void main() {
     expect(policy.supportsAnyChatTransport, isTrue);
     expect(policy.supportsRunApprovalResponse, isTrue);
     expect(channel.state.canDeleteSessions, isTrue);
-    expect(channel.state.canWriteProviders, isTrue);
+    expect(channel.state.canWriteProviders, isFalse);
     expect(channel.state.canWriteModels, isTrue);
     channel.revokeWrites();
     expect(channel.state.canWriteProviders, isFalse);

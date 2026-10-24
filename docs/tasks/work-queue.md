@@ -7,9 +7,30 @@ Those two files are retired, not compatibility views or editable fallbacks.
 
 ## Current work queue
 
-Current store counts and explicit waivers can be inspected without mutation using
-`python scripts/report_task_status.py` (`--json` for structured output). Task
-closure is not product/runtime acceptance. The current clone execution section
+Inspect the store without mutation using `python3 scripts/report_task_status.py`
+(`--json` includes task IDs, dispositions, original closure reasons and evidence
+references). The primary counts distinguish open work, waived/deferred
+qualification, retired aggregate qualification rows, retired/superseded scope,
+matching pass receipts, manually reported delivery and historical/unverified
+closures. These categories are mutually exclusive and sum to the record total.
+
+The report also highlights closed records with qualification outstanding; that
+subtotal includes waivers, deferrals and retired aggregate rows. It is not a count
+of unique missing features: aggregate and child tasks can overlap. Historical
+closures without structured receipts are not automatically failed or undone;
+their acceptance is not revalidated by this counter. A pass receipt must be
+readable, name the same task and record passing result/review; the report does not
+rerun its checks or qualify the current source. Manual delivery references remain
+separate. Unrecognised closure reasons remain unverified.
+
+JSON `statuses` retains raw administrative states for existing consumers; use
+`dispositions` and `qualification_pending_items` for reporting. Never calculate a
+completion percentage from `statuses.done`. Closed records remain closed in the
+authoritative store; this report neither reopens tasks nor changes owner decisions.
+The store does not yet cover all implementation packages in the clone plan, so
+neither its total nor its open count is a denominator for product parity.
+
+Task closure is not product/runtime acceptance. The current clone execution section
 records the new pin, literal appearance and all five platform targets. Existing
 live-task rows below preserve remaining outcomes even where their tasks were
 closed by owner waiver; they are not a list of currently open task statuses.

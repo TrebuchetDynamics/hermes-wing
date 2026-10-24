@@ -2,9 +2,15 @@
 
 Current clone reference: `14e1e43a23761b369641208e204365cd6cb9399d`.
 Settings search opens a dismissible search surface for implemented local categories
-and topics. Selection uses existing category intents; cancellation preserves the
-previous category. Unsupported settings are not indexed. The full Desktop tree
-and field-level navigation remain pending. The local creature-family picker has
+and controls. Appearance now separates Theme and Typography; its parent selects
+the first implemented child, while its caret only expands/collapses navigation.
+Search and saved links accept `page=theme|typography` and the official
+`setting=theme|chat-text-scale` targets. A setting selects its owning page even
+when a saved page disagrees. Category changes clear stale page/setting/field
+parameters and preserve unrelated query parameters. Cancellation preserves the
+current selection; an older search cannot replace newer navigation intent.
+Unsupported settings are not indexed. The remaining Desktop tree and field
+targets remain pending. The local creature-family picker has
 been retired without deleting saved preferences; contacts use official static
 fallback profile shapes/colors, without claiming full BotFace metadata/animation.
 Provider inventory and model actions retain independent authorization. Legacy

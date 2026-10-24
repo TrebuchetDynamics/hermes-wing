@@ -65,6 +65,7 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
 
   GatewayContactId? get _pinContact => hermesSessionPinContact(
     savedContact: _directory?.activeContactId,
+    savedBaseUrl: _directory?.activeGatewayConfig?.baseUrl,
     baseUrl: _channel.state.connectedBaseUrl,
     profileId: _channel.state.selectedProfileId,
   );

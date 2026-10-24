@@ -1062,6 +1062,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         if (!showSessionRail) return chatPane;
 
         final pinContact = _sessionPinContact(state);
+        final pinOwnerGeneration = _composerOwnerGeneration;
         final pinnedSessionIds = <String>{
           for (final session in state.sessions)
             if (_sessionPins.isPinned(pinContact, session.id)) session.id,
@@ -1085,8 +1086,12 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
                   unawaited(_deleteSessions(context, channel, sessions)),
               pinnedSessionIds: pinnedSessionIds,
               unreadCompletedSessionIds: _unreadCompletedSessionIds,
-              onTogglePinned: (session) =>
-                  unawaited(_sessionPins.toggle(pinContact, session.id)),
+              onTogglePinned: (session) => _toggleSessionPin(
+                channel,
+                pinContact,
+                session,
+                pinOwnerGeneration,
+              ),
             ),
             const VerticalDivider(width: 1),
             Expanded(child: chatPane),

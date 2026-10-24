@@ -279,4 +279,39 @@ void main() {
     expect(saved.join(), isNot(contains('other.example.invalid')));
     noActions(h);
   });
+
+  testWidgets(
+    'stale saved contact never projects pins onto another endpoint or profile',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'wing.hermes.pinned_sessions.v1': [
+          jsonEncode(['alpha', 'default', 'synthetic-other']),
+        ],
+      });
+      final h = support.Harness(support.DelayedChannel());
+      h.directory.contact = const GatewayContactId(
+        gatewayId: 'alpha',
+        profileId: 'default',
+      );
+      await h.pump(tester);
+      expect(section('pinned'), findsOneWidget);
+      final original = h.channel.state;
+      h.channel.change(
+        original.copyWith(connectedBaseUrl: 'https://other.example.invalid'),
+      );
+      await tester.pumpAndSettle();
+      expect(section('pinned'), findsNothing);
+      h.channel.change(original.copyWith(selectedProfileId: 'other'));
+      await tester.pumpAndSettle();
+      expect(section('pinned'), findsNothing);
+      h.channel.change(original);
+      await tester.pumpAndSettle();
+      expect(section('pinned'), findsOneWidget);
+      expect(
+        h.directory.contact,
+        const GatewayContactId(gatewayId: 'alpha', profileId: 'default'),
+      );
+      noActions(h);
+    },
+  );
 }

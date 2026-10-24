@@ -688,6 +688,7 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
           listenable: Listenable.merge([channel, _sessionPins]),
           builder: (_, _) {
             final pinContact = _sessionPinContact(channel.state);
+            final pinOwnerGeneration = _composerOwnerGeneration;
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
@@ -701,18 +702,12 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
                       session.id,
                 },
                 unreadCompletedSessionIds: _unreadCompletedSessionIds,
-                onTogglePinned: (session) => unawaited(
-                  _sessionPins.toggle(
-                    pinContact,
-                    session.id,
-                    canAccept: () =>
-                        mounted &&
-                        sheetContext.mounted &&
-                        _sessionPinContact(channel.state) == pinContact &&
-                        channel.state.visibleSessions.any(
-                          (row) => row.id == session.id,
-                        ),
-                  ),
+                onTogglePinned: (session) => _toggleSessionPin(
+                  channel,
+                  pinContact,
+                  session,
+                  pinOwnerGeneration,
+                  canAccept: () => sheetContext.mounted,
                 ),
                 onCreate: () {
                   Navigator.of(sheetContext).pop();

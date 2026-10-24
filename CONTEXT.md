@@ -1,5 +1,12 @@
 # Hermes Wing project context
 
+Current owner scope (2026-10-24): complete literal visual and functional Desktop
+parity on Linux, Android, web, macOS and Windows. Execution reference is
+`14e1e43a23761b369641208e204365cd6cb9399d`; the Muse/Duet and local creature
+presentation exception is superseded. Preserve saved preferences. Current
+implementation/validation and pending packages live in the
+[clone execution status](docs/plans/2026-10-21-desktop-literal-clone.md#ejecución-vigente--2026-10-24).
+
 The only Desktop product reference is [Nous Research Hermes Desktop](https://github.com/NousResearch/hermes-agent/tree/main/apps/desktop),
 locally `hermes-agent/apps/desktop/`. Prior separate-app comparisons are
 [withdrawn as official parity evidence](docs/quality/official-desktop-reference.md).

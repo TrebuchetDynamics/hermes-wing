@@ -1,0 +1,9 @@
+schema = 1
+task = "FILES-TERMINAL-DOWNLOAD"
+candidate = "3da41ab43f77fecbd458f28ada32323f24df39c9"
+integration = "eeba35afc456366521e7ea324fc8fec9aa18d0be"
+tree = "282e05951a65875381ce9988aa96d890c311aba1"
+contract_hash = "09e20eab6243ed3f43b5757c6673169785254573c384d56ea35f274cc39a648c"
+checks = ["<path>", "<path>", "--verify", "<path>", "FILES-TERMINAL-DOWNLOAD"]
+result = "pass"
+review = "passed"

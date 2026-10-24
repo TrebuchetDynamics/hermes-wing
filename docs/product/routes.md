@@ -56,6 +56,14 @@ Hermes Wing uses one adaptive route tree. Compact Chat prioritizes the transcrip
 
 Profile switching and session history remain directly reachable from Chat. More is an action sheet, not a route.
 
+Chat also offers **Files** in its compact overflow menu and wide toolbar; it is a
+dismissible read-only surface, not a new route or a Project folder picker.
+Native Linux/Android serve readers require an advertised locked managed root.
+Unlocked, messaging-only and browser connections show unavailable without a
+fallback browser. Bounded literal text previews and explicit retry preserve the
+owning connection/profile/conversation context; downloads and native/live
+qualification remain pending. See the [managed Files contract and evidence](../quality/managed-files-browse.md).
+
 Chat's compact More actions menu and wide header offer **Bot Chat** for the
 selected profile through verified native registry, hidden-state and history/replay
 operations. REST and unsettled native conversations show an explicit gap; native

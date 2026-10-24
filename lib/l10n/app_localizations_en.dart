@@ -866,6 +866,60 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get managedFilesTitle => 'Files';
+
+  @override
+  String get managedFilesExplanation =>
+      'Read-only Agent managed files. This locked root is not the terminal working directory or a Hermes Project. Text previews are limited to 64 KiB; folders to 500 entries. Downloads are not available here.';
+
+  @override
+  String managedFilesOwner(String connection, String profile, String session) {
+    return 'Connection: $connection\nProfile: $profile · Conversation: $session';
+  }
+
+  @override
+  String get managedFilesNoSelection => 'None selected';
+
+  @override
+  String get managedFilesEmpty => 'This folder is empty.';
+
+  @override
+  String get managedFilesLoading => 'Reading managed files…';
+
+  @override
+  String get managedFilesUnavailable =>
+      'Files require an authenticated Agent serve connection with an advertised locked managed root. No terminal or Project folder is substituted.';
+
+  @override
+  String get managedFilesDenied =>
+      'File access denied. Check this Agent connection’s file permissions.';
+
+  @override
+  String get managedFilesFailed =>
+      'Files could not be read. Check the connection and retry.';
+
+  @override
+  String get managedFilesOversized =>
+      'This folder, file or response exceeds the preview limits. No partial content is shown.';
+
+  @override
+  String get managedFilesBinary =>
+      'This file is not supported UTF-8 text. No active content is opened.';
+
+  @override
+  String get managedFilesStale =>
+      'The connection or conversation changed. Retry to read the current Agent’s managed root.';
+
+  @override
+  String get managedFilesParent => 'Parent folder';
+
+  @override
+  String get managedFilesBack => 'Back to files';
+
+  @override
+  String get managedFilesRefresh => 'Refresh files';
+
+  @override
   String get managedSshAgentProfileLabel => 'Agent API profile (optional)';
 
   @override

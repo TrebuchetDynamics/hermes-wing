@@ -107,6 +107,34 @@ void main() {
   );
 
   test(
+    'managed Files lease rejects session/profile roundtrips and disconnect',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      expect(channel.canBrowseManagedFiles, isFalse);
+      await connect();
+      final requestCount = fixture.requests.length;
+      final sameSession = channel.beginManagedFiles();
+      expect(sameSession.isCurrent, isTrue);
+      expect(
+        fixture.requests.length,
+        requestCount,
+        reason: 'Opening lease is not a read',
+      );
+      await channel.selectSession('default-session');
+      expect(sameSession.isCurrent, isFalse);
+      final profileRoundtrip = channel.beginManagedFiles();
+      await channel.selectProfile('demo');
+      await channel.selectProfile('default');
+      expect(profileRoundtrip.isCurrent, isFalse);
+      final disconnected = channel.beginManagedFiles();
+      await channel.disconnect();
+      expect(disconnected.isCurrent, isFalse);
+      expect(channel.canBrowseManagedFiles, isFalse);
+    },
+  );
+
+  test(
     'denied auth and missing read operation fail closed; retry is explicit',
     () async {
       await connect(token: 'synthetic-denied');

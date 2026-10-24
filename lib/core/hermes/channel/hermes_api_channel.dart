@@ -6,6 +6,7 @@ import '../../protocol/wing_json.dart';
 import '../../protocol/voice/models/wing_voice_run.dart';
 import '../client/hermes_api_client.dart';
 import '../client/hermes_session_history_export.dart';
+import '../client/hermes_managed_files.dart';
 import '../client/hermes_api_config.dart';
 import '../client/hermes_web_read_client_unsupported.dart'
     if (dart.library.io) '../client/hermes_web_read_client.dart';
@@ -59,6 +60,7 @@ class HermesApiChannel extends ChangeNotifier
         HermesAudioChannel,
         HermesBotChatChannel,
         HermesSessionHistoryExportChannel,
+        HermesManagedFilesChannel,
         HermesApprovalLifecycleChannel {
   HermesApiChannel({
     HermesApiClient Function(HermesApiConfig config)? clientBuilder,
@@ -179,6 +181,51 @@ class HermesApiChannel extends ChangeNotifier
 
   @override
   HermesChannelState get state => _state;
+
+  @override
+  bool get canBrowseManagedFiles =>
+      !kIsWeb &&
+      {
+        TargetPlatform.linux,
+        TargetPlatform.android,
+      }.contains(defaultTargetPlatform) &&
+      _serveReader != null &&
+      _serveOwnerIsCurrent &&
+      _state.isConnected &&
+      !_state.isSelectingProfile &&
+      !_serveRestorationPending;
+
+  @override
+  HermesManagedFilesSession beginManagedFiles() {
+    if (!canBrowseManagedFiles) {
+      throw const HermesManagedFilesException(
+        HermesManagedFilesFailure.unsupported,
+      );
+    }
+    final reader = _serveReader!;
+    final owner = (
+      _connectionGeneration,
+      _profileSelectionGeneration,
+      _sessionSelectionGeneration,
+      _state.connectedBaseUrl,
+      _state.selectedProfileId,
+      _state.activeSessionId,
+    );
+    return reader.beginManagedFiles(
+      isCurrent: () =>
+          canBrowseManagedFiles &&
+          identical(reader, _serveReader) &&
+          owner ==
+              (
+                _connectionGeneration,
+                _profileSelectionGeneration,
+                _sessionSelectionGeneration,
+                _state.connectedBaseUrl,
+                _state.selectedProfileId,
+                _state.activeSessionId,
+              ),
+    );
+  }
 
   @override
   bool get canExportSessionHistory =>

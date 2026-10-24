@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'hermes_session_history_export.dart';
+import 'hermes_managed_files.dart';
 import '../models/hermes_web_reads.dart';
 import '../setup/hermes_gateway_invite.dart';
 import '../models/hermes_chat_turn.dart';
@@ -367,10 +368,48 @@ final class HermesWebReadClient {
     }
   }
 
+  HermesManagedFilesSession beginManagedFiles({
+    required bool Function() isCurrent,
+  }) {
+    final generation = _generation;
+    return HermesManagedFilesSession(
+      isCurrent: () => !_closed && generation == _generation && isCurrent(),
+      request: (path, query, maximum) async {
+        if (_credential == null) {
+          throw const HermesManagedFilesException(
+            HermesManagedFilesFailure.denied,
+          );
+        }
+        try {
+          return await _request(
+            path,
+            query: query,
+            maximumResponseBytes: maximum,
+          );
+        } on HermesWebReadException catch (error) {
+          throw HermesManagedFilesException(switch (error.kind) {
+            HermesWebFailureKind.authentication =>
+              HermesManagedFilesFailure.denied,
+            HermesWebFailureKind.notFound =>
+              HermesManagedFilesFailure.unsupported,
+            HermesWebFailureKind.oversized =>
+              HermesManagedFilesFailure.oversized,
+            HermesWebFailureKind.malformed =>
+              HermesManagedFilesFailure.malformed,
+            HermesWebFailureKind.stale || HermesWebFailureKind.disconnected =>
+              HermesManagedFilesFailure.stale,
+            _ => HermesManagedFilesFailure.failed,
+          });
+        }
+      },
+    );
+  }
+
   Future<Map<String, dynamic>> _request(
     String path, {
     Map<String, String>? query,
     bool ticket = false,
+    int maximumResponseBytes = maximumBytes,
   }) async {
     final generation = _generation;
     _current(generation);
@@ -411,15 +450,18 @@ final class HermesWebReadClient {
         if (response.statusCode == 404) {
           throw const HermesWebReadException(HermesWebFailureKind.notFound);
         }
-        if (response.statusCode != 200) {
+        if (response.statusCode != 200 && response.statusCode != 413) {
           throw const HermesWebReadException(HermesWebFailureKind.network);
         }
-        if (response.contentLength > maximumBytes) {
+        if (response.statusCode == 413) {
+          throw const HermesWebReadException(HermesWebFailureKind.oversized);
+        }
+        if (response.contentLength > maximumResponseBytes) {
           throw const HermesWebReadException(HermesWebFailureKind.oversized);
         }
         final bytes = <int>[];
         await for (final chunk in response) {
-          if (bytes.length + chunk.length > maximumBytes) {
+          if (bytes.length + chunk.length > maximumResponseBytes) {
             throw const HermesWebReadException(HermesWebFailureKind.oversized);
           }
           bytes.addAll(chunk);

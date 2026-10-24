@@ -240,10 +240,13 @@ terminal cwd. The contract below is what makes that implementable and safe; it i
 read from the same `14e1e43a` sources.
 
 - `GET /api/files?path=…` returns `path`, `parent`, `entries` (`name`, `path`,
-  `isDirectory`) and the policy meta `{root, locked_root, can_change_path}`.
-  Entries hide `_FS_READDIR_HIDDEN` noise and sensitive paths, directories sort
-  first, and `parent` is `null` at the locked root, so the client gets no
-  above-root navigation token.
+  `is_directory`, `size`, `mtime`, `mime_type`) and the policy meta
+  `{root, locked_root, can_change_path}`. This is not `/api/fs/list`'s camelCase
+  entry format. Managed listings filter sensitive paths, not the
+  `_FS_READDIR_HIDDEN` noise set. Directories sort first, and `parent` is `null`
+  at the locked root, so the client gets no above-root navigation token.
+  Symlink entries keep their alias name but return the resolved target path;
+  broken-link placeholders have `broken_link: true` and no readable target.
 - `GET /api/files/read?path=…` returns `name`, `path`, `size`, `mime_type` and a
   base64 `data_url`, capped by `_MANAGED_FILE_MAX_BYTES` (100 MiB). Use
   `/api/files/download?path=…` for exact streamed bytes and
@@ -260,3 +263,13 @@ read from the same `14e1e43a` sources.
   a native client should send headers instead of putting a token in a URL.
 - `write-text`, `upload`, `mkdir` and `delete` exist but stay outside Wing's
   read-only scope.
+- Managed GET resolution calls `_managed_files_policy()` with its default
+  `create_root=True`; Agent may create a missing configured root. Wing does not
+  configure that root or call a mutation route. A prepared, pre-existing locked
+  root and absence of incidental server mutations must be checked on the named
+  deployment before native/live qualification; a fixture cannot establish them.
+
+The [Wing managed-files receipt](../quality/managed-files-browse.md) records the
+read-only candidate, corrected snake_case wire format, source hashes, bounded
+client checks and the outstanding native/live cells. It does not establish
+terminal-cwd parity.

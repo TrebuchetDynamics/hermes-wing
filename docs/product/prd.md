@@ -175,7 +175,9 @@ platform-specific.
 
 ## Terminal working-directory files
 
-Status: accepted requirement; not implemented or platform-qualified. Root amended by
+Status: accepted requirement; read-only managed-root browsing/previews are
+implemented as an [offline candidate](../quality/managed-files-browse.md).
+Downloads and native/live platform qualification remain pending. Root amended by
 owner decision on 2026-10-24 to the Agent's managed-files root; see the
 [Files surface exception](../adr/product.md#owner-approved-files-surface-the-agents-managed-files-root).
 
@@ -183,10 +185,12 @@ owner decision on 2026-10-24 to the Agent's managed-files root; see the
 browse/read/download routes in the official Desktop's `hermes serve` backend.
 This does not establish file support on Wing's current messaging API connection.
 Initial implementation targets qualified authenticated `serve` connections.
-Qualify the owning connection/identity, advertised managed-root policy and strict
-canonical containment before enabling the affected operation. The selected
-managed-root surface does not require a terminal-backend cwd contract or claim to
-browse that backend. Missing contracts remain unavailable; this does not relax
+Qualify the owning connection/identity and its authentication, advertised
+managed-root policy and strict canonical containment on each deployment before
+enabling the affected operation. The managed root is not a session/profile
+terminal-backend root. The selected managed-root surface does not require a
+terminal-backend cwd contract or claim to browse that backend. Missing contracts
+remain unavailable; this does not relax
 FILES-4 or promise support on every host.
 
 **FILES-1 — Browse:** Linux and Android users can navigate folders and see files

@@ -15,6 +15,7 @@ import '../../../core/hermes/channel/hermes_channel.dart';
 import '../../../core/hermes/channel/hermes_api_channel.dart';
 import '../../../core/hermes/client/hermes_api_client.dart';
 import '../../../core/hermes/client/hermes_api_config.dart';
+import '../../../core/hermes/client/hermes_managed_files.dart';
 import '../../../core/hermes/shared/hermes_api_http.dart';
 import '../../../core/hermes/models/hermes_capabilities.dart';
 import '../../../core/hermes/models/hermes_chat_turn.dart';
@@ -68,6 +69,7 @@ import '../gateways/hermes_gateway_directory.dart';
 import '../diagnostics/hermes_diagnostics_export.dart';
 import '../export/hermes_transcript_export.dart';
 import '../export/hermes_session_history_export_dialog.dart';
+import '../files/hermes_managed_files_dialog.dart';
 import '../providers/hermes_channel_provider.dart';
 import '../providers/transcript_timestamps_provider.dart';
 import '../providers/managed_ssh_connection_controller.dart';
@@ -1348,6 +1350,41 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     await directory.activate(id);
   }
 
+  void _showManagedFiles(
+    BuildContext context,
+    HermesChannel channel,
+    int owner,
+  ) {
+    if (!mounted ||
+        owner != _composerOwnerGeneration ||
+        !identical(ref.read(hermesChannelProvider), channel) ||
+        !channel.state.isConnected) {
+      return;
+    }
+    // Acquire the lease before the deferred dialog builder can see a new owner.
+    HermesManagedFilesSession? files;
+    final Object source = channel;
+    if (source is HermesManagedFilesChannel && source.canBrowseManagedFiles) {
+      try {
+        files = source.beginManagedFiles();
+      } on HermesManagedFilesException {
+        // A withdrawn capability stays unavailable until an explicit retry.
+      }
+    }
+    final opening = (channel: channel, files: files);
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (_) => Consumer(
+          builder: (context, ref, _) => HermesManagedFilesDialog(
+            channel: ref.watch(hermesChannelProvider),
+            opening: opening,
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _showTranscriptCopyOptions(
     BuildContext context,
     HermesChannelState state,
@@ -1590,6 +1627,22 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
   Widget build(BuildContext context) {
     final directory = ref.watch(hermesGatewayDirectoryProvider);
     final channel = ref.watch(hermesChannelProvider);
+    return LayoutBuilder(
+      builder: (context, constraints) => _buildConstrainedChat(
+        context,
+        directory,
+        channel,
+        constraints.maxWidth,
+      ),
+    );
+  }
+
+  Widget _buildConstrainedChat(
+    BuildContext context,
+    HermesGatewayDirectory directory,
+    HermesChannel channel,
+    double availableWidth,
+  ) {
     final strings = _hermesStrings(context);
     final state = channel.state;
     final unsupportedCapabilitySchema =
@@ -1597,7 +1650,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     final canUseConnectedAgent =
         state.isConnected && !unsupportedCapabilitySchema;
     final activeSession = state.activeSession;
-    final compactAppBar = MediaQuery.sizeOf(context).width < 600;
+    final compactAppBar = availableWidth < 600;
+    final filesOwner = _composerOwnerGeneration;
     final hasGateways =
         directory.contacts.isNotEmpty || directory.hasSavedGateways;
     final legacyConnected = state.isConnected && !hasGateways;
@@ -1817,6 +1871,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                           returnFocus: _composerFocusNode,
                         ),
                       );
+                    case 'files':
+                      _showManagedFiles(context, channel, filesOwner);
                     case 'sessions':
                       _showSessionsPanel(context, channel);
                     case 'bot-chat':
@@ -1857,6 +1913,14 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
+                  PopupMenuItem(
+                    value: 'files',
+                    child: ListTile(
+                      leading: const Icon(Icons.folder_outlined),
+                      title: Text(strings.managedFilesTitle),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                   if (_canCreateSession(state))
                     PopupMenuItem(
                       value: 'new-session',
@@ -1894,6 +1958,13 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
                 ],
               )
             else ...[
+              IconButton(
+                key: const ValueKey('hermes-files-button'),
+                tooltip: strings.managedFilesTitle,
+                onPressed: () =>
+                    _showManagedFiles(context, channel, filesOwner),
+                icon: const Icon(Icons.folder_outlined),
+              ),
               if (state.activeMessages.isNotEmpty)
                 IconButton(
                   key: const ValueKey('hermes-copy-transcript-button'),

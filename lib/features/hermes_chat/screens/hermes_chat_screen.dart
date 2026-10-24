@@ -74,6 +74,8 @@ import '../providers/hermes_channel_provider.dart';
 import '../providers/transcript_timestamps_provider.dart';
 import '../providers/managed_ssh_connection_controller.dart';
 import '../session/hermes_session_pin_store.dart';
+import '../session/hermes_session_pin_contact.dart';
+import '../providers/hermes_session_pin_provider.dart';
 import '../presentation/hermes_rich_text.dart';
 import '../presentation/hermes_turn_presentation_identity.dart';
 import '../presentation/hermes_transcript_viewport.dart';
@@ -561,8 +563,8 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _transcriptViewport.addListener(_onVoiceInputChanged);
     _chatGroupController = ChatGroupController();
     unawaited(_chatGroupController.load());
-    _sessionPins = HermesSessionPinStore()..addListener(_onSessionPinsChanged);
-    unawaited(_sessionPins.load());
+    _sessionPins = ref.read(hermesSessionPinStoreProvider)
+      ..addListener(_onSessionPinsChanged);
     _completionSoundSubscription = ref.listenManual<bool>(
       wingVoiceSettingsProvider.select(
         (settings) => settings.completionSoundEnabled,
@@ -637,7 +639,6 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     _approvals.dispose();
     _chatGroupController.dispose();
     _sessionPins.removeListener(_onSessionPinsChanged);
-    _sessionPins.dispose();
     _connectionForm.baseUrl.removeListener(_onConnectionFormChanged);
     _connectionForm.apiKey.removeListener(_onConnectionFormChanged);
     _connectionForm.label.removeListener(_onConnectionFormChanged);
@@ -739,13 +740,12 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
     unawaited(_openWorkspaceTab(tabs[index]));
   }
 
-  GatewayContactId _sessionPinContact(HermesChannelState state) {
-    return _gatewayDirectory.activeContactId ??
-        GatewayContactId(
-          gatewayId: 'direct',
-          profileId: state.selectedProfileId ?? 'default',
-        );
-  }
+  GatewayContactId? _sessionPinContact(HermesChannelState state) =>
+      hermesSessionPinContact(
+        savedContact: _gatewayDirectory.activeContactId,
+        baseUrl: state.connectedBaseUrl,
+        profileId: state.selectedProfileId,
+      );
 
   void _onComposerChanged() {
     final key = _activeComposerDraftKey;

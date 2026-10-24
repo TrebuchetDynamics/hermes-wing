@@ -40,15 +40,19 @@ class HermesSessionPinStore extends ChangeNotifier {
     }
   }
 
-  bool isPinned(GatewayContactId contactId, String sessionId) {
+  bool isPinned(GatewayContactId? contactId, String sessionId) {
     final token = _token(contactId, sessionId);
     return token != null && _entries.contains(token);
   }
 
-  Future<void> toggle(GatewayContactId contactId, String sessionId) async {
+  Future<void> toggle(
+    GatewayContactId? contactId,
+    String sessionId, {
+    bool Function()? canAccept,
+  }) async {
     if (_disposed) return;
     await _loadFuture;
-    if (_disposed) return;
+    if (_disposed || !(canAccept?.call() ?? true)) return;
     final token = _token(contactId, sessionId);
     if (token == null) return;
     if (!_entries.remove(token)) {
@@ -95,7 +99,8 @@ class HermesSessionPinStore extends ChangeNotifier {
     super.dispose();
   }
 
-  static String? _token(GatewayContactId contactId, String sessionId) {
+  static String? _token(GatewayContactId? contactId, String sessionId) {
+    if (contactId == null) return null;
     final values = [contactId.gatewayId, contactId.profileId, sessionId];
     if (values.any(
       (value) => value.isEmpty || value.length > _maxIdentifierLength,

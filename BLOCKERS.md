@@ -80,6 +80,16 @@ This file contains only hard blockers that require user action.
 - Current evidence: strict BatchMode SSH with StrictHostKeyChecking=yes on
   2026-10-09T10:36:57.896543-06:00 failed with `Host key verification failed.` before
   authentication. The prior authentication-denied probe is historical evidence.
+- Probe 2026-10-24 (unqualified trust): a BatchMode probe run with
+  `StrictHostKeyChecking=accept-new` accepted the presented host key and then
+  completed public-key authentication (`SSH_OK`, exit 0) to the selected
+  xel@localhost:2121. The accepted key is ED25519
+  `SHA256:NrplWesIkdYM65tWGybObHISNCWDPe9tZnPmUsd4wrM`, now stored for
+  `[localhost]:2121` in the probing user's known_hosts. That entry was accepted
+  without an out-of-band fingerprint comparison, so it is evidence that
+  host-key *trust* was the earlier obstacle and that key auth succeeds, not
+  evidence of verified SSH trust or live workflow qualification. Removing or
+  re-verifying that known_hosts entry is the owner's call.
   `adb devices -l` currently returns no attached device. Neither trust nor
   authentication was changed.
 - Interview answer: leave live SSH unverified for now; continue implementation

@@ -25,7 +25,7 @@ ciclo de distribución permanecen pendientes, sin sustituirlos por fixtures.
 | F0 | Flutter 3.44.2 y Node 22 preparados; dependencias bloqueadas resueltas. Admisión de credenciales legacy corregida; 675 pruebas focalizadas y análisis aprobados. Suites completas interrumpidas por reinicio del entorno; pendientes. CLI `autowork` no instalada: registro de tareas pendiente, sin transiciones inventadas. |
 | CLONE-01 | Tokens existentes; geometría de mensajes/compositor adaptada al pin actual. Baseline visual emparejado pendiente. |
 | CLONE-02 | Shell final, destinos y overlays oficiales pendientes; conservar rutas existentes durante migración. |
-| CLONE-03 | Búsqueda de categorías y controles locales; Appearance separa Theme/Typography con navegación y enlaces `page`/`setting`. Árbol completo y demás campos pendientes. Galería de criaturas Wing retirada sin borrar preferencias. |
+| CLONE-03 | Búsqueda de categorías y controles locales; Appearance separa Theme/Typography con navegación y enlaces `page`/`setting`; selector compacto único, breadcrumb navegable y selección de hoja actual. Árbol completo y demás campos pendientes. Galería de criaturas Wing retirada sin borrar preferencias. |
 | CLONE-04 | Onboarding completo y guía pendientes; preservar conexión directa ya implementada. |
 | CLONE-05 | Remote/SSH y gateway sign-in existentes; attachment canónico, Cloud y cobertura completa OAuth pendientes. |
 | CLONE-06 | Rutas legacy de credenciales rechazadas antes de red y formularios sin entrada de secretos; contrato positivo sigue pendiente. Modelos mantienen gates independientes. |

@@ -54,7 +54,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   _SettingsCategory _category = _SettingsCategory.appearance;
   _AppearancePage _appearancePage = _AppearancePage.theme;
-  bool _appearanceExpanded = true;
+  bool? _appearanceDisclosure;
   int _navigationRevision = 0;
 
   _SettingsCategory _resolveCategory(String? name) =>
@@ -85,7 +85,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 .firstOrNull ??
             _AppearancePage.theme,
     };
-    if (_category == _SettingsCategory.appearance) _appearanceExpanded = true;
+    if (_category == _SettingsCategory.appearance &&
+        _appearanceDisclosure == false) {
+      _appearanceDisclosure = null;
+    }
   }
 
   void _selectCategory(
@@ -97,7 +100,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _category = category;
       _appearancePage = page ?? _AppearancePage.theme;
-      if (category == _SettingsCategory.appearance) _appearanceExpanded = true;
+      if (category == _SettingsCategory.appearance &&
+          _appearanceDisclosure == false) {
+        _appearanceDisclosure = null;
+      }
     });
     final tab = switch (category) {
       _SettingsCategory.appearance => 'config:appearance',
@@ -159,6 +165,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final selectedCategory = categories.contains(_category)
         ? _category
         : _SettingsCategory.appearance;
+    final appearanceExpanded =
+        _appearanceDisclosure ??
+        selectedCategory == _SettingsCategory.appearance;
+    final navigationTargets = <_SettingsTarget>[
+      for (final category in categories) ...[
+        (category: category, page: null, setting: null),
+        if (category == _SettingsCategory.appearance)
+          for (final page in _AppearancePage.values)
+            (category: category, page: page, setting: null),
+      ],
+    ];
+    final currentTarget = (
+      category: selectedCategory,
+      page: selectedCategory == _SettingsCategory.appearance
+          ? _appearancePage
+          : null,
+      setting: null,
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.settingsDestination),
@@ -245,11 +269,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 840),
                       child: _SettingsCategoryContent(
-                        title: wide
-                            ? selectedCategory == _SettingsCategory.appearance
-                                  ? '${labels[selectedCategory]} › ${pageLabels[_appearancePage]}'
-                                  : labels[selectedCategory]!
-                            : null,
+                        title: _SettingsBreadcrumb(
+                          root: strings.settingsDestination,
+                          category: labels[selectedCategory]!,
+                          page: selectedCategory == _SettingsCategory.appearance
+                              ? pageLabels[_appearancePage]
+                              : null,
+                          onParent: () => _selectCategory(selectedCategory),
+                        ),
                         children: switch (selectedCategory) {
                           _SettingsCategory.appearance => [
                             if (_appearancePage == _AppearancePage.theme)
@@ -289,60 +316,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Padding(
                     key: ValueKey((
                       'settings-category-selection',
-                      selectedCategory,
+                      currentTarget,
                     )),
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: DropdownButtonFormField<_SettingsCategory>(
+                    child: DropdownButtonFormField<_SettingsTarget>(
                       key: const ValueKey('settings-category-picker'),
-                      initialValue: selectedCategory,
+                      initialValue: currentTarget,
                       isExpanded: true,
                       itemHeight: null,
                       decoration: InputDecoration(
                         labelText: strings.settingsDestination,
                       ),
-                      items: [
-                        for (final category in categories)
-                          DropdownMenuItem(
-                            value: category,
-                            child: Text(labels[category]!),
+                      selectedItemBuilder: (context) => [
+                        for (final target in navigationTargets)
+                          Text(
+                            target.page == null
+                                ? labels[target.category]!
+                                : pageLabels[target.page]!,
                           ),
                       ],
-                      onChanged: (category) {
-                        if (category != null) {
-                          _selectCategory(category);
+                      items: [
+                        for (final target in navigationTargets)
+                          DropdownMenuItem(
+                            value: target,
+                            child: Padding(
+                              padding: EdgeInsetsDirectional.only(
+                                start: target.page == null ? 0 : 20,
+                              ),
+                              child: Text(
+                                target.page == null
+                                    ? labels[target.category]!
+                                    : pageLabels[target.page]!,
+                              ),
+                            ),
+                          ),
+                      ],
+                      onChanged: (target) {
+                        if (target != null) {
+                          _selectCategory(target.category, page: target.page);
                         }
                       },
                     ),
                   ),
-                  if (selectedCategory == _SettingsCategory.appearance)
-                    Padding(
-                      key: ValueKey((
-                        'settings-page-selection',
-                        _appearancePage,
-                      )),
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                      child: DropdownButtonFormField<_AppearancePage>(
-                        key: const ValueKey('settings-appearance-page-picker'),
-                        initialValue: _appearancePage,
-                        isExpanded: true,
-                        itemHeight: null,
-                        items: [
-                          for (final page in _AppearancePage.values)
-                            DropdownMenuItem(
-                              value: page,
-                              child: Text(pageLabels[page]!),
-                            ),
-                        ],
-                        onChanged: (page) {
-                          if (page != null) {
-                            _selectCategory(
-                              _SettingsCategory.appearance,
-                              page: page,
-                            );
-                          }
-                        },
-                      ),
-                    ),
                   Expanded(child: content),
                 ],
               );
@@ -366,7 +381,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 key: ValueKey(
                                   'settings-category-${category.name}',
                                 ),
-                                selected: selectedCategory == category,
+                                selected:
+                                    selectedCategory == category &&
+                                    category != _SettingsCategory.appearance,
                                 selectedTileColor: Theme.of(
                                   context,
                                 ).colorScheme.secondaryContainer,
@@ -381,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         key: const ValueKey(
                                           'settings-appearance-expand',
                                         ),
-                                        tooltip: _appearanceExpanded
+                                        tooltip: appearanceExpanded
                                             ? MaterialLocalizations.of(
                                                 context,
                                               ).expandedIconTapHint
@@ -389,13 +406,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                 context,
                                               ).collapsedIconTapHint,
                                         icon: Icon(
-                                          _appearanceExpanded
+                                          appearanceExpanded
                                               ? Icons.expand_less
                                               : Icons.expand_more,
                                         ),
                                         onPressed: () => setState(
-                                          () => _appearanceExpanded =
-                                              !_appearanceExpanded,
+                                          () => _appearanceDisclosure =
+                                              !appearanceExpanded,
                                         ),
                                       )
                                     : null,
@@ -403,7 +420,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                             if (category == _SettingsCategory.appearance &&
-                                _appearanceExpanded)
+                                appearanceExpanded)
                               for (final page in _AppearancePage.values)
                                 Padding(
                                   padding: const EdgeInsets.only(left: 20),
@@ -522,23 +539,61 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
   Widget buildSuggestions(BuildContext context) => _matches(context);
 }
 
+class _SettingsBreadcrumb extends StatelessWidget {
+  const _SettingsBreadcrumb({
+    required this.root,
+    required this.category,
+    required this.page,
+    required this.onParent,
+  });
+
+  final String root;
+  final String category;
+  final String? page;
+  final VoidCallback onParent;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    key: const ValueKey('settings-breadcrumb'),
+    crossAxisAlignment: WrapCrossAlignment.center,
+    spacing: 4,
+    runSpacing: 4,
+    children: [
+      Text(root, style: Theme.of(context).textTheme.bodySmall),
+      const ExcludeSemantics(child: Icon(Icons.chevron_right, size: 16)),
+      if (page != null) ...[
+        TextButton(
+          key: const ValueKey('settings-breadcrumb-parent'),
+          onPressed: onParent,
+          child: Text(category),
+        ),
+        const ExcludeSemantics(child: Icon(Icons.chevron_right, size: 16)),
+      ],
+      Semantics(
+        container: true,
+        headingLevel: 2,
+        child: Text(
+          page ?? category,
+          key: const ValueKey('settings-breadcrumb-current'),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+      ),
+    ],
+  );
+}
+
 class _SettingsCategoryContent extends StatelessWidget {
   const _SettingsCategoryContent({required this.title, required this.children});
 
-  final String? title;
+  final Widget title;
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      if (title != null) ...[
-        Semantics(
-          headingLevel: 2,
-          child: Text(title!, style: Theme.of(context).textTheme.titleLarge),
-        ),
-        const SizedBox(height: 16),
-      ],
+      title,
+      const SizedBox(height: 16),
       for (var index = 0; index < children.length; index++) ...[
         if (index > 0) const Divider(height: 1),
         children[index],

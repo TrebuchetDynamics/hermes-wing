@@ -35,7 +35,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Theme'), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey('settings-breadcrumb-current')),
+          )
+          .data,
+      'Theme',
+    );
     expect(
       find.byKey(const ValueKey('settings-chat-text-scale-100')),
       findsNothing,

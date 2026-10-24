@@ -4,6 +4,11 @@ Current clone reference: `14e1e43a23761b369641208e204365cd6cb9399d`.
 Settings search opens a dismissible search surface for implemented local categories
 and controls. Appearance now separates Theme and Typography; its parent selects
 the first implemented child, while its caret only expands/collapses navigation.
+Compact Settings uses one hierarchical selector for categories and their supported
+children. Both layouts show a wrapping Settings/category/page breadcrumb; its
+parent opens the first supported child. The wide navigation marks only the
+current leaf as selected. Automatically revealed branches fold when leaving,
+while deliberately expanded branches remain open.
 Search and saved links accept `page=theme|typography` and the official
 `setting=theme|chat-text-scale` targets. A setting selects its owning page even
 when a saved page disagrees. Category changes clear stale page/setting/field

@@ -15,6 +15,15 @@ test('reasoning keyboard status, focus and exact session replacement', async ({ 
   const summary = name => page.getByRole('button', { name, exact: true });
   try {
     expect((await request.post(`${APP}e2e/hermes/reasoning-disclosure`)).ok()).toBe(true);
+    // This keyboard journey exercises the user's opt-in collapsed presentation.
+    // The default live-preview behavior has separate preference regressions.
+    await page.goto(`${APP}#/settings?tab=config:appearance&page=chat-display&setting=appearance.reasoning-collapsed`);
+    await page.waitForFunction(() => typeof globalThis.wingE2EHermesConnect === 'function');
+    await enableFlutterAccessibility(page, { delay: 0 });
+    const collapsed = page.getByRole('switch', { name: /^Collapse thinking by default/ });
+    await expect(collapsed).not.toBeChecked();
+    await collapsed.click();
+    await expect(collapsed).toBeChecked();
     await page.goto(`${APP}#/hermes`);
     await page.waitForFunction(() => typeof globalThis.wingE2EHermesConnect === 'function');
     await enableFlutterAccessibility(page, { delay: 0 });

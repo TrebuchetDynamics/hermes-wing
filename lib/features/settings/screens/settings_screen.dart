@@ -84,7 +84,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _appearancePage = switch (widget.initialSetting) {
       'theme' => _AppearancePage.theme,
       'chat-text-scale' => _AppearancePage.typography,
-      'appearance.text-direction' => _AppearancePage.chatDisplay,
+      'appearance.text-direction' ||
+      'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
       _ =>
         _AppearancePage.values
                 .where((page) => _appearancePageId(page) == widget.initialPage)
@@ -230,12 +231,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'theme': strings.settingsThemeHeading,
                     'chat-text-scale': strings.chatTextScaleTitle,
                     'appearance.text-direction': strings.chatTextDirectionTitle,
+                    'appearance.reasoning-collapsed':
+                        strings.chatReasoningCollapsedTitle,
                   },
                   settingTopics: {
                     'theme': [
                       strings.themeModeSystem,
                       strings.themeModeLight,
                       strings.themeModeDark,
+                    ],
+                    'appearance.reasoning-collapsed': [
+                      strings.settingsChatDisplayHeading,
+                      strings.chatReasoningCollapsedDescription,
+                      'thinking',
+                      'reasoning',
                     ],
                     'appearance.text-direction': [
                       'rtl',
@@ -303,8 +312,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             else if (_appearancePage ==
                                 _AppearancePage.typography)
                               const _ChatTextScaleSetting()
-                            else
-                              const _ChatTextDirectionSetting(),
+                            else ...const [
+                              _ChatTextDirectionSetting(),
+                              _ReasoningCollapsedSetting(),
+                            ],
                           ],
                           _SettingsCategory.chat => [
                             if (hasSpellcheck) const _ChatSettingsSection(),
@@ -546,7 +557,8 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
               category: _SettingsCategory.appearance,
               page: switch (entry.key) {
                 'theme' => _AppearancePage.theme,
-                'appearance.text-direction' => _AppearancePage.chatDisplay,
+                'appearance.text-direction' ||
+                'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
                 _ => _AppearancePage.typography,
               },
               setting: entry.key,
@@ -708,6 +720,25 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _ReasoningCollapsedSetting extends ConsumerWidget {
+  const _ReasoningCollapsedSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    return SwitchListTile.adaptive(
+      key: const ValueKey('settings-reasoning-collapsed'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(strings.chatReasoningCollapsedTitle),
+      subtitle: Text(strings.chatReasoningCollapsedDescription),
+      value: ref.watch(wingChatPreferencesProvider).reasoningCollapsedByDefault,
+      onChanged: ref
+          .read(wingChatPreferencesProvider.notifier)
+          .setReasoningCollapsedByDefault,
     );
   }
 }

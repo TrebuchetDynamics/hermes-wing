@@ -9,6 +9,13 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatReasoningCollapsedTitle => 'Collapse thinking by default';
+
+  @override
+  String get chatReasoningCollapsedDescription =>
+      'Keep streamed reasoning available without expanding it until you open it.';
+
+  @override
   String get skillsAllCategoriesLabel => 'All categories';
 
   @override

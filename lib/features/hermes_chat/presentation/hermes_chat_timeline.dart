@@ -454,10 +454,79 @@ class _ReasoningCard extends ConsumerStatefulWidget {
 }
 
 class _ReasoningCardState extends ConsumerState<_ReasoningCard> {
-  bool _expanded = false;
+  final _expansion = ExpansibleController();
+  final _previewScroll = ScrollController();
+  bool _previewWasActive = false;
+  bool _followingPreview = true;
+  double _previewExtent = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _previewScroll.addListener(() {
+      if (_previewScroll.hasClients) {
+        _followingPreview = _previewScroll.position.extentAfter < 32;
+      }
+    });
+  }
+
+  bool? _userOpen;
+  bool _sawLivePreview = false;
+  bool _syncingExpansion = false;
+
+  bool get _expanded =>
+      _userOpen ??
+      (ref.read(wingChatPreferencesProvider).isHydrated &&
+          !ref.read(wingChatPreferencesProvider).reasoningCollapsedByDefault &&
+          (widget.active || _sawLivePreview));
+
+  @override
+  void dispose() {
+    _previewScroll.dispose();
+    _expansion.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final preferences = ref.watch(wingChatPreferencesProvider);
+    // A saved collapsed choice must load before a preview can latch open.
+    final collapsed =
+        !preferences.isHydrated || preferences.reasoningCollapsedByDefault;
+    if (widget.active && !collapsed) _sawLivePreview = true;
+    final preview = _userOpen == null && _expanded;
+    if (preview && !_previewWasActive) {
+      _followingPreview = true;
+      _previewExtent = -1;
+    }
+    _previewWasActive = preview;
+    if (preview) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            _userOpen != null ||
+            !_expanded ||
+            !_previewScroll.hasClients) {
+          return;
+        }
+        final extent = _previewScroll.position.maxScrollExtent;
+        if (extent > _previewExtent && _followingPreview) {
+          _previewScroll.jumpTo(extent);
+        }
+        _previewExtent = extent;
+      });
+    }
+    if (_expansion.isExpanded != _expanded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _expansion.isExpanded == _expanded) return;
+        _syncingExpansion = true;
+        if (_expanded) {
+          _expansion.expand();
+        } else {
+          _expansion.collapse();
+        }
+        _syncingExpansion = false;
+      });
+    }
     return _AssistantTimelineItem(
       child: Align(
         alignment: Alignment.centerLeft,
@@ -469,9 +538,14 @@ class _ReasoningCardState extends ConsumerState<_ReasoningCard> {
             child: ExpansionTile(
               // The avatar layout can remount the tile inside a retained row.
               // Keep its visible body aligned with the row's expanded semantics.
+              controller: _expansion,
               initiallyExpanded: _expanded,
-              onExpansionChanged: (expanded) =>
-                  setState(() => _expanded = expanded),
+              expansionAnimationStyle: MediaQuery.disableAnimationsOf(context)
+                  ? AnimationStyle.noAnimation
+                  : null,
+              onExpansionChanged: (expanded) {
+                if (!_syncingExpansion) setState(() => _userOpen = expanded);
+              },
               leading: widget.active
                   ? ExcludeSemantics(
                       child: MediaQuery.disableAnimationsOf(context)
@@ -493,15 +567,24 @@ class _ReasoningCardState extends ConsumerState<_ReasoningCard> {
               ),
               childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: HermesRichText(
-                    _safeHermesUiText(widget.turn.text),
-                    textDirection: ref
-                        .watch(wingChatPreferencesProvider)
-                        .textDirection
-                        .forcedDirection,
-                    selectable: true,
+                ConstrainedBox(
+                  key: const ValueKey('hermes-reasoning-preview'),
+                  constraints: BoxConstraints(
+                    maxHeight: preview ? 160 : double.infinity,
+                  ),
+                  child: SingleChildScrollView(
+                    controller: _previewScroll,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: HermesRichText(
+                        _safeHermesUiText(widget.turn.text),
+                        textDirection: ref
+                            .watch(wingChatPreferencesProvider)
+                            .textDirection
+                            .forcedDirection,
+                        selectable: true,
+                      ),
+                    ),
                   ),
                 ),
               ],

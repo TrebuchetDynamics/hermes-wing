@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
@@ -39,6 +41,7 @@ class HermesRichText extends StatefulWidget {
 
 class _HermesRichTextState extends State<HermesRichText> {
   final _scroll = ScrollController();
+  final _selection = _TranscriptSelectionDelegate();
   List<String>? _plainChunks;
 
   @override
@@ -84,6 +87,7 @@ class _HermesRichTextState extends State<HermesRichText> {
 
   @override
   void dispose() {
+    _selection.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -121,6 +125,7 @@ class _HermesRichTextState extends State<HermesRichText> {
       blockSpacing: 12,
       listIndent: 22,
     );
+    final inlineCode = _HermesInlineCodeBuilder(widget.launchUri ?? _launchUri);
     var remainingImagePixels = widget.inlineImagePixelBudget;
     final chunks = _plainChunks;
     final renderedMarkdown = chunks != null
@@ -137,13 +142,15 @@ class _HermesRichTextState extends State<HermesRichText> {
             // The parser's whitespace-only plain-text shortcut otherwise retries
             // every suffix of an unbroken trailing word. Consume that word once;
             // punctuation still goes through the normal GFM link/markup syntaxes.
-            inlineSyntaxes: [md.TextSyntax(r'[A-Za-z0-9]+$')],
+            inlineSyntaxes: [
+              if (widget.textDirection != null) _HermesInlineCodeLinkSyntax(),
+              md.TextSyntax(r'[A-Za-z0-9]+$'),
+            ],
             styleSheet: markdownStyle,
             shrinkWrap: true,
             builders: {
               'pre': _HermesCodeBlockBuilder(outerSelection: selectable),
-              if (widget.textDirection != null)
-                'code': _HermesInlineCodeBuilder(),
+              if (widget.textDirection != null) ...{'code': inlineCode},
             },
             imageBuilder: (uri, title, alt) => _buildTranscriptImage(
               strings: strings,
@@ -221,7 +228,9 @@ class _HermesRichTextState extends State<HermesRichText> {
                 selectableRegionState: region,
               );
             },
-            child: content,
+            child: widget.textDirection == TextDirection.rtl
+                ? SelectionContainer(delegate: _selection, child: content)
+                : content,
           )
         : content;
     return large
@@ -259,6 +268,34 @@ class _HermesRichTextState extends State<HermesRichText> {
           )
         : selected;
   }
+}
+
+/// Flutter's default multi-paragraph selection sorts inline widget fragments
+/// left-to-right. Forced RTL prose needs the opposite inline order for copying
+/// isolated code without reversing the selected source text.
+class _TranscriptSelectionDelegate extends StaticSelectionContainerDelegate {
+  @override
+  Comparator<Selectable> get compareOrder => (a, b) {
+    Rect bounds(Selectable value) {
+      return MatrixUtils.transformRect(
+        value.getTransformTo(null),
+        value.boundingBoxes.first,
+      );
+    }
+
+    final first = bounds(a);
+    final second = bounds(b);
+    final overlap =
+        (first.bottom < second.bottom ? first.bottom : second.bottom) -
+        (first.top > second.top ? first.top : second.top);
+    final smallerHeight = first.height < second.height
+        ? first.height
+        : second.height;
+    if (overlap >= smallerHeight - 3) {
+      return second.right.compareTo(first.right);
+    }
+    return first.top.compareTo(second.top);
+  };
 }
 
 /// Keep only visible blocks mounted. Eagerly mounting a large transcript can
@@ -368,17 +405,126 @@ class _SafeInlineTranscriptImage {
 
 Future<bool> _launchUri(Uri uri) => launchUrl(uri);
 
+class _HermesInlineCodeLinkSyntax extends md.LinkSyntax {
+  @override
+  md.Node createNode(
+    String destination,
+    String? title, {
+    required List<md.Node> Function() getChildren,
+  }) {
+    final node = super.createNode(destination, title, getChildren: getChildren);
+    if (node is md.Element) {
+      void annotate(md.Node child) {
+        if (child is! md.Element) return;
+        if (child.tag == 'code') {
+          child.attributes['data-wing-code-href'] = node.attributes['href']!;
+        }
+        for (final descendant in child.children ?? <md.Node>[]) {
+          annotate(descendant);
+        }
+      }
+
+      for (final child in node.children ?? <md.Node>[]) {
+        annotate(child);
+      }
+    }
+    return node;
+  }
+}
+
 class _HermesInlineCodeBuilder extends MarkdownElementBuilder {
+  _HermesInlineCodeBuilder(this.launchUri);
+  final HermesUriLauncher launchUri;
+
   @override
   Widget? visitElementAfterWithContext(
     BuildContext context,
     md.Element element,
     TextStyle? preferredStyle,
     TextStyle? parentStyle,
-  ) => Text(
-    element.textContent,
-    textDirection: TextDirection.ltr,
-    style: preferredStyle,
+  ) {
+    final candidate = Uri.tryParse(
+      element.attributes['data-wing-code-href'] ?? '',
+    );
+    final uri =
+        candidate != null &&
+            _safeLinkSchemes.contains(candidate.scheme.toLowerCase())
+        ? candidate
+        : null;
+    if (uri == null) {
+      return Text(
+        element.textContent,
+        textDirection: TextDirection.ltr,
+        style: preferredStyle,
+      );
+    }
+    return _HermesInlineCodeLink(
+      text: element.textContent,
+      style: preferredStyle?.copyWith(
+        color: Theme.of(context).colorScheme.primary,
+        decoration: TextDecoration.underline,
+      ),
+      onActivate: () => unawaited(launchUri(uri)),
+    );
+  }
+}
+
+class _HermesInlineCodeLink extends StatefulWidget {
+  const _HermesInlineCodeLink({
+    required this.text,
+    required this.style,
+    required this.onActivate,
+  });
+  final String text;
+  final TextStyle? style;
+  final VoidCallback onActivate;
+
+  @override
+  State<_HermesInlineCodeLink> createState() => _HermesInlineCodeLinkState();
+}
+
+class _HermesInlineCodeLinkState extends State<_HermesInlineCodeLink> {
+  late final _tap = TapGestureRecognizer()..onTap = () => widget.onActivate();
+  bool _focused = false;
+
+  @override
+  void dispose() {
+    _tap.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    link: true,
+    child: FocusableActionDetector(
+      onShowFocusHighlight: (focused) => setState(() => _focused = focused),
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: {
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            widget.onActivate();
+            return null;
+          },
+        ),
+      },
+      child: Text.rich(
+        TextSpan(
+          text: widget.text,
+          recognizer: _tap,
+          style: _focused
+              ? widget.style?.copyWith(
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.secondaryContainer,
+                )
+              : widget.style,
+        ),
+        textDirection: TextDirection.ltr,
+      ),
+    ),
   );
 }
 

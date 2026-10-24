@@ -1,4 +1,6 @@
 {
+  "chatReasoningCollapsedTitle": "Collapse thinking by default",
+  "chatReasoningCollapsedDescription": "Keep streamed reasoning available without expanding it until you open it.",
   "skillsAllCategoriesLabel": "All categories",
   "skillsCategoriesLabel": "Categories",
   "settingsChatDisplayHeading": "Chat display",

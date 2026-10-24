@@ -22,20 +22,29 @@ class WingChatPreferences {
     this.spellcheckEnabled = true,
     this.transcriptTextScale = 1,
     this.textDirection = WingChatTextDirection.auto,
+    this.reasoningCollapsedByDefault = false,
+    this.isHydrated = true,
   });
 
   final bool spellcheckEnabled;
   final double transcriptTextScale;
   final WingChatTextDirection textDirection;
+  final bool reasoningCollapsedByDefault;
+  final bool isHydrated;
 
   WingChatPreferences copyWith({
     bool? spellcheckEnabled,
     double? transcriptTextScale,
     WingChatTextDirection? textDirection,
+    bool? reasoningCollapsedByDefault,
+    bool? isHydrated,
   }) => WingChatPreferences(
     spellcheckEnabled: spellcheckEnabled ?? this.spellcheckEnabled,
     transcriptTextScale: transcriptTextScale ?? this.transcriptTextScale,
     textDirection: textDirection ?? this.textDirection,
+    isHydrated: isHydrated ?? this.isHydrated,
+    reasoningCollapsedByDefault:
+        reasoningCollapsedByDefault ?? this.reasoningCollapsedByDefault,
   );
 }
 
@@ -43,6 +52,8 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
   static const _keySpellcheckEnabled = 'wing.chat.spellcheck_enabled';
   static const _keyTranscriptTextScale = 'wing.chat.transcript_text_scale';
   static const _keyTextDirection = 'wing.chat.text_direction';
+  static const _keyReasoningCollapsed =
+      'wing.chat.reasoning_collapsed_by_default';
   static const minTranscriptTextScale = 0.5;
   static const maxTranscriptTextScale = 2.5;
 
@@ -53,7 +64,7 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
   @override
   WingChatPreferences build() {
     _loadPrefs();
-    return const WingChatPreferences();
+    return const WingChatPreferences(isHydrated: false);
   }
 
   Future<void> _loadPrefs() async {
@@ -70,6 +81,10 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
             : _boundedTranscriptTextScale(
                 prefs.getDouble(_keyTranscriptTextScale) ?? 1,
               ),
+        reasoningCollapsedByDefault:
+            _mutatedFields.contains(_keyReasoningCollapsed)
+            ? state.reasoningCollapsedByDefault
+            : prefs.get(_keyReasoningCollapsed) == true,
         textDirection: _mutatedFields.contains(_keyTextDirection)
             ? state.textDirection
             : switch (prefs.get(_keyTextDirection)) {
@@ -81,6 +96,7 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
       if (_mutatedFields.isNotEmpty) _save();
     } catch (_) {
       // A late storage failure must not replace a newer in-memory choice.
+      if (ref.mounted) state = state.copyWith(isHydrated: true);
     }
   }
 
@@ -104,6 +120,13 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
           await prefs.setDouble(
             _keyTranscriptTextScale,
             snapshot.transcriptTextScale,
+          );
+        }
+        if (!ref.mounted) return;
+        if (_mutatedFields.contains(_keyReasoningCollapsed)) {
+          await prefs.setBool(
+            _keyReasoningCollapsed,
+            snapshot.reasoningCollapsedByDefault,
           );
         }
         if (!ref.mounted) return;
@@ -138,6 +161,12 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
   void setTextDirection(WingChatTextDirection direction) {
     _mutatedFields.add(_keyTextDirection);
     state = state.copyWith(textDirection: direction);
+    _save();
+  }
+
+  void setReasoningCollapsedByDefault(bool collapsed) {
+    _mutatedFields.add(_keyReasoningCollapsed);
+    state = state.copyWith(reasoningCollapsedByDefault: collapsed);
     _save();
   }
 

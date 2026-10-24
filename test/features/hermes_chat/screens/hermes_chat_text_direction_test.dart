@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -133,6 +134,191 @@ void main() {
       expect(channel.selectSessionCalls, isEmpty);
       expect(channel.selectProfileCalls, isEmpty);
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final direction in [null, TextDirection.rtl, TextDirection.ltr]) {
+    testWidgets(
+      'inline code links preserve safe activation and plain copy: $direction',
+      (tester) async {
+        final opened = <Uri>[];
+        String? copied;
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          (call) async {
+            if (call.method == 'Clipboard.setData') {
+              copied = (call.arguments as Map)['text'] as String;
+            }
+            return null;
+          },
+        );
+        addTearDown(
+          () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            null,
+          ),
+        );
+        const source =
+            '[`code()`](https://example.invalid) and `code()` and [`bad()`](javascript:bad)';
+        Widget render(String data) => MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: HermesRichText(
+              data,
+              textDirection: direction,
+              launchUri: (uri) async {
+                opened.add(uri);
+                return true;
+              },
+            ),
+          ),
+        );
+        await tester.pumpWidget(render('[`code()`](https://example.invalid)'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('code()', findRichText: true).first);
+        await tester.pumpAndSettle();
+        expect(opened, [Uri.parse('https://example.invalid')]);
+        opened.clear();
+        await tester.pumpWidget(
+          render('[ordinary](https://example.invalid/ordinary)'),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('ordinary', findRichText: true).last);
+        await tester.pumpAndSettle();
+        expect(opened, [Uri.parse('https://example.invalid/ordinary')]);
+        opened.clear();
+        await tester.pumpWidget(
+          render(
+            '[`reference()`][target]\n\n[target]: https://example.invalid/reference',
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('reference()', findRichText: true).last);
+        await tester.pumpAndSettle();
+        expect(opened, [Uri.parse('https://example.invalid/reference')]);
+        opened.clear();
+        await tester.pumpWidget(render(source));
+        await tester.pumpAndSettle();
+        if (direction != null) {
+          opened.clear();
+          await tester.tap(find.text('code()', findRichText: true).last);
+          await tester.pumpAndSettle();
+          expect(opened, isEmpty);
+          await tester.tap(find.text('bad()', findRichText: true).last);
+          await tester.pumpAndSettle();
+          expect(opened, isEmpty);
+          var linkFocused = false;
+          for (var i = 0; i < 40; i++) {
+            FocusManager.instance.primaryFocus?.context?.visitAncestorElements((
+              element,
+            ) {
+              final widget = element.widget;
+              if (widget is Semantics && widget.properties.link == true) {
+                linkFocused = true;
+              }
+              return !linkFocused;
+            });
+            if (linkFocused) break;
+            await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+            await tester.pumpAndSettle();
+          }
+          expect(linkFocused, isTrue);
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.pumpAndSettle();
+          expect(opened, [Uri.parse('https://example.invalid')]);
+        }
+        final region = tester.state<SelectableRegionState>(
+          find.byType(SelectableRegion).first,
+        );
+        region.selectAll(SelectionChangedCause.keyboard);
+        await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
+        region.contextMenuButtonItems
+            .firstWhere((item) => item.type == ContextMenuButtonType.copy)
+            .onPressed
+            ?.call();
+        await tester.pumpAndSettle();
+        expect(copied, 'code() and code() and bad()');
+        expect(
+          tester.widget<HermesRichText>(find.byType(HermesRichText)).data,
+          source,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'wrapped mixed Markdown preserves copy across live RTL LTR Auto changes',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 1900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      String? copied;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied = (call.arguments as Map)['text'] as String;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      final words = List.filled(9, 'mixed שלום prose').join(' ');
+      final source =
+          'Prefix $words `first()` $words `second()` tail.\n\n- List `third()` with words.\n\n> Quote `fourth()` with words.\n\n```dart\ncode line one\ncode line two\n```';
+      String? baseline;
+      for (final direction in [
+        null,
+        TextDirection.rtl,
+        TextDirection.ltr,
+        null,
+      ]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: HermesRichText(source, textDirection: direction),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final region = tester.state<SelectableRegionState>(
+          find.byType(SelectableRegion).first,
+        );
+        region.selectAll(SelectionChangedCause.keyboard);
+        await tester.pumpAndSettle();
+        region.contextMenuButtonItems
+            .firstWhere((item) => item.type == ContextMenuButtonType.copy)
+            .onPressed
+            ?.call();
+        await tester.pumpAndSettle();
+        baseline ??= copied;
+        expect(
+          copied,
+          baseline,
+          reason: 'Selection source order at $direction',
+        );
+        expect(
+          copied!.indexOf('first()'),
+          lessThan(copied!.indexOf('second()')),
+        );
+        expect(
+          copied!.indexOf('third()'),
+          lessThan(copied!.indexOf('fourth()')),
+        );
+        expect(copied, contains('code line one\ncode line two'));
+        expect(tester.takeException(), isNull);
+      }
     },
   );
 }

@@ -54,6 +54,7 @@ echo "Running Playwright tests..."
 DEFAULT_SPECS=(
   playwright/tests/regression/browser-surfaces.spec.mjs
   playwright/tests/regression/settings-search.spec.mjs
+  playwright/tests/regression/parity-local-outcomes.spec.mjs
   playwright/tests/regression/chat-workspace-overlay.spec.mjs
   playwright/tests/regression/browser-cors-streams.spec.mjs
   playwright/tests/regression/chat-approval-confirmations.spec.mjs
@@ -62,6 +63,7 @@ DEFAULT_SPECS=(
   playwright/tests/regression/hermes-live-say-hi.spec.mjs
   playwright/tests/regression/hermes-smoke.spec.mjs
   playwright/tests/screenshots/e2e-screenshots.spec.mjs
+  playwright/tests/regression/reasoning-disclosure.spec.mjs
 )
 for spec in "${DEFAULT_SPECS[@]}"; do
   echo ""

@@ -788,6 +788,10 @@ final answer = veryLongFunctionNameThatMustScrollHorizontally();
   testWidgets(
     'reasoning keyboard disclosure retains focus through completion',
     (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'wing.chat.reasoning_collapsed_by_default': true,
+        'wing.tips.dismissed.v1': ['moreDestinations', 'voice', 'approvals'],
+      });
       debugDefaultTargetPlatformOverride = TargetPlatform.linux;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
       final semantics = tester.ensureSemantics();

@@ -176,3 +176,49 @@ closure, the two-task PARITY batch and its round/dependency edge. `git diff --ch
 passed. During validation, the temporary checker was corrected to use the
 repository's heading-slug convention, and a router-test citation end was corrected
 from 141 to the actual final line 135. Neither required a product/test-code edit.
+
+
+## Implementation follow-through — 2026-10-24
+
+`CLONE03-LOCAL-NEXT` now adds the working Chat display child and canonical
+`appearance.text-direction` search/deep-link field. Auto/RTL/LTR is an install-local
+reading preference; prose, lists/quotes, reasoning and the draft composer update
+live while code remains LTR. Auto removes only the direction key and leaves
+Wing's previous automatic rendering in place. Draft text, controller, selection,
+composition and channel ownership remain intact; the shell keeps its direction.
+
+Preference hydration now merges only fields touched before loading, and writes
+only changed preference fields. This prevents an early direction choice from
+clobbering an existing text scale or spellcheck preference. Existing theme/avatar
+records are preserved. No Agent operation or configuration write is introduced.
+
+The exact four reference files named above were read from the pinned GitHub raw
+source after the local object lookup failed; no checkout, fetch or reference edit
+was used. Their Auto persistence, explicit direction, code isolation and field
+routing agree with the implementation's bounded scope.
+
+Executed locally with Flutter 3.44.2 / Dart 3.12.2:
+
+- Locked warm-cache `flutter pub get --offline --enforce-lockfile`: passed, no
+  lockfile changes. `flutter gen-l10n` generated the localization outputs.
+- The new named persistence case initially failed because the control was absent.
+- The two new direction test targets passed all **9** cases, including malformed
+  preferences, a newer choice before hydration, 390/1280px at 200% text, keyboard
+  operation, field precedence/search and mounted Chat draft/code isolation.
+- The broader requested Settings/router/transcript/composer/viewport/plan run
+  completed with 223 passes and one plan-mapping failure: listing the subset as
+  the full clone's primary task required a backlink that the bounded task does
+  not own. The table now retains full-clone admission as pending and names the
+  admitted subset in its explanation. No task record or guard was changed.
+- The final targeted rerun passed **27** cases:
+  `flutter test --no-pub --concurrency=1
+  test/features/settings/chat_text_direction_settings_test.dart
+  test/features/hermes_chat/screens/hermes_chat_text_direction_test.dart
+  test/tooling/plan_backlog_contract_test.dart
+  test/tooling/plan_backlog_traceability_test.dart`.
+- `flutter analyze --no-pub`: no issues after correcting two test style notices.
+- Changed Dart formatting, Markdown local links and `git diff --check`: passed.
+
+The coordinator owns the integrated whole-suite and web build/browser gate. This
+implementation record does not claim native GTK, Android, macOS/Windows, physical
+input, paired visual parity or complete Settings/CLONE-03/PARITY acceptance.

@@ -124,6 +124,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                   child: _SchedulesBody(
                     key: ObjectKey(owner),
                     state: channel.state,
+                    isCurrentOwner: () => _isJobsOwner(channel, owner),
                     strings: strings,
                     refreshFailed: _refreshFailed,
                     onRetry: () => _refresh(channel, owner),
@@ -243,10 +244,11 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
   }
 }
 
-class _SchedulesBody extends StatelessWidget {
+class _SchedulesBody extends StatefulWidget {
   const _SchedulesBody({
     super.key,
     required this.state,
+    required this.isCurrentOwner,
     required this.strings,
     required this.refreshFailed,
     required this.onRetry,
@@ -260,6 +262,7 @@ class _SchedulesBody extends StatelessWidget {
   });
 
   final HermesChannelState state;
+  final bool Function() isCurrentOwner;
   final AppLocalizations strings;
   final bool refreshFailed;
   final Future<void> Function() onRetry;
@@ -272,7 +275,26 @@ class _SchedulesBody extends StatelessWidget {
   final FocusNode clearFocusNode;
 
   @override
+  State<_SchedulesBody> createState() => _SchedulesBodyState();
+}
+
+class _SchedulesBodyState extends State<_SchedulesBody> {
+  String? _selectedJobId;
+  bool _showCompactDetail = false;
+
+  @override
   Widget build(BuildContext context) {
+    final state = widget.state;
+    final strings = widget.strings;
+    final refreshFailed = widget.refreshFailed;
+    final onRetry = widget.onRetry;
+    final searchController = widget.searchController;
+    final query = widget.query;
+    final filter = widget.filter;
+    final onQueryChanged = widget.onQueryChanged;
+    final onFilterChanged = widget.onFilterChanged;
+    final onClear = widget.onClear;
+    final clearFocusNode = widget.clearFocusNode;
     if (state.status == HermesConnectionStatus.connecting) {
       return WingSkeletonList(semanticLabel: strings.schedulesLoading);
     }
@@ -324,10 +346,17 @@ class _SchedulesBody extends StatelessWidget {
             boundedHermesMetadataText(job.scheduleDisplay ?? '', 160),
           ].any((value) => value.toLowerCase().contains(normalizedQuery));
     }).toList()..sort(_compareJobs);
-    return RefreshIndicator(
+    final selectedJob = jobs.isEmpty
+        ? null
+        : jobs.firstWhere(
+            (job) => job.id == _selectedJobId,
+            orElse: () => jobs.first,
+          );
+    final list = RefreshIndicator(
       onRefresh: onRetry,
       semanticsLabel: strings.schedulesRefreshing,
       child: ListView(
+        key: PageStorageKey<Object>(widget.key!),
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         children: [
@@ -413,11 +442,102 @@ class _SchedulesBody extends StatelessWidget {
             )
           else
             for (final job in jobs) ...[
-              _ScheduleCard(job: job, strings: strings),
-              const SizedBox(height: 12),
+              ListTile(
+                key: ValueKey('schedule-row-${job.id}'),
+                selected: job.id == selectedJob?.id,
+                title: Text(boundedHermesMetadataText(job.displayName, 120)),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (job.scheduleDisplay?.trim().isNotEmpty ?? false)
+                      Text(
+                        boundedHermesMetadataText(job.scheduleDisplay!, 160),
+                      ),
+                    Text(_jobState(job, strings)),
+                  ],
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  if (!widget.isCurrentOwner()) return;
+                  setState(() {
+                    _selectedJobId = job.id;
+                    _showCompactDetail = true;
+                  });
+                },
+              ),
+              const Divider(height: 1),
             ],
         ],
       ),
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide =
+            constraints.maxWidth >= 820 &&
+            MediaQuery.textScalerOf(context).scale(1) <= 1.3;
+        Widget detail({required bool compact}) => SingleChildScrollView(
+          key: const ValueKey('schedule-selected-detail'),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (compact)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    key: const ValueKey('schedule-detail-back'),
+                    autofocus: true,
+                    onPressed: () {
+                      if (!widget.isCurrentOwner()) return;
+                      setState(() => _showCompactDetail = false);
+                    },
+                    icon: const Icon(Icons.arrow_back),
+                    label: Text(
+                      MaterialLocalizations.of(context).backButtonTooltip,
+                    ),
+                  ),
+                ),
+              if (selectedJob != null)
+                _ScheduleCard(job: selectedJob, strings: strings),
+            ],
+          ),
+        );
+        if (wide) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(width: 300, child: list),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: selectedJob == null
+                    ? WingEmptyState(
+                        icon: Icons.search_off,
+                        title: state.jobs.isEmpty
+                            ? strings.schedulesEmptyTitle
+                            : strings.schedulesNoMatchesTitle,
+                        body: state.jobs.isEmpty
+                            ? strings.schedulesEmptyBody
+                            : strings.schedulesNoMatchesBody,
+                      )
+                    : detail(compact: false),
+              ),
+            ],
+          );
+        }
+        final showDetail =
+            _showCompactDetail &&
+            selectedJob != null &&
+            selectedJob.id == _selectedJobId;
+        return PopScope(
+          canPop: !showDetail,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop && showDetail && widget.isCurrentOwner()) {
+              setState(() => _showCompactDetail = false);
+            }
+          },
+          child: showDetail ? detail(compact: true) : list,
+        );
+      },
     );
   }
 }
@@ -546,18 +666,10 @@ bool _jobsAdvertised(HermesChannelState state) =>
 enum _ScheduleFilter { all, enabled, disabled }
 
 int _compareJobs(HermesJob a, HermesJob b) {
-  if (a.enabled != b.enabled) return a.enabled ? -1 : 1;
-  final aNext = DateTime.tryParse(a.nextRunAt ?? '');
-  final bNext = DateTime.tryParse(b.nextRunAt ?? '');
-  if (aNext != null && bNext != null) {
-    final comparison = aNext.compareTo(bNext);
-    if (comparison != 0) return comparison;
-  } else if (aNext != null) {
-    return -1;
-  } else if (bNext != null) {
-    return 1;
-  }
-  return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+  final title = boundedHermesMetadataText(a.displayName, 120)
+      .toLowerCase()
+      .compareTo(boundedHermesMetadataText(b.displayName, 120).toLowerCase());
+  return title != 0 ? title : a.id.compareTo(b.id);
 }
 
 String _jobState(HermesJob job, AppLocalizations strings) {

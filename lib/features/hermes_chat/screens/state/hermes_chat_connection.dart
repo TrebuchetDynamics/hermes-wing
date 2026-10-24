@@ -684,50 +684,59 @@ extension _HermesChatScreenConnection on _HermesChatScreenState {
       isScrollControlled: true,
       useSafeArea: true,
       builder: (sheetContext) {
-        final pinContact = _sessionPinContact(channel.state);
         return ListenableBuilder(
           listenable: Listenable.merge([channel, _sessionPins]),
-          builder: (_, _) => Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-            ),
-            child: HermesSessionsPanel(
-              state: channel.state,
-              canCreate: _canCreateSession(channel.state),
-              pinnedSessionIds: {
-                for (final session in channel.state.sessions)
-                  if (_sessionPins.isPinned(pinContact, session.id)) session.id,
-              },
-              unreadCompletedSessionIds: _unreadCompletedSessionIds,
-              onTogglePinned: (session) =>
-                  unawaited(_sessionPins.toggle(pinContact, session.id)),
-              onCreate: () {
-                Navigator.of(sheetContext).pop();
-                unawaited(_createSession(context, channel));
-              },
-              onLoadMore: () => unawaited(channel.loadMoreSessions()),
-              onSelect: (session) {
-                Navigator.of(sheetContext).pop();
-                unawaited(_selectSession(context, channel, session));
-              },
-              onRename: (session) {
-                Navigator.of(sheetContext).pop();
-                unawaited(_renameSession(context, channel, session));
-              },
-              onFork: (session) {
-                Navigator.of(sheetContext).pop();
-                unawaited(_forkSession(context, channel, session));
-              },
-              onDelete: (session) {
-                Navigator.of(sheetContext).pop();
-                unawaited(_deleteSession(context, channel, session));
-              },
-              onDeleteSelected: (sessions) {
-                Navigator.of(sheetContext).pop();
-                unawaited(_deleteSessions(context, channel, sessions));
-              },
-            ),
-          ),
+          builder: (_, _) {
+            final pinContact = _sessionPinContact(channel.state);
+            final pinOwnerGeneration = _composerOwnerGeneration;
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+              ),
+              child: HermesSessionsPanel(
+                state: channel.state,
+                canCreate: _canCreateSession(channel.state),
+                pinnedSessionIds: {
+                  for (final session in channel.state.sessions)
+                    if (_sessionPins.isPinned(pinContact, session.id))
+                      session.id,
+                },
+                unreadCompletedSessionIds: _unreadCompletedSessionIds,
+                onTogglePinned: (session) => _toggleSessionPin(
+                  channel,
+                  pinContact,
+                  session,
+                  pinOwnerGeneration,
+                  canAccept: () => sheetContext.mounted,
+                ),
+                onCreate: () {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_createSession(context, channel));
+                },
+                onLoadMore: () => unawaited(channel.loadMoreSessions()),
+                onSelect: (session) {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_selectSession(context, channel, session));
+                },
+                onRename: (session) {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_renameSession(context, channel, session));
+                },
+                onFork: (session) {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_forkSession(context, channel, session));
+                },
+                onDelete: (session) {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_deleteSession(context, channel, session));
+                },
+                onDeleteSelected: (sessions) {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_deleteSessions(context, channel, sessions));
+                },
+              ),
+            );
+          },
         );
       },
     );

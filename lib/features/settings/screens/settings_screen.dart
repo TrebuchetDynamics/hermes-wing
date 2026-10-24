@@ -22,7 +22,12 @@ part 'settings_voice_screen.dart';
 
 enum _SettingsCategory { appearance, chat, voice, connections }
 
-enum _AppearancePage { theme, typography }
+enum _AppearancePage { theme, typography, chatDisplay }
+
+String _appearancePageId(_AppearancePage page) => switch (page) {
+  _AppearancePage.chatDisplay => 'chat-display',
+  _ => page.name,
+};
 
 typedef _SettingsTarget = ({
   _SettingsCategory category,
@@ -79,9 +84,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _appearancePage = switch (widget.initialSetting) {
       'theme' => _AppearancePage.theme,
       'chat-text-scale' => _AppearancePage.typography,
+      'appearance.text-direction' ||
+      'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
       _ =>
         _AppearancePage.values
-                .where((page) => page.name == widget.initialPage)
+                .where((page) => _appearancePageId(page) == widget.initialPage)
                 .firstOrNull ??
             _AppearancePage.theme,
     };
@@ -114,7 +121,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     widget.onCategoryChanged?.call(tab);
     widget.onTargetChanged?.call(
       tab,
-      category == _SettingsCategory.appearance ? _appearancePage.name : null,
+      category == _SettingsCategory.appearance
+          ? _appearancePageId(_appearancePage)
+          : null,
       setting,
     );
   }
@@ -147,6 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final pageLabels = {
       _AppearancePage.theme: strings.settingsThemeHeading,
       _AppearancePage.typography: strings.settingsTypographyHeading,
+      _AppearancePage.chatDisplay: strings.settingsChatDisplayHeading,
     };
     const icons = {
       _SettingsCategory.appearance: Icons.palette_outlined,
@@ -220,12 +230,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   settingLabels: {
                     'theme': strings.settingsThemeHeading,
                     'chat-text-scale': strings.chatTextScaleTitle,
+                    'appearance.text-direction': strings.chatTextDirectionTitle,
+                    'appearance.reasoning-collapsed':
+                        strings.chatReasoningCollapsedTitle,
                   },
                   settingTopics: {
                     'theme': [
                       strings.themeModeSystem,
                       strings.themeModeLight,
                       strings.themeModeDark,
+                    ],
+                    'appearance.reasoning-collapsed': [
+                      strings.settingsChatDisplayHeading,
+                      strings.chatReasoningCollapsedDescription,
+                      'thinking',
+                      'reasoning',
+                    ],
+                    'appearance.text-direction': [
+                      'rtl',
+                      'ltr',
+                      'bidi',
+                      strings.settingsChatDisplayHeading,
+                      strings.chatTextDirectionAuto,
+                      strings.chatTextDirectionRtl,
+                      strings.chatTextDirectionLtr,
                     ],
                     'chat-text-scale': [
                       strings.settingsTypographyHeading,
@@ -281,8 +309,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _SettingsCategory.appearance => [
                             if (_appearancePage == _AppearancePage.theme)
                               const _AppearanceSettingsSection()
-                            else
-                              const _ChatTextScaleSetting(),
+                            else if (_appearancePage ==
+                                _AppearancePage.typography)
+                              const _ChatTextScaleSetting()
+                            else ...const [
+                              _ChatTextDirectionSetting(),
+                              _ReasoningCollapsedSetting(),
+                            ],
                           ],
                           _SettingsCategory.chat => [
                             if (hasSpellcheck) const _ChatSettingsSection(),
@@ -426,7 +459,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   padding: const EdgeInsets.only(left: 20),
                                   child: ListTile(
                                     key: ValueKey(
-                                      'settings-appearance-page-${page.name}',
+                                      'settings-appearance-page-${_appearancePageId(page)}',
                                     ),
                                     title: Text(pageLabels[page]!),
                                     selected:
@@ -522,9 +555,12 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => close(context, (
               category: _SettingsCategory.appearance,
-              page: entry.key == 'theme'
-                  ? _AppearancePage.theme
-                  : _AppearancePage.typography,
+              page: switch (entry.key) {
+                'theme' => _AppearancePage.theme,
+                'appearance.text-direction' ||
+                'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
+                _ => _AppearancePage.typography,
+              },
               setting: entry.key,
             )),
           ),
@@ -684,6 +720,68 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _ReasoningCollapsedSetting extends ConsumerWidget {
+  const _ReasoningCollapsedSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    return SwitchListTile.adaptive(
+      key: const ValueKey('settings-reasoning-collapsed'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(strings.chatReasoningCollapsedTitle),
+      subtitle: Text(strings.chatReasoningCollapsedDescription),
+      value: ref.watch(wingChatPreferencesProvider).reasoningCollapsedByDefault,
+      onChanged: ref
+          .read(wingChatPreferencesProvider.notifier)
+          .setReasoningCollapsedByDefault,
+    );
+  }
+}
+
+class _ChatTextDirectionSetting extends ConsumerWidget {
+  const _ChatTextDirectionSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final direction = ref.watch(wingChatPreferencesProvider).textDirection;
+    final labels = {
+      WingChatTextDirection.auto: strings.chatTextDirectionAuto,
+      WingChatTextDirection.rtl: strings.chatTextDirectionRtl,
+      WingChatTextDirection.ltr: strings.chatTextDirectionLtr,
+    };
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            strings.chatTextDirectionTitle,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final value in WingChatTextDirection.values)
+                ChoiceChip(
+                  key: ValueKey('settings-chat-text-direction-${value.name}'),
+                  label: Text(labels[value]!),
+                  selected: value == direction,
+                  onSelected: (_) => ref
+                      .read(wingChatPreferencesProvider.notifier)
+                      .setTextDirection(value),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4,6 +4,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { readmeTranscriptClip } from "./support/readme_transcript_crop.mjs";
+
 import { enableFlutterAccessibility } from "../playwright/support/flutter_semantics.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -104,7 +106,8 @@ async function assertCleanPresentation(capture) {
 
 async function captureProductFrames(browser) {
   await seedPresentation();
-  const desktop = await openWingPage(browser, { width: 1280, height: 800 });
+  // Keep the full-width transcript readable inside the published 750px frame.
+  const desktop = await openWingPage(browser, { width: 1000, height: 800 });
   await desktop.page.evaluate(() =>
     globalThis.wingE2EHermesSendText(
       "Summarize the sample demo repository structure; do not modify files, run commands, or read secrets.",
@@ -123,9 +126,24 @@ async function captureProductFrames(browser) {
   await desktop.page.waitForTimeout(600);
   await assertCleanPresentation(desktop);
   const desktopPath = path.join(scratch, "desktop.png");
+  const transcript = [
+    desktop.page.getByRole("group", {
+      name: "Summarize the sample demo repository structure; do not modify files, run commands, or read secrets.",
+      exact: true,
+    }),
+    desktop.page.getByRole("group", { name: "File activity", exact: true }),
+    desktop.page.getByRole("group", {
+      name: "The sample notes app keeps its interface in src/, tests in test/, and setup notes in README.md.",
+      exact: true,
+    }),
+  ];
+  const clip = readmeTranscriptClip({
+    viewport: desktop.page.viewportSize(),
+    boxes: await Promise.all(transcript.map((part) => part.boundingBox())),
+  });
   await desktop.page.screenshot({
     path: desktopPath,
-    clip: { x: 530, y: 280, width: 750, height: 310 },
+    clip,
     animations: "disabled",
   });
   await desktop.context.close();
@@ -188,6 +206,7 @@ h1{position:absolute;left:42px;top:58px;margin:0;font-size:34px;line-height:1.1;
 .frame{position:absolute;overflow:hidden;border:1px solid #343943;background:#111318;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .frame img{display:block;width:100%;height:100%;object-fit:cover}
 .desktop{left:42px;top:126px;width:750px;height:310px;border-radius:16px}
+.desktop img{object-fit:contain}
 .mobile{right:42px;top:126px;width:312px;height:576px;border-radius:24px}
 .story{position:absolute;left:42px;top:466px;width:750px;color:#cbd1da;font:22px/1.5 Arial,sans-serif}
 .story p{margin:0 0 16px}.story strong{color:#f4f4f5}

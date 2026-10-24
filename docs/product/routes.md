@@ -2,15 +2,18 @@
 
 Current clone reference: `14e1e43a23761b369641208e204365cd6cb9399d`.
 Settings search opens a dismissible search surface for implemented local categories
-and controls. Appearance now separates Theme and Typography; its parent selects
+and controls. Appearance separates Theme, Typography and Chat display; its parent selects
 the first implemented child, while its caret only expands/collapses navigation.
 Compact Settings uses one hierarchical selector for categories and their supported
 children. Both layouts show a wrapping Settings/category/page breadcrumb; its
 parent opens the first supported child. The wide navigation marks only the
 current leaf as selected. Automatically revealed branches fold when leaving,
 while deliberately expanded branches remain open.
-Search and saved links accept `page=theme|typography` and the official
-`setting=theme|chat-text-scale` targets. A setting selects its owning page even
+Search and saved links accept `page=theme|typography|chat-display` and the
+`setting=theme|chat-text-scale|appearance.text-direction|appearance.reasoning-collapsed`
+targets. Chat display provides local Auto/RTL/LTR text direction and the official
+Collapse thinking by default control. Direction changes preserve the draft and
+source text; code stays LTR. Explicit reasoning disclosure overrides the default. A setting selects its owning page even
 when a saved page disagrees. Category changes clear stale page/setting/field
 parameters and preserve unrelated query parameters. Cancellation preserves the
 current selection; an older search cannot replace newer navigation intent.
@@ -53,13 +56,13 @@ Hermes Wing uses one adaptive route tree. Compact Chat prioritizes the transcrip
 | -------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | `/hermes`      | Chat              | Connection, paginated Agent-owned session and transcript history, runs, voice, approvals, and diagnostics.                                                                                                                                                                                          | implemented |
 | `/discover`    | Discover          | Skills and MCP discovery.                                                                                                                                                                                                                                                                          | planned     |
-| `/tasks`       | More              | Gateway-scoped scheduled-job inventory with refresh and recovery. Agent mutation routes are not yet advertised as exact scoped operations, so create/edit/pause/run/delete controls and Kanban remain hidden.                                                                                                                                                                  | partial     |
+| `/tasks`       | More | Read-only scheduled-job inventory with alphabetical list/detail, retained same-owner selection, responsive Back/search/scroll recovery and exact-scoped refresh. Create/edit/pause/run/delete, delivery/history and Kanban remain unavailable without their exact admitted Agent contracts. | partial |
 | `/profiles`    | Profiles              | Profile inventory and lifecycle, provider/model autocomplete through exact advertised Agent operations; remote folder browsing is unavailable (`/agents` redirects for compatibility). Project creation remains unavailable until Hermes Agent advertises a suitable machine-readable operation; Project-aware Chat is separately gated. | partial     |
 | `/soul`        | More              | Standalone profile persona editor, available only when the selected Agent advertises exact scoped SOUL read/write operations.                                                                                                                                                                  | partial     |
 | `/enroll`      | (deep link)       | Direct Agent welcome: desktop/web Get Started, SSH and Remote; Android SSH, Remote and Termux. Legacy `?step=pair` and intent/share inputs show accessible generic reconnection guidance without parsing/exchange, Link construction or raw payload display. Warm cancellation preserves the caller and draft. Fixture checks are not physical Android or live authentication qualification. | implemented |
 | `/setup/local` | enrollment        | Linux reuses Local metadata-only Hermes-home discovery, deliberate folder selection and direct Agent authentication. Android/Termux reuses the Local manual Agent guide and direct authenticated form. Neither installs/starts a service, returns to pairing or claims automatic readiness. Native installation and live authentication remain unqualified. | partial |
-| `/providers`   | More              | Capability-gated provider inventory, write-only API-key management, credential validation, runtime-model inventory, and model assignment through advertised Agent operations. OAuth providers are labeled as host sign-in rather than opening an API-key form; remote OAuth and multi-credential flows remain contract-gated.                                                            | partial     |
-| `/tools`       | More              | Gateway-scoped searchable installed-skill metadata and resolved toolsets with exact-scoped refresh; mutation, MCP administration, and discovery remain contract-gated.                                                                                                                             | partial     |
+| `/providers`   | More | Independently capability-gated provider and runtime-model inventory plus admitted model actions. Credential Set/Remove/Validate are unavailable pending the exact secret-safe identity/revision/idempotency contract; OAuth and multi-credential administration remain unavailable. | partial |
+| `/tools`       | More | Searchable installed-skill metadata with local category facets (OR categories, AND literal query), retained within the exact read owner, and resolved toolsets with exact-scoped refresh. Skill mutations, MCP administration and discovery remain contract-gated. | partial |
 | `/memory`      | More              | Memory entries, profile, capacity, and providers.                                                                                                                                                                                                                                                  | planned     |
 | `/gateway`     | Connections       | Saved hosts, explicit chat connect/disconnect, bounded Agent health, connection editing/removal, without Wing Link device trust/revocation; lifecycle, logs, peer administration, and messaging-platform administration remain contract-gated.                                                                      | partial     |
 | `/settings`    | More              | Link to Connections, appearance, supported spellcheck, voice, and redacted diagnostics; also selected by Ctrl/Command+, and bounded Linux/Windows/macOS native Settings menu commands.                                                                                                        | implemented |
@@ -205,6 +208,12 @@ retry. Unconfigured catalog providers remain excluded. The model control is also
 reachable in the idle compact composer when supported. This is session-only
 selection, not provider setup, profile configuration or inference qualification.
 See the [session picker runbook](../runbooks/chat-session-model-picker.md).
+
+Schedules presents a title-sorted selectable inventory and one bounded job detail.
+Wide layouts show both panes; compact or large-text layouts open detail with a
+keyboard-operable Back action that restores the query and list position. Selection
+is retained within the same read owner; removed jobs cannot silently replace an
+open compact detail.
 
 Schedules supports pull-to-refresh on its inventory, including short and empty
 lists, alongside the labeled refresh button. Refresh remains an exact-scoped

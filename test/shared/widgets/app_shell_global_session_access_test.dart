@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
+import 'package:wing/core/hermes/setup/hermes_endpoint_store.dart';
 import 'package:wing/features/hermes_chat/gateways/gateway_contact.dart';
 import 'package:wing/features/hermes_chat/gateways/hermes_gateway_directory.dart';
 import 'package:wing/features/hermes_chat/providers/hermes_channel_provider.dart';
@@ -81,13 +82,20 @@ class DelayedChannel extends FakeHermesChannel {
 
 class ContactDirectory extends HermesGatewayDirectory {
   ContactDirectory(HermesChannel channel)
-    : super(
+    : savedBaseUrl = channel.state.connectedBaseUrl,
+      super(
         store: FakeHermesEndpointStore(),
         cache: FakeGatewayContactCache(),
         loader: FakeGatewaySummaryLoader({}),
         activeChannel: channel,
       );
+  final String? savedBaseUrl;
   GatewayContactId? contact;
+  @override
+  HermesEndpointConfig? get activeGatewayConfig =>
+      contact == null || savedBaseUrl == null
+      ? null
+      : HermesEndpointConfig(id: contact!.gatewayId, baseUrl: savedBaseUrl!);
   bool activating = false;
   String? restoring;
   @override

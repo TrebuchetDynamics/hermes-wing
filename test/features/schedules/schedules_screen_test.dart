@@ -139,7 +139,7 @@ void main() {
     },
   );
 
-  testWidgets('clear restores existing enabled/next-run/name ordering', (
+  testWidgets('clear restores alphabetical schedule navigation', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1280, 1600);
@@ -166,29 +166,22 @@ void main() {
     await tester.enterText(search, 'check');
     await tester.pumpAndSettle();
     expect(
-      tester.getTopLeft(find.text('Morning check')).dy,
-      lessThan(tester.getTopLeft(find.text('A later check')).dy),
+      tester.getTopLeft(find.byKey(const ValueKey('schedule-row-later'))).dy,
+      lessThan(
+        tester
+            .getTopLeft(find.byKey(const ValueKey('schedule-row-morning')))
+            .dy,
+      ),
     );
     await tester.tap(clear);
     await tester.pumpAndSettle();
-    final cards = tester.widgetList<Card>(find.byType(Card)).toList();
-    expect(cards, hasLength(4));
-    for (var i = 0; i < cards.length; i++) {
-      expect(
-        find.descendant(
-          of: find.byWidget(cards[i]),
-          matching: find.text(
-            [
-              'Morning check',
-              'A later check',
-              'Evening review',
-              'Failed task',
-            ][i],
-          ),
-        ),
-        findsOneWidget,
-      );
-    }
+    final rows = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
+    expect(rows.map((row) => row.key), const [
+      ValueKey('schedule-row-later'),
+      ValueKey('schedule-row-paused'),
+      ValueKey('schedule-row-error'),
+      ValueKey('schedule-row-morning'),
+    ]);
     expect(channel.loadJobsCalls, 0);
   });
 
@@ -611,10 +604,15 @@ void main() {
     expect(find.text('0 18 * * *'), findsOneWidget);
     expect(find.text('Active'), findsOneWidget);
     expect(find.text('Paused'), findsOneWidget);
-    expect(find.text('Last run reported an error.'), findsOneWidget);
-    expect(find.textContaining('private remote'), findsNothing);
     expect(find.textContaining('Read-only schedule inventory'), findsOneWidget);
     expect(find.text('New task'), findsNothing);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('schedule-row-paused')),
+    );
+    await tester.tap(find.byKey(const ValueKey('schedule-row-paused')));
+    await tester.pumpAndSettle();
+    expect(find.text('Last run reported an error.'), findsOneWidget);
+    expect(find.textContaining('private remote'), findsNothing);
   });
 
   testWidgets('renders errored jobs as errors even when disabled', (
@@ -870,6 +868,18 @@ void main() {
     );
     expect(title, findsOneWidget);
     expect(tester.widget<Text>(title).maxLines, isNull);
+    await tester.tap(find.byKey(const ValueKey('schedule-row-long-job')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('schedule-selected-detail')),
+      findsOneWidget,
+    );
+    expect(find.byType(Card), findsOneWidget);
+    expect(
+      find.text('Every weekday at 09:00 in the selected profile'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('retains schedule content at 200% text scale', (tester) async {

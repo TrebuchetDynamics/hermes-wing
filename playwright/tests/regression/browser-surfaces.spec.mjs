@@ -157,15 +157,16 @@ test("Schedules renders and refreshes read-only jobs", async ({ page }) => {
   await expect(
     page.getByText("Read-only schedule inventory.", { exact: false }),
   ).toBeVisible();
-  await expect(page.getByText(/Morning check/)).toBeVisible();
-  await expect(page.getByText(/Every day at 09:00/)).toBeVisible();
+  await page.getByRole("button", { name: /^Morning check/ }).click();
+  await expect(page.getByText(/Morning check/).last()).toBeVisible();
+  await expect(page.getByText(/Every day at 09:00/).last()).toBeVisible();
   await expect(page.getByText(
     'Morning check Enabled Job ID job_1 Schedule Every day at 09:00',
     { exact: true },
   )).toBeVisible();
   await page.getByRole("button", { name: "Refresh schedules" }).click();
   await expect(
-    page.getByText(/Morning check/),
+    page.getByText(/Morning check/).last(),
   ).toBeVisible();
 });
 

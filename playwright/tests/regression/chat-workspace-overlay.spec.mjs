@@ -257,6 +257,9 @@ for (const width of [390, 1280]) {
     for (const rendered of destination === 'Settings' ? [false, true] : [false]) {
     for (const activeRun of rendered ? [false, true] : [false]) {
     test(`${destination} retains replacement connection${rendered ? ' via rendered saved-host selection' : ''}${activeRun ? ' during active run' : ''} through overlay history at ${width}px/200% text`, async ({ page, request }) => {
+      // Two saved hosts and three history round trips share this case budget.
+      // Individual action and assertion deadlines remain unchanged.
+      if (rendered) test.setTimeout(120000);
       expect((await request.post(`${APP}e2e/hermes/${activeRun ? 'reasoning-disclosure' : 'reset'}`)).ok()).toBe(true);
       const replacementOrigin = new URL(APP);
       replacementOrigin.hostname = 'localhost';
@@ -335,7 +338,7 @@ for (const width of [390, 1280]) {
       await open();
       if (rendered) {
         // Leave Settings through Connections and explicitly activate the saved host.
-        const category = page.getByRole('button', { name: /^Settings Appearance$/ });
+        const category = page.getByRole('button', { name: 'Settings Theme', exact: true });
         if (await category.isVisible()) {
           await category.click();
           await page.getByRole('menuitem', { name: 'Connections', exact: true }).click();

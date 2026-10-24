@@ -532,11 +532,21 @@ void main() {
       'ssh-port',
       'username',
       'password',
-      'agent-port',
       'agent-token',
     ]) {
       expect(find.byKey(ValueKey('managed-ssh-$field')), findsOneWidget);
     }
+    expect(find.byKey(const ValueKey('managed-ssh-agent-port')), findsNothing);
+    final sshAdvanced = find.byKey(const ValueKey('managed-ssh-advanced'));
+    await tester.ensureVisible(sshAdvanced);
+    await tester.tap(
+      find.descendant(of: sshAdvanced, matching: find.text('Advanced')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('managed-ssh-agent-port')),
+      findsOneWidget,
+    );
     for (final secret in ['password', 'agent-token']) {
       expect(
         tester

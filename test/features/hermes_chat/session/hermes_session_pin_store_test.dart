@@ -30,4 +30,24 @@ void main() {
     expect(restored.isPinned(alpha, 'session-1'), isTrue);
     expect(restored.isPinned(beta, 'session-1'), isFalse);
   });
+
+  test('a stale pin choice is rejected after asynchronous loading', () async {
+    SharedPreferences.setMockInitialValues({});
+    const contact = GatewayContactId(gatewayId: 'alpha', profileId: 'default');
+    final store = HermesSessionPinStore();
+    addTearDown(store.dispose);
+    final loading = store.load();
+    var current = true;
+    final toggle = store.toggle(contact, 'session-1', canAccept: () => current);
+    current = false;
+    await loading;
+    await toggle;
+    expect(store.isPinned(contact, 'session-1'), isFalse);
+    expect(
+      (await SharedPreferences.getInstance()).getStringList(
+        'wing.hermes.pinned_sessions.v1',
+      ),
+      isNull,
+    );
+  });
 }

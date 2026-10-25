@@ -49,9 +49,10 @@ RelativeRect _contextMenuPosition(BuildContext context, Offset globalPosition) {
   );
 }
 
-class _HermesTranscriptList extends StatelessWidget {
+class _HermesTranscriptList extends ConsumerWidget {
   const _HermesTranscriptList({
     required this.viewport,
+    required this.sessionId,
     required this.onRevealEarlier,
     required this.onLatest,
     required this.controller,
@@ -87,6 +88,7 @@ class _HermesTranscriptList extends StatelessWidget {
 
   final ScrollController controller;
   final HermesTranscriptViewportController viewport;
+  final String sessionId;
   final VoidCallback onRevealEarlier;
   final VoidCallback onLatest;
   final double textScale;
@@ -119,7 +121,10 @@ class _HermesTranscriptList extends StatelessWidget {
   final VoidCallback onManageProvidersError;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hidden = ref.watch(
+      wingChatPreferencesProvider.select((p) => p.hideThreadTimeline),
+    );
     final eligibleTurns = turns
         .where(
           (turn) =>
@@ -283,7 +288,7 @@ class _HermesTranscriptList extends StatelessWidget {
     }
 
     final gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
-    return RawGestureDetector(
+    final transcript = RawGestureDetector(
       behavior: HitTestBehavior.translucent,
       gestures: {
         _TranscriptScaleGestureRecognizer:
@@ -318,35 +323,47 @@ class _HermesTranscriptList extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) => Column(
             children: [
-              if (viewport.windowStart > 0)
-                OutlinedButton.icon(
-                  key: const ValueKey('hermes-transcript-reveal-earlier'),
-                  onPressed: onRevealEarlier,
-                  icon: const Icon(Icons.unfold_more),
-                  label: Text(
-                    AppLocalizations.of(
-                      context,
-                    ).chatTranscriptRevealEarlier(viewport.windowStart),
+              if (viewport.windowStart > 0 ||
+                  viewport.mode != HermesViewportMode.followingLatest)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 48),
+                    child: Column(
+                      children: [
+                        if (viewport.windowStart > 0)
+                          OutlinedButton.icon(
+                            key: const ValueKey(
+                              'hermes-transcript-reveal-earlier',
+                            ),
+                            onPressed: onRevealEarlier,
+                            icon: const Icon(Icons.unfold_more),
+                            label: Text(
+                              AppLocalizations.of(
+                                context,
+                              ).chatTranscriptRevealEarlier(
+                                viewport.windowStart,
+                              ),
+                            ),
+                          ),
+                        if (viewport.mode != HermesViewportMode.followingLatest)
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton.icon(
+                              key: const ValueKey('hermes-transcript-latest'),
+                              onPressed: onLatest,
+                              icon: const Icon(Icons.arrow_downward, size: 16),
+                              label: Text(
+                                AppLocalizations.of(
+                                  context,
+                                ).chatTranscriptLatestAction,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ListenableBuilder(
-                listenable: viewport,
-                builder: (context, child) =>
-                    viewport.mode == HermesViewportMode.followingLatest
-                    ? const SizedBox.shrink()
-                    : Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: child,
-                      ),
-                child: TextButton.icon(
-                  key: const ValueKey('hermes-transcript-latest'),
-                  onPressed: onLatest,
-                  icon: const Icon(Icons.arrow_downward, size: 16),
-                  label: Text(
-                    AppLocalizations.of(context).chatTranscriptLatestAction,
-                  ),
-                ),
-              ),
               Expanded(
                 child: SizedBox(
                   key: viewport.listKey,
@@ -388,6 +405,22 @@ class _HermesTranscriptList extends StatelessWidget {
           ),
         ),
       ),
+    );
+    return HermesThreadTimeline(
+      turns: turns,
+      sessionId: sessionId,
+      viewport: viewport,
+      hidden: hidden,
+      onJump: (id) => viewport.jumpToPrompt(id, eligibleTurns),
+      onEarlier: viewport.windowStart > 0
+          ? onRevealEarlier
+          : onLoadEarlierMessages,
+      canShowEarlier: viewport.windowStart > 0 || canLoadEarlierMessages,
+      loadingEarlier: isLoadingEarlierMessages,
+      hasHeader:
+          viewport.windowStart > 0 ||
+          viewport.mode != HermesViewportMode.followingLatest,
+      child: transcript,
     );
   }
 

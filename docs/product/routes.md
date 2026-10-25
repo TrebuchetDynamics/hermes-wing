@@ -10,7 +10,7 @@ parent opens the first supported child. The wide navigation marks only the
 current leaf as selected. Automatically revealed branches fold when leaving,
 while deliberately expanded branches remain open.
 Search and saved links accept `page=theme|typography|window-layout|chat-display` and the
-`setting=theme|chat-text-scale|appearance.session-density|appearance.backdrop|appearance.text-direction|appearance.reasoning-collapsed`
+`setting=theme|chat-text-scale|appearance.session-density|appearance.backdrop|appearance.text-direction|appearance.hide-thread-timeline|appearance.reasoning-collapsed`
 targets. Window layout provides install-local Session List Density: Compact keeps
 loaded sidebar titles, Comfortable adds available model/message/tool counts, and
 Detailed also adds a bounded redacted preview for titled sessions. Missing data is
@@ -24,7 +24,20 @@ from semantics/input/focus, and never filters or remounts the foreground. See th
 [round-4 offline evidence](../tasks/plan-clone03-local-round4.md#implementation-follow-through--clone03backdrop-001-1b78232c)
 and [pinned artwork notice](../../assets/desktop/README.md). Native/live and matched
 visual qualification remain unrun. Chat display provides local Auto/RTL/LTR text direction and the official
-Collapse thinking by default control. Direction changes preserve the draft and
+Collapse thinking by default control. Between direction and reasoning, **Hide thread
+timeline bars** defaults off and persists only on this installation
+(`wing.chat.hide_thread_timeline`). The canonical `appearance.hide-thread-timeline`
+field selects Chat display even with `page=theme`; search also accepts conversation,
+rail and navigation. It hides both the wide right-edge bars and the full-size
+**Conversation timeline** prompt list, without remounting or reflowing the transcript
+or composer. The list is also the compact, keyboard/touch/semantics equivalent.
+Only loaded unique user prompts are targets; bounded redacted previews stay
+process-local. Jumps use a bounded measured transcript window, without a history
+read. Explicit **Show earlier** reveals local hidden turns first, then permits the
+existing eligible Agent history read. There is no index probe, automatic pagination,
+configuration write or navigation to unloaded archive prompts. See the
+[round-5 implementation evidence and limits](../tasks/plan-clone03-local-round5.md#implementation-follow-through--paritycontinue-001-421b2b55).
+Direction changes preserve the draft and
 source text; code stays LTR. Explicit reasoning disclosure overrides the default. A setting selects its owning page even
 when a saved page disagrees. Category changes clear stale page/setting/field
 parameters and preserve unrelated query parameters. Cancellation preserves the

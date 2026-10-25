@@ -49,6 +49,8 @@ void main() {
       );
       expect(tester.widget<SwitchListTile>(control).value, isFalse);
       await tester.ensureVisible(control);
+      await tester.pumpAndSettle();
+      expect(control.hitTestable(), findsOneWidget);
       await tester.tap(control);
       await tester.pumpAndSettle();
       final prefs = await SharedPreferences.getInstance();

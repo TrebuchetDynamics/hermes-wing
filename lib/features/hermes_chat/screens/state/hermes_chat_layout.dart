@@ -1554,6 +1554,7 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
     }
 
     return _HermesTranscriptList(
+      sessionId: activeSessionId ?? '',
       viewport: _transcriptViewport,
       onRevealEarlier: () {
         _transcriptViewport.userScrolled(nearLatest: false);

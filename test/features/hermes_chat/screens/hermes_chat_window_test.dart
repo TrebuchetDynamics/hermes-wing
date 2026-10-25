@@ -39,11 +39,13 @@ Future<void> open(
   WidgetTester tester,
   FakeHermesChannel channel, {
   double scale = 1,
+  ThemeData? theme,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [hermesChannelProvider.overrideWithValue(channel)],
       child: MaterialApp(
+        theme: theme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(

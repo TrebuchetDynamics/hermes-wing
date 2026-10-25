@@ -1,0 +1,9 @@
+schema = 1
+task = "UI-DRIFT-REPAIR-001"
+candidate = "51dd9846521bbd4bea5dd195f313d7f8d115c0f3"
+integration = "3d0b6b6e38e39651c6811282956f953161f64212"
+tree = "2d6dee5add4a334c84d8a54eb8af89053764a169"
+contract_hash = "eee640fef75f86a336e52afe2c64de684361dc9f65893345ffe6e1f75b61b9fd"
+checks = ["<path>", "<path>", "--verify", "<path>", "UI-DRIFT-REPAIR-001"]
+result = "pass"
+review = "passed"

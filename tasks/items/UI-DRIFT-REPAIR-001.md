@@ -3,7 +3,7 @@ schema = 1
 id = "UI-DRIFT-REPAIR-001"
 title = "Repair the red hermes_chat widget and 200%-text web journeys at current main"
 short = "Repair red chat journeys at main"
-status = "open"
+status = "done"
 goal = "CHAT-FIDELITY"
 section = "Now"
 rank = 1000
@@ -16,6 +16,8 @@ scope = "Repair only the two reproduced failure clusters recorded below. Cluster
 acceptance = ["Each named journey below passes on the current tree with its purpose preserved, or is replaced by an equally strong assertion that matches verified current product behaviour; no journey is skipped, filtered or weakened, and no acceptance is reduced to 'test deleted'.", "The cause of each cluster is recorded: either a product defect fixed at the source, or a spec/expectation that drifted from an intentional, currently correct behaviour with the commit that changed it named. A 200%-text failure is not dismissed as flakiness without three consecutive isolated runs of the same journey.", "Evidence lists the exact commands, pass/fail counts and any remaining red cells. Cluster A and cluster B are reported separately, and a green focused run is not reported as whole-suite green."]
 checks = ["flutter pub get --enforce-lockfile", "dart format --output=none --set-exit-if-changed lib test", "flutter analyze --no-pub", "flutter test --no-pub --concurrency=1 test/features/hermes_chat/widgets/ssh_quick_connect_test.dart test/features/hermes_chat/widgets/connection_information_help_dialog_test.dart test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart test/features/hermes_chat/screens/hermes_connection_primary_entry_test.dart", "flutter test --no-pub --concurrency=1 test/features/hermes_chat/", "flutter pub get --enforce-lockfile && flutter test --no-pub --concurrency=1", "flutter build web --release -t lib/main_e2e.dart && npm run web:e2e", "autowork tasks validate --worktree .", "git diff --check"]
 exclusions = ["No test deletion, skip, filter, timeout inflation or assertion weakening used as the fix", "No unrelated product, Files, Agent, runtime, credential or live/device changes", "No lockfile, SDK, CI gate or receipt changes", "No claim that main is green while either cluster still fails"]
+closure = "coordinator_verified"
+closure_evidence = "tasks/evidence/UI-DRIFT-REPAIR-001.toml"
 +++
 
 - Sources: [Full check](AGENTS.md#validation) and the journey owners [connection paths](docs/product/routes.md) and [chat fidelity](docs/product/prd.md).

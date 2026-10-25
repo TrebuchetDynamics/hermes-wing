@@ -180,8 +180,10 @@ selection is checked separately after the planning commit.
 
 ## Implementation follow-through
 
-`CLONE03BUBBLE-001-57d0863e` implements this bounded local outcome on its isolated
-task branch, pending coordinator integration and the runner's whole-suite gate.
+`CLONE03BUBBLE-001-57d0863e` implemented this bounded local outcome in
+`6eabe961e7a7d63137d0efab0e539be730e94273`, now integrated and coordinator-verified
+closed at the round-3 baseline `3eda8d50`. The check inventory below is the original
+worker evidence, not a fresh run or platform qualification.
 Appearance > Chat display now offers **Message Bubble**, a localized, named
 0–100% slider with step-1 keyboard and semantics adjustment. Search and the
 canonical `appearance.user-bubble` field open Chat display even when `page=theme`;
@@ -221,6 +223,7 @@ These are deterministic tests, not browser UI, screen-reader runtime, native GTK
 Android, macOS/Windows, physical-input, live Agent/provider or paired Desktop visual
 qualification. Renderer overlay peeking, native glass and an inline-edit composer
 remain excluded and unqualified. The runner owns the unchanged full suite; focused
-passes do not replace it. `PLANCLONE03LOCAL-001-84ad1ad6` remains the existing
-round-3 continuation after coordinator verification, not new work dispatched here.
+passes do not replace it. `PLANCLONE03LOCAL-001-84ad1ad6` is reconciled in the
+[round-3 handoff](plan-clone03-local-round3.md#batch-and-continuation), which saves
+the next local outcome and manually closes that planning activity without dispatch.
 Whole Settings/CLONE-03/PARITY acceptance remains partial.

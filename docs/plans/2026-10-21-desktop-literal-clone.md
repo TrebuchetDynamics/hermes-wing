@@ -845,7 +845,9 @@ revocación para verificar presentación. Cloud/OAuth de conexión sigue CLONE-0
 Disposición: **Proposal** salvo el subconjunto local de CLONE-03 admitido por
 [PLAN-CLONE03-LOCAL-FRONTIER](../../tasks/items/PLAN-CLONE03-LOCAL-FRONTIER.md)
 y su implementación [CLONE03-LOCAL-NEXT](../../tasks/items/CLONE03-LOCAL-NEXT.md),
-trazados en [el handoff de Settings](../tasks/plan-clone03-local-frontier.md).
+trazados en [el handoff de Settings](../tasks/plan-clone03-local-frontier.md#retry-reconciliation--c26b43ea). La revisión conserva los ajustes ya integrados,
+restaura el flujo continuo Auto/LTR, invalida cachés de Markdown por dirección y
+repara fixtures de navegación sin cambiar conexiones ni razonamiento en producción.
 Este subconjunto añade Chat display → Text direction (Auto/RTL/LTR), persistencia
 local y consumidores de texto/compositor. No admite ni cierra el clon completo.
 La [cobertura plan→tarea](README.md#plan-to-task-coverage) conserva el resto como

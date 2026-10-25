@@ -28,7 +28,9 @@ void main() {
       ),
     );
     final (channel, store, _) = await pumpEntry(tester, TargetPlatform.android);
-    for (final mode in ['local', 'ssh', 'remote']) {
+    await activate(tester, 'hermes-connection-mode-ssh');
+    expect(key('connection-information-help'), findsNothing);
+    for (final mode in ['local', 'remote']) {
       await activate(tester, 'hermes-connection-mode-$mode');
       expect(key('connection-information-help'), findsOneWidget);
       if (mode == 'remote') {
@@ -74,7 +76,7 @@ void main() {
       });
       expect(restored, isTrue);
     }
-    expect(copied, hasLength(3));
+    expect(copied, hasLength(2));
     expect(channel.state.isConnected, isFalse);
     expect(store.saveCalls, isEmpty);
     expect(tester.takeException(), isNull);

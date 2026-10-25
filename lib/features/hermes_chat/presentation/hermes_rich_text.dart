@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
@@ -85,6 +84,14 @@ class _HermesRichTextState extends State<HermesRichText> {
     _plainChunks = chunks;
   }
 
+  void _openLink(String? href) {
+    final uri = href == null ? null : Uri.tryParse(href);
+    if (uri == null || !_safeLinkSchemes.contains(uri.scheme.toLowerCase())) {
+      return;
+    }
+    unawaited((widget.launchUri ?? _launchUri)(uri));
+  }
+
   @override
   void dispose() {
     _selection.dispose();
@@ -125,10 +132,9 @@ class _HermesRichTextState extends State<HermesRichText> {
       blockSpacing: 12,
       listIndent: 22,
     );
-    final inlineCode = _HermesInlineCodeBuilder(widget.launchUri ?? _launchUri);
     var remainingImagePixels = widget.inlineImagePixelBudget;
     final chunks = _plainChunks;
-    final renderedMarkdown = chunks != null
+    final markdown = chunks != null
         ? ListView.builder(
             controller: _scroll,
             padding: EdgeInsets.zero,
@@ -143,14 +149,17 @@ class _HermesRichTextState extends State<HermesRichText> {
             // every suffix of an unbroken trailing word. Consume that word once;
             // punctuation still goes through the normal GFM link/markup syntaxes.
             inlineSyntaxes: [
-              if (widget.textDirection != null) _HermesInlineCodeLinkSyntax(),
+              _InlineCodeLinkSyntax(),
               md.TextSyntax(r'[A-Za-z0-9]+$'),
             ],
             styleSheet: markdownStyle,
             shrinkWrap: true,
             builders: {
               'pre': _HermesCodeBlockBuilder(outerSelection: selectable),
-              if (widget.textDirection != null) ...{'code': inlineCode},
+              'code': _HermesInlineCodeBuilder(
+                onTapLink: _openLink,
+                isolateForRtl: widget.textDirection == TextDirection.rtl,
+              ),
             },
             imageBuilder: (uri, title, alt) => _buildTranscriptImage(
               strings: strings,
@@ -162,20 +171,7 @@ class _HermesRichTextState extends State<HermesRichText> {
                 return true;
               },
             ),
-            onTapLink: (text, href, title) {
-              final uri = href == null ? null : Uri.tryParse(href);
-              if (uri == null ||
-                  !_safeLinkSchemes.contains(uri.scheme.toLowerCase())) {
-                return;
-              }
-              unawaited((widget.launchUri ?? _launchUri)(uri));
-            },
-          );
-    final markdown = widget.textDirection == null
-        ? renderedMarkdown
-        : Directionality(
-            textDirection: widget.textDirection!,
-            child: renderedMarkdown,
+            onTapLink: (text, href, title) => _openLink(href),
           );
     final content = large
         ? Column(
@@ -233,40 +229,46 @@ class _HermesRichTextState extends State<HermesRichText> {
                 : content,
           )
         : content;
-    return large
-        ? Actions(
-            actions: {
-              ScrollIntent: CallbackAction<ScrollIntent>(
-                onInvoke: (intent) {
-                  if (axisDirectionToAxis(intent.direction) != Axis.vertical) {
-                    ScrollAction().invoke(
-                      intent,
-                      FocusManager.instance.primaryFocus?.context,
+    // Keep this boundary mounted when Auto clears the override, preserving
+    // selection and scroll owners. Only prose inherits the explicit direction.
+    return Directionality(
+      textDirection: widget.textDirection ?? Directionality.of(context),
+      child: large
+          ? Actions(
+              actions: {
+                ScrollIntent: CallbackAction<ScrollIntent>(
+                  onInvoke: (intent) {
+                    if (axisDirectionToAxis(intent.direction) !=
+                        Axis.vertical) {
+                      ScrollAction().invoke(
+                        intent,
+                        FocusManager.instance.primaryFocus?.context,
+                      );
+                      return null;
+                    }
+                    if (!_scroll.hasClients) return null;
+                    final position = _scroll.position;
+                    final distance = intent.type == ScrollIncrementType.page
+                        ? position.viewportDimension * .8
+                        : 50.0;
+                    _scroll.jumpTo(
+                      (position.pixels +
+                              (intent.direction == AxisDirection.down
+                                  ? distance
+                                  : -distance))
+                          .clamp(
+                            position.minScrollExtent,
+                            position.maxScrollExtent,
+                          ),
                     );
                     return null;
-                  }
-                  if (!_scroll.hasClients) return null;
-                  final position = _scroll.position;
-                  final distance = intent.type == ScrollIncrementType.page
-                      ? position.viewportDimension * .8
-                      : 50.0;
-                  _scroll.jumpTo(
-                    (position.pixels +
-                            (intent.direction == AxisDirection.down
-                                ? distance
-                                : -distance))
-                        .clamp(
-                          position.minScrollExtent,
-                          position.maxScrollExtent,
-                        ),
-                  );
-                  return null;
-                },
-              ),
-            },
-            child: selected,
-          )
-        : selected;
+                  },
+                ),
+              },
+              child: selected,
+            )
+          : selected,
+    );
   }
 }
 
@@ -405,36 +407,39 @@ class _SafeInlineTranscriptImage {
 
 Future<bool> _launchUri(Uri uri) => launchUrl(uri);
 
-class _HermesInlineCodeLinkSyntax extends md.LinkSyntax {
+// Keep the package's link parsing and ordinary link spans. Only code needs
+// its enclosing destination because its isolated widget replaces that span.
+class _InlineCodeLinkSyntax extends md.LinkSyntax {
   @override
   md.Node createNode(
     String destination,
     String? title, {
     required List<md.Node> Function() getChildren,
   }) {
-    final node = super.createNode(destination, title, getChildren: getChildren);
-    if (node is md.Element) {
-      void annotate(md.Node child) {
-        if (child is! md.Element) return;
-        if (child.tag == 'code') {
-          child.attributes['data-wing-code-href'] = node.attributes['href']!;
-        }
-        for (final descendant in child.children ?? <md.Node>[]) {
-          annotate(descendant);
-        }
+    final link =
+        super.createNode(destination, title, getChildren: getChildren)
+            as md.Element;
+    void annotate(md.Node node) {
+      if (node is! md.Element) return;
+      if (node.tag == 'code') {
+        node.attributes['wing-code-link'] = link.attributes['href']!;
       }
-
-      for (final child in node.children ?? <md.Node>[]) {
-        annotate(child);
-      }
+      node.children?.forEach(annotate);
     }
-    return node;
+
+    link.children?.forEach(annotate);
+    return link;
   }
 }
 
 class _HermesInlineCodeBuilder extends MarkdownElementBuilder {
-  _HermesInlineCodeBuilder(this.launchUri);
-  final HermesUriLauncher launchUri;
+  _HermesInlineCodeBuilder({
+    required this.onTapLink,
+    required this.isolateForRtl,
+  });
+
+  final void Function(String?) onTapLink;
+  final bool isolateForRtl;
 
   @override
   Widget? visitElementAfterWithContext(
@@ -443,28 +448,44 @@ class _HermesInlineCodeBuilder extends MarkdownElementBuilder {
     TextStyle? preferredStyle,
     TextStyle? parentStyle,
   ) {
-    final candidate = Uri.tryParse(
-      element.attributes['data-wing-code-href'] ?? '',
-    );
-    final uri =
+    final href = element.attributes['wing-code-link'];
+    final candidate = href == null ? null : Uri.tryParse(href);
+    final safeLink =
         candidate != null &&
-            _safeLinkSchemes.contains(candidate.scheme.toLowerCase())
-        ? candidate
-        : null;
-    if (uri == null) {
-      return Text(
-        element.textContent,
-        textDirection: TextDirection.ltr,
-        style: preferredStyle,
-      );
-    }
-    return _HermesInlineCodeLink(
-      text: element.textContent,
-      style: preferredStyle?.copyWith(
-        color: Theme.of(context).colorScheme.primary,
-        decoration: TextDecoration.underline,
+        _safeLinkSchemes.contains(candidate.scheme.toLowerCase());
+    final style = parentStyle?.merge(preferredStyle) ?? preferredStyle;
+    final code = Text(
+      element.textContent,
+      textDirection: TextDirection.ltr,
+      style: style,
+    );
+    final isolated = Directionality(
+      textDirection: TextDirection.ltr,
+      child: !safeLink
+          ? code
+          : _HermesInlineCodeLink(
+              text: element.textContent,
+              style: style?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                decoration: TextDecoration.underline,
+              ),
+              onActivate: () => onTapLink(href),
+            ),
+    );
+    // Text.rich privately sorts WidgetSpan selection fragments left-to-right.
+    // Keep RTL code separate so the transcript delegate can order it correctly;
+    // Auto/LTR retain mergeable spans and continuous paragraph wrapping.
+    if (isolateForRtl) return isolated;
+    return Text.rich(
+      TextSpan(
+        children: [
+          WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: isolated,
+          ),
+        ],
       ),
-      onActivate: () => unawaited(launchUri(uri)),
     );
   }
 }
@@ -484,19 +505,13 @@ class _HermesInlineCodeLink extends StatefulWidget {
 }
 
 class _HermesInlineCodeLinkState extends State<_HermesInlineCodeLink> {
-  late final _tap = TapGestureRecognizer()..onTap = () => widget.onActivate();
   bool _focused = false;
-
-  @override
-  void dispose() {
-    _tap.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) => Semantics(
     link: true,
     child: FocusableActionDetector(
+      mouseCursor: SystemMouseCursors.click,
       onShowFocusHighlight: (focused) => setState(() => _focused = focused),
       shortcuts: const {
         SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
@@ -510,10 +525,11 @@ class _HermesInlineCodeLinkState extends State<_HermesInlineCodeLink> {
           },
         ),
       },
-      child: Text.rich(
-        TextSpan(
-          text: widget.text,
-          recognizer: _tap,
+      child: GestureDetector(
+        onTap: widget.onActivate,
+        child: Text(
+          widget.text,
+          textDirection: TextDirection.ltr,
           style: _focused
               ? widget.style?.copyWith(
                   backgroundColor: Theme.of(
@@ -522,7 +538,6 @@ class _HermesInlineCodeLinkState extends State<_HermesInlineCodeLink> {
                 )
               : widget.style,
         ),
-        textDirection: TextDirection.ltr,
       ),
     ),
   );
@@ -578,71 +593,74 @@ class _HermesCodeBlockBuilder extends MarkdownElementBuilder {
     final selectableCode = outerSelection
         ? codeContent
         : SelectionArea(child: codeContent);
-    return DecoratedBox(
-      key: const ValueKey('hermes-code-block'),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
-        border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: Text(
-                    language.isEmpty ? 'code' : language,
-                    key: const ValueKey('hermes-code-language'),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.7,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: DecoratedBox(
+        key: const ValueKey('hermes-code-block'),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLowest,
+          border: Border.all(color: colors.outlineVariant),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: Text(
+                      language.isEmpty ? 'code' : language,
+                      key: const ValueKey('hermes-code-language'),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.7,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              // Bind late feedback to this code action, not the Markdown owner.
-              Builder(
-                builder: (context) => IconButton(
-                  key: const ValueKey('hermes-code-copy'),
-                  tooltip: strings.copyCodeAction,
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.copy_outlined, size: 18),
-                  onPressed: () async {
-                    var copied = false;
-                    try {
-                      await Clipboard.setData(ClipboardData(text: code));
-                      copied = true;
-                    } catch (_) {
-                      // Platform diagnostics may contain private data.
-                    }
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          copied
-                              ? strings.codeCopiedMessage
-                              : strings.codeCopyFailedMessage,
+                // Bind late feedback to this code action, not the Markdown owner.
+                Builder(
+                  builder: (context) => IconButton(
+                    key: const ValueKey('hermes-code-copy'),
+                    tooltip: strings.copyCodeAction,
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.copy_outlined, size: 18),
+                    onPressed: () async {
+                      var copied = false;
+                      try {
+                        await Clipboard.setData(ClipboardData(text: code));
+                        copied = true;
+                      } catch (_) {
+                        // Platform diagnostics may contain private data.
+                      }
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            copied
+                                ? strings.codeCopiedMessage
+                                : strings.codeCopyFailedMessage,
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-          if (isLong)
-            _CollapsibleCodeContent(
-              showMoreLabel: strings.showMoreAction,
-              showLessLabel: strings.showLessAction,
-              child: selectableCode,
-            )
-          else
-            selectableCode,
-        ],
+              ],
+            ),
+            if (isLong)
+              _CollapsibleCodeContent(
+                showMoreLabel: strings.showMoreAction,
+                showLessLabel: strings.showLessAction,
+                child: selectableCode,
+              )
+            else
+              selectableCode,
+          ],
+        ),
       ),
     );
   }

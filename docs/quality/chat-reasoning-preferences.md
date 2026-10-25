@@ -34,7 +34,7 @@ Review also reproduced an inline-code link regression in the first direction
 slice. The correction uses Markdown's public `LinkSyntax.createNode` unchanged
 and annotates only code AST nodes with the normalized parent href. Ordinary
 anchors keep their native renderer; isolated code uses the existing safe scheme
-allowlist and launcher, keyboard activation and a disposed tap recognizer. No
+allowlist and launcher, keyboard activation and a selection-compatible gesture target. No
 source text or bidi control is inserted. Both inline and reference-style links,
 unlinked duplicate code and rejected schemes are covered.
 
@@ -44,6 +44,17 @@ for **explicit RTL**, uses first-fragment line position and RTL inline order to
 preserve copied text across wraps. Auto and explicit LTR keep the prior selection
 container path. Narrow paragraph/list/quote/fenced-code copy is compared against
 the original Auto output through live direction changes.
+
+The [CLONE03 retry](../tasks/plan-clone03-local-frontier.md#retry-reconciliation--c26b43ea)
+restores continuous Auto/LTR paragraphs around isolated inline code, with code-link
+semantics, safe activation and logical selected-copy order retained. Explicit RTL
+keeps its existing isolated-widget layout and selection delegate; continuous RTL
+paragraph wrapping is not certified. A stable inherited direction boundary removes
+only the forced prose direction when Auto is chosen. Markdown extent caches now
+invalidate on direction changes. The original reduced-motion keyboard journeys
+explicitly opt into collapsed presentation before exercising manual disclosure;
+the accepted expanded live-preview default and all production reasoning behavior
+are unchanged.
 
 ## Executed validation
 

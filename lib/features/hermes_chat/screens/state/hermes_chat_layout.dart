@@ -1045,18 +1045,20 @@ extension _HermesChatScreenLayout on _HermesChatScreenState {
         final showSessionRail =
             constraints.maxWidth >= 1100 &&
             !AppShellSessionNavigation.of(context);
-        final chatPane = _buildChatPane(
-          context: context,
-          channel: channel,
-          state: state,
-          pendingApproval: pendingApproval,
-          pendingApprovalCount: pendingApprovalCount,
-          canRespondToApprovals: canRespondToApprovals,
-          hasActiveSession: hasActiveSession,
-          hasChatTransport: hasChatTransport,
-          canSendTurns: canSendTurns,
-          isTurnActive: isTurnActive,
-          showSessionRail: showSessionRail,
+        final chatPane = WingChatBackdrop(
+          child: _buildChatPane(
+            context: context,
+            channel: channel,
+            state: state,
+            pendingApproval: pendingApproval,
+            pendingApprovalCount: pendingApprovalCount,
+            canRespondToApprovals: canRespondToApprovals,
+            hasActiveSession: hasActiveSession,
+            hasChatTransport: hasChatTransport,
+            canSendTurns: canSendTurns,
+            isTurnActive: isTurnActive,
+            showSessionRail: showSessionRail,
+          ),
         );
 
         if (!showSessionRail) return chatPane;

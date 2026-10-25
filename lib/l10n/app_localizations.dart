@@ -94,6 +94,18 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatBackdropTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat Backdrop'**
+  String get chatBackdropTitle;
+
+  /// No description provided for @chatBackdropDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The faint statue image behind the conversation.'**
+  String get chatBackdropDescription;
+
   /// No description provided for @chatUserBubbleTitle.
   ///
   /// In en, this message translates to:

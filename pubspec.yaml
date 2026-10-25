@@ -42,3 +42,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/branding/hermes-emblem.png
+    - assets/desktop/filler-bg0.jpg

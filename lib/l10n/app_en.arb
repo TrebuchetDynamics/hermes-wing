@@ -1,4 +1,6 @@
 {
+  "chatBackdropTitle": "Chat Backdrop",
+  "chatBackdropDescription": "The faint statue image behind the conversation.",
   "chatUserBubbleTitle": "Message Bubble",
   "chatUserBubbleDescription": "How see-through your own messages are. Solid at 0; only the outline remains at 100.",
   "chatUserBubblePercent": "{value}%",

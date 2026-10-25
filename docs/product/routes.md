@@ -10,12 +10,20 @@ parent opens the first supported child. The wide navigation marks only the
 current leaf as selected. Automatically revealed branches fold when leaving,
 while deliberately expanded branches remain open.
 Search and saved links accept `page=theme|typography|window-layout|chat-display` and the
-`setting=theme|chat-text-scale|appearance.session-density|appearance.text-direction|appearance.reasoning-collapsed`
+`setting=theme|chat-text-scale|appearance.session-density|appearance.backdrop|appearance.text-direction|appearance.reasoning-collapsed`
 targets. Window layout provides install-local Session List Density: Compact keeps
 loaded sidebar titles, Comfortable adds available model/message/tool counts, and
 Detailed also adds a bounded redacted preview for titled sessions. Missing data is
 not fetched; full-panel session search and the Chat rail are unchanged. This is
-not native-window management. Chat display provides local Auto/RTL/LTR text direction and the official
+not native-window management. After density, **Chat Backdrop** toggles the bundled
+faint statue image behind connected Chat. It defaults off and persists only on this
+installation (`wing.chat.backdrop_enabled`); it makes no Agent request. The
+`appearance.backdrop` field selects Window layout even with `page=theme`, and search
+also accepts background/statue. Decoration is clipped to the Chat pane, excluded
+from semantics/input/focus, and never filters or remounts the foreground. See the
+[round-4 offline evidence](../tasks/plan-clone03-local-round4.md#implementation-follow-through--clone03backdrop-001-1b78232c)
+and [pinned artwork notice](../../assets/desktop/README.md). Native/live and matched
+visual qualification remain unrun. Chat display provides local Auto/RTL/LTR text direction and the official
 Collapse thinking by default control. Direction changes preserve the draft and
 source text; code stays LTR. Explicit reasoning disclosure overrides the default. A setting selects its owning page even
 when a saved page disagrees. Category changes clear stale page/setting/field

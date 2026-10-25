@@ -10,19 +10,16 @@ not acceptance of the whole clone or a product/platform qualification.
 requests exactly one missing, official, local Settings outcome under
 [PARITY](../../tasks/goals/PARITY.md). Reuse Wing's Settings master/detail and
 preferences; preserve saved values, navigation intent, focus and Agent authority.
-No implementation, live work, network access, dependency installation or reference
-modification belongs to this planning pass.
+The original planning pass excluded implementation, live work, network access,
+dependency installation and reference modification. Later implementation evidence
+and the current retry are recorded below.
 
 Docs map: the existing [clone plan](../plans/2026-10-21-desktop-literal-clone.md#backlog-connection)
 owns the package inventory; its [plan index](../plans/README.md#plan-to-task-coverage)
-owns the summary mapping; this bounded handoff owns the newly researched slice.
-This invocation permits writes only in `tasks/items/`, `tasks/goals/`,
-`BLOCKERS.md`, `CHANGELOG.md` and `docs/tasks/`. Therefore the two `docs/plans/`
-summaries are deliberately **not** edited here. Their pending-admission prose is
-stale for this bounded slice, not evidence against the native records below.
-The implementation successor owns updating those two summaries without changing
-other packages' disposition or historical receipts. This limitation is recorded,
-not represented as already satisfying the old mapping acceptance item.
+owns the summary mapping; this bounded handoff owns the researched slice and its
+implementation evidence. The planning pass deferred the two `docs/plans/`
+summaries. They now identify PLAN-CLONE03-LOCAL-FRONTIER and CLONE03-LOCAL-NEXT
+for this subset only; full-clone admission and other packages remain unchanged.
 
 ## Source binding and delivered work
 
@@ -61,7 +58,7 @@ removes the override, explicit directions apply live, code stays LTR, and conten
 receives no injected bidi controls. Wing has no corresponding inline-edit composer;
 do not build one for this slice.
 
-Finished evidence read in place under the execution common directory's
+Evidence read during the original planning pass, in place under the execution common directory's
 `autowork-execution/slot-data/`:
 
 - No slot/report exists for this planning ID or a CLONE03 implementation batch.
@@ -222,3 +219,63 @@ Executed locally with Flutter 3.44.2 / Dart 3.12.2:
 The coordinator owns the integrated whole-suite and web build/browser gate. This
 implementation record does not claim native GTK, Android, macOS/Windows, physical
 input, paired visual parity or complete Settings/CLONE-03/PARITY acceptance.
+
+## Retry reconciliation — c26b43ea
+
+This retry starts from `c26b43ea72b9acceb87351e235e65d508ce0e9ab`, which already
+contains the local preference, Chat display picker, canonical route/search target,
+prose/composer consumers and reasoning preference. The required persistence case
+was run first and passed on that baseline; those implementations were retained,
+not replaced with an older provider or duplicated tests. The exact four Desktop
+source bindings above were reread using local `git -c gc.auto=0 ... show` at the
+same pin, without fetch, checkout, runtime execution or user-state reads.
+
+Reconciled only the needed parts of the retained candidate:
+
+- Direction-sensitive Markdown extent invalidation, with the retained viewport
+  owner and one regression observed failing before the cache fix.
+- Continuous Auto/LTR paragraph flow around inline code, while preserving LTR
+  code, exact selected copy, safe inline/reference links and keyboard activation.
+  The existing link test failed for LTR flow before the fix. Explicit RTL retains
+  its existing isolated-widget layout/selection adaptation; continuous RTL
+  paragraph wrapping and Desktop first-strong behavior are not certified.
+- A stable prose direction boundary, unchanged draft/controller/focus/selection/
+  composition and Agent ownership. Existing mounted-Chat coverage now also asserts
+  retained focus and no incidental reads, sends, Stop or replay.
+- Existing Settings cases now cover cancel and direction-search completion after
+  newer navigation at both widths/200% text, preserving aliases and field priority.
+- Independent review identified missing code-link focus semantics; the existing
+  test reproduced the missing focus flags/action, then passed after restoring the
+  framework's focus semantics. Link role, activation and exact copy remain tested.
+
+The [retained check findings](clone03-local-next-review-followup.md#worker-retry-result--c26b43ea)
+are resolved locally. SSH Advanced/help fixtures now follow supported placements;
+the auth-recovery Advanced setup was already fixed in the baseline and is retained.
+The newly reported reasoning keyboard journeys assumed the former collapsed live
+preview. They now explicitly seed the existing collapsed preference before manual
+keyboard disclosure, preserving every original expansion/focus/semantics/owner
+assertion and leaving production reasoning behavior and its default unchanged.
+
+Executed final offline checks on this candidate:
+
+- `flutter pub get --enforce-lockfile` and `flutter gen-l10n`: passed; no
+  manifest/lockfile changes or hand-edited generated output.
+- Named-file Dart formatting and `autowork-run flutter analyze --no-pub`: passed.
+- Original 15-target task inventory through `autowork-run timeout 1200 flutter
+  test --no-pub --concurrency=1`: **201 passed**.
+- Added four-file connection inventory: **28 passed**. Reasoning accessibility,
+  adaptive, preference and Settings targets: **14 passed**. Total: 243 cases in
+  23 distinct targets, all deterministic Linux-hosted tests; platform variants
+  simulate presentation and do not qualify native/device operation.
+- `autowork-run timeout 1200 flutter build web --release --no-pub -t lib/main_e2e.dart`:
+  passed (JavaScript compilation). Existing third-party Wasm dry-run and missing
+  Cupertino font warnings remain, not Wasm/runtime evidence.
+- Scoped Docs Sync Maintain: changed local links/anchors, exact-pin source bindings,
+  document readbacks, native task validation and `git diff --check`: passed.
+
+The current worker instructions reserve the unchanged whole-suite check for the
+runner. It was not run here, and none of the focused results replaces that gate.
+No unrelated failures or environment failures remain in the checks executed by
+this retry. Integration, final closeout and PLAN-CLONE03-LOCAL-ROUND2 remain
+coordinator-owned. Browser UI, paired Desktop visuals, screen-reader runtime,
+native/device and live Agent/provider qualification were not exercised.

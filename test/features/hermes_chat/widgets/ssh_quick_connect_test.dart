@@ -174,10 +174,11 @@ void main() {
     testWidgets(
       'first verified connection remembers only with explicit consent: $remember',
       (tester) async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
         final channel = FakeChannel();
+        addTearDown(channel.dispose);
         final forward = FakeForward();
         final controller = ManagedSshConnectionController(forward, channel);
+        addTearDown(controller.dispose);
         final store = SecureSshQuickConnectStore();
         await const SecureManagedSshHostTrustStore().verify(
           ManagedSshConfig(
@@ -213,6 +214,10 @@ void main() {
           await tester.tap(find.byKey(const ValueKey('ssh-quick-remember')));
           await tester.pumpAndSettle();
         }
+        final advanced = find.byKey(const ValueKey('managed-ssh-advanced'));
+        await tester.ensureVisible(advanced);
+        await tester.tap(advanced);
+        await tester.pumpAndSettle();
         for (final field in {
           'host': 'example.invalid',
           'username': 'tester',
@@ -236,9 +241,8 @@ void main() {
         );
         expect(find.textContaining('synthetic-token'), findsNothing);
         await tester.pumpWidget(const SizedBox());
-        controller.dispose();
-        debugDefaultTargetPlatformOverride = null;
       },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
     );
   }
 

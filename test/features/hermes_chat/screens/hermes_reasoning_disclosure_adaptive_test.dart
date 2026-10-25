@@ -82,6 +82,8 @@ void main() {
   setUp(
     () => SharedPreferences.setMockInitialValues({
       'wing.tips.dismissed.v1': ['moreDestinations', 'voice', 'approvals'],
+      // This journey exercises manual disclosure, not the default live preview.
+      'wing.chat.reasoning_collapsed_by_default': true,
     }),
   );
 

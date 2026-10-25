@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wing/features/settings/providers/shell_preferences_provider.dart';
+import 'package:wing/features/hermes_chat/providers/hermes_session_pin_provider.dart';
 import 'package:wing/core/hermes/channel/hermes_channel.dart';
 import 'package:wing/core/hermes/models/hermes_session.dart';
 import 'package:wing/core/hermes/models/hermes_capabilities.dart';
@@ -203,6 +206,221 @@ class Harness {
 }
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('local session density changes only loaded sidebar row context', (
+    tester,
+  ) async {
+    final h = Harness(DelayedChannel());
+    const contact = GatewayContactId(
+      gatewayId: 'synthetic-gateway',
+      profileId: 'default',
+    );
+    h.directory.contact = contact;
+    final complete = HermesSession(
+      id: 'synthetic-active',
+      source: 'test',
+      title: 'Synthetic active',
+      model: 'test/model \n leaf',
+      messageCount: 26,
+      toolCallCount: 8,
+      preview: '  Loaded\n  sidebar context.  ${'x' * 180}',
+    );
+    const sparse = HermesSession(
+      id: 'synthetic-other',
+      source: 'test',
+      title: 'Synthetic other',
+      model: 'test/  ',
+      toolCallCount: 0,
+      preview: '  ',
+    );
+    const untitled = HermesSession(
+      id: 'synthetic-untitled',
+      source: 'test',
+      title: '  ',
+      messageCount: 1,
+      toolCallCount: 1,
+      preview: 'Never duplicate untitled preview',
+    );
+    const redacted = HermesSession(
+      id: 'synthetic-redacted',
+      source: 'test',
+      title: 'Synthetic redacted',
+      model: 'test/token=synthetic',
+      preview: 'secret-synthetic',
+    );
+    h.channel.change(
+      h.channel.state.copyWith(
+        sessions: [complete, sparse, untitled, redacted],
+      ),
+    );
+    final pins = h.container.read(hermesSessionPinStoreProvider);
+    await pins.load();
+    await pins.toggle(contact, 'synthetic-active');
+    await h.pump(tester, scale: 2, height: 1800);
+    final semantics = tester.ensureSemantics();
+    final draft = find.byKey(const ValueKey('route-draft'));
+    await tester.tap(draft);
+    await tester.enterText(draft, 'synthetic local draft');
+    final editable = tester.widget<EditableText>(
+      find.descendant(of: draft, matching: find.byType(EditableText)),
+    );
+    final controller = editable.controller;
+    controller.value = const TextEditingValue(
+      text: 'synthetic local draft',
+      selection: TextSelection(baseOffset: 3, extentOffset: 9),
+      composing: TextRange(start: 3, end: 9),
+    );
+    final value = controller.value;
+    final focus = editable.focusNode;
+    final owner = h.container.read(hermesChannelProvider);
+    final before = h.channel.state;
+    final pinValues = (await SharedPreferences.getInstance()).getStringList(
+      'wing.hermes.pinned_sessions.v1',
+    );
+    final stale = tester.widget<TextButton>(other).onPressed!;
+    final activeElement = tester.element(active);
+    final otherElement = tester.element(other);
+    for (final density in [
+      WingSessionListDensity.compact,
+      WingSessionListDensity.comfortable,
+      WingSessionListDensity.detailed,
+      WingSessionListDensity.compact,
+    ]) {
+      await h.container
+          .read(wingSessionListDensityProvider.notifier)
+          .setDensity(density);
+      await tester.pumpAndSettle();
+      String rowText(Finder row) => tester
+          .widgetList<Text>(
+            find.descendant(of: row, matching: find.byType(Text)),
+          )
+          .map((text) => text.data)
+          .join('|');
+      final text = rowText(active);
+      expect(text, contains('Open Synthetic active'));
+      if (density == WingSessionListDensity.compact) {
+        expect(text, 'Open Synthetic active');
+      } else {
+        expect(text, contains('model leaf · 26 messages · 8 tool calls'));
+        expect(
+          rowText(
+            find.byKey(const ValueKey('shell-open-session-synthetic-untitled')),
+          ),
+          contains('1 message · 1 tool call'),
+        );
+        expect(
+          rowText(
+            find.byKey(const ValueKey('shell-open-session-synthetic-redacted')),
+          ),
+          contains('token=[redacted]'),
+        );
+        expect(rowText(other), 'Open Synthetic other');
+      }
+      expect(
+        text.contains('Loaded sidebar context.'),
+        density == WingSessionListDensity.detailed,
+      );
+      if (density == WingSessionListDensity.detailed) {
+        final preview = tester
+            .widgetList<Text>(
+              find.descendant(of: active, matching: find.byType(Text)),
+            )
+            .last;
+        expect(preview.data!.length, lessThanOrEqualTo(161));
+        expect(preview.maxLines, 1);
+        expect(find.text('[redacted]'), findsOneWidget);
+      }
+      expect(
+        find.textContaining('Never duplicate untitled preview'),
+        findsNothing,
+      );
+      expect(find.textContaining('secret-synthetic'), findsNothing);
+      expect(find.textContaining('token=synthetic'), findsNothing);
+      expect(tester.element(active), same(activeElement));
+      expect(tester.element(other), same(otherElement));
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('shell-pinned-sessions')),
+          matching: active,
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .getSemantics(active)
+            .getSemanticsData()
+            .flagsCollection
+            .isSelected
+            .toBoolOrNull(),
+        isTrue,
+      );
+      expect(tester.getSize(active).height, greaterThanOrEqualTo(48));
+      expect(
+        tester
+            .widget<EditableText>(
+              find.descendant(of: draft, matching: find.byType(EditableText)),
+            )
+            .controller,
+        same(controller),
+      );
+      expect(controller.value, value);
+      expect(focus.hasFocus, isTrue);
+      expect(h.container.read(hermesChannelProvider), same(owner));
+      expect(h.channel.state, same(before));
+      expect(h.path, '/tools');
+      expect(pins.isPinned(contact, 'synthetic-active'), isTrue);
+      expect(
+        (await SharedPreferences.getInstance()).getStringList(
+          'wing.hermes.pinned_sessions.v1',
+        ),
+        pinValues,
+      );
+      expect(h.channel.selectSessionCalls, isEmpty);
+      expect(h.channel.createSessionCalls, isEmpty);
+      expect(h.channel.sentImageDataUrls, isEmpty);
+      expect(h.channel.stopActiveTurnCalls, 0);
+      h.noIncidentalWork();
+      expect(tester.takeException(), isNull);
+    }
+    await h.container
+        .read(wingSessionListDensityProvider.notifier)
+        .setDensity(WingSessionListDensity.detailed);
+    h.channel.change(
+      before.copyWith(
+        sessions: [
+          const HermesSession(
+            id: 'synthetic-active',
+            source: 'test',
+            title: 'Synthetic active',
+            model: 'test/updated',
+            messageCount: 1,
+            preview: 'Updated loaded context',
+          ),
+          sparse,
+          untitled,
+          redacted,
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('updated · 1 message'), findsOneWidget);
+    expect(find.text('Updated loaded context'), findsOneWidget);
+    expect(controller.value, value);
+    expect(focus.hasFocus, isTrue);
+    final updated = h.channel.state;
+    h.channel.change(updated.copyWith(selectedProfileId: 'synthetic-away'));
+    h.channel.change(updated);
+    stale();
+    await tester.pumpAndSettle();
+    expect(h.channel.selectSessionCalls, isEmpty);
+    await tester.ensureVisible(other);
+    await tester.tap(other);
+    await tester.pumpAndSettle();
+    expect(h.channel.selectSessionCalls, ['synthetic-other']);
+    h.noIncidentalWork();
+    semantics.dispose();
+  });
   testWidgets(
     'production shell opens exact nonactive and active loaded rows once',
     (tester) async {

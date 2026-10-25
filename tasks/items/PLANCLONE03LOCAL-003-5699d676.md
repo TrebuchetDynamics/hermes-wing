@@ -3,7 +3,7 @@ schema = 1
 id = "PLANCLONE03LOCAL-003-5699d676"
 title = "Plan the next bounded CLONE-03 frontier after loaded thread timeline navigation"
 short = "Reconcile local Settings after timeline"
-status = "open"
+status = "done"
 goal = "PARITY"
 section = "Next"
 rank = 11000
@@ -16,6 +16,11 @@ scope = "Planning only for unfinished CLONE-03 local Settings under PARITY. Read
 acceptance = ["A compact comparison cites the finished loaded-timeline report or exact absence, integrated consumers/tests, exact-pin controls/fallbacks and remaining PARITY proof. Exclude delivered outcomes and preserve historical/manual/owner-deferred live/Files closures.", "Save at most one complete non-duplicate local building task with bounded Touches, true Dependencies and exact offline oracles/Checks/exclusions; at stopping conditions retain one stop question and an open Needs decision proof/continuation task. Never invent support, input, receipt or goal completion.", "Persist the batch and manual planning closure together; run fresh-reader builder review, local links/source bindings, native task validation and git diff --check. With new building work and N < 10 exactly one successor advances N and depends on every new building task; otherwise none. PARITY stays partial without executed proof under existing ledger rules."]
 checks = ["Read finished report, accepted sources, current implementation/tests and exact-pin objects; no fetch/runtime execution.", "Run fresh-context read-only builder check on saved records; resolve evidence-answerable questions within scope.", "/home/xel/.local/bin/python3 /home/xel/.local/state/pi-autowork/releases/ca5765d05986cc4c93ecf537353d6f412fdb1a00/pi-autowork/pi_autowork/command.py tasks validate --worktree .", "Verify changed local Markdown links/exact-pin source bindings and git diff --check; no Flutter/browser/device/network execution is required for planning."]
 exclusions = ["No production/test/asset/manifest/dependency/lockfile/CI implementation, broad clone audit, speculative controls, Agent/reference/runtime edits/execution/fetch, shell bridge, shadow backend or new authority.", "No device/service/provider/network exercise, credentials, purchases, publication, push or deployment. Never infer whole Settings/PARITY/indexed/native/live/visual proof from fixtures, manual closures or an empty queue.", "No reopening owner-deferred live/Files work or rewriting existing Acceptance/product scope; preserve saved preferences, exact identity/focus/intent/no-replay fences. Native tasks commands own task files; invoking maintainer allowlist owns documents."]
+closure = "manual"
+closure_actor = "DOCS-MAINTAINER"
+closure_timestamp = "2026-10-25T07:03:00.928373+00:00"
+closure_reason = "Reconciled integrated timeline evidence and saved one source-supported local Tool Call Display building task plus round-7 continuation; planning only, not implementation or PARITY qualification."
+closure_evidence = "docs/tasks/plan-clone03-local-round6.md"
 +++
 - Sources: docs/tasks/plan-clone03-local-round5.md#batch-and-continuation; tasks/goals/PARITY.md; docs/plans/2026-10-21-desktop-literal-clone.md#ejecución-vigente--2026-10-24
 - Plan round: 6 of 10

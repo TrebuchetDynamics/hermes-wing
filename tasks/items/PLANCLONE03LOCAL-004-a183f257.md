@@ -1,0 +1,23 @@
++++
+schema = 1
+id = "PLANCLONE03LOCAL-004-a183f257"
+title = "Plan the next local CLONE-03 frontier after Tool Call Display"
+short = "Reconcile local Settings after tools"
+status = "open"
+goal = "PARITY"
+section = "Next"
+rank = 13000
+depends_on = ["CLONE03TOOLVIEW-001-ee4f6811"]
+touches = ["docs/tasks/"]
+resources = []
+kind = "plan"
+ownership = "worker"
+scope = "Planning only for unfinished CLONE-03 local Settings under PARITY. Read CLONE03TOOLVIEW-001-ee4f6811 finished reports in the execution common directory slot-data/ (record exact absence), docs/tasks/plan-clone03-local-round6.md, current Settings/chat/shell preferences and loaded tool/timeline consumers and nearest tests, exact official pin 14e1e43a23761b369641208e204365cd6cb9399d, tasks/goals/PARITY.md and its sources. Reconcile delivered theme/scale/direction/reasoning/Message Bubble/density/backdrop/loaded timeline/Tool Call Display first; full tool inputs/historical payloads/diffs and indexed archive remain distinct unqualified gaps. Select at most one further non-duplicate working local-only official outcome without new Agent operations, credentials, network/device work or product decisions. Inspect complete fallback behavior before treating missing primary consumers as owner blockers. Save concrete bounded handoff if supported; otherwise evidence plus continuation question. Apply rolling rules: at most eight new tasks total all PARITY; exactly one successor with new building work below round 10 depending on EVERY new building task. At limit or without new building work while PARITY is unmet, save Q-current-plan-ID Planning stopped in BLOCKERS.md and retain an open Needs decision proof/continuation task. Close this plan manually in the same planning commit. No implementation, dispatch, fetch/repin, Agent/runtime edits or goal qualification."
+acceptance = ["A compact comparison cites finished Tool Call Display reports or exact absence, integrated consumers/tests, exact-pin controls/fallbacks and remaining PARITY proof. Exclude delivered outcomes and preserve historical/manual/owner-deferred live/Files closures.", "Save at most one complete non-duplicate local building task with bounded Touches, genuine Dependencies and exact offline oracles/Checks/exclusions; stopping conditions retain one stop question and open Needs decision proof/continuation task. No invented support/input/receipt/goal completion.", "Persist batch and manual plan closure together; run fresh-reader builder review, local links/source bindings, native validation and git diff --check. With building work and N < 10 exactly one successor advances N and depends on every new building task; otherwise none. PARITY stays partial without executed proof under ledger rules."]
+checks = ["Read finished reports, accepted sources, current implementation/tests and exact-pin objects; no fetch/runtime execution.", "Run fresh-context read-only builder check on saved records; resolve evidence-answerable questions within scope.", "/home/xel/.local/bin/python3 /home/xel/.local/state/pi-autowork/releases/ca5765d05986cc4c93ecf537353d6f412fdb1a00/pi-autowork/pi_autowork/command.py tasks validate --worktree .", "Verify changed local Markdown links/exact-pin source bindings and git diff --check; no Flutter/browser/device/network execution is required for planning."]
+exclusions = ["No production/test/asset/manifest/dependency/lockfile/CI implementation, broad audit, speculative controls, Agent/reference/runtime edits/execution/fetch, shell bridge, shadow backend or new authority.", "No device/service/provider/network exercise, credentials, spending, publication, push or deployment; no whole Settings/PARITY/visual/native/live qualification from fixtures, closures or empty queues.", "No reopening owner-deferred live/Files work, changing existing Acceptance/product scope or fabricating receipts/waivers. Preserve identity/focus/intent/preferences/no-replay; native tasks commands own task files and invoking maintainer allowlist owns documents."]
++++
+- Sources: docs/tasks/plan-clone03-local-round6.md#batch-and-continuation; tasks/goals/PARITY.md; docs/plans/2026-10-21-desktop-literal-clone.md#ejecución-vigente--2026-10-24
+- Plan round: 7 of 10
+- Consumes: CLONE03TOOLVIEW-001-ee4f6811 WingToolDisplay product/technical, toolDisplay/setToolDisplay(WingToolDisplay), appearance.tool-view and explicit sanitized loaded-result disclosure; round-6 attributed checks and pending proof.
+- Continuation: Existing authorized runner may continue to round 10; saving does not start or dispatch it. Stop by moving this planning task to Needs decision through native tasks place.

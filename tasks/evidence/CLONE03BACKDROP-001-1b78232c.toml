@@ -1,0 +1,9 @@
+schema = 1
+task = "CLONE03BACKDROP-001-1b78232c"
+candidate = "089cbece146d787231739fe711196622a39f8360"
+integration = "42a80418169bbd6ff8d6a20ab7406a04fa73da31"
+tree = "e662d858264900ca3500a1dacb1eb949b930cbf2"
+contract_hash = "c316ca33aa52458c3dd16822842bebbebf22f72e283547170d6dd7051b39f6d9"
+checks = ["<path>", "<path>", "--verify", "<path>", "CLONE03BACKDROP-001-1b78232c"]
+result = "pass"
+review = "passed"

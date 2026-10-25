@@ -2297,6 +2297,18 @@
   "@avatarVariationLabel": {"placeholders": {"number": {"type": "int"}}},
   "avatarSaveFailed": "The avatar family is applied for now, but could not be saved on this device.",
   "settingsTypographyHeading": "Typography",
+  "settingsWindowLayoutHeading": "Window layout",
+  "sessionListDensityTitle": "Session List Density",
+  "sessionListDensityDescription": "Choose how much context appears beneath session titles in the sidebar.",
+  "sessionListDensityCompact": "Compact",
+  "sessionListDensityComfortable": "Comfortable",
+  "sessionListDensityDetailed": "Detailed",
+  "sessionListToolCallCount": "{count, plural, =1{1 tool call} other{{count} tool calls}}",
+  "@sessionListToolCallCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "chatTextScaleTitle": "Chat text size",
   "chatTextScaleDescription": "Adjust conversation text without changing the rest of the interface.",
   "themePaletteWing": "Wing",

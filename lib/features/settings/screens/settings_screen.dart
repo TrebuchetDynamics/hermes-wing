@@ -15,6 +15,7 @@ import '../../hermes_chat/providers/hermes_channel_provider.dart';
 import '../../../theme/wing_theme.dart';
 import '../providers/chat_preferences_provider.dart';
 import '../providers/theme_settings_provider.dart';
+import '../providers/shell_preferences_provider.dart';
 import '../providers/voice_settings_provider.dart';
 
 part 'settings_diagnostics_screen.dart';
@@ -22,10 +23,11 @@ part 'settings_voice_screen.dart';
 
 enum _SettingsCategory { appearance, chat, voice, connections }
 
-enum _AppearancePage { theme, typography, chatDisplay }
+enum _AppearancePage { theme, typography, windowLayout, chatDisplay }
 
 String _appearancePageId(_AppearancePage page) => switch (page) {
   _AppearancePage.chatDisplay => 'chat-display',
+  _AppearancePage.windowLayout => 'window-layout',
   _ => page.name,
 };
 
@@ -84,6 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _appearancePage = switch (widget.initialSetting) {
       'theme' => _AppearancePage.theme,
       'chat-text-scale' => _AppearancePage.typography,
+      'appearance.session-density' => _AppearancePage.windowLayout,
       'appearance.text-direction' ||
       'appearance.user-bubble' ||
       'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
@@ -157,6 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final pageLabels = {
       _AppearancePage.theme: strings.settingsThemeHeading,
       _AppearancePage.typography: strings.settingsTypographyHeading,
+      _AppearancePage.windowLayout: strings.settingsWindowLayoutHeading,
       _AppearancePage.chatDisplay: strings.settingsChatDisplayHeading,
     };
     const icons = {
@@ -231,12 +235,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   settingLabels: {
                     'theme': strings.settingsThemeHeading,
                     'chat-text-scale': strings.chatTextScaleTitle,
+                    'appearance.session-density':
+                        strings.sessionListDensityTitle,
                     'appearance.text-direction': strings.chatTextDirectionTitle,
                     'appearance.user-bubble': strings.chatUserBubbleTitle,
                     'appearance.reasoning-collapsed':
                         strings.chatReasoningCollapsedTitle,
                   },
                   settingTopics: {
+                    'appearance.session-density': [
+                      strings.settingsWindowLayoutHeading,
+                      strings.sessionListDensityDescription,
+                      strings.sessionListDensityCompact,
+                      strings.sessionListDensityComfortable,
+                      strings.sessionListDensityDetailed,
+                    ],
                     'theme': [
                       strings.themeModeSystem,
                       strings.themeModeLight,
@@ -318,6 +331,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             else if (_appearancePage ==
                                 _AppearancePage.typography)
                               const _ChatTextScaleSetting()
+                            else if (_appearancePage ==
+                                _AppearancePage.windowLayout)
+                              const _SessionListDensitySetting()
                             else ...const [
                               _UserBubbleTransparencySetting(),
                               _ChatTextDirectionSetting(),
@@ -564,6 +580,7 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
               category: _SettingsCategory.appearance,
               page: switch (entry.key) {
                 'theme' => _AppearancePage.theme,
+                'appearance.session-density' => _AppearancePage.windowLayout,
                 'appearance.text-direction' ||
                 'appearance.user-bubble' ||
                 'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
@@ -728,6 +745,51 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _SessionListDensitySetting extends ConsumerWidget {
+  const _SessionListDensitySetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final density = ref.watch(wingSessionListDensityProvider);
+    final labels = {
+      WingSessionListDensity.compact: strings.sessionListDensityCompact,
+      WingSessionListDensity.comfortable: strings.sessionListDensityComfortable,
+      WingSessionListDensity.detailed: strings.sessionListDensityDetailed,
+    };
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            strings.sessionListDensityTitle,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(strings.sessionListDensityDescription),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final value in WingSessionListDensity.values)
+                ChoiceChip(
+                  key: ValueKey('settings-session-density-${value.name}'),
+                  label: Text(labels[value]!),
+                  selected: value == density,
+                  onSelected: (_) => ref
+                      .read(wingSessionListDensityProvider.notifier)
+                      .setDensity(value),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

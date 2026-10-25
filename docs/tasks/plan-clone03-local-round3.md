@@ -201,3 +201,74 @@ corrected to line 24 and the complete check rerun successfully. The shared
 this is not substituted for the scoped check. `git diff --check` passes.
 Branch-local saving is not canonical integration, dispatch or goal/platform
 qualification; committed-store selection is checked after the planning commit.
+
+## Implementation follow-through — LINUXQA-004-5c6015fe
+
+The task-branch candidate adds the independent `WingSessionListDensity`
+Notifier and install-local `wing.shell.session_list_density` preference. Compact
+is the absent/invalid default and explicit Compact removes only this key;
+hydration writes nothing. Ordered saves preserve newer intent, failed storage
+leaves the local choice usable, and disposed owners start no new writes. The
+existing bool sidebar provider and saved appearance/Chat/pin values are unchanged.
+
+Settings now has a working **Window layout** child between Typography and Chat
+display. `appearance.session-density` selects it even with `page=theme`, and
+search uses the existing navigation revision fence. Localized wrapping choice
+chips support keyboard operation and semantics at 390/1280px and 200% text in
+widget tests. The [route owner](../product/routes.md) records the new field/page.
+
+Only loaded, non-full-panel `ShellSessionAccess` rows consume density. Compact
+retains the existing title/pin/selection behavior. Comfortable adds available
+model leaf and positive localized message/tool counts; Detailed also adds a
+whitespace-normalized, redacted, bounded one-line preview for nonblank titled
+sessions. Model text is redacted before extracting the leaf so discarded prefixes
+cannot bypass path/credential redaction; the leaf is bounded to 80 and preview
+to 160 before the existing ellipsis. Rows grow with text scale, without fixed
+source CSS heights. The absent git-branch field remains omitted. No inventory,
+Agent reads/mutations, full-panel search, Chat rail or protocol fields were added.
+
+Actual offline checks on this candidate (Flutter widget tests on the Linux host,
+not a native app run):
+
+- `flutter pub get --enforce-lockfile`: pass; no manifest/lockfile changes.
+- `flutter gen-l10n`: pass; generated Dart outputs come from the ARB.
+- `dart format --output=none --set-exit-if-changed` on the five task Dart
+  source/test paths: pass, zero changes.
+- `flutter analyze --no-pub`: pass, no issues.
+- The following named serial regression group: **117 passed**, including the
+  two new Settings/storage cases and one mounted-sidebar case. The latter
+  preserves pinned/recent controls, selected semantics, route/channel owner,
+  draft controller/value/selection/composition and focus while cycling densities
+  and receiving loaded updates; stale owner-away/back actions remain rejected and
+  a current click selects exactly once. Mock preferences reset per sidebar test
+  so an earlier collapse cannot leak into later owner-fencing cases.
+
+```bash
+autowork-run flutter test --no-pub --concurrency=1 \
+  test/features/settings/session_list_density_settings_test.dart \
+  test/features/settings/providers/shell_preferences_provider_test.dart \
+  test/features/settings/chat_user_bubble_settings_test.dart \
+  test/features/settings/settings_subpages_test.dart \
+  test/features/settings/settings_search_test.dart \
+  test/features/settings/settings_screen_test.dart \
+  test/router/settings_routes_test.dart \
+  test/router/chat_workspace_overlay_test.dart \
+  test/shared/widgets/app_shell_global_session_access_test.dart \
+  test/shared/widgets/app_shell_desktop_parity_test.dart \
+  test/shared/widgets/app_shell_focus_traversal_test.dart
+```
+
+- Scoped documentation readback/local links and exact-pin source bindings: pass.
+  The shared Docs Sync checker reports no `docs/roles.json`; it does not replace
+  this scoped readback. `git diff --check`: pass.
+- Fresh-context read-only review found one disposal-test masking gap; the final
+  regression now disables simulated storage failure and proves no writes occur
+  after disposal, including late hydration. No product-code findings were raised.
+
+The runner still owns the unchanged full merged-tree gate; these focused passes
+are not a substitute. Native Linux/Android/macOS/Windows, browser interaction,
+physical-device/live-Agent/provider, runtime screen-reader and exact-pin paired
+visual qualification were not run. Local commit is not coordinator integration,
+publication, full Settings/CLONE-03/PARITY acceptance or platform qualification.
+Round 4 can reconcile this bounded result after integration and choose its next
+source-supported local slice; preserve owner-deferred live/Files closures.

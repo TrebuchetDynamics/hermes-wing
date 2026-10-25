@@ -4575,6 +4575,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTypographyHeading => 'Typography';
 
   @override
+  String get settingsWindowLayoutHeading => 'Window layout';
+
+  @override
+  String get sessionListDensityTitle => 'Session List Density';
+
+  @override
+  String get sessionListDensityDescription =>
+      'Choose how much context appears beneath session titles in the sidebar.';
+
+  @override
+  String get sessionListDensityCompact => 'Compact';
+
+  @override
+  String get sessionListDensityComfortable => 'Comfortable';
+
+  @override
+  String get sessionListDensityDetailed => 'Detailed';
+
+  @override
+  String sessionListToolCallCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tool calls',
+      one: '1 tool call',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get chatTextScaleTitle => 'Chat text size';
 
   @override

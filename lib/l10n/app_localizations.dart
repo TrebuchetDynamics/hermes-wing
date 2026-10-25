@@ -7567,6 +7567,48 @@ abstract class AppLocalizations {
   /// **'Typography'**
   String get settingsTypographyHeading;
 
+  /// No description provided for @settingsWindowLayoutHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Window layout'**
+  String get settingsWindowLayoutHeading;
+
+  /// No description provided for @sessionListDensityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session List Density'**
+  String get sessionListDensityTitle;
+
+  /// No description provided for @sessionListDensityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how much context appears beneath session titles in the sidebar.'**
+  String get sessionListDensityDescription;
+
+  /// No description provided for @sessionListDensityCompact.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get sessionListDensityCompact;
+
+  /// No description provided for @sessionListDensityComfortable.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable'**
+  String get sessionListDensityComfortable;
+
+  /// No description provided for @sessionListDensityDetailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed'**
+  String get sessionListDensityDetailed;
+
+  /// No description provided for @sessionListToolCallCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tool call} other{{count} tool calls}}'**
+  String sessionListToolCallCount(int count);
+
   /// No description provided for @chatTextScaleTitle.
   ///
   /// In en, this message translates to:

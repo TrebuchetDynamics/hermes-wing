@@ -9,6 +9,7 @@ import '../../../core/hermes/models/hermes_session.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../../shared/security/wing_redaction.dart';
+import '../../settings/providers/shell_preferences_provider.dart';
 import '../gateways/hermes_gateway_directory.dart';
 import '../providers/hermes_channel_provider.dart';
 import '../providers/hermes_directory_lifetime.dart';
@@ -515,6 +516,7 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
         ],
       );
     }
+    final density = ref.watch(wingSessionListDensityProvider);
     // Exact source identity is separate from its redacted display label. Dart's
     // insertion-ordered map preserves first encounter and incoming row order.
     final pinned = <HermesSession>[];
@@ -576,7 +578,13 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
                   children: [
                     _sectionHeading(context, strings.chatRailPinnedGroupLabel),
                     for (final session in pinned)
-                      _sessionRow(context, session, generation, enabled),
+                      _sessionRow(
+                        context,
+                        session,
+                        generation,
+                        enabled,
+                        density,
+                      ),
                   ],
                 ),
               Column(
@@ -593,7 +601,13 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
                       ),
                     ),
                     for (final session in group.value)
-                      _sessionRow(context, session, generation, enabled),
+                      _sessionRow(
+                        context,
+                        session,
+                        generation,
+                        enabled,
+                        density,
+                      ),
                   ],
                 ],
               ),
@@ -636,11 +650,34 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
     HermesSession session,
     int generation,
     bool enabled,
+    WingSessionListDensity density,
   ) {
     final strings = AppLocalizations.of(context);
     final state = _channel.state;
     final selected = state.activeSessionId == session.id;
     final pinned = _pins.isPinned(_pinContact, session.id);
+    String oneLine(String? value) =>
+        (value ?? '').replaceAll(RegExp(r'\s+'), ' ').trim();
+    // Redact the whole model before taking its leaf so a path/credential
+    // prefix cannot be discarded while its sensitive suffix survives.
+    final model = wingRedactedPreview(
+      wingRedactSensitiveText(oneLine(session.model)).split('/').last.trim(),
+      maxLength: 80,
+    );
+    final metadata = density == WingSessionListDensity.compact
+        ? ''
+        : [
+            if (model.isNotEmpty) model,
+            if (session.messageCount > 0)
+              strings.chatRailMessageCountLabel(session.messageCount),
+            if ((session.toolCallCount ?? 0) > 0)
+              strings.sessionListToolCallCount(session.toolCallCount!),
+          ].join(' · ');
+    final preview =
+        density == WingSessionListDensity.detailed &&
+            (session.title?.trim().isNotEmpty ?? false)
+        ? wingRedactedPreview(oneLine(session.preview), maxLength: 160)
+        : '';
     return Builder(
       builder: (rowContext) => Focus(
         canRequestFocus: false,
@@ -679,15 +716,33 @@ class _ShellSessionAccessState extends ConsumerState<ShellSessionAccess> {
                     onPressed: enabled
                         ? () => _activate(generation, session.id)
                         : null,
-                    child: Text(
-                      strings.shellOpenSession(
-                        wingRedactedPreview(
-                          session.title ?? session.id,
-                          maxLength: 80,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          strings.shellOpenSession(
+                            wingRedactedPreview(
+                              session.title ?? session.id,
+                              maxLength: 80,
+                            ),
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                        if (metadata.isNotEmpty)
+                          Text(
+                            metadata,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                        if (preview.isNotEmpty)
+                          Text(
+                            preview,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                      ],
                     ),
                   ),
                 ),

@@ -4,6 +4,23 @@ This file contains only hard blockers that require user action.
 
 ## Active
 
+### Q-PLANCLONE03LOCAL-004-a183f257 — Planning stopped
+
+- Goal: PARITY (partial; not qualified by manual planning closure).
+- Evidence: [round-7 reconciliation](docs/tasks/plan-clone03-local-round7.md#planner-decision-and-remaining-proof), final Tool Call Display candidate `289fe75fcab17b36678d54ed43571ffd5ce56538` and integration `9af7642212b51d65db8c220b62cbe7d4035b8428`.
+- Remaining: complete Settings tree, shell/fresh-draft and tool-renderer consumers,
+  indexed archive, matched exact-pin visuals and separate browser/native/assistive-
+  technology/live Agent proof. Existing manual/owner-deferred live/Files closures
+  remain unchanged; no unavailable source object becomes an owner-input demand.
+- Question: Should PARITY planning continue beyond this completed bounded local
+  Settings subset into the already accepted shell/fresh-draft prerequisite frontier
+  (CLONE-02/04), or remain paused pending a specifically selected qualification
+  campaign?
+- Default without an answer: pause this local-control planning chain; keep
+  [PARITYCONTINUATION-001-f26b9bbd](tasks/items/PARITYCONTINUATION-001-f26b9bbd.md)
+  open in Needs decision. No implementation, automatic successor, qualification,
+  credentials, spending, live access or publication is authorized by this question.
+
 <!-- pi-autowork:questions:start -->
 
 <!-- pi-autowork:questions:end -->

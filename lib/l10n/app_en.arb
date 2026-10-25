@@ -1,4 +1,8 @@
 {
+  "chatHideThreadTimelineTitle": "Hide thread timeline bars",
+  "chatHideThreadTimelineDescription": "Hide the navigation bars along the right edge of each conversation.",
+  "chatConversationTimeline": "Conversation timeline",
+  "chatTimelineShowEarlier": "Show earlier",
   "chatBackdropTitle": "Chat Backdrop",
   "chatBackdropDescription": "The faint statue image behind the conversation.",
   "chatUserBubbleTitle": "Message Bubble",

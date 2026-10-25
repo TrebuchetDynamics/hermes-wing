@@ -1,8 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wing/features/hermes_chat/presentation/hermes_transcript_viewport.dart';
+import 'package:wing/core/hermes/models/hermes_chat_turn.dart';
 
 void main() {
+  testWidgets(
+    'explicit loaded targets are bounded and canceled by newer intent',
+    (tester) async {
+      final scroll = ScrollController();
+      final viewport = HermesTranscriptViewportController(scroll)
+        ..setOwner('A', origin: 'synthetic');
+      final turns = List.generate(
+        10000,
+        (i) => HermesChatTurn(
+          id: 'p-$i',
+          sessionId: 's',
+          author: HermesTurnAuthor.user,
+          createdAt: DateTime.utc(2026),
+          text: 'Prompt $i',
+        ),
+      );
+      expect(viewport.jumpToPrompt('p-5000', turns), isTrue);
+      expect(viewport.project(turns).length, 100);
+      expect(viewport.windowStart, 4998);
+      final first = viewport.generation;
+      expect(viewport.beginAuthoritativeRefresh(), first);
+      var changes = 0;
+      viewport.addListener(() => changes++);
+      viewport.jumpToPrompt('p-10', turns);
+      expect(
+        changes,
+        1,
+        reason: 'A newer pending jump must rebuild the projected window',
+      );
+      expect(viewport.project(turns).first.id, 'p-8');
+      expect(viewport.generation, greaterThan(first));
+      for (final invalid in [
+        turns.where((t) => t.id != 'p-10').toList(),
+        [...turns, turns[10]],
+        [
+          ...turns.take(10),
+          turns[10].copyWith(text: 'Changed'),
+          ...turns.skip(11),
+        ],
+      ]) {
+        viewport.jumpToPrompt('p-10', turns);
+        viewport.project(invalid);
+        expect(viewport.mode, HermesViewportMode.browsing);
+      }
+      viewport.jumpToPrompt('p-5000', turns);
+      viewport.cancelTarget();
+      expect(viewport.mode, HermesViewportMode.browsing);
+      viewport.jumpToPrompt('p-5000', turns);
+      viewport.userScrolled(nearLatest: false);
+      final user = viewport.generation;
+      await tester.pump();
+      expect(viewport.generation, user);
+      viewport.jumpToPrompt('p-5000', turns);
+      viewport.followLatest();
+      expect(viewport.project(turns).first.id, 'p-9900');
+      viewport.jumpToPrompt('p-5000', turns);
+      viewport.setOwner('B', origin: 'synthetic');
+      expect(viewport.project(turns).first.id, 'p-9900');
+      viewport.jumpToPrompt('p-5000', turns);
+      viewport.dispose();
+      await tester.pump();
+      scroll.dispose();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'fixed-row deliberate reveal retains anchor within one logical pixel',
     (tester) async {

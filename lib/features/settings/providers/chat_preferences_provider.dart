@@ -25,6 +25,7 @@ class WingChatPreferences {
     this.reasoningCollapsedByDefault = false,
     this.userBubbleTransparency = 0,
     this.backdropEnabled = false,
+    this.hideThreadTimeline = false,
     this.isHydrated = true,
   });
 
@@ -34,6 +35,7 @@ class WingChatPreferences {
   final bool reasoningCollapsedByDefault;
   final int userBubbleTransparency;
   final bool backdropEnabled;
+  final bool hideThreadTimeline;
   final bool isHydrated;
 
   WingChatPreferences copyWith({
@@ -43,6 +45,7 @@ class WingChatPreferences {
     bool? reasoningCollapsedByDefault,
     int? userBubbleTransparency,
     bool? backdropEnabled,
+    bool? hideThreadTimeline,
     bool? isHydrated,
   }) => WingChatPreferences(
     spellcheckEnabled: spellcheckEnabled ?? this.spellcheckEnabled,
@@ -51,6 +54,7 @@ class WingChatPreferences {
     userBubbleTransparency:
         userBubbleTransparency ?? this.userBubbleTransparency,
     backdropEnabled: backdropEnabled ?? this.backdropEnabled,
+    hideThreadTimeline: hideThreadTimeline ?? this.hideThreadTimeline,
     isHydrated: isHydrated ?? this.isHydrated,
     reasoningCollapsedByDefault:
         reasoningCollapsedByDefault ?? this.reasoningCollapsedByDefault,
@@ -66,6 +70,7 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
   static const _keyUserBubbleTransparency =
       'wing.chat.user_bubble_transparency';
   static const _keyBackdropEnabled = 'wing.chat.backdrop_enabled';
+  static const _keyHideThreadTimeline = 'wing.chat.hide_thread_timeline';
   static const minTranscriptTextScale = 0.5;
   static const maxTranscriptTextScale = 2.5;
 
@@ -106,6 +111,9 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
         backdropEnabled: _mutatedFields.contains(_keyBackdropEnabled)
             ? state.backdropEnabled
             : prefs.get(_keyBackdropEnabled) == true,
+        hideThreadTimeline: _mutatedFields.contains(_keyHideThreadTimeline)
+            ? state.hideThreadTimeline
+            : prefs.get(_keyHideThreadTimeline) == true,
         textDirection: _mutatedFields.contains(_keyTextDirection)
             ? state.textDirection
             : switch (prefs.get(_keyTextDirection)) {
@@ -170,6 +178,14 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
           }
         }
         if (!ref.mounted) return;
+        if (_mutatedFields.contains(_keyHideThreadTimeline)) {
+          if (snapshot.hideThreadTimeline) {
+            await prefs.setBool(_keyHideThreadTimeline, true);
+          } else {
+            await prefs.remove(_keyHideThreadTimeline);
+          }
+        }
+        if (!ref.mounted) return;
         if (_mutatedFields.contains(_keyTextDirection)) {
           final direction = snapshot.textDirection;
           if (direction == WingChatTextDirection.auto) {
@@ -182,6 +198,13 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
         // The in-memory preference remains usable if persistence is unavailable.
       }
     });
+  }
+
+  void setHideThreadTimeline(bool hidden) {
+    if (!ref.mounted) return;
+    _mutatedFields.add(_keyHideThreadTimeline);
+    state = state.copyWith(hideThreadTimeline: hidden);
+    _save();
   }
 
   void setBackdropEnabled(bool enabled) {

@@ -21,6 +21,7 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   final _anchors = <Object, HermesViewportAnchor>{};
   Object? _owner;
   String? _origin;
+  Object? _source;
   int _generation = 0;
   bool _disposed = false;
   int _budget = 100;
@@ -28,6 +29,132 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   int windowStart = 0;
   int windowEnd = 0;
   bool continuedTools = false;
+  HermesChatTurn? _target;
+  int? _scheduledTargetGeneration;
+
+  Object get ownerIdentity => (_owner, _origin, _source);
+
+  /// Chooses a bounded loaded window; never reads or mutates channel history.
+  bool jumpToPrompt(String id, List<HermesChatTurn> turns) {
+    if (_disposed || _owner == null) return false;
+    final unique = HermesTurnPresentationIdentity.uniqueIds(turns);
+    if (!unique.contains(id)) return false;
+    final turn = turns.firstWhere((turn) => turn.id == id);
+    if (turn.author != HermesTurnAuthor.user ||
+        turn.kind != HermesTurnKind.text ||
+        turn.text.trim().isEmpty) {
+      return false;
+    }
+    _generation++;
+    _target = turn;
+    _budget = 100;
+    if (mode == HermesViewportMode.explicitTarget) {
+      notifyListeners();
+    } else {
+      mode = HermesViewportMode.explicitTarget;
+    }
+    _seekTarget(_generation);
+    return true;
+  }
+
+  void cancelTarget({bool notify = true}) {
+    if (_target == null) return;
+    _target = null;
+    _generation++;
+    if (mode == HermesViewportMode.explicitTarget) {
+      if (notify) {
+        mode = HermesViewportMode.browsing;
+      } else {
+        _mode = HermesViewportMode.browsing;
+      }
+    }
+  }
+
+  /// Last prompt at the measured top, or the first mounted prompt below it.
+  String? activePromptId(Set<String> prompts) {
+    if (mode == HermesViewportMode.followingLatest) return null;
+    final list = listKey.currentContext?.findRenderObject();
+    if (list is! RenderBox || !list.hasSize) return null;
+    String? above;
+    String? below;
+    var aboveY = -double.infinity;
+    var belowY = double.infinity;
+    for (final entry in _rows.entries) {
+      if (!prompts.contains(entry.key)) continue;
+      final row = entry.value.currentContext?.findRenderObject();
+      if (row is! RenderBox || !row.attached || !row.hasSize) continue;
+      final y =
+          row.localToGlobal(Offset.zero).dy -
+          list.localToGlobal(Offset.zero).dy;
+      if (y <= 8 && y > aboveY) {
+        above = entry.key;
+        aboveY = y;
+      }
+      if (y > 8 && y < belowY) {
+        below = entry.key;
+        belowY = y;
+      }
+    }
+    return above ?? below;
+  }
+
+  void _seekTarget(int generation) {
+    if (_scheduledTargetGeneration == generation) return;
+    _scheduledTargetGeneration = generation;
+    var remaining = 104;
+    void afterLayout(Duration _) {
+      if (_disposed ||
+          generation != _generation ||
+          _target == null ||
+          mode != HermesViewportMode.explicitTarget ||
+          !scroll.hasClients) {
+        return;
+      }
+      final id = _target!.id;
+      if (!_projectedIndices.containsKey(id)) {
+        cancelTarget();
+        return;
+      }
+      final list = listKey.currentContext?.findRenderObject();
+      final row = _rows[id]?.currentContext?.findRenderObject();
+      if (list is RenderBox &&
+          list.hasSize &&
+          row is RenderBox &&
+          row.attached &&
+          row.hasSize) {
+        final y =
+            row.localToGlobal(Offset.zero).dy -
+            list.localToGlobal(Offset.zero).dy;
+        final sign = scroll.position.axisDirection == AxisDirection.up ? -1 : 1;
+        final before = scroll.offset;
+        scroll.jumpTo(
+          (scroll.offset + sign * (y - 8)).clamp(
+            scroll.position.minScrollExtent,
+            scroll.position.maxScrollExtent,
+          ),
+        );
+        // Reversed lazy extents can correct on layout. Verify the measured row
+        // again, rather than guessing an offset from total estimated height.
+        if ((y - 8).abs() > 1 &&
+            (scroll.offset - before).abs() > .5 &&
+            remaining-- > 0) {
+          WidgetsBinding.instance.addPostFrameCallback(afterLayout);
+          WidgetsBinding.instance.ensureVisualUpdate();
+          return;
+        }
+        _target = null;
+        mode = HermesViewportMode.browsing;
+      } else if (remaining-- > 0 && _scrollToward(id, list)) {
+        WidgetsBinding.instance.addPostFrameCallback(afterLayout);
+        WidgetsBinding.instance.ensureVisualUpdate();
+      } else {
+        cancelTarget();
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback(afterLayout);
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
 
   /// Presentation only; the channel retains all canonical loaded history.
   List<HermesChatTurn> project(
@@ -37,7 +164,39 @@ class HermesTranscriptViewportController extends ChangeNotifier {
     final unique =
         uniqueIds ?? HermesTurnPresentationIdentity.uniqueIds(eligible);
     var end = eligible.length;
-    if (mode != HermesViewportMode.followingLatest && _windowEndId != null) {
+    final target = _target;
+    if (target != null) {
+      final index = unique.contains(target.id)
+          ? eligible.indexWhere(
+              (turn) =>
+                  turn.id == target.id &&
+                  turn.text == target.text &&
+                  turn.sessionId == target.sessionId &&
+                  turn.author == target.author &&
+                  turn.kind == target.kind,
+            )
+          : -1;
+      if (index < 0) {
+        _target = null;
+        _generation++;
+        _mode = HermesViewportMode.browsing;
+      } else {
+        final start = (index - 2).clamp(0, eligible.length);
+        end = (start + 100).clamp(0, eligible.length);
+        // A window boundary needs a canonical identity even when adjacent
+        // loaded rows are ambiguous. The unique target itself is a safe end.
+        while (end > index + 1 && !unique.contains(eligible[end - 1].id)) {
+          end--;
+        }
+        _budget = end - start;
+        _windowEndId = unique.contains(eligible[end - 1].id)
+            ? eligible[end - 1].id
+            : null;
+      }
+    }
+    if (_target == null &&
+        mode != HermesViewportMode.followingLatest &&
+        _windowEndId != null) {
       final index = unique.contains(_windowEndId)
           ? eligible.indexWhere((turn) => turn.id == _windowEndId)
           : -1;
@@ -96,12 +255,16 @@ class HermesTranscriptViewportController extends ChangeNotifier {
 
   int get generation => _generation;
 
-  void setOwner(Object? owner, {String? origin}) {
-    if (_owner == owner && _origin == origin) return;
+  void setOwner(Object? owner, {String? origin, Object? source}) {
+    if (_owner == owner && _origin == origin && identical(_source, source)) {
+      return;
+    }
     capture();
-    if (_origin != origin) _anchors.clear();
+    if (_origin != origin || !identical(_source, source)) _anchors.clear();
     _origin = origin;
+    _source = source;
     _owner = owner;
+    _target = null;
     _generation++;
     _rows.clear();
     // Explicit session selection wins over a previous reading position.
@@ -115,6 +278,7 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   GlobalKey rowKey(String id) => _rows.putIfAbsent(id, GlobalKey.new);
 
   void userScrolled({required bool nearLatest}) {
+    _target = null;
     _generation++;
     mode = nearLatest
         ? HermesViewportMode.followingLatest
@@ -122,6 +286,7 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   }
 
   void followLatest() {
+    _target = null;
     _generation++;
     _budget = 100;
     _windowEndId = null;
@@ -166,6 +331,9 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   }
 
   int beginAuthoritativeRefresh() {
+    if (_target != null && mode == HermesViewportMode.explicitTarget) {
+      return _generation;
+    }
     capture();
     if (mode != HermesViewportMode.followingLatest) {
       mode = HermesViewportMode.restoring;
@@ -174,6 +342,10 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   }
 
   void restore(int generation) {
+    if (_target != null && mode == HermesViewportMode.explicitTarget) {
+      _seekTarget(generation);
+      return;
+    }
     var remainingSteps = _projectedIndices.length + 1;
     void afterLayout(Duration _) {
       if (_disposed || generation != _generation || !scroll.hasClients) return;
@@ -278,6 +450,7 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _target = null;
     _generation++;
     _anchors.clear();
     _rows.clear();
@@ -287,6 +460,7 @@ class HermesTranscriptViewportController extends ChangeNotifier {
   void forgetWhere(bool Function(Object owner) matches) {
     _anchors.removeWhere((key, _) => matches(key));
     if (_owner != null && matches(_owner!)) {
+      _target = null;
       _generation++;
       mode = HermesViewportMode.followingLatest;
     }

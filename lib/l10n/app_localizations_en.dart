@@ -9,6 +9,19 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatHideThreadTimelineTitle => 'Hide thread timeline bars';
+
+  @override
+  String get chatHideThreadTimelineDescription =>
+      'Hide the navigation bars along the right edge of each conversation.';
+
+  @override
+  String get chatConversationTimeline => 'Conversation timeline';
+
+  @override
+  String get chatTimelineShowEarlier => 'Show earlier';
+
+  @override
   String get chatBackdropTitle => 'Chat Backdrop';
 
   @override

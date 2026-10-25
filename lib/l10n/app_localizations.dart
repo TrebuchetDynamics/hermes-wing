@@ -94,6 +94,30 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatHideThreadTimelineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide thread timeline bars'**
+  String get chatHideThreadTimelineTitle;
+
+  /// No description provided for @chatHideThreadTimelineDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide the navigation bars along the right edge of each conversation.'**
+  String get chatHideThreadTimelineDescription;
+
+  /// No description provided for @chatConversationTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation timeline'**
+  String get chatConversationTimeline;
+
+  /// No description provided for @chatTimelineShowEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Show earlier'**
+  String get chatTimelineShowEarlier;
+
   /// No description provided for @chatBackdropTitle.
   ///
   /// In en, this message translates to:

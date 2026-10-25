@@ -90,6 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'appearance.backdrop' => _AppearancePage.windowLayout,
       'appearance.text-direction' ||
       'appearance.user-bubble' ||
+      'appearance.hide-thread-timeline' ||
       'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
       _ =>
         _AppearancePage.values
@@ -238,6 +239,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'chat-text-scale': strings.chatTextScaleTitle,
                     'appearance.session-density':
                         strings.sessionListDensityTitle,
+                    'appearance.hide-thread-timeline':
+                        strings.chatHideThreadTimelineTitle,
                     'appearance.backdrop': strings.chatBackdropTitle,
                     'appearance.text-direction': strings.chatTextDirectionTitle,
                     'appearance.user-bubble': strings.chatUserBubbleTitle,
@@ -245,6 +248,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         strings.chatReasoningCollapsedTitle,
                   },
                   settingTopics: {
+                    'appearance.hide-thread-timeline': [
+                      strings.settingsChatDisplayHeading,
+                      strings.chatHideThreadTimelineDescription,
+                      'thread',
+                      'conversation',
+                      'timeline',
+                      'bars',
+                      'rail',
+                      'navigation',
+                      'hide',
+                    ],
                     'appearance.backdrop': [
                       strings.settingsWindowLayoutHeading,
                       strings.chatBackdropDescription,
@@ -347,6 +361,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ] else ...const [
                               _UserBubbleTransparencySetting(),
                               _ChatTextDirectionSetting(),
+                              _HideThreadTimelineSetting(),
                               _ReasoningCollapsedSetting(),
                             ],
                           ],
@@ -594,6 +609,7 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
                 'appearance.backdrop' => _AppearancePage.windowLayout,
                 'appearance.text-direction' ||
                 'appearance.user-bubble' ||
+                'appearance.hide-thread-timeline' ||
                 'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
                 _ => _AppearancePage.typography,
               },
@@ -801,6 +817,25 @@ class _SessionListDensitySetting extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HideThreadTimelineSetting extends ConsumerWidget {
+  const _HideThreadTimelineSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    return SwitchListTile(
+      key: const ValueKey('settings-hide-thread-timeline'),
+      contentPadding: EdgeInsets.zero,
+      title: Text(strings.chatHideThreadTimelineTitle),
+      subtitle: Text(strings.chatHideThreadTimelineDescription),
+      value: ref.watch(wingChatPreferencesProvider).hideThreadTimeline,
+      onChanged: ref
+          .read(wingChatPreferencesProvider.notifier)
+          .setHideThreadTimeline,
     );
   }
 }

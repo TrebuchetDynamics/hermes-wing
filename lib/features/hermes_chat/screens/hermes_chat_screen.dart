@@ -80,6 +80,7 @@ import '../providers/hermes_session_pin_provider.dart';
 import '../presentation/hermes_rich_text.dart';
 import '../presentation/hermes_turn_presentation_identity.dart';
 import '../presentation/hermes_transcript_viewport.dart';
+import '../widgets/thread_timeline.dart';
 
 part 'widgets/hermes_chat_error.dart';
 part 'widgets/hermes_saved_endpoint_editor.dart';
@@ -869,7 +870,11 @@ class _HermesChatScreenState extends ConsumerState<HermesChatScreen>
 
   void _syncComposerDraft(HermesChannelState state) {
     final nextKey = _composerDraftKey(state);
-    _transcriptViewport.setOwner(nextKey, origin: state.connectedBaseUrl);
+    _transcriptViewport.setOwner(
+      nextKey,
+      origin: state.connectedBaseUrl,
+      source: _subscribed,
+    );
     final nextHistoryKey = _composerHistoryKey(state);
     if (nextHistoryKey != _activeComposerHistoryKey) {
       _activeComposerHistoryKey = nextHistoryKey;

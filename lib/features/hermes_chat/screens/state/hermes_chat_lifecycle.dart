@@ -185,7 +185,12 @@ extension _HermesChatScreenLifecycle on _HermesChatScreenState {
             canFocus: () =>
                 identical(ref.read(hermesChannelProvider), channel) &&
                 _composerOwnerGeneration == ownerGeneration &&
-                // Completion must not interrupt a keyboard reasoning disclosure.
+                // Completion must not interrupt keyboard-owned navigation.
+                FocusManager.instance.primaryFocus?.context
+                        ?.findAncestorWidgetOfExactType<
+                          HermesThreadTimeline
+                        >() ==
+                    null &&
                 FocusManager.instance.primaryFocus?.context
                         ?.findAncestorWidgetOfExactType<_ReasoningCard>() ==
                     null,

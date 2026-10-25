@@ -281,4 +281,135 @@ unavailable picker object; it now classifies that known gap without fetching.
 It also caught an Intro visibility citation ending one line past EOF; corrected
 to line 32 before the passing readback. Neither changed implementation or checks.
 `git diff --check` passes. The temporary validator is not a product artifact.
-No application platform, behavior test or matched visual comparison was exercised.
+No application platform, behavior test or matched visual comparison was exercised
+**by the planning pass**. The implementation evidence below is separate.
+
+## Implementation follow-through — PARITYCONTINUE-001-421b2b55
+
+Implemented on the isolated task branch from Wing baseline
+`101a2ad990612c791716b7f3e2367938e512a8a0`, against the unchanged official pin
+`14e1e43a23761b369641208e204365cd6cb9399d`. This is worker offline evidence,
+not coordinator integration, full Settings acceptance or PARITY qualification.
+
+- Added default-visible `hideThreadTimeline` / `setHideThreadTimeline(bool)`.
+  Only boolean true hides; false removes only `wing.chat.hide_thread_timeline`.
+  Hydration, ordered saves, failures, disposal and other saved appearance values
+  retain the existing preference owner's fences.
+- Added the canonical `appearance.hide-thread-timeline` field after direction in
+  Chat display, including search and conflicting-page/cancel/newer-intent routing.
+- Added a lazy right-edge loaded-prompt rail and a full-size inline
+  **Conversation timeline** list for keyboard/touch/semantics, also at compact
+  widths. It occupies the transcript only, not the composer or another route.
+  Space is reserved only for real loaded prompts, independently of hide/show:
+  the existing reveal/Latest header is shared, not duplicated. Without that
+  header, roomy viewports reserve 48px above the transcript; below 112px available
+  height a side lane leaves transcript height intact. No empty-timeline header
+  steals space from approval/error controls. Rail hit regions fit the existing
+  12/24px gutters, start below the opener and are omitted below 112px height.
+  The open list isolates covered transcript focus/semantics and uses closed-loop
+  keyboard traversal; cancel restores the invoking control. Previews are redacted,
+  whitespace-collapsed,
+  capped at 120 characters and process-local. Pointer paint and assistant deltas
+  reuse the derived previews rather than re-redacting all prompts.
+- Explicit loaded jumps select approximately 100 turns around a unique prompt,
+  realize lazy rows using measured geometry, and align with 8px slack where the
+  natural scroll bounds permit. The newest prompt clamps at Latest; it does not
+  fabricate blank transcript history to force a top alignment. Jumps are immediate,
+  including reduced motion; completion does not steal timeline keyboard focus.
+  Ambiguous boundary rows cannot make a valid jump fall back to the tail.
+- New jump, scroll, hide, changed/removed/duplicate target, channel/origin/profile/
+  session change and disposal invalidate pending work. Realization is capped at
+  104 frame steps. Exact channel identity now participates in viewport ownership.
+  Explicit **Show earlier** reveals the local window first; only then can the
+  existing eligible history callback run. No index, endpoint, configuration write,
+  automatic pagination or second canonical history inventory was introduced.
+
+### Offline checks and regression scope
+
+Linux-host Flutter widget/unit tests, not a launched native application or browser.
+The named Settings cases cover defaults/wrong types, recreation, late intent,
+ordered failure/disposal, preserved preferences, canonical routing/search,
+keyboard/semantics at 390/1280px and 200% text, with no incidental Agent calls.
+The single mounted timeline case covers filtering, bounded redacted labels,
+10,000 loaded turns, first/middle/latest targets, a tall lazy row, an ambiguous
+window boundary, lazy rail/list bounds, Tab → ArrowDown → Enter, 24-turn
+opener/rail non-overlap at 390/600/719/1280px and an 800×80 constrained
+opener-activation case, forward/backward traversal, covered-transcript semantics
+exclusion, cancel and
+hide/show active-marker restoration, light/wide and dark/compact presentation,
+reduced motion, retained controller/foreground/draft selection/composition, stream
+completion focus, exact replacement-channel/session ownership, Latest and explicit
+local-before-remote earlier history. Existing viewport/window/approval/reconnect/
+session-mutation guards remain in the affected run.
+
+The retry reproduced both previously rejected integration cases unchanged:
+`profile switcher stays operable above the keyboard at all sizes` and
+`approval failures remain visible to the operator`. The earlier candidate's
+unconditional 48px header reduced the short transcript below 64px and evicted a
+pending approval from the lazy mounted range after a failed denial. Reserving space
+only for loaded prompts, with a short-height side lane, repairs both. The Android
+case then exposed active-marker measurement of an inactive lazy-row GlobalKey
+during build; marker geometry is now coalesced after layout/unmounting. Both tests
+remain unchanged and pass in the final affected run. The existing loaded-window
+approval/error recovery case additionally prevents duplicating the reveal/Latest
+header reservation; its oracle remains unchanged.
+
+The added row exposed an existing reasoning Settings test's missing layout frame
+after `ensureVisible`. It now waits for layout and asserts hit-testability before
+tapping; no production behavior or oracle was weakened.
+
+Executed commands (final candidate):
+
+- `flutter pub get --enforce-lockfile`: pass; lockfile unchanged.
+- `flutter gen-l10n`: pass; generated localization comes from English ARB.
+- `dart format --output=none --set-exit-if-changed` on all task-named Dart paths
+  plus the changed layout and two existing test helpers: pass.
+- `flutter analyze --no-pub`: pass.
+- The following exact affected run through `autowork-run timeout 1500`: **260 pass**.
+
+```bash
+flutter test --no-pub --concurrency=1 \
+  test/features/settings/thread_timeline_settings_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_thread_timeline_test.dart \
+  test/features/hermes_chat/presentation/hermes_transcript_viewport_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_window_test.dart \
+  test/features/settings/chat_backdrop_settings_test.dart \
+  test/features/settings/chat_user_bubble_settings_test.dart \
+  test/features/settings/chat_text_direction_settings_test.dart \
+  test/features/settings/chat_reasoning_settings_test.dart \
+  test/features/settings/settings_subpages_test.dart \
+  test/features/settings/settings_search_test.dart \
+  test/features/settings/settings_screen_test.dart \
+  test/router/settings_routes_test.dart \
+  test/router/chat_workspace_overlay_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_backdrop_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_desktop_geometry_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_transcript_accessibility_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_transcript_reconnect_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_reasoning_preferences_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart \
+  test/features/hermes_chat/screens/android_chat_touch_layout_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_screen_auth_recovery_test.dart
+```
+
+Scoped Docs Sync Maintain updates this evidence owner and
+[routes](../product/routes.md), leaving coordinator-owned tasks/history untouched.
+Scoped Python readback passes **49 local Markdown links/anchors, 13 exact-pin
+source bindings and nine critical source contracts**, documented test paths and
+byte-stable readback, without fetching or repinning.
+`docs.py stale .` / `docs.py check .` report no role manifest; dedicated scoped
+readback supplies link/source checks rather than claiming manifest coverage.
+Read-only `autowork tasks prepare --check .` reports READY/converted and
+`autowork tasks validate --worktree .` passes (312 tasks, 36 goals, no drafts).
+`git diff --check` passes. The unchanged full serial suite remains the runner's
+merged-tree gate and was not repeated by this worker.
+
+Independent read-only review identified and drove the boundary, keyboard and active
+rail corrections above. Final focused follow-up reports those findings resolved,
+with no important remaining issue identified; it does not replace the worker's
+executed checks. Fixture results do not qualify indexed archive navigation,
+matched exact-pin visuals, compiled browser behavior, real screen readers,
+Linux/Android/web/macOS/Windows native execution or live Agent/provider use.
+Those remain unrun/pending; this task does not reopen historical deferred closures.
+The coordinator-owned round-6 continuation consumes this offline result after its
+normal integration/review gates; this worker does not select or start it.

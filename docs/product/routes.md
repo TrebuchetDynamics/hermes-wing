@@ -10,7 +10,7 @@ parent opens the first supported child. The wide navigation marks only the
 current leaf as selected. Automatically revealed branches fold when leaving,
 while deliberately expanded branches remain open.
 Search and saved links accept `page=theme|typography|window-layout|chat-display` and the
-`setting=theme|chat-text-scale|appearance.session-density|appearance.backdrop|appearance.text-direction|appearance.hide-thread-timeline|appearance.reasoning-collapsed`
+`setting=theme|chat-text-scale|appearance.session-density|appearance.backdrop|appearance.text-direction|appearance.hide-thread-timeline|appearance.tool-view|appearance.reasoning-collapsed`
 targets. Window layout provides install-local Session List Density: Compact keeps
 loaded sidebar titles, Comfortable adds available model/message/tool counts, and
 Detailed also adds a bounded redacted preview for titled sessions. Missing data is
@@ -37,6 +37,24 @@ read. Explicit **Show earlier** reveals local hidden turns first, then permits t
 existing eligible Agent history read. There is no index probe, automatic pagination,
 configuration write or navigation to unloaded archive prompts. See the
 [round-5 implementation evidence and limits](../tasks/plan-clone03-local-round5.md#implementation-follow-through--paritycontinue-001-421b2b55).
+After the timeline control, **Tool Call Display** offers Product (default) and
+Technical, stored locally as `wing.chat.tool_display`; selecting Product removes
+only that preference. `appearance.tool-view` selects Chat display even with
+`page=theme`; search accepts technical/product/payload/result/output. Product
+retains category/status-only tool activity. Technical adds a collapsed **Tool
+payload** disclosure for uniquely owned, already loaded tool turns. It shows only
+sanitized **Result** text, or an honest unavailable/oversized state. It never reads
+history, invents Arguments, displays raw names/previews/commands, or includes
+results in copy/export. Results are decoded only on explicit opening, bounded to
+65,536 UTF-16 input units, JSON depth 16 and 1,000 values, then redacted before at
+most 20,000 painted characters including a truncation notice. Credential-assignment
+and host-path-bearing scalar leaves are suppressed completely, including quoted,
+escaped and space-containing values; non-finite JSON numbers fail closed.
+Ambiguous IDs,
+removed turns, owner changes and Product mode discard derived disclosure content.
+See the [round-6 implementation evidence and limits](../tasks/plan-clone03-local-round6.md#implementation-follow-through--clone03toolview-001-ee4f6811).
+Full inputs, historical payloads, diffs and native/live/matched-visual/full-Settings
+or PARITY qualification are not supplied by this subset.
 Direction changes preserve the draft and
 source text; code stays LTR. Explicit reasoning disclosure overrides the default. A setting selects its owning page even
 when a saved page disagrees. Category changes clear stale page/setting/field

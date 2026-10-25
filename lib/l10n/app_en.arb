@@ -1,4 +1,13 @@
 {
+  "chatToolDisplayTitle": "Tool Call Display",
+  "chatToolDisplayDescription": "Technical shows available redacted loaded results. Full inputs, historical payloads and diffs are not available.",
+  "chatToolDisplayProduct": "Product",
+  "chatToolDisplayTechnical": "Technical",
+  "chatToolPayloadTitle": "Tool payload",
+  "chatToolResultTitle": "Result",
+  "chatToolResultUnavailable": "No loaded result available for safe display.",
+  "chatToolResultOversized": "Loaded result is too large for safe display.",
+  "chatToolResultTruncated": "… [Result truncated]",
   "chatHideThreadTimelineTitle": "Hide thread timeline bars",
   "chatHideThreadTimelineDescription": "Hide the navigation bars along the right edge of each conversation.",
   "chatConversationTimeline": "Conversation timeline",

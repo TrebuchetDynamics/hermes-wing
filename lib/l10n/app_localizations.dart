@@ -94,6 +94,60 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatToolDisplayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool Call Display'**
+  String get chatToolDisplayTitle;
+
+  /// No description provided for @chatToolDisplayDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical shows available redacted loaded results. Full inputs, historical payloads and diffs are not available.'**
+  String get chatToolDisplayDescription;
+
+  /// No description provided for @chatToolDisplayProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get chatToolDisplayProduct;
+
+  /// No description provided for @chatToolDisplayTechnical.
+  ///
+  /// In en, this message translates to:
+  /// **'Technical'**
+  String get chatToolDisplayTechnical;
+
+  /// No description provided for @chatToolPayloadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tool payload'**
+  String get chatToolPayloadTitle;
+
+  /// No description provided for @chatToolResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get chatToolResultTitle;
+
+  /// No description provided for @chatToolResultUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No loaded result available for safe display.'**
+  String get chatToolResultUnavailable;
+
+  /// No description provided for @chatToolResultOversized.
+  ///
+  /// In en, this message translates to:
+  /// **'Loaded result is too large for safe display.'**
+  String get chatToolResultOversized;
+
+  /// No description provided for @chatToolResultTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'… [Result truncated]'**
+  String get chatToolResultTruncated;
+
   /// No description provided for @chatHideThreadTimelineTitle.
   ///
   /// In en, this message translates to:

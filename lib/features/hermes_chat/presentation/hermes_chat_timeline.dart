@@ -125,6 +125,11 @@ class _HermesTranscriptList extends ConsumerWidget {
     final hidden = ref.watch(
       wingChatPreferencesProvider.select((p) => p.hideThreadTimeline),
     );
+    final technical = ref.watch(
+      wingChatPreferencesProvider.select(
+        (p) => p.toolDisplay == WingToolDisplay.technical,
+      ),
+    );
     final eligibleTurns = turns
         .where(
           (turn) =>
@@ -224,6 +229,10 @@ class _HermesTranscriptList extends ConsumerWidget {
         rows.add(
           _ToolActivityGroup(
             turns: group,
+            technical: technical,
+            owner: viewport.ownerIdentity,
+            sessionId: sessionId,
+            uniqueIds: uniqueIds,
             continued: rowIndex == 0 && viewport.continuedTools,
             profileId: profileId,
             profileColor: profileColor,
@@ -720,9 +729,21 @@ String _hostToolStatusLabel(AppLocalizations strings, String status) =>
       _ => strings.chatTranscriptToolStatusCompletedLabel,
     };
 
+// Keep raw tool identity out of framework key diagnostics.
+class _ToolPayloadKey extends ValueKey<Object> {
+  const _ToolPayloadKey(super.value);
+
+  @override
+  String toString() => '[Tool payload owner]';
+}
+
 class _ToolActivityGroup extends StatelessWidget {
   const _ToolActivityGroup({
     required this.turns,
+    required this.technical,
+    required this.owner,
+    required this.sessionId,
+    required this.uniqueIds,
     required this.profileId,
     required this.showAvatar,
     this.profileColor,
@@ -730,6 +751,10 @@ class _ToolActivityGroup extends StatelessWidget {
   });
 
   final List<HermesChatTurn> turns;
+  final bool technical;
+  final Object owner;
+  final String sessionId;
+  final Set<String> uniqueIds;
   final String profileId;
   final String? profileColor;
   final bool showAvatar;
@@ -772,12 +797,19 @@ class _ToolActivityGroup extends StatelessWidget {
             key: ValueKey('hermes-tool-activity-${turns.first.id}'),
             margin: const EdgeInsets.symmetric(vertical: 4),
             child: tools.length == 1
-                ? ListTile(
-                    leading: Icon(
-                      _hostToolCategoryIcon(categories.single) ?? aggregateIcon,
-                    ),
-                    title: Text(title),
-                    subtitle: statusText,
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          _hostToolCategoryIcon(categories.single) ??
+                              aggregateIcon,
+                        ),
+                        title: Text(title),
+                        subtitle: statusText,
+                      ),
+                      if (technical) _payload(turns.single, strings),
+                    ],
                   )
                 : ExpansionTile(
                     leading: Icon(aggregateIcon),
@@ -785,7 +817,7 @@ class _ToolActivityGroup extends StatelessWidget {
                     subtitle: statusText,
                     childrenPadding: const EdgeInsets.only(bottom: 8),
                     children: [
-                      for (final (index, tool) in tools.indexed)
+                      for (final (index, tool) in tools.indexed) ...[
                         ListTile(
                           key: ValueKey(
                             'hermes-tool-activity-step-${index + 1}',
@@ -807,11 +839,37 @@ class _ToolActivityGroup extends StatelessWidget {
                             _hostToolStatusLabel(strings, tool.status),
                           ),
                         ),
+                        if (technical) _payload(turns[index], strings),
+                      ],
                     ],
                   ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _payload(HermesChatTurn turn, AppLocalizations strings) {
+    if (!uniqueIds.contains(turn.id) || turn.sessionId != sessionId) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(strings.chatToolResultUnavailable),
+      );
+    }
+    // A reused ID is not fresh consent. Timestamp/name changes invalidate the
+    // mounted control as well as its derived result, without keying by name alone.
+    final identity = (
+      owner,
+      turn.sessionId,
+      turn.id,
+      turn.createdAt,
+      turn.toolCall?.name,
+    );
+    return HermesToolResultDisclosure(
+      key: _ToolPayloadKey(identity),
+      owner: identity,
+      turnId: turn.id,
+      result: turn.toolCall?.result,
     );
   }
 }

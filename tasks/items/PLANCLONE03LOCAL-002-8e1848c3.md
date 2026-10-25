@@ -1,0 +1,24 @@
++++
+schema = 1
+id = "PLANCLONE03LOCAL-002-8e1848c3"
+title = "Plan the next bounded CLONE-03 local Settings frontier after Chat Backdrop"
+short = "Reconcile the next local Settings slice"
+status = "open"
+goal = "PARITY"
+section = "Next"
+rank = 9000
+depends_on = ["CLONE03BACKDROP-001-1b78232c"]
+touches = ["docs/tasks/"]
+resources = []
+kind = "plan"
+ownership = "worker"
+scope = "Planning only for unfinished CLONE-03 local Settings under PARITY. Read finished CLONE03BACKDROP-001-1b78232c report under execution common directory slot-data/CLONE03BACKDROP-001-1b78232c/ (record exact absence), docs/tasks/plan-clone03-local-round4.md, current Settings/shell/Chat preference consumers and nearest tests, exact official Desktop pin 14e1e43a23761b369641208e204365cd6cb9399d, tasks/goals/PARITY.md and its sources. Reconcile delivered theme/scale/direction/reasoning/Message Bubble/density/backdrop first. Select at most one further non-duplicate local-only official working outcome, without new Agent operations, credentials, network/device work or product decisions. Save a concrete bounded handoff if supported; otherwise preserve evidence and continuation question. Apply invoking rolling-planning rules: at most eight new tasks total, all PARITY; exactly one successor plan with new building work below round 10, depending on EVERY new building task. At limit or without new building work while PARITY is unmet, save Q-current-plan-ID Planning stopped in BLOCKERS.md and keep/add an open Needs decision proof/continuation task. Close this plan manually in the same planning commit. No implementation, dispatch, fetch/repin, Agent/runtime edits or goal qualification."
+acceptance = ["A compact comparison cites finished backdrop report or exact absence, integrated current consumers/tests, exact-pin source controls/asset and remaining PARITY proof. Exclude delivered outcomes and preserve historical/owner-deferred closures.", "Save at most one complete non-duplicate local building task with bounded Touches, true Dependencies and exact offline oracles/Checks/exclusions. At stopping conditions preserve one stop question plus an open Needs decision proof/continuation task; never invent support, input, receipt or goal completion.", "Persist batch/manual closure together; run fresh-reader builder, local links/source bindings, native task validation and git diff --check. With new building work and N < 10, exactly one successor advances N and depends on every new building task; otherwise none. PARITY stays partial without executed proof under existing ledger rules."]
+checks = ["Read finished report, accepted sources, current implementation/tests and exact-pin objects; no fetch/runtime execution.", "Run fresh-context read-only builder check on saved records and resolve evidence-answerable questions within scope.", "/home/xel/.local/bin/python3 /home/xel/.local/state/pi-autowork/releases/cd24b45bd339117a08812b765efacffba32e19e3/pi-autowork/pi_autowork/command.py tasks validate --worktree .", "Verify changed local Markdown links/exact-pin source bindings and git diff --check; no Flutter/browser/device/network execution is required for planning."]
+exclusions = ["No production/test/asset/manifest/dependency/lockfile/CI implementation, broad clone audit, speculative controls, Agent/reference/runtime edits/execution/fetch, shell bridge, shadow backend or new authority.", "No device/service/provider/network exercise, credentials, purchases, publication, push or deployment. Never infer whole Settings/PARITY/native/live/visual proof from fixtures, manual task closures or an empty queue.", "No reopening owner-deferred live/Files work or rewriting existing Acceptance/product scope; preserve saved preferences, exact identity/focus/intent/no-replay fences. Native tasks commands own task records; invoking maintainer allowlist owns documents."]
++++
+- Sources: docs/tasks/plan-clone03-local-round4.md#batch-and-continuation; tasks/goals/PARITY.md; docs/plans/2026-10-21-desktop-literal-clone.md#ejecución-vigente--2026-10-24
+- Plan round: 5 of 10
+- Consumes: CLONE03BACKDROP-001-1b78232c working appearance.backdrop, backdropEnabled/setBackdropEnabled(bool), bundled WingChatBackdrop, deterministic regression evidence and unrun qualification in docs/tasks/plan-clone03-local-round4.md.
+- Write boundary: Native tasks commands own task files; invoking maintainer allowlist owns documents. Implementation workers never edit tasks.
+- Continuation: Existing authorized runner may continue up to round 10; saving does not dispatch work or grant authority. Stop by moving this planning task to Needs decision through native tasks place.

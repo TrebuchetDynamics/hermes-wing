@@ -1,0 +1,9 @@
+schema = 1
+task = "CLONE03-LOCAL-NEXT"
+candidate = "6d3b6b5e479e5b5e27f963337ca70fbab16c5831"
+integration = "d4ba6c7cad9322cf26d4c4e25360cfce3757c3d7"
+tree = "0560c70e0603171da3b54b23375140d61534fe48"
+contract_hash = "cbf3b7d0493ebeb1953f9365478a46a88b75f9e927f645e6061dbf58565882c7"
+checks = ["<path>", "<path>", "--verify", "<path>", "CLONE03-LOCAL-NEXT"]
+result = "pass"
+review = "passed"

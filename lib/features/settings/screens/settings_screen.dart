@@ -86,7 +86,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _appearancePage = switch (widget.initialSetting) {
       'theme' => _AppearancePage.theme,
       'chat-text-scale' => _AppearancePage.typography,
-      'appearance.session-density' => _AppearancePage.windowLayout,
+      'appearance.session-density' ||
+      'appearance.backdrop' => _AppearancePage.windowLayout,
       'appearance.text-direction' ||
       'appearance.user-bubble' ||
       'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
@@ -237,12 +238,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'chat-text-scale': strings.chatTextScaleTitle,
                     'appearance.session-density':
                         strings.sessionListDensityTitle,
+                    'appearance.backdrop': strings.chatBackdropTitle,
                     'appearance.text-direction': strings.chatTextDirectionTitle,
                     'appearance.user-bubble': strings.chatUserBubbleTitle,
                     'appearance.reasoning-collapsed':
                         strings.chatReasoningCollapsedTitle,
                   },
                   settingTopics: {
+                    'appearance.backdrop': [
+                      strings.settingsWindowLayoutHeading,
+                      strings.chatBackdropDescription,
+                      'backdrop',
+                      'background',
+                      'statue',
+                    ],
                     'appearance.session-density': [
                       strings.settingsWindowLayoutHeading,
                       strings.sessionListDensityDescription,
@@ -332,9 +341,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 _AppearancePage.typography)
                               const _ChatTextScaleSetting()
                             else if (_appearancePage ==
-                                _AppearancePage.windowLayout)
-                              const _SessionListDensitySetting()
-                            else ...const [
+                                _AppearancePage.windowLayout) ...const [
+                              _SessionListDensitySetting(),
+                              _ChatBackdropSetting(),
+                            ] else ...const [
                               _UserBubbleTransparencySetting(),
                               _ChatTextDirectionSetting(),
                               _ReasoningCollapsedSetting(),
@@ -580,7 +590,8 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
               category: _SettingsCategory.appearance,
               page: switch (entry.key) {
                 'theme' => _AppearancePage.theme,
-                'appearance.session-density' => _AppearancePage.windowLayout,
+                'appearance.session-density' ||
+                'appearance.backdrop' => _AppearancePage.windowLayout,
                 'appearance.text-direction' ||
                 'appearance.user-bubble' ||
                 'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
@@ -790,6 +801,25 @@ class _SessionListDensitySetting extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ChatBackdropSetting extends ConsumerWidget {
+  const _ChatBackdropSetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    return SwitchListTile(
+      key: const ValueKey('settings-chat-backdrop'),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      title: Text(strings.chatBackdropTitle),
+      subtitle: Text(strings.chatBackdropDescription),
+      value: ref.watch(wingChatPreferencesProvider).backdropEnabled,
+      onChanged: ref
+          .read(wingChatPreferencesProvider.notifier)
+          .setBackdropEnabled,
     );
   }
 }

@@ -9,6 +9,13 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatBackdropTitle => 'Chat Backdrop';
+
+  @override
+  String get chatBackdropDescription =>
+      'The faint statue image behind the conversation.';
+
+  @override
   String get chatUserBubbleTitle => 'Message Bubble';
 
   @override

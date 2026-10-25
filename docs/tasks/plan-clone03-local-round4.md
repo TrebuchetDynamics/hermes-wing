@@ -169,8 +169,9 @@ existing defect in the named paths if it blocks the required checks, without
 weakening them. No coordinator receipt, external input, credentials or live target
 is required. Implementation workers never edit tasks or BLOCKERS/CHANGELOG.
 The saved task supplies exact formatting, analysis, focused and full-suite checks;
-run focused checks while iterating, the full check once at final qualification,
-and report preparation failures separately from test results.
+run focused checks while iterating and report preparation failures separately
+from test results. The admitted worker contract reserves the unchanged full check
+for the coordinator's merged-tree gate; workers do not run it.
 
 **Pre-mortem / invariant:** delayed persistence must not erase a newer choice or
 any unrelated preference (storage case); the art must not intercept input, add
@@ -225,3 +226,85 @@ readback found two citation end lines beyond EOF; they were corrected to 17/24
 before the passing check. `docs.py check .` finds no role manifest and performs
 no mapped-role checks; it does not replace scoped validation. `git diff --check`
 passes. No behavior tests or platform journeys were executed in this pass.
+
+## Implementation follow-through — CLONE03BACKDROP-001-1b78232c
+
+Implemented on the isolated task branch from `5f82649add308b1699f57fd86ab9ebecada0697b`;
+coordinator integration and qualification remain separate. The preceding validation
+boundary describes the historical planning pass, not this implementation's checks.
+
+- `WingChatPreferences.backdropEnabled` defaults off. Only stored boolean true
+  enables it; hydration never writes. Explicit off removes only
+  `wing.chat.backdrop_enabled`. Existing copy/hydration/serialized saves retain
+  newer intent and unrelated values, including after storage failure/disposal.
+- Window layout places localized **Chat Backdrop** after density. The canonical
+  `appearance.backdrop` field outranks a conflicting page; search includes
+  background/statue and retains cancellation/navigation-revision fences.
+- `WingChatBackdrop` wraps only the connected Chat pane. Foreground occupies an
+  unchanged slot while art is mounted only on. The bundled square image is
+  top-left, clipped, at least pane-width and 160% pane-height, with a layout/DPR
+  decode hint. Opacity is 0.025; light mode inverts, dark does not. Difference
+  compositing uses the opaque Chat surface, never the foreground. The pane is
+  the adaptive viewport rather than the entire Electron window. A local Material
+  preserves empty-chat ListTile ink. There is no new Agent operation or image state.
+- Exact bytes and the complete pinned MIT notice are bundled in
+  [the artwork owner](../../assets/desktop/README.md); only that asset is registered.
+
+### Offline evidence
+
+Executed on the Linux host with Flutter 3.44.2's widget/test renderer, not a native
+application or browser/device journey:
+
+- `flutter pub get --enforce-lockfile`: pass; no lockfile/dependency changes.
+- `flutter gen-l10n`: pass; generated localization outputs come from ARB.
+- The task's exact seven-file `dart format --output=none --set-exit-if-changed`
+  command: pass, zero changes.
+- `autowork-run flutter analyze --no-pub`: pass, no issues.
+- The following complete named-target check: **274 passed**, no failures/skips.
+
+```bash
+autowork-run timeout 900 flutter test --no-pub --concurrency=1 \
+  test/features/settings/chat_backdrop_settings_test.dart \
+  test/features/settings/session_list_density_settings_test.dart \
+  test/features/settings/chat_user_bubble_settings_test.dart \
+  test/features/settings/chat_text_direction_settings_test.dart \
+  test/features/settings/chat_reasoning_settings_test.dart \
+  test/features/settings/chat_text_scale_settings_test.dart \
+  test/features/settings/settings_subpages_test.dart \
+  test/features/settings/settings_search_test.dart \
+  test/features/settings/settings_screen_test.dart \
+  test/router/settings_routes_test.dart \
+  test/router/chat_workspace_overlay_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_backdrop_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_desktop_geometry_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_reasoning_preferences_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_text_direction_test.dart \
+  test/features/hermes_chat/screens/hermes_chat_session_mutation_owner_test.dart \
+  test/shared/widgets/app_shell_global_session_access_test.dart
+```
+
+The two new Settings cases prove storage/type/default/removal, recreation,
+late hydration, ordered delayed saves, failure/disposal, preservation through other
+setters, deep-link precedence, search/cancel/stale results, keyboard and semantics
+at 390/1280px and 200% text. The new mounted Chat case covers both themes at those
+sizes/scales, actual bundled-image decoding, decorative treatment/exclusions,
+controller/focus/selected-composing draft/transcript/scroll/route/channel/session
+identity, loaded/streaming updates, zero incidental recorded operations and one
+valid foreground Send. Existing stale-owner/approval/Stop checks are retained.
+Initial RED runs found the missing preference API, Settings field and decoration.
+The broader check exposed the ColoredBox/empty-prompt ink assertion; using Material
+resolved it before the final passing check, without changing existing tests.
+
+Exact Git blob/SHA-256 checks pass. Scoped readback verifies asset registration,
+complete pinned MIT notice, local Markdown links/anchors and exact-pin source
+bindings. `docs.py check .` reports no role manifest (no mapped-role validation);
+scoped readback is the content/link check. `git diff --check` passes.
+
+**Not run:** full serial suite (coordinator merged-tree gate), compiled web/browser,
+native Linux/Android/macOS/Windows execution, physical-device/screen-reader/live
+Agent/provider checks, and matched exact-pin visual comparisons. Widget evidence
+does not qualify native/live/visual support, all Settings, CLONE-03 or PARITY.
+No upstream runtime, network service, credentials, inference, publication or
+owner-deferred live/Files work was exercised. Docs Sync scoped Maintain updates
+this evidence owner, routes and artwork provenance; task/history ownership remains
+with the coordinator and final docs closeout with the docs maintainer.

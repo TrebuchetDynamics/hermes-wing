@@ -1,0 +1,9 @@
+schema = 1
+task = "CLONE03TOOLVIEW-001-ee4f6811"
+candidate = "289fe75fcab17b36678d54ed43571ffd5ce56538"
+integration = "9af7642212b51d65db8c220b62cbe7d4035b8428"
+tree = "f15ca6e678ec282cda29d2bafb4ec436c8c0c72e"
+contract_hash = "37ddd4797c2efdf5b9dc218d49cac658e479185512c2f32e2cdcf3ae61653b62"
+checks = ["<path>", "<path>", "--verify", "<path>", "CLONE03TOOLVIEW-001-ee4f6811"]
+result = "pass"
+review = "passed"

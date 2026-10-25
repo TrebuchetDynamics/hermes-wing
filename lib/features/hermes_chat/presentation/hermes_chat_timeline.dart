@@ -1117,6 +1117,14 @@ class _TurnBubble extends ConsumerWidget {
       futureLabel: compactTimestamp,
     );
     final colors = Theme.of(context).colorScheme;
+    final transparency = isUser
+        ? ref.watch(
+            wingChatPreferencesProvider.select(
+              (prefs) => prefs.userBubbleTransparency,
+            ),
+          )
+        : 0;
+    final userFill = colors.surfaceContainerLowest;
 
     final bubble = Align(
       alignment: Alignment.centerLeft,
@@ -1132,7 +1140,11 @@ class _TurnBubble extends ConsumerWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           color: isUser
-              ? colors.surfaceContainerLowest
+              ? transparency == 0
+                    ? userFill
+                    : userFill.withValues(
+                        alpha: userFill.a * (1 - transparency / 100),
+                      )
               : structuredError != null
               ? colors.error.withValues(alpha: 0.1)
               : Colors.transparent,

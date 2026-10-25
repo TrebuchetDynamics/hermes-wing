@@ -1,4 +1,8 @@
 {
+  "chatUserBubbleTitle": "Message Bubble",
+  "chatUserBubbleDescription": "How see-through your own messages are. Solid at 0; only the outline remains at 100.",
+  "chatUserBubblePercent": "{value}%",
+  "@chatUserBubblePercent": {"placeholders": {"value": {"type": "int"}}},
   "chatReasoningCollapsedTitle": "Collapse thinking by default",
   "chatReasoningCollapsedDescription": "Keep streamed reasoning available without expanding it until you open it.",
   "skillsAllCategoriesLabel": "All categories",

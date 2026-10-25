@@ -85,6 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'theme' => _AppearancePage.theme,
       'chat-text-scale' => _AppearancePage.typography,
       'appearance.text-direction' ||
+      'appearance.user-bubble' ||
       'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
       _ =>
         _AppearancePage.values
@@ -231,6 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'theme': strings.settingsThemeHeading,
                     'chat-text-scale': strings.chatTextScaleTitle,
                     'appearance.text-direction': strings.chatTextDirectionTitle,
+                    'appearance.user-bubble': strings.chatUserBubbleTitle,
                     'appearance.reasoning-collapsed':
                         strings.chatReasoningCollapsedTitle,
                   },
@@ -239,6 +241,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       strings.themeModeSystem,
                       strings.themeModeLight,
                       strings.themeModeDark,
+                    ],
+                    'appearance.user-bubble': [
+                      strings.settingsChatDisplayHeading,
+                      strings.chatUserBubbleDescription,
                     ],
                     'appearance.reasoning-collapsed': [
                       strings.settingsChatDisplayHeading,
@@ -313,6 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 _AppearancePage.typography)
                               const _ChatTextScaleSetting()
                             else ...const [
+                              _UserBubbleTransparencySetting(),
                               _ChatTextDirectionSetting(),
                               _ReasoningCollapsedSetting(),
                             ],
@@ -558,6 +565,7 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
               page: switch (entry.key) {
                 'theme' => _AppearancePage.theme,
                 'appearance.text-direction' ||
+                'appearance.user-bubble' ||
                 'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
                 _ => _AppearancePage.typography,
               },
@@ -720,6 +728,49 @@ class _AppearanceSettingsSection extends ConsumerWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _UserBubbleTransparencySetting extends ConsumerWidget {
+  const _UserBubbleTransparencySetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final value = ref.watch(wingChatPreferencesProvider).userBubbleTransparency;
+    String percent(double value) =>
+        strings.chatUserBubblePercent(value.round());
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            strings.chatUserBubbleTitle,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(strings.chatUserBubbleDescription),
+          const SizedBox(height: 12),
+          Text(percent(value.toDouble())),
+          MergeSemantics(
+            child: Semantics(
+              label: strings.chatUserBubbleTitle,
+              child: Slider(
+                key: const ValueKey('settings-user-bubble-transparency'),
+                value: value.toDouble(),
+                max: 100,
+                divisions: 100,
+                semanticFormatterCallback: percent,
+                onChanged: ref
+                    .read(wingChatPreferencesProvider.notifier)
+                    .setUserBubbleTransparency,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

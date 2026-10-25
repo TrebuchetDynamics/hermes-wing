@@ -1,0 +1,9 @@
+schema = 1
+task = "CLONE03BUBBLE-001-57d0863e"
+candidate = "6eabe961e7a7d63137d0efab0e539be730e94273"
+integration = "c2370eb48d05ce40264b726bc7189c259f14d420"
+tree = "d4b2cb73a838531074ea75815fb8af2b6e8b636c"
+contract_hash = "75496fc09ad41321f0d7c171806880a308ac87d6bc31ade308240a5b10bf1c8e"
+checks = ["<path>", "<path>", "--verify", "<path>", "CLONE03BUBBLE-001-57d0863e"]
+result = "pass"
+review = "passed"

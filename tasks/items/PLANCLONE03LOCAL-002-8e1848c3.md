@@ -3,7 +3,7 @@ schema = 1
 id = "PLANCLONE03LOCAL-002-8e1848c3"
 title = "Plan the next bounded CLONE-03 local Settings frontier after Chat Backdrop"
 short = "Reconcile the next local Settings slice"
-status = "open"
+status = "done"
 goal = "PARITY"
 section = "Next"
 rank = 9000
@@ -16,6 +16,11 @@ scope = "Planning only for unfinished CLONE-03 local Settings under PARITY. Read
 acceptance = ["A compact comparison cites finished backdrop report or exact absence, integrated current consumers/tests, exact-pin source controls/asset and remaining PARITY proof. Exclude delivered outcomes and preserve historical/owner-deferred closures.", "Save at most one complete non-duplicate local building task with bounded Touches, true Dependencies and exact offline oracles/Checks/exclusions. At stopping conditions preserve one stop question plus an open Needs decision proof/continuation task; never invent support, input, receipt or goal completion.", "Persist batch/manual closure together; run fresh-reader builder, local links/source bindings, native task validation and git diff --check. With new building work and N < 10, exactly one successor advances N and depends on every new building task; otherwise none. PARITY stays partial without executed proof under existing ledger rules."]
 checks = ["Read finished report, accepted sources, current implementation/tests and exact-pin objects; no fetch/runtime execution.", "Run fresh-context read-only builder check on saved records and resolve evidence-answerable questions within scope.", "/home/xel/.local/bin/python3 /home/xel/.local/state/pi-autowork/releases/cd24b45bd339117a08812b765efacffba32e19e3/pi-autowork/pi_autowork/command.py tasks validate --worktree .", "Verify changed local Markdown links/exact-pin source bindings and git diff --check; no Flutter/browser/device/network execution is required for planning."]
 exclusions = ["No production/test/asset/manifest/dependency/lockfile/CI implementation, broad clone audit, speculative controls, Agent/reference/runtime edits/execution/fetch, shell bridge, shadow backend or new authority.", "No device/service/provider/network exercise, credentials, purchases, publication, push or deployment. Never infer whole Settings/PARITY/native/live/visual proof from fixtures, manual task closures or an empty queue.", "No reopening owner-deferred live/Files work or rewriting existing Acceptance/product scope; preserve saved preferences, exact identity/focus/intent/no-replay fences. Native tasks commands own task records; invoking maintainer allowlist owns documents."]
+closure = "manual"
+closure_actor = "DOCS-MAINTAINER"
+closure_timestamp = "2026-10-25T04:37:48.599460+00:00"
+closure_reason = "Reconciled integrated coordinator-closed Chat Backdrop, exact-pin controls and remaining PARITY proof. Saved one complete official loaded-only thread timeline fallback with its local hide setting and round-6 continuation. Fresh-reader evidence resolved the initial false index prerequisite; no owner question remains. Manual planning closure only, no implementation or goal qualification."
+closure_evidence = "docs/tasks/plan-clone03-local-round5.md"
 +++
 - Sources: docs/tasks/plan-clone03-local-round4.md#batch-and-continuation; tasks/goals/PARITY.md; docs/plans/2026-10-21-desktop-literal-clone.md#ejecución-vigente--2026-10-24
 - Plan round: 5 of 10

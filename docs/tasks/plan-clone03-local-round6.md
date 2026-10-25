@@ -214,6 +214,90 @@ reused turn IDs or streaming cannot cross owners, remount input or steal focus
 (mounted ownership assertions plus existing viewport/window guards). No Agent
 state, authority, protocol or history behavior changes.
 
+## Implementation follow-through — CLONE03TOOLVIEW-001-ee4f6811
+
+Retry implementation against Wing baseline `d05dc58cbf6dc841564b551fd29f92a746591a48`,
+using the unchanged official pin `14e1e43a23761b369641208e204365cd6cb9399d`.
+The earlier candidate `23cfbc0d3aa6ab3082cdcc5d249047b6cd6b850c` was inspected
+and reused, not treated as accepted: integration found quoted scalar password
+suffixes leaking. The current mounted regression reproduced that failure before
+the presentation-only fix.
+The read-only pinned store, manifest, appearance control, complete result-only
+fallback/test and render-limit bindings above were inspected without fetching or
+executing Agent. No Agent model, API, transport or configuration changed.
+
+- `WingToolDisplay` defaults to Product. Only the string `technical` enables
+  Technical; hydration does not normalize storage. Product removes only
+  `wing.chat.tool_display`. Existing preference writes, late-intent ordering,
+  storage-failure/disposal fences and saved inert values are preserved.
+- The working local control follows Hide thread timeline bars. Canonical
+  `appearance.tool-view` overrides a conflicting page; local search covers
+  tool/display/technical/product/payload/result/output. Both Settings layouts
+  retain keyboard/semantics operation at 390/1280px and 200% fixture text.
+- Product's category/status presentation and existing rich-transcript privacy/
+  copy tests are unchanged. Technical adds explicit, initially collapsed **Tool
+  payload** to single/grouped activity. Only canonical loaded Result is eligible;
+  unavailable, invalid or oversized results use fixed copy, never synthetic
+  Arguments, tool names, preview/commands or a fetch button.
+- Mounted presentation rejects sources above 65,536 UTF-16 units before parsing,
+  JSON nesting above 16, more than 1,000 values and malformed object/array input.
+  Credential keys are excluded before formatting; scalar text uses shared
+  redaction plus this surface's stricter URI/address/path policy. Controls/ANSI
+  normalize before redaction; encoded structured scalar leaves fail closed rather
+  than become another decoding surface. Credential assignments/schemes and detected
+  host paths suppress their entire scalar leaf, not just a whitespace-delimited
+  prefix; spaces, quotes, escapes and newlines cannot leave sensitive suffixes.
+  JSON numbers that decode to infinity fail closed to unavailable copy instead of
+  crashing formatting. Total result paint is at most 20,000 characters including
+  the localized truncation marker, with no full-output Copy. Shared redaction is
+  unchanged.
+- Decoding occurs only while explicitly open, memoized for the mounted exact
+  viewport owner/session/unique turn ID/value. Timestamp or tool-identity changes
+  also invalidate reused IDs and their focused controls; key diagnostics omit raw
+  tool identity. Collapse, Product, ambiguous IDs, removal and disposal drop derived
+  content; changed owner closes disclosure.
+  Same-owner running/completed/failed updates and unrelated streaming retain
+  explicit intent without replacing the composer/controller or selected draft.
+
+Executed offline on the Linux host (Flutter widget fixtures, not a native app):
+
+- `flutter pub get --enforce-lockfile`: pass; locked packages unchanged.
+- `flutter gen-l10n`: pass; generated Dart comes from English ARB.
+- Task-scoped `dart format --output=none --set-exit-if-changed`: pass.
+- `flutter analyze --no-pub`: pass, no issues.
+- The task's exact `flutter test --no-pub --concurrency=1` inventory, through
+  `autowork-run timeout 1200`: **322 passing tests across 18 modules**. This
+  includes the two new named Settings cases and one mounted Chat case, plus all
+  named existing preference/routing/overlay/privacy/viewport/window/accessibility/
+  reconnect/session-mutation guards. No full-suite run is claimed; the merged-tree
+  full serial gate belongs to the coordinator.
+- Scoped readback: **49 local Markdown links/anchors and 6 exact-pin source
+  bindings pass**, with byte-stable repeat reads of both changed owners.
+  `git diff --check`: pass. Docs Sync `docs.py stale .` / `check .` report no
+  `docs/roles.json`; no manifest coverage is claimed. Read-only task preparation
+  reports READY and validation passes (314 tasks, 36 goals, no drafts). Existing
+  out-of-scope queue diagnostics are unchanged. Scoped Maintain updates only routes
+  and this implementation/test-plan owner; shared task/history and CHANGELOG
+  closeout remain coordinator-owned.
+
+The reused candidate includes regressions for encoded scalar credentials,
+invisible-control reassembly, scheme-relative/bracket paths, direct ID replacement,
+grouped streaming/failure/Product/duplicate/profile ownership and whole-transcript
+text/Markdown clipboard exclusion. This retry extends that same mounted case with
+quoted/escaped/space-containing credential values in plain text, JSON scalars and
+nested leaves. Independent read-only review additionally identified space-containing
+path suffix leaks and non-finite JSON formatting crashes; both were reproduced in
+the mounted case before their fixes. The final passing inventory above includes
+all these regressions. This is local implementation evidence, not integration,
+publication or full parity acceptance.
+
+Full inputs, historical payload retention/reads, diffs and the complete renderer
+remain unsupported. Compiled browser, native Linux/Android/macOS/Windows, real
+assistive technology, matched exact-pin visuals, live Agent/provider/authentication,
+full Settings and PARITY qualification remain unrun. Existing manual/live/Files
+closures are unchanged. The round-7 successor should consume this bounded evidence,
+not schedule the result-only control again.
+
 ## Batch and continuation
 
 Building: [CLONE03TOOLVIEW-001-ee4f6811](../../tasks/items/CLONE03TOOLVIEW-001-ee4f6811.md),

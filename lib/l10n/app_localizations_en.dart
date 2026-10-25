@@ -9,6 +9,36 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatToolDisplayTitle => 'Tool Call Display';
+
+  @override
+  String get chatToolDisplayDescription =>
+      'Technical shows available redacted loaded results. Full inputs, historical payloads and diffs are not available.';
+
+  @override
+  String get chatToolDisplayProduct => 'Product';
+
+  @override
+  String get chatToolDisplayTechnical => 'Technical';
+
+  @override
+  String get chatToolPayloadTitle => 'Tool payload';
+
+  @override
+  String get chatToolResultTitle => 'Result';
+
+  @override
+  String get chatToolResultUnavailable =>
+      'No loaded result available for safe display.';
+
+  @override
+  String get chatToolResultOversized =>
+      'Loaded result is too large for safe display.';
+
+  @override
+  String get chatToolResultTruncated => '… [Result truncated]';
+
+  @override
   String get chatHideThreadTimelineTitle => 'Hide thread timeline bars';
 
   @override

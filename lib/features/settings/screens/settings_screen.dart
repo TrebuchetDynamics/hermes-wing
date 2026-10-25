@@ -91,6 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'appearance.text-direction' ||
       'appearance.user-bubble' ||
       'appearance.hide-thread-timeline' ||
+      'appearance.tool-view' ||
       'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
       _ =>
         _AppearancePage.values
@@ -241,6 +242,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         strings.sessionListDensityTitle,
                     'appearance.hide-thread-timeline':
                         strings.chatHideThreadTimelineTitle,
+                    'appearance.tool-view': strings.chatToolDisplayTitle,
                     'appearance.backdrop': strings.chatBackdropTitle,
                     'appearance.text-direction': strings.chatTextDirectionTitle,
                     'appearance.user-bubble': strings.chatUserBubbleTitle,
@@ -248,6 +250,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         strings.chatReasoningCollapsedTitle,
                   },
                   settingTopics: {
+                    'appearance.tool-view': [
+                      strings.settingsChatDisplayHeading,
+                      strings.chatToolDisplayDescription,
+                      'tool',
+                      'display',
+                      'technical',
+                      'product',
+                      'payload',
+                      'result',
+                      'output',
+                    ],
                     'appearance.hide-thread-timeline': [
                       strings.settingsChatDisplayHeading,
                       strings.chatHideThreadTimelineDescription,
@@ -362,6 +375,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               _UserBubbleTransparencySetting(),
                               _ChatTextDirectionSetting(),
                               _HideThreadTimelineSetting(),
+                              _ToolDisplaySetting(),
                               _ReasoningCollapsedSetting(),
                             ],
                           ],
@@ -610,6 +624,7 @@ class _SettingsSearch extends SearchDelegate<_SettingsTarget?> {
                 'appearance.text-direction' ||
                 'appearance.user-bubble' ||
                 'appearance.hide-thread-timeline' ||
+                'appearance.tool-view' ||
                 'appearance.reasoning-collapsed' => _AppearancePage.chatDisplay,
                 _ => _AppearancePage.typography,
               },
@@ -812,6 +827,51 @@ class _SessionListDensitySetting extends ConsumerWidget {
                   onSelected: (_) => ref
                       .read(wingSessionListDensityProvider.notifier)
                       .setDensity(value),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToolDisplaySetting extends ConsumerWidget {
+  const _ToolDisplaySetting();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = AppLocalizations.of(context);
+    final mode = ref.watch(wingChatPreferencesProvider).toolDisplay;
+    return Padding(
+      key: const ValueKey('settings-tool-display'),
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            strings.chatToolDisplayTitle,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(strings.chatToolDisplayDescription),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final value in WingToolDisplay.values)
+                ChoiceChip(
+                  key: ValueKey('settings-tool-display-${value.name}'),
+                  label: Text(
+                    value == WingToolDisplay.product
+                        ? strings.chatToolDisplayProduct
+                        : strings.chatToolDisplayTechnical,
+                  ),
+                  selected: mode == value,
+                  onSelected: (_) => ref
+                      .read(wingChatPreferencesProvider.notifier)
+                      .setToolDisplay(value),
                 ),
             ],
           ),

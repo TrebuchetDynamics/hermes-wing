@@ -16,6 +16,8 @@ enum WingChatTextDirection {
   };
 }
 
+enum WingToolDisplay { product, technical }
+
 @immutable
 class WingChatPreferences {
   const WingChatPreferences({
@@ -26,6 +28,7 @@ class WingChatPreferences {
     this.userBubbleTransparency = 0,
     this.backdropEnabled = false,
     this.hideThreadTimeline = false,
+    this.toolDisplay = WingToolDisplay.product,
     this.isHydrated = true,
   });
 
@@ -36,6 +39,7 @@ class WingChatPreferences {
   final int userBubbleTransparency;
   final bool backdropEnabled;
   final bool hideThreadTimeline;
+  final WingToolDisplay toolDisplay;
   final bool isHydrated;
 
   WingChatPreferences copyWith({
@@ -46,6 +50,7 @@ class WingChatPreferences {
     int? userBubbleTransparency,
     bool? backdropEnabled,
     bool? hideThreadTimeline,
+    WingToolDisplay? toolDisplay,
     bool? isHydrated,
   }) => WingChatPreferences(
     spellcheckEnabled: spellcheckEnabled ?? this.spellcheckEnabled,
@@ -55,6 +60,7 @@ class WingChatPreferences {
         userBubbleTransparency ?? this.userBubbleTransparency,
     backdropEnabled: backdropEnabled ?? this.backdropEnabled,
     hideThreadTimeline: hideThreadTimeline ?? this.hideThreadTimeline,
+    toolDisplay: toolDisplay ?? this.toolDisplay,
     isHydrated: isHydrated ?? this.isHydrated,
     reasoningCollapsedByDefault:
         reasoningCollapsedByDefault ?? this.reasoningCollapsedByDefault,
@@ -71,6 +77,7 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
       'wing.chat.user_bubble_transparency';
   static const _keyBackdropEnabled = 'wing.chat.backdrop_enabled';
   static const _keyHideThreadTimeline = 'wing.chat.hide_thread_timeline';
+  static const _keyToolDisplay = 'wing.chat.tool_display';
   static const minTranscriptTextScale = 0.5;
   static const maxTranscriptTextScale = 2.5;
 
@@ -114,6 +121,11 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
         hideThreadTimeline: _mutatedFields.contains(_keyHideThreadTimeline)
             ? state.hideThreadTimeline
             : prefs.get(_keyHideThreadTimeline) == true,
+        toolDisplay: _mutatedFields.contains(_keyToolDisplay)
+            ? state.toolDisplay
+            : prefs.get(_keyToolDisplay) == 'technical'
+            ? WingToolDisplay.technical
+            : WingToolDisplay.product,
         textDirection: _mutatedFields.contains(_keyTextDirection)
             ? state.textDirection
             : switch (prefs.get(_keyTextDirection)) {
@@ -186,6 +198,14 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
           }
         }
         if (!ref.mounted) return;
+        if (_mutatedFields.contains(_keyToolDisplay)) {
+          if (snapshot.toolDisplay == WingToolDisplay.technical) {
+            await prefs.setString(_keyToolDisplay, 'technical');
+          } else {
+            await prefs.remove(_keyToolDisplay);
+          }
+        }
+        if (!ref.mounted) return;
         if (_mutatedFields.contains(_keyTextDirection)) {
           final direction = snapshot.textDirection;
           if (direction == WingChatTextDirection.auto) {
@@ -198,6 +218,13 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
         // The in-memory preference remains usable if persistence is unavailable.
       }
     });
+  }
+
+  void setToolDisplay(WingToolDisplay display) {
+    if (!ref.mounted) return;
+    _mutatedFields.add(_keyToolDisplay);
+    state = state.copyWith(toolDisplay: display);
+    _save();
   }
 
   void setHideThreadTimeline(bool hidden) {

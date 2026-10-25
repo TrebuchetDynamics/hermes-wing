@@ -81,6 +81,7 @@ import '../presentation/hermes_rich_text.dart';
 import '../presentation/hermes_turn_presentation_identity.dart';
 import '../presentation/hermes_transcript_viewport.dart';
 import '../widgets/thread_timeline.dart';
+import '../widgets/tool_result_disclosure.dart';
 
 part 'widgets/hermes_chat_error.dart';
 part 'widgets/hermes_saved_endpoint_editor.dart';

@@ -1,0 +1,9 @@
+schema = 1
+task = "PARITYCONTINUE-001-421b2b55"
+candidate = "928711fd95cd3610d62b79f653bf82e672fc7b99"
+integration = "1e4dc5cbeaacb6b79a040ca4b6b747fbfb95ca2c"
+tree = "97f6aa1564bbd5fcff09235d1b76c454537db838"
+contract_hash = "4882e9da76f76a905f2a9a5219f7b29b3c809c1b2a5ba3563d4660d1dd091462"
+checks = ["<path>", "<path>", "--verify", "<path>", "PARITYCONTINUE-001-421b2b55"]
+result = "pass"
+review = "passed"

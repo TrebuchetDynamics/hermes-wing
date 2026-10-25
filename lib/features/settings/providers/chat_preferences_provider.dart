@@ -23,6 +23,7 @@ class WingChatPreferences {
     this.transcriptTextScale = 1,
     this.textDirection = WingChatTextDirection.auto,
     this.reasoningCollapsedByDefault = false,
+    this.userBubbleTransparency = 0,
     this.isHydrated = true,
   });
 
@@ -30,6 +31,7 @@ class WingChatPreferences {
   final double transcriptTextScale;
   final WingChatTextDirection textDirection;
   final bool reasoningCollapsedByDefault;
+  final int userBubbleTransparency;
   final bool isHydrated;
 
   WingChatPreferences copyWith({
@@ -37,11 +39,14 @@ class WingChatPreferences {
     double? transcriptTextScale,
     WingChatTextDirection? textDirection,
     bool? reasoningCollapsedByDefault,
+    int? userBubbleTransparency,
     bool? isHydrated,
   }) => WingChatPreferences(
     spellcheckEnabled: spellcheckEnabled ?? this.spellcheckEnabled,
     transcriptTextScale: transcriptTextScale ?? this.transcriptTextScale,
     textDirection: textDirection ?? this.textDirection,
+    userBubbleTransparency:
+        userBubbleTransparency ?? this.userBubbleTransparency,
     isHydrated: isHydrated ?? this.isHydrated,
     reasoningCollapsedByDefault:
         reasoningCollapsedByDefault ?? this.reasoningCollapsedByDefault,
@@ -54,6 +59,8 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
   static const _keyTextDirection = 'wing.chat.text_direction';
   static const _keyReasoningCollapsed =
       'wing.chat.reasoning_collapsed_by_default';
+  static const _keyUserBubbleTransparency =
+      'wing.chat.user_bubble_transparency';
   static const minTranscriptTextScale = 0.5;
   static const maxTranscriptTextScale = 2.5;
 
@@ -85,6 +92,12 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
             _mutatedFields.contains(_keyReasoningCollapsed)
             ? state.reasoningCollapsedByDefault
             : prefs.get(_keyReasoningCollapsed) == true,
+        userBubbleTransparency:
+            _mutatedFields.contains(_keyUserBubbleTransparency)
+            ? state.userBubbleTransparency
+            : _boundedUserBubbleTransparency(
+                prefs.get(_keyUserBubbleTransparency),
+              ),
         textDirection: _mutatedFields.contains(_keyTextDirection)
             ? state.textDirection
             : switch (prefs.get(_keyTextDirection)) {
@@ -130,6 +143,17 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
           );
         }
         if (!ref.mounted) return;
+        if (_mutatedFields.contains(_keyUserBubbleTransparency)) {
+          if (snapshot.userBubbleTransparency == 0) {
+            await prefs.remove(_keyUserBubbleTransparency);
+          } else {
+            await prefs.setInt(
+              _keyUserBubbleTransparency,
+              snapshot.userBubbleTransparency,
+            );
+          }
+        }
+        if (!ref.mounted) return;
         if (_mutatedFields.contains(_keyTextDirection)) {
           final direction = snapshot.textDirection;
           if (direction == WingChatTextDirection.auto) {
@@ -169,6 +193,17 @@ class WingChatPreferencesController extends Notifier<WingChatPreferences> {
     state = state.copyWith(reasoningCollapsedByDefault: collapsed);
     _save();
   }
+
+  void setUserBubbleTransparency(double value) {
+    _mutatedFields.add(_keyUserBubbleTransparency);
+    state = state.copyWith(
+      userBubbleTransparency: _boundedUserBubbleTransparency(value),
+    );
+    _save();
+  }
+
+  static int _boundedUserBubbleTransparency(Object? value) =>
+      value is num && value.isFinite ? value.round().clamp(0, 100) : 0;
 
   static double _boundedTranscriptTextScale(double scale) =>
       scale.clamp(minTranscriptTextScale, maxTranscriptTextScale).toDouble();

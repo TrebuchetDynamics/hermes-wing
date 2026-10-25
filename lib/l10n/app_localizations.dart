@@ -94,6 +94,24 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @chatUserBubbleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Message Bubble'**
+  String get chatUserBubbleTitle;
+
+  /// No description provided for @chatUserBubbleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How see-through your own messages are. Solid at 0; only the outline remains at 100.'**
+  String get chatUserBubbleDescription;
+
+  /// No description provided for @chatUserBubblePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String chatUserBubblePercent(int value);
+
   /// No description provided for @chatReasoningCollapsedTitle.
   ///
   /// In en, this message translates to:

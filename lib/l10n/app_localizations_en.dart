@@ -9,6 +9,18 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get chatUserBubbleTitle => 'Message Bubble';
+
+  @override
+  String get chatUserBubbleDescription =>
+      'How see-through your own messages are. Solid at 0; only the outline remains at 100.';
+
+  @override
+  String chatUserBubblePercent(int value) {
+    return '$value%';
+  }
+
+  @override
   String get chatReasoningCollapsedTitle => 'Collapse thinking by default';
 
   @override

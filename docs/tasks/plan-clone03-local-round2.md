@@ -60,7 +60,7 @@ found by name belong to other tasks and are not inputs to this planning trigger.
 
 `D/` below means `apps/desktop/src/` at the exact pin above.
 
-| Outcome | Official source | Current Wing evidence / disposition |
+| Outcome | Official source | Wing evidence at planning / disposition |
 | --- | --- | --- |
 | Theme/text scale | `D/app/settings/settings-manifest.ts:70-73` | `settings_screen.dart` Theme/Typography and `chat_preferences_provider.dart:24-31,155-160`; existing theme/scale tests. Exclude delivered controls and larger font/theme catalogs. |
 | Text direction/reasoning collapse | `D/app/settings/settings-manifest.ts:117-121,135-138` | `settings_screen.dart:87-88,233-247,728-785`, `chat_preferences_provider.dart:24-32,162-170`; direction/reasoning Settings and mounted-Chat tests. Exclude delivered controls. |
@@ -156,9 +156,10 @@ Stop it by moving **PLANCLONE03LOCAL-001-84ad1ad6** to Needs decision through na
 
 ## Planning validation boundary
 
-All new behavior tests/checks above are **proposed/unrun**. This pass exercises
-source inspection, task consistency and documentation only: no Flutter, browser,
-native/device, paired visual, screen-reader or live Agent/provider runtime.
+At planning, all new behavior tests/checks above were **proposed/unrun**. That
+pass exercised source inspection, task consistency and documentation only. The
+[implementation follow-through](#implementation-follow-through) records the later
+worker's actual offline evidence separately from remaining qualification.
 
 Fresh-context read-only builder review found **nothing important left** and
 confirmed the control/consumer seam, bounded write set and round/dependency edge.
@@ -176,3 +177,50 @@ of the original Scope/Acceptance/Dependencies/exclusions/order, and the two-task
 PARITY round-3 chain. `git diff --check` passes. Branch-local saving is not
 canonical integration, dispatch or goal/platform qualification; committed-store
 selection is checked separately after the planning commit.
+
+## Implementation follow-through
+
+`CLONE03BUBBLE-001-57d0863e` implements this bounded local outcome on its isolated
+task branch, pending coordinator integration and the runner's whole-suite gate.
+Appearance > Chat display now offers **Message Bubble**, a localized, named
+0–100% slider with step-1 keyboard and semantics adjustment. Search and the
+canonical `appearance.user-bubble` field open Chat display even when `page=theme`;
+cancel and stale search results retain the existing navigation-revision fence.
+
+`WingChatPreferences.userBubbleTransparency` stores an integer under
+`wing.chat.user_bubble_transparency`. Missing, wrong-type and non-finite values
+read as 0; finite numeric values round then clamp. Hydration writes nothing,
+explicit 0 removes only this key, and early choices/ordered saves preserve the
+existing scale, spellcheck, direction, reasoning, theme and retired-avatar records.
+Only the user-turn fill's existing alpha is multiplied by `(1 - value / 100)`;
+0 returns the original theme color exactly and 100 retains the outline. No
+subtree opacity, Agent call, new owner, resource identity or draft mutation is added.
+
+Executed offline with Flutter 3.44.2 / Dart 3.12.2 on the Linux host:
+
+- `flutter pub get --enforce-lockfile` and `flutter gen-l10n`: passed; no manifest
+  or lockfile changes, and localization outputs generated rather than hand-edited.
+- The named persistence and field cases first failed because the slider was absent;
+  the mounted consumer case first failed at 37 because the fill was unchanged.
+  The final two focused files pass **7 cases**, including malformed storage,
+  untouched hydration, delayed reads/writes, 390/1280px at 200% text, keyboard and
+  exported semantics adjustment, and light/dark mounted draft/owner invariants.
+- The task's exact 14-target regression inventory through `autowork-run timeout
+  1200 flutter test --no-pub --concurrency=1`: **178 passed**, including existing
+  direct-copy/context-menu, rich-transcript, field aliases, parent/caret,
+  Settings overlay, direction and composer guards.
+- Named-file formatting and `autowork-run timeout 1200 flutter analyze --no-pub`:
+  passed. A deprecated test-only semantics API was replaced with the binding's
+  public semantics-action entry point; no production gate was weakened.
+- Scoped Docs Sync Maintain: document readback, local links/anchors, exact-pin
+  source bindings, native task validation, repeat-pass byte stability and
+  `git diff --check`: passed. No task records or shared history were edited.
+- Fresh-context read-only review found no important correctness or acceptance gap.
+
+These are deterministic tests, not browser UI, screen-reader runtime, native GTK,
+Android, macOS/Windows, physical-input, live Agent/provider or paired Desktop visual
+qualification. Renderer overlay peeking, native glass and an inline-edit composer
+remain excluded and unqualified. The runner owns the unchanged full suite; focused
+passes do not replace it. `PLANCLONE03LOCAL-001-84ad1ad6` remains the existing
+round-3 continuation after coordinator verification, not new work dispatched here.
+Whole Settings/CLONE-03/PARITY acceptance remains partial.

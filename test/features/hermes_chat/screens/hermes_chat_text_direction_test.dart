@@ -63,7 +63,8 @@ void main() {
       final field = find.byKey(const ValueKey('hermes-composer-field'));
       final original = tester.widget<TextField>(field);
       final controller = original.controller!;
-      final focus = original.focusNode;
+      final focus = original.focusNode!;
+      focus.requestFocus();
       const draft = TextEditingValue(
         text: 'Draft שלום',
         selection: TextSelection(baseOffset: 1, extentOffset: 5),
@@ -84,6 +85,7 @@ void main() {
         expect(current.textDirection, direction.forcedDirection);
         expect(identical(current.controller, controller), isTrue);
         expect(identical(current.focusNode, focus), isTrue);
+        expect(focus.hasFocus, isTrue);
         expect(controller.value, draft);
         final rich = tester
             .widgetList<HermesRichText>(find.byType(HermesRichText))
@@ -133,6 +135,12 @@ void main() {
       }
       expect(channel.selectSessionCalls, isEmpty);
       expect(channel.selectProfileCalls, isEmpty);
+      expect(channel.connectCalls, isEmpty);
+      expect(channel.createSessionCalls, isEmpty);
+      expect(channel.loadEarlierMessagesCalls, 0);
+      expect(channel.loadProvidersCalls, 0);
+      expect(channel.reconcileActiveSessionCalls, 0);
+      expect(channel.sentImageDataUrls, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
@@ -141,6 +149,7 @@ void main() {
     testWidgets(
       'inline code links preserve safe activation and plain copy: $direction',
       (tester) async {
+        final semantics = tester.ensureSemantics();
         final opened = <Uri>[];
         String? copied;
         tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -180,6 +189,26 @@ void main() {
         await tester.pumpAndSettle();
         expect(opened, [Uri.parse('https://example.invalid')]);
         opened.clear();
+        await tester.pumpWidget(
+          render('Before [`code()`](https://example.invalid) after.'),
+        );
+        await tester.pumpAndSettle();
+        if (direction != TextDirection.rtl) {
+          final paragraphs = tester.renderObjectList<RenderParagraph>(
+            find.descendant(
+              of: find.byType(HermesRichText),
+              matching: find.byType(RichText),
+            ),
+          );
+          expect(
+            paragraphs.where((paragraph) {
+              final text = paragraph.text.toPlainText();
+              return text.contains('Before ') && text.contains(' after.');
+            }),
+            hasLength(1),
+            reason: 'Auto/LTR code must not split continuous paragraph flow',
+          );
+        }
         await tester.pumpWidget(
           render('[ordinary](https://example.invalid/ordinary)'),
         );
@@ -224,6 +253,15 @@ void main() {
             await tester.pumpAndSettle();
           }
           expect(linkFocused, isTrue);
+          final link = tester.getSemantics(
+            find.text('code()', findRichText: true).first,
+          );
+          expect(link.flagsCollection.isLink, isTrue);
+          expect(link.flagsCollection.isFocused.toBoolOrNull(), isTrue);
+          expect(
+            link.getSemanticsData().hasAction(SemanticsAction.focus),
+            isTrue,
+          );
           await tester.sendKeyEvent(LogicalKeyboardKey.enter);
           await tester.pumpAndSettle();
           expect(opened, [Uri.parse('https://example.invalid')]);
@@ -245,6 +283,7 @@ void main() {
           source,
         );
         expect(tester.takeException(), isNull);
+        semantics.dispose();
       },
     );
   }

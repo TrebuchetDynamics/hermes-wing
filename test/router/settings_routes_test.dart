@@ -118,6 +118,15 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('settings-theme-gallery')), findsNothing);
+    router.go(
+      '${AppRoutes.settings}?tab=config:appearance&page=theme&setting=appearance.text-direction&field=old&keep=1',
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('settings-chat-text-direction-auto')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('settings-theme-gallery')), findsNothing);
     await selectCategory('Voice');
     final query = router.routeInformationProvider.value.uri.queryParameters;
     expect(query['tab'], 'config:voice');

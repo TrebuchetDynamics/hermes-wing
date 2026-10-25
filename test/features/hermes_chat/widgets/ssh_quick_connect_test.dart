@@ -250,6 +250,7 @@ void main() {
           remember ? 'demo' : null,
         );
         expect(find.textContaining('synthetic-token'), findsNothing);
+        await tester.pumpWidget(const SizedBox());
       },
       variant: TargetPlatformVariant.only(TargetPlatform.android),
     );

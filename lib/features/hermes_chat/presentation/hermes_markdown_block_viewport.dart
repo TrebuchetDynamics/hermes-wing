@@ -32,6 +32,7 @@ class HermesMarkdownBlockViewport extends StatelessWidget {
         source: source,
         textScaler: MediaQuery.textScalerOf(context),
         theme: Theme.of(context),
+        textDirection: Directionality.of(context),
         delegate: SliverChildListDelegate(
           children,
           addAutomaticKeepAlives: false,
@@ -46,12 +47,14 @@ class _MarkdownBlocks extends SliverMultiBoxAdaptorWidget {
     required this.source,
     required this.textScaler,
     required this.theme,
+    required this.textDirection,
     required super.delegate,
   });
 
   final String source;
   final TextScaler textScaler;
   final ThemeData theme;
+  final TextDirection textDirection;
 
   @override
   _RenderMarkdownBlocks createRenderObject(BuildContext context) =>
@@ -59,6 +62,7 @@ class _MarkdownBlocks extends SliverMultiBoxAdaptorWidget {
         source,
         textScaler,
         theme,
+        textDirection,
         childManager: context as SliverMultiBoxAdaptorElement,
         count: delegate.estimatedChildCount!,
       );
@@ -72,6 +76,7 @@ class _MarkdownBlocks extends SliverMultiBoxAdaptorWidget {
     source: source,
     textScaler: textScaler,
     theme: theme,
+    textDirection: textDirection,
   );
 }
 
@@ -138,7 +143,8 @@ class _RenderMarkdownBlocks extends RenderSliverMultiBoxAdaptor {
   _RenderMarkdownBlocks(
     this._source,
     this._textScaler,
-    this._theme, {
+    this._theme,
+    this._textDirection, {
     required super.childManager,
     required int count,
   }) : _extents = _BlockExtents(count);
@@ -147,6 +153,7 @@ class _RenderMarkdownBlocks extends RenderSliverMultiBoxAdaptor {
   String _source;
   TextScaler _textScaler;
   ThemeData _theme;
+  TextDirection _textDirection;
   double? _width;
   bool _needsSeed = true;
   double? _lastTotal;
@@ -158,14 +165,17 @@ class _RenderMarkdownBlocks extends RenderSliverMultiBoxAdaptor {
     required String source,
     required TextScaler textScaler,
     required ThemeData theme,
+    required TextDirection textDirection,
   }) {
     if (_extents.count != count ||
         _source != source ||
         _textScaler != textScaler ||
-        _theme != theme) {
+        _theme != theme ||
+        _textDirection != textDirection) {
       _source = source;
       _textScaler = textScaler;
       _theme = theme;
+      _textDirection = textDirection;
       _reset(count);
     }
     markNeedsLayout();

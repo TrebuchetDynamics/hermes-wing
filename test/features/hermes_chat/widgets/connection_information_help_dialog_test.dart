@@ -38,12 +38,10 @@ void main() {
       TargetPlatform.android,
       channelOverride: channel,
     );
-    for (final mode in ['local', 'ssh', 'remote']) {
+    await activate(tester, 'hermes-connection-mode-ssh');
+    expect(key('connection-information-help'), findsNothing);
+    for (final mode in ['local', 'remote']) {
       await activate(tester, 'hermes-connection-mode-$mode');
-      if (mode == 'ssh') {
-        expect(key('connection-information-help'), findsNothing);
-        continue;
-      }
       expect(key('connection-information-help'), findsOneWidget);
       if (mode == 'remote') {
         await tester.enterText(

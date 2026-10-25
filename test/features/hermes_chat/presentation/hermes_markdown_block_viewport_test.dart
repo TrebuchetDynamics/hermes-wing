@@ -421,6 +421,54 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('direction changes invalidate previously measured block extents', (
+    tester,
+  ) async {
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    var direction = TextDirection.ltr;
+    Future<void> rebuild() async {
+      await tester.pumpWidget(
+        _app(
+          Directionality(
+            textDirection: direction,
+            child: SizedBox(
+              height: 360,
+              child: HermesMarkdownBlockViewport(
+                controller: scroll,
+                source: 'direction-sensitive blocks',
+                children: List.generate(
+                  100,
+                  (i) => Builder(
+                    builder: (context) => SizedBox(
+                      // Deterministic stand-in for direction-sensitive prose wrapping.
+                      height: Directionality.of(context) == TextDirection.rtl
+                          ? 100
+                          : 40,
+                      child: Text('Block $i'),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await rebuild();
+    for (var offset = 200.0; offset < 4000; offset += 200) {
+      scroll.jumpTo(offset.clamp(0, scroll.position.maxScrollExtent));
+      await tester.pumpAndSettle();
+    }
+    expect(scroll.position.maxScrollExtent, 4000 - 360);
+    direction = TextDirection.rtl;
+    await rebuild();
+    expect(scroll.position.maxScrollExtent, 10000 - 360);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('mixed large Markdown preserves table link image and expansion', (
     tester,
   ) async {

@@ -10,24 +10,21 @@ import 'package:wing/l10n/app_localizations.dart';
 
 import '../hermes_chat/support/fake_hermes_channel.dart';
 
-Widget app(
-  ProviderContainer container,
-  SettingsScreen settings, {
-  double scale = 1,
-}) => UncontrolledProviderScope(
-  container: container,
-  child: MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(scale)),
-      child: child!,
-    ),
-    home: settings,
-  ),
-);
+Widget app(ProviderContainer container, Widget settings, {double scale = 1}) =>
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        ),
+        home: settings,
+      ),
+    );
 Finder choice(String value) =>
     find.byKey(ValueKey('settings-chat-text-direction-$value'));
 
@@ -39,7 +36,9 @@ void main() {
         'wing.chat.transcript_text_scale': 1.37,
         'wing.chat.spellcheck_enabled': false,
         'wing.theme.mode': 'dark',
+        'wing.theme.palette': 'forest',
         'wing.chat.avatar_family': 'legacy',
+        'wing.appearance.avatar_variation.v1': 5,
       };
       SharedPreferences.setMockInitialValues(preserved);
       final container = ProviderContainer();
@@ -148,15 +147,23 @@ void main() {
         );
         addTearDown(container.dispose);
         (String, String?, String?)? target;
+        final navigation = ValueNotifier<(String, String?)>((
+          'theme',
+          'appearance.text-direction',
+        ));
+        addTearDown(navigation.dispose);
         await tester.pumpWidget(
           app(
             container,
-            SettingsScreen(
-              initialCategory: 'config:appearance',
-              initialPage: 'theme',
-              initialSetting: 'appearance.text-direction',
-              onTargetChanged: (category, page, setting) =>
-                  target = (category, page, setting),
+            ValueListenableBuilder<(String, String?)>(
+              valueListenable: navigation,
+              builder: (_, intent, _) => SettingsScreen(
+                initialCategory: 'config:appearance',
+                initialPage: intent.$1,
+                initialSetting: intent.$2,
+                onTargetChanged: (category, page, setting) =>
+                    target = (category, page, setting),
+              ),
             ),
             scale: 2,
           ),
@@ -203,6 +210,37 @@ void main() {
           'appearance.text-direction',
         ));
         expect(choice('rtl'), findsOneWidget);
+
+        Future<void> searchDirection() async {
+          await tester.tap(find.byKey(const ValueKey('settings-search')));
+          await tester.pumpAndSettle();
+          await tester.enterText(find.byType(TextField), 'Text direction');
+          await tester.pumpAndSettle();
+        }
+
+        await searchDirection();
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        expect(choice('rtl'), findsOneWidget);
+        await searchDirection();
+        navigation.value = ('typography', null);
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(
+            const ValueKey('settings-search-setting-appearance.text-direction'),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(choice('rtl'), findsNothing);
+        expect(
+          find.byKey(const ValueKey('settings-chat-text-scale-100')),
+          findsOneWidget,
+        );
+        expect(target, (
+          'config:appearance',
+          'chat-display',
+          'appearance.text-direction',
+        ));
         expect(channel.connectCalls, isEmpty);
         expect(channel.selectProfileCalls, isEmpty);
         expect(channel.loadProvidersCalls, 0);

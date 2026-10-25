@@ -415,6 +415,74 @@ compact-contact-menu qualification or turn native framework Back into browser Ba
 The [new compact GTK cases](chat-workspace-overlay-native.md#compact-saved-host-settings-entry-and-replacement)
 are separate native HTTP/SSE evidence, not a browser result.
 
+## UI-DRIFT-REPAIR-001: Settings picker navigation
+
+Retry baseline: `c26b43ea72b9acceb87351e235e65d508ce0e9ab`. The original
+Settings locator drift came from `61743180`: the hierarchical picker selects
+Theme within Appearance and is named **Settings Theme**, not **Settings Appearance**.
+Commit `b2ba738c`, already in this baseline, corrected the overlay spec's locator.
+This retry changes no browser or production source, timeout, assertion or journey.
+
+Each rendered saved-host case was exercised alone at 390/1280px, idle/active run,
+all with 200% text, using its exact title as `TITLE`:
+
+```bash
+export PATH="$AUTOWORK_CACHE/node-22.22.2/bin:$PATH"
+# Owned serve_web.mjs fixture: PORT=$((AUTOWORK_PORT_BASE+20)), API port +21.
+WING_APP_URL="http://127.0.0.1:$((AUTOWORK_PORT_BASE+20))/" \
+  autowork-run timeout 180 npx playwright test --config=playwright.config.mjs \
+  playwright/tests/regression/chat-workspace-overlay.spec.mjs \
+  --grep "${TITLE}\$" --retries=0
+```
+
+Titles start `Settings retains replacement connection via rendered saved-host selection`,
+optionally followed by ` during active run`, then
+` through overlay history at 390px/200% text` or
+` through overlay history at 1280px/200% text`.
+The first three isolated cells passed (one test each). The wide active-run cell
+first timed out clicking Add Hermes, then timed out clicking Chat on its first
+rerun. The next **three consecutive isolated runs of that same journey passed**
+with zero retries (23.8s, 29.4s and 22.2s). These intermittent baseline action
+failures are recorded rather than called a repaired layout defect or ignored
+without repeat evidence. No timeout increase was used as a fix.
+
+The complete configured web command ran all 12 default specs:
+
+```bash
+export PORT=$((AUTOWORK_PORT_BASE+30))
+export HERMES_E2E_PORT=$((AUTOWORK_PORT_BASE+33))
+export WING_APP_URL="http://127.0.0.1:$PORT/"
+autowork-run timeout 1500 bash -c 'flutter build web --release -t lib/main_e2e.dart && npm run web:e2e'
+```
+
+All **42 overlay cases pass**, with zero retries, failures or skips. Rendered
+host selection, exact replacement session/history, original-run completion
+readback, Back/Forward, Escape/Close, focus and no-replay assertions are unchanged.
+The overall web gate remains **red**: **96 passed, one flaky, one failed, one
+pre-existing opt-in live Agent skip**, exit 1. The flaky Settings-search 390px
+case initially matched both the live announcement and visible result text; its
+suite retry and one isolated zero-retry rerun pass. The failed
+`reasoning-disclosure.spec.mjs` case, `reasoning keyboard status, focus and exact
+session replacement`, cannot find the reasoning body after Enter. It fails again
+alone, and also fails identically on a freshly built detached `c26b43ea` baseline.
+These untouched journeys are unrelated failures, not green web-gate evidence.
+The isolated commands use the same config with `--retries=0`:
+
+```bash
+npx playwright test --config=playwright.config.mjs playwright/tests/regression/settings-search.spec.mjs --grep 'Settings search selects and cancels without Agent mutation at 390px' --retries=0
+npx playwright test --config=playwright.config.mjs playwright/tests/regression/reasoning-disclosure.spec.mjs --grep 'reasoning keyboard status, focus and exact session replacement' --retries=0
+```
+
+The baseline uses `git worktree add --detach "$TMPDIR/r2-baseline" c26b43ea72b9acceb87351e235e65d508ce0e9ab`,
+locked preparation and a fresh `flutter build web --release -t lib/main_e2e.dart`;
+its owned fixture uses allocated ports +50/+51. Initial occupied API ports +31/+32
+were left untouched; all owned fixture servers were stopped after validation.
+Flutter 3.44.2/Dart 3.12.2, Node.js 22.22.2 and bundled Chromium ran on Linux.
+Existing font/Wasm dry-run warnings do not qualify Wasm. This is deterministic
+browser evidence, not native, physical-device, live Agent or whole-Dart-suite
+acceptance. [Cluster A](connection-primary-entry.md#ui-drift-repair-001-current-connection-journey-repair)
+records the separate widget repair and remaining baseline reasoning failures.
+
 ## Remaining acceptance
 
 The separate [Linux GTK receipt](chat-workspace-overlay-native.md) covers the

@@ -3,7 +3,7 @@ schema = 1
 id = "LINUXQA-006-0ca2ba5b"
 title = "Plan the accepted shell and fresh-draft prerequisite frontier"
 short = "Plan shell and fresh-draft prerequisites"
-status = "open"
+status = "done"
 goal = "PARITY"
 section = "Next"
 rank = 1000
@@ -16,6 +16,11 @@ scope = "Continue bounded offline planning of the already accepted CLONE-02/04 s
 acceptance = ["The saved planning result compares the accepted exact-pin reference with current consumer/test evidence, names the concrete next local prerequisite and distinguishes inspected facts from missing evidence. Existing task IDs, completed Settings work and retained round-7 proof are preserved.", "Save at most one independently executable local building task with source-backed touches, real dependencies, deterministic failing-before/passing-after checks and explicit privacy/ownership/cancel/focus boundaries. If no building slice is supported, record the exact unavailable evidence rather than inventing work or imposing a blanket skill hold.", "Validate the affected task store and local links; keep PARITY partial and all device/browser/native/accessibility/live acceptance distinct. Return the saved contract to the same authorized runner; the planning substep does not implement or dispatch competing workers."]
 checks = ["autowork tasks validate --worktree .", "git diff --check", "Read back the saved source links, task fields, dependencies and actual selection result; do not infer live admission from metadata."]
 exclusions = ["No upstream Agent/reference edits, fetching or repinning, production/test/asset implementation within this planning task, credential discovery, new backend/shell bridge, live services/device/provider actions, spending, publication or deployment.", "Do not reopen prior manual/owner-deferred live or Files closures, waive acceptance, mark PARITY met, fabricate receipts, duplicate existing tasks, or automatically restart the completed Settings planning chain."]
+closure = "manual"
+closure_actor = "DOCS-MAINTAINER"
+closure_timestamp = "2026-10-28T05:25:11.130388+00:00"
+closure_reason = "Completed bounded evidence review: current shell/draft/overlay consumers and finished reports inspected, but the accepted reference pin is unreadable in inspected local references. Saved zero building tasks rather than an incomplete or duplicate contract; retained one PARITY Needs decision proof/continuation task and the required stop question. No successor plan or qualification."
+closure_evidence = "docs/tasks/linuxqa-006-shell-frontier.md"
 +++
 - Sources: docs/tasks/plan-clone03-local-round7.md#planner-decision-and-remaining-proof; docs/plans/2026-10-21-desktop-literal-clone.md#frontera-inmediata-decidida-por-el-planificador; CONTEXT.md; tasks/items/PARITYCONTINUATION-001-f26b9bbd.md
 - Delegated decision: 2026-10-28 user requests runners with tasks to work and delegates engineering decisions. Continue the accepted local prerequisite frontier rather than selecting an unqualified live campaign. No new product intent, qualification or spending authority is inferred.

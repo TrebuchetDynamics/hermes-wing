@@ -4,6 +4,26 @@ This file contains only hard blockers that require user action.
 
 ## Active
 
+### Q-LINUXQA-006-0ca2ba5b — Planning stopped
+
+- Goal: PARITY (partial).
+- Evidence: [shell/fresh-draft planning result](docs/tasks/linuxqa-006-shell-frontier.md#reference-availability-and-live-consumer-comparison),
+  baseline `e5e98512`; required-pin offline object/tree/path probes exit 128.
+  Retained round-7 summaries do not supply the complete shell/draft contract.
+- Remaining: accepted CLONE-02/04 shell/fresh-draft prerequisites, complete Settings,
+  indexed archive/full tool renderer and matched exact-pin visuals; separate
+  browser/native/assistive-technology/live proof remains unqualified.
+- Question: How should PARITY continue from this evidence-limited stop while
+  retaining the accepted CLONE-02/04 priority and existing source and qualification
+  boundaries?
+- Default without an answer: retain [LINUXQA-007-51ccc2d0](tasks/items/LINUXQA-007-51ccc2d0.md)
+  in Needs decision. No building slice is supported in this pass, so there is no
+  successor plan. Do not reopen the resolved continuation choice below, demand an
+  owner-supplied engineering design/source/receipt, or repeat unchanged probes.
+  Reachable read-only accepted-pin evidence or explicit further direction can
+  support continuation; this entry grants no fetch, repin, implementation, live
+  access, spending, qualification or automatic runner restart.
+
 ### Q-PLANCLONE03LOCAL-004-a183f257 — Planning stopped
 
 - Status: RESOLVED (continuation choice only), 2026-10-28. The user's delegated

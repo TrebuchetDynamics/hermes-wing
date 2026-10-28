@@ -3,7 +3,7 @@ schema = 1
 id = "PARITYCONTINUATION-001-f26b9bbd"
 title = "Choose continuation beyond the bounded local Settings frontier and retain remaining PARITY proof"
 short = "Choose PARITY continuation frontier"
-status = "open"
+status = "done"
 goal = "PARITY"
 section = "Needs decision"
 rank = 1000
@@ -16,6 +16,11 @@ scope = "Retain the remaining PARITY proof and answer the single continuation qu
 acceptance = ["A dated owner answer to the one Question selects a scoped next accepted frontier or retains the pause; an attributable follow-up planning contract may then be saved without changing prior closures or granting live authority.", "Remaining PARITY proof stays explicit in the round-7 evidence and goal remains partial until executed qualification under existing ledger rules; an answer, manual closure, source inspection or empty queue is not proof or waiver."]
 checks = ["Read docs/tasks/plan-clone03-local-round7.md#planner-decision-and-remaining-proof, the recorded answer to Q-PLANCLONE03LOCAL-004-a183f257 and tasks/goals/PARITY.md before any continuation.", "/home/xel/.local/bin/python3 /home/xel/.local/state/pi-autowork/releases/ca5765d05986cc4c93ecf537353d6f412fdb1a00/pi-autowork/pi_autowork/command.py tasks validate --worktree .", "Verify changed local Markdown links and git diff --check; no Flutter/browser/native/live execution is required to record this decision."]
 exclusions = ["No production/test/asset/manifest/lockfile/CI implementation, dispatch, runner restart, automatic successor or expansion of this round into other product work.", "No Agent/reference/runtime edit, execution, fetch or repin; no new operation, shell bridge, shadow backend, personal-state/credential discovery, device/service/provider/network access, spending, publication, push or deployment.", "No reopening historical/manual/owner-deferred live/Files closures, changing existing Acceptance or authorization, fabricated receipt/waiver or goal qualification."]
+closure = "manual"
+closure_actor = "assistant under user-delegated engineering authority"
+closure_timestamp = "2026-10-28T05:15:45.973474+00:00"
+closure_reason = "2026-10-28 user requests runners with tasks to work and delegates decisions: continue bounded offline CLONE-02/04 shell/fresh-draft prerequisite planning. Decision only; retain partial PARITY and all prior closures/live gates."
+closure_evidence = "docs/tasks/plan-clone03-local-round7.md#delegated-continuation--2026-10-28"
 +++
 - Sources: docs/tasks/plan-clone03-local-round7.md#planner-decision-and-remaining-proof; tasks/items/PLANCLONE03LOCAL-004-a183f257.md; tasks/goals/PARITY.md; docs/product/hermes-desktop-parity.md#reference-and-evidence-boundary; docs/plans/2026-10-21-desktop-literal-clone.md#frontera-inmediata-decidida-por-el-planificador
 - Evidence: Round-7 reconciliation at 57faa450d5fe3ac3f6dc8bd5d7d82a65fe27c172; Tool Call Display final candidate 289fe75fcab17b36678d54ed43571ffd5ce56538 and integration 9af7642212b51d65db8c220b62cbe7d4035b8428 are ancestors; both finished reports read in place. Prior tests are attributed, not rerun. No new building task, so no successor at round 7 of 10.

@@ -139,6 +139,26 @@ because the goal stays partial and the continuation task stays open; source-cach
 holes cannot become invented authority or owner inputs because they remain
 explicitly uninspected and no unavailable source is counted as proof of absence.
 
+## Delegated continuation — 2026-10-28
+
+The user subsequently asked all runners with tasks to work and delegated routine
+engineering decisions. Under that delegation, select the already accepted
+CLONE-02/04 shell/fresh-draft prerequisite frontier, prioritizing CLONE-02 where
+current evidence supports it, rather than selecting a live qualification campaign.
+The continuation choice is resolved by manual closure of
+[PARITYCONTINUATION-001-f26b9bbd](../../tasks/items/PARITYCONTINUATION-001-f26b9bbd.md).
+A separate bounded worker-owned planning record,
+[LINUXQA-006-0ca2ba5b](../../tasks/items/LINUXQA-006-0ca2ba5b.md), carries this next
+frontier. It must verify current consumers and the unchanged exact reference pin,
+then save at most one nonduplicate local building slice with concrete oracles.
+
+The earlier round-7 disposition and stopped Settings chain remain historical
+facts; this explicit later decision is not an automatic round reset. PARITY stays
+partial, and the remaining proof listed above and all prior live/Files closures
+remain unchanged. This decision neither qualifies a platform nor grants access,
+spending, upstream changes, publication or deployment. Ordinary local planning
+returns to the existing runner without a second owner interview or queue hold.
+
 ## Planning validation and limits
 
 Executed on the Linux host, planning only:

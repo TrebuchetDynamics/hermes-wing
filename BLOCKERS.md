@@ -6,6 +6,13 @@ This file contains only hard blockers that require user action.
 
 ### Q-PLANCLONE03LOCAL-004-a183f257 — Planning stopped
 
+- Status: RESOLVED (continuation choice only), 2026-10-28. The user's delegated
+  engineering decision selects bounded offline CLONE-02/04 shell/fresh-draft
+  prerequisite planning in [LINUXQA-006-0ca2ba5b](tasks/items/LINUXQA-006-0ca2ba5b.md).
+  See [dated decision](docs/tasks/plan-clone03-local-round7.md#delegated-continuation--2026-10-28).
+  The question/default below are retained as history, not a current pause.
+  All live qualification gates and PARITY's partial status remain unchanged.
+
 - Goal: PARITY (partial; not qualified by manual planning closure).
 - Evidence: [round-7 reconciliation](docs/tasks/plan-clone03-local-round7.md#planner-decision-and-remaining-proof), final Tool Call Display candidate `289fe75fcab17b36678d54ed43571ffd5ce56538` and integration `9af7642212b51d65db8c220b62cbe7d4035b8428`.
 - Remaining: complete Settings tree, shell/fresh-draft and tool-renderer consumers,
